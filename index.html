@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Idealis · Dashboard</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0e1116; --card:#161b22; --line:#232a33;
+    --txt:#e6edf3; --mut:#8b949e; --accent:#7fd858;
+    --warn:#f0a35e; --alert:#e05c5c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);
+    font-family:'Sora',system-ui,-apple-system,sans-serif;
+    min-height:100vh}
+  #root{max-width:1100px;margin:0 auto;padding:40px 24px}
+  .login{max-width:380px;margin:12vh auto;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:32px}
+  .login h1{font-size:20px;margin-bottom:4px}
+  .login p{color:var(--mut);font-size:13px;margin-bottom:24px}
+  input{width:100%;padding:11px 13px;margin-bottom:12px;background:var(--bg);
+    border:1px solid var(--line);border-radius:8px;color:var(--txt);
+    font-size:14px;font-family:inherit}
+  input:focus{outline:none;border-color:var(--accent)}
+  button{width:100%;padding:11px;background:var(--accent);color:#0e1116;
+    border:none;border-radius:8px;font-weight:600;font-size:14px;
+    cursor:pointer;font-family:inherit}
+  button:hover{filter:brightness(1.08)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .top{display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:8px}
+  .top h1{font-size:24px}
+  .sub{color:var(--mut);font-size:13px;margin-bottom:28px}
+  .sair{width:auto;padding:7px 14px;background:transparent;
+    border:1px solid var(--line);color:var(--mut);font-size:12px}
+  .row{display:flex;align-items:center;gap:16px;background:var(--card);
+    border:1px solid var(--line);border-left:3px solid var(--line);
+    border-radius:10px;padding:14px 18px;margin-bottom:8px}
+  .row.w{border-left-color:var(--warn)}
+  .row.a{border-left-color:var(--alert)}
+  .row.ok{border-left-color:var(--accent)}
+  .av{width:46px;height:46px;border-radius:50%;object-fit:cover;
+    background:var(--line);flex-shrink:0}
+  .ph{width:46px;height:46px;border-radius:50%;background:var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:600;color:var(--mut);flex-shrink:0;font-size:15px}
+  .nome{flex:1;font-size:15px;font-weight:500}
+  .dias{text-align:right;min-width:110px}
+  .dias b{font-size:19px;font-weight:600;display:block;line-height:1.2}
+  .dias span{font-size:11px;color:var(--mut);text-transform:uppercase;
+    letter-spacing:.6px}
+  .msg{color:var(--mut);text-align:center;padding:50px 0;font-size:14px}
+  .err{background:#2d1618;border:1px solid #5c2427;color:#f5a3a3;
+    padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+const SUPABASE_URL = "https://lbnemzhwibcarhkaifoy.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function Login({ onOk }) {
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function entrar() {
+    if (!email || !senha) { setErro("Preenche os dois campos."); return; }
+    setBusy(true); setErro("");
+    const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+    setBusy(false);
+    if (error) setErro(error.message);
+    else onOk();
+  }
+
+  return (
+    <div className="login">
+      <h1>Idealis</h1>
+      <p>Painel do treinador</p>
+      {erro && <div className="err">{erro}</div>}
+      <input type="email" placeholder="E-mail" value={email}
+        onChange={e => setEmail(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && entrar()} />
+      <input type="password" placeholder="Senha" value={senha}
+        onChange={e => setSenha(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && entrar()} />
+      <button onClick={entrar} disabled={busy}>
+        {busy ? "Entrando..." : "Entrar"}
+      </button>
+    </div>
+  );
+}
+
+function iniciais(nome) {
+  return nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase();
+}
+
+function Linha({ a }) {
+  const d = a.dias_sem_treinar;
+  const cls = d === null ? "a" : d >= 10 ? "a" : d >= 5 ? "w" : "ok";
+  return (
+    <div className={"row " + cls}>
+      {a.foto_url
+        ? <img className="av" src={a.foto_url} alt=""
+            onError={e => { e.target.style.visibility = "hidden"; }} />
+        : <div className="ph">{iniciais(a.nome)}</div>}
+      <div className="nome">{a.nome}</div>
+      <div className="dias">
+        {d === null
+          ? <><b style={{color:"var(--alert)"}}>—</b><span>sem registro</span></>
+          : d === 0
+            ? <><b style={{color:"var(--accent)"}}>hoje</b><span>último treino</span></>
+            : <><b>{d}</b><span>{d === 1 ? "dia atrás" : "dias atrás"}</span></>}
+      </div>
+    </div>
+  );
+}
+
+function Painel({ onSair }) {
+  const [alunos, setAlunos] = useState(null);
+  const [erro, setErro] = useState("");
+
+  const carregar = useCallback(async () => {
+    const { data, error } = await sb
+      .from("vw_alunos_ultimo_treino")
+      .select("*");
+    if (error) { setErro(error.message); setAlunos([]); return; }
+    const ord = [...data].sort((x, y) => {
+      if (x.dias_sem_treinar === null) return -1;
+      if (y.dias_sem_treinar === null) return 1;
+      return y.dias_sem_treinar - x.dias_sem_treinar;
+    });
+    setAlunos(ord);
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  return (
+    <div>
+      <div className="top">
+        <h1>Alunos</h1>
+        <button className="sair" onClick={onSair}>Sair</button>
+      </div>
+      <div className="sub">
+        {alunos === null ? "Carregando..." : `${alunos.length} aluno(s) · ordenado por tempo sem treinar`}
+      </div>
+      {erro && <div className="err">{erro}</div>}
+      {alunos === null
+        ? <div className="msg">Buscando dados...</div>
+        : alunos.length === 0
+          ? <div className="msg">Nenhum aluno visível. Confere as policies de RLS.</div>
+          : alunos.map(a => <Linha key={a.id} a={a} />)}
+    </div>
+  );
+}
+
+function App() {
+  const [sessao, setSessao] = useState(undefined);
+
+  useEffect(() => {
+    sb.auth.getSession().then(({ data }) => setSessao(data.session));
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setSessao(s));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  if (sessao === undefined) return <div className="msg">Carregando...</div>;
+  if (!sessao) return <Login onOk={() => {}} />;
+  return <Painel onSair={() => sb.auth.signOut()} />;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
