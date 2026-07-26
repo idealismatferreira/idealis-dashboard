@@ -98,6 +98,25 @@
   .item .etg.vazio{color:var(--alert)}
   .ok-msg{background:#12240f;border:1px solid #2c4f22;color:#a7e58c;
     padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:14px}
+  select{padding:9px 12px;background:var(--bg);border:1px solid var(--line);
+    border-radius:8px;color:var(--txt);font-size:14px;font-family:inherit;min-width:220px}
+  select:focus{outline:none;border-color:var(--accent)}
+  .vol{width:100%;border-collapse:collapse;font-size:13px}
+  .vol th,.vol td{padding:7px 12px;border-bottom:1px solid var(--line);text-align:center}
+  .vol th{color:var(--accent);font-size:11px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.7px}
+  .vol th.l,.vol td.l{text-align:left;font-weight:500}
+  .vol td.z{color:#3d454f}
+  .vol td.tt{font-weight:700;color:var(--accent)}
+  .vol tr.tot td{border-top:2px solid var(--line);border-bottom:none;
+    font-weight:700;padding-top:10px}
+  .vol tr.sec td{color:var(--mut);font-size:10px;text-transform:uppercase;
+    letter-spacing:.8px;text-align:left;padding-top:18px;border-bottom:1px solid var(--line)}
+  .pend-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;
+    background:#2a2118;color:var(--warn);text-transform:uppercase;letter-spacing:.5px}
+  .futuro{border:1px dashed var(--line);border-radius:12px;padding:18px 22px;
+    color:var(--mut);font-size:13px;line-height:1.6}
+  .futuro b{color:var(--txt);display:block;margin-bottom:5px;font-size:14px}
 </style>
 </head>
 <body>
@@ -108,7 +127,7 @@ const { useState, useEffect, useCallback } = React;
 
 /* ============ CONFIG ============ */
 const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+const SUPABASE_ANON_KEY = "COLE_SUA_PUBLISHABLE_KEY_AQUI";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
 /* ================================ */
@@ -440,6 +459,330 @@ function PainelCatalogo() {
   );
 }
 
+/* ---------- Volume ---------- */
+const MOTIVOS = {
+  sem_link:          "sem link no catálogo",
+  link_quebrado:     "link quebrado",
+  catalogo_pendente: "catálogo com 2+ grupos",
+  grupo_nao_mapeado: "grupo não mapeado",
+  grupo_generico:    "grupo genérico",
+  sem_series:        "sem nº de séries"
+};
+
+/* monta a matriz linha x treino a partir das linhas da view */
+function montarTabela(dados) {
+  const treinos = [...new Map(
+    dados.map(d => [d.treino, d.treino_ordem])
+  ).entries()].sort((a, b) => a[1] - b[1]).map(e => e[0]);
+
+  const mapa = new Map();
+  for (const d of dados) {
+    if (!mapa.has(d.linha)) {
+      mapa.set(d.linha, {
+        linha: d.linha, tipo: d.tipo, ordem: d.linha_ordem,
+        cels: {}, total: 0
+      });
+    }
+    const r = mapa.get(d.linha);
+    r.cels[d.treino] = (r.cels[d.treino] || 0) + d.series;
+    r.total += d.series;
+  }
+
+  const ordenar = (a, b) =>
+    a.ordem - b.ordem || a.linha.localeCompare(b.linha, "pt-BR");
+  const musc = [...mapa.values()].filter(r => r.tipo === "muscular").sort(ordenar);
+  const comp = [...mapa.values()].filter(r => r.tipo === "complementar").sort(ordenar);
+
+  const somar = arr => {
+    const t = { cels: {}, total: 0 };
+    for (const r of arr) {
+      for (const k of treinos) t.cels[k] = (t.cels[k] || 0) + (r.cels[k] || 0);
+      t.total += r.total;
+    }
+    return t;
+  };
+
+  return { treinos, musc, comp, totMusc: somar(musc), totComp: somar(comp) };
+}
+
+/* desenha a tabela num canvas e devolve o canvas (para PNG) */
+function desenharCanvas(tb, nomeAluno) {
+  const S = 2;                              // escala p/ nitidez
+  const colL = 210, colW = 78, padX = 24, padY = 20;
+  const rowH = 26, headH = 34, tituloH = 44;
+  const nCols = tb.treinos.length + 1;
+  const W = padX * 2 + colL + colW * nCols;
+  const nRows = tb.musc.length + (tb.comp.length ? tb.comp.length + 1 : 0);
+  const H = padY * 2 + tituloH + headH + rowH * nRows +
+            (tb.musc.length ? rowH + 8 : 0) + (tb.comp.length ? rowH + 8 : 0);
+
+  const cv = document.createElement("canvas");
+  cv.width = W * S; cv.height = H * S;
+  const x = cv.getContext("2d");
+  x.scale(S, S);
+  const F = "600 13px Sora, system-ui, sans-serif";
+
+  x.fillStyle = "#0e1116"; x.fillRect(0, 0, W, H);
+
+  let y = padY + 20;
+  x.fillStyle = "#7fd858"; x.font = "700 16px Sora, system-ui, sans-serif";
+  x.textAlign = "left";
+  x.fillText("Séries por ciclo · " + nomeAluno, padX, y);
+  y += 26;
+
+  const cx = i => padX + colL + colW * i + colW / 2;
+
+  // cabeçalho
+  x.font = "600 11px Sora, system-ui, sans-serif"; x.fillStyle = "#7fd858";
+  x.textAlign = "center";
+  tb.treinos.forEach((t, i) => x.fillText(t.toUpperCase(), cx(i), y + 14));
+  x.fillText("TOTAL", cx(tb.treinos.length), y + 14);
+  y += headH;
+  x.strokeStyle = "#232a33"; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(padX, y - 8); x.lineTo(W - padX, y - 8); x.stroke();
+
+  const linha = (r, bold) => {
+    x.textAlign = "left";
+    x.font = (bold ? "700 " : "500 ") + "13px Sora, system-ui, sans-serif";
+    x.fillStyle = bold ? "#7fd858" : "#e6edf3";
+    x.fillText(r.linha, padX, y + 17);
+    x.textAlign = "center";
+    tb.treinos.forEach((t, i) => {
+      const v = r.cels[t] || 0;
+      x.fillStyle = v ? (bold ? "#7fd858" : "#e6edf3") : "#3d454f";
+      x.font = (bold ? "700 " : "500 ") + "13px Sora, system-ui, sans-serif";
+      x.fillText(String(v), cx(i), y + 17);
+    });
+    x.fillStyle = "#7fd858"; x.font = "700 13px Sora, system-ui, sans-serif";
+    x.fillText(String(r.total), cx(tb.treinos.length), y + 17);
+    y += rowH;
+    x.strokeStyle = "#1b212a";
+    x.beginPath(); x.moveTo(padX, y); x.lineTo(W - padX, y); x.stroke();
+  };
+
+  tb.musc.forEach(r => linha(r, false));
+  if (tb.musc.length) {
+    x.strokeStyle = "#232a33"; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(padX, y + 1); x.lineTo(W - padX, y + 1); x.stroke();
+    y += 8; linha({ linha: "TOTAL MUSCULAÇÃO", ...tb.totMusc }, true);
+  }
+  if (tb.comp.length) {
+    y += 8;
+    x.textAlign = "left"; x.fillStyle = "#8b949e";
+    x.font = "600 10px Sora, system-ui, sans-serif";
+    x.fillText("COMPLEMENTAR · FORA DO TOTAL", padX, y + 14);
+    y += rowH;
+    tb.comp.forEach(r => linha(r, false));
+    linha({ linha: "TOTAL COMPLEMENTAR", ...tb.totComp }, true);
+  }
+  return cv;
+}
+
+/* HTML da janela espelho */
+function htmlEspelho(tb, nome) {
+  const cel = (r, t) => {
+    const v = r.cels[t] || 0;
+    return '<td class="' + (v ? "" : "z") + '">' + v + "</td>";
+  };
+  const tr = (r, cls) =>
+    '<tr class="' + (cls || "") + '"><td class="l">' + r.linha + "</td>" +
+    tb.treinos.map(t => cel(r, t)).join("") +
+    '<td class="tt">' + r.total + "</td></tr>";
+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">' +
+    "<title>Volume · " + nome + "</title><style>" +
+    "body{margin:0;padding:18px;background:#0e1116;color:#e6edf3;" +
+    "font-family:Sora,system-ui,sans-serif}" +
+    "h1{font-size:14px;color:#7fd858;margin:0 0 12px;font-weight:700}" +
+    "table{width:100%;border-collapse:collapse;font-size:13px}" +
+    "th,td{padding:6px 10px;border-bottom:1px solid #1b212a;text-align:center}" +
+    "th{color:#7fd858;font-size:10px;text-transform:uppercase;letter-spacing:.7px}" +
+    "th.l,td.l{text-align:left;font-weight:500}" +
+    "td.z{color:#3d454f}td.tt{color:#7fd858;font-weight:700}" +
+    "tr.tot td{border-top:2px solid #232a33;font-weight:700;color:#7fd858}" +
+    "tr.sec td{color:#8b949e;font-size:9px;text-transform:uppercase;" +
+    "letter-spacing:.8px;text-align:left;padding-top:14px}" +
+    "</style></head><body>" +
+    "<h1>Séries por ciclo · " + nome + "</h1><table><tr><th class='l'></th>" +
+    tb.treinos.map(t => "<th>" + t + "</th>").join("") + "<th>Total</th></tr>" +
+    tb.musc.map(r => tr(r)).join("") +
+    (tb.musc.length ? tr({ linha: "Total musculação", ...tb.totMusc }, "tot") : "") +
+    (tb.comp.length
+      ? "<tr class='sec'><td colspan='" + (tb.treinos.length + 2) +
+        "'>Complementar · fora do total</td></tr>" +
+        tb.comp.map(r => tr(r)).join("") +
+        tr({ linha: "Total complementar", ...tb.totComp }, "tot")
+      : "") +
+    "</table></body></html>";
+}
+
+function PainelVolume() {
+  const [alunos, setAlunos] = useState([]);
+  const [sel, setSel]       = useState("");
+  const [dados, setDados]   = useState(null);
+  const [pend, setPend]     = useState([]);
+  const [erro, setErro]     = useState("");
+  const [aviso, setAviso]   = useState("");
+  const janela = React.useRef(null);
+
+  useEffect(() => {
+    sb.from("alunos").select("id, nome").order("nome").then(({ data, error }) => {
+      if (error) { setErro(error.message); return; }
+      setAlunos(data || []);
+      if (data && data.length) setSel(data[0].id);
+    });
+  }, []);
+
+  const carregar = useCallback(async (alunoId) => {
+    if (!alunoId) return;
+    setDados(null); setErro("");
+    const [v, p] = await Promise.all([
+      sb.from("vw_volume_ciclo").select("*").eq("aluno_id", alunoId),
+      sb.from("vw_volume_pendencias").select("*").eq("aluno_id", alunoId)
+    ]);
+    if (v.error) { setErro(v.error.message); setDados([]); return; }
+    if (p.error) setErro(p.error.message);
+    setDados(v.data || []);
+    setPend(p.data || []);
+  }, []);
+
+  useEffect(() => { carregar(sel); }, [sel, carregar]);
+
+  const tb = dados && dados.length ? montarTabela(dados) : null;
+  const nomeAluno = (alunos.find(a => a.id === sel) || {}).nome || "aluno";
+
+  // atualiza a janela espelho sempre que os dados mudarem
+  useEffect(() => {
+    const j = janela.current;
+    if (!j || j.closed || !tb) return;
+    j.document.open();
+    j.document.write(htmlEspelho(tb, nomeAluno));
+    j.document.close();
+  }, [dados, sel]);
+
+  function abrirEspelho() {
+    if (!tb) return;
+    const j = window.open("", "volume_idealis", "width=560,height=760");
+    if (!j) { setErro("O navegador bloqueou a janela. Libera pop-up para este site."); return; }
+    janela.current = j;
+    j.document.open(); j.document.write(htmlEspelho(tb, nomeAluno)); j.document.close();
+    j.focus();
+  }
+
+  function baixarPng() {
+    if (!tb) return;
+    const cv = desenharCanvas(tb, nomeAluno);
+    const slug = nomeAluno.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase();
+    const a = document.createElement("a");
+    a.download = "volume_" + slug + "_" + new Date().toISOString().slice(0, 10) + ".png";
+    a.href = cv.toDataURL("image/png");
+    a.click();
+    setAviso("PNG baixado.");
+  }
+
+  const cel = (r, t) => {
+    const v = r.cels[t] || 0;
+    return <td key={t} className={v ? "" : "z"}>{v}</td>;
+  };
+  const tr = (r, k, cls) => (
+    <tr key={k} className={cls || ""}>
+      <td className="l">{r.linha}</td>
+      {tb.treinos.map(t => cel(r, t))}
+      <td className="tt">{r.total}</td>
+    </tr>
+  );
+
+  return (
+    <div>
+      <div className="acoes" style={{ marginBottom: 20 }}>
+        <select value={sel} onChange={e => setSel(e.target.value)}>
+          {alunos.length === 0 && <option value="">nenhum aluno</option>}
+          {alunos.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
+        </select>
+        <button className="btn-sec" onClick={() => carregar(sel)}>Recarregar</button>
+      </div>
+
+      {erro && <div className="err">{erro}</div>}
+      {aviso && <div className="ok-msg">{aviso}</div>}
+
+      {dados === null
+        ? <div className="msg">Calculando...</div>
+        : !tb
+          ? <div className="msg">
+              Nenhum exercício calculável para este aluno ainda.
+              {pend.length > 0 && " " + pend.length + " prescrição(ões) em pendência, veja abaixo."}
+            </div>
+          : (
+            <div className="box">
+              <div style={{ display: "flex", justifyContent: "space-between",
+                            alignItems: "center", marginBottom: 16 }}>
+                <div>
+                  <h2>Volume prescrito · séries por ciclo</h2>
+                  <p style={{ margin: 0 }}>
+                    Uma passada completa em {tb.treinos.join(" + ")}.
+                  </p>
+                </div>
+                <div className="acoes">
+                  <button className="btn-sec" onClick={abrirEspelho}>Janela separada</button>
+                  <button className="btn-sec" onClick={baixarPng}>Baixar PNG</button>
+                </div>
+              </div>
+
+              <table className="vol">
+                <thead>
+                  <tr>
+                    <th className="l"></th>
+                    {tb.treinos.map(t => <th key={t}>{t}</th>)}
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tb.musc.map((r, i) => tr(r, "m" + i))}
+                  {tb.musc.length > 0 && tr({ linha: "Total musculação", ...tb.totMusc }, "tm", "tot")}
+                  {tb.comp.length > 0 && (
+                    <tr className="sec" key="sec">
+                      <td colSpan={tb.treinos.length + 2}>Complementar · fora do total</td>
+                    </tr>
+                  )}
+                  {tb.comp.map((r, i) => tr(r, "c" + i))}
+                  {tb.comp.length > 0 && tr({ linha: "Total complementar", ...tb.totComp }, "tc", "tot")}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+      {pend.length > 0 && (
+        <div className="box">
+          <h2>Fora do cálculo ({pend.length})</h2>
+          <p>
+            Exercícios prescritos que ainda não entram no volume. Enquanto estiverem aqui,
+            o número acima está subestimado — nunca inflado.
+          </p>
+          <div className="lista">
+            {pend.map(p => (
+              <div className="item" key={p.exercicio_id}>
+                <span className="eid">{p.treino}</span>
+                <span className="enm">{p.exercicio}</span>
+                <span className="etg">
+                  <span className="pend-tag">{MOTIVOS[p.situacao] || p.situacao}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="futuro">
+        <b>⏳ Volume Realizado — próximo</b>
+        Vai comparar séries prescritas × séries efetivamente registradas em <code>logs</code>,
+        por grupo, por ciclo. Não exige mudança de schema. Aguardando: histórico de logs
+        com pelo menos 4 semanas.
+      </div>
+    </div>
+  );
+}
+
 /* ---------- App ---------- */
 function App() {
   const [sessao, setSessao] = useState(undefined);
@@ -463,10 +806,14 @@ function App() {
       <div className="tabs">
         <button className={"tab" + (aba === "alunos" ? " on" : "")}
           onClick={() => setAba("alunos")}>Alunos</button>
+        <button className={"tab" + (aba === "volume" ? " on" : "")}
+          onClick={() => setAba("volume")}>Volume</button>
         <button className={"tab" + (aba === "catalogo" ? " on" : "")}
           onClick={() => setAba("catalogo")}>Catálogo</button>
       </div>
-      {aba === "alunos" ? <PainelAlunos /> : <PainelCatalogo />}
+      {aba === "alunos" ? <PainelAlunos />
+        : aba === "volume" ? <PainelVolume />
+        : <PainelCatalogo />}
     </div>
   );
 }
