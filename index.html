@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Idealis · Dashboard</title>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- VERSOES FIXADAS de proposito. Babel 8 gera "import" e quebra com React UMD.
+     Nao troque por URL sem versao (@babel/standalone sem numero). -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <style>
   :root{
     --bg:#0e1116; --card:#161b22; --line:#232a33;
@@ -16,9 +18,8 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--txt);
-    font-family:'Sora',system-ui,-apple-system,sans-serif;
-    min-height:100vh}
-  #root{max-width:1100px;margin:0 auto;padding:40px 24px}
+    font-family:'Sora',system-ui,-apple-system,sans-serif;min-height:100vh}
+  #root{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
   .login{max-width:380px;margin:12vh auto;background:var(--card);
     border:1px solid var(--line);border-radius:14px;padding:32px}
   .login h1{font-size:20px;margin-bottom:4px}
@@ -27,17 +28,29 @@
     border:1px solid var(--line);border-radius:8px;color:var(--txt);
     font-size:14px;font-family:inherit}
   input:focus{outline:none;border-color:var(--accent)}
-  button{width:100%;padding:11px;background:var(--accent);color:#0e1116;
-    border:none;border-radius:8px;font-weight:600;font-size:14px;
-    cursor:pointer;font-family:inherit}
+  textarea{width:100%;min-height:110px;padding:11px 13px;background:var(--bg);
+    border:1px solid var(--line);border-radius:8px;color:var(--txt);
+    font-size:12px;font-family:ui-monospace,monospace;resize:vertical}
+  textarea:focus{outline:none;border-color:var(--accent)}
+  button{padding:11px;background:var(--accent);color:#0e1116;border:none;
+    border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;
+    font-family:inherit;width:100%}
   button:hover{filter:brightness(1.08)}
   button:disabled{opacity:.5;cursor:not-allowed}
-  .top{display:flex;justify-content:space-between;align-items:flex-end;
-    margin-bottom:8px}
+  .btn-sec{background:transparent;border:1px solid var(--line);color:var(--txt);
+    width:auto;padding:9px 16px;font-size:13px;font-weight:500}
+  .btn-sec:hover{border-color:var(--accent);filter:none}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
   .top h1{font-size:24px}
-  .sub{color:var(--mut);font-size:13px;margin-bottom:28px}
   .sair{width:auto;padding:7px 14px;background:transparent;
     border:1px solid var(--line);color:var(--mut);font-size:12px}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:26px}
+  .tab{background:none;border:none;color:var(--mut);padding:11px 18px;
+    font-size:14px;font-weight:500;cursor:pointer;width:auto;
+    border-bottom:2px solid transparent;border-radius:0;font-family:inherit}
+  .tab:hover{color:var(--txt);filter:none}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+  .sub{color:var(--mut);font-size:13px;margin-bottom:20px}
   .row{display:flex;align-items:center;gap:16px;background:var(--card);
     border:1px solid var(--line);border-left:3px solid var(--line);
     border-radius:10px;padding:14px 18px;margin-bottom:8px}
@@ -47,15 +60,43 @@
   .av{width:46px;height:46px;border-radius:50%;object-fit:cover;
     background:var(--line);flex-shrink:0}
   .ph{width:46px;height:46px;border-radius:50%;background:var(--line);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:600;color:var(--mut);flex-shrink:0;font-size:15px}
+    display:flex;align-items:center;justify-content:center;font-weight:600;
+    color:var(--mut);flex-shrink:0;font-size:15px}
   .nome{flex:1;font-size:15px;font-weight:500}
   .dias{text-align:right;min-width:110px}
   .dias b{font-size:19px;font-weight:600;display:block;line-height:1.2}
-  .dias span{font-size:11px;color:var(--mut);text-transform:uppercase;
-    letter-spacing:.6px}
+  .dias span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
   .msg{color:var(--mut);text-align:center;padding:50px 0;font-size:14px}
   .err{background:#2d1618;border:1px solid #5c2427;color:#f5a3a3;
+    padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:14px}
+  .box{background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:22px;margin-bottom:16px}
+  .box h2{font-size:16px;margin-bottom:6px}
+  .box p{color:var(--mut);font-size:13px;line-height:1.55;margin-bottom:16px}
+  .acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .acoes button{width:auto;padding:10px 20px}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  .kpi{background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--line);border-radius:10px;padding:16px 18px}
+  .kpi.g{border-left-color:var(--accent)}
+  .kpi.w{border-left-color:var(--warn)}
+  .kpi.r{border-left-color:var(--alert)}
+  .kpi b{font-size:26px;font-weight:600;display:block;line-height:1.15}
+  .kpi span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+  .barra{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:14px 0 6px}
+  .barra i{display:block;height:100%;background:var(--accent);transition:width .25s}
+  .status{font-size:13px;color:var(--mut)}
+  .lista{max-height:420px;overflow-y:auto;border:1px solid var(--line);
+    border-radius:10px;background:var(--card)}
+  .item{display:flex;gap:14px;align-items:baseline;padding:11px 16px;
+    border-bottom:1px solid var(--line);font-size:13px}
+  .item:last-child{border-bottom:none}
+  .item .eid{color:var(--mut);font-family:ui-monospace,monospace;
+    font-size:11px;min-width:46px}
+  .item .enm{flex:1;font-weight:500}
+  .item .etg{color:var(--warn);font-size:11px;text-align:right;max-width:52%}
+  .item .etg.vazio{color:var(--alert)}
+  .ok-msg{background:#12240f;border:1px solid #2c4f22;color:#a7e58c;
     padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:14px}
 </style>
 </head>
@@ -65,16 +106,65 @@
 <script type="text/babel">
 const { useState, useEffect, useCallback } = React;
 
-const SUPABASE_URL = "https://lbnemzhwibcarhkaifoy.supabase.co";
+/* ============ CONFIG ============ */
+const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
+const LOTE = 150;
+/* ================================ */
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function Login({ onOk }) {
+/* ---------- helpers de transformação ---------- */
+const tags = s => String(s ?? "").split("|").map(t => t.trim()).filter(Boolean);
+const bool = v => String(v ?? "").trim().toUpperCase() === "X";
+const txt  = v => { const s = String(v ?? "").trim(); return s || null; };
+const idNum = v => {
+  if (v === null || v === undefined || String(v).trim() === "") return NaN;
+  const n = Number(v);
+  return Number.isInteger(n) && n > 0 ? n : NaN;
+};
+
+function transformar(l) {
+  return {
+    id: idNum(l.id),
+    exercicio: String(l.exercicio ?? "").trim(),
+    grupos: tags(l.grupo),
+    contextos: tags(l.contexto),
+    subgrupo: txt(l.subgrupo),
+    musculo_alvo: txt(l.musculo_alvo),
+    equipamento: txt(l.equipamento),
+    em_casa: bool(l.em_casa),
+    video_proprio: bool(l.video_proprio),
+    a_filmar: bool(l.a_filmar),
+    isometrico: bool(l.isometrico),
+    unilateral: bool(l.unilateral),
+    bi_set: bool(l.bi_set),
+    observacao: txt(l.observacao),
+    video_url: txt(l.video_url),
+    bruto: l,
+    sincronizado_em: new Date().toISOString()
+  };
+}
+
+function preparar(linhas) {
+  const vistos = new Set(), validos = [], ignorados = [];
+  for (const l of linhas) {
+    const t = transformar(l);
+    if (!Number.isFinite(t.id)) { ignorados.push({ id: l?.id, nome: l?.exercicio, motivo: "id inválido" }); continue; }
+    if (!t.exercicio)           { ignorados.push({ id: l?.id, nome: "(sem nome)", motivo: "nome vazio" }); continue; }
+    if (vistos.has(t.id))       { ignorados.push({ id: l?.id, nome: l?.exercicio, motivo: "id duplicado" }); continue; }
+    vistos.add(t.id); validos.push(t);
+  }
+  return { validos, ignorados };
+}
+
+/* ---------- Login ---------- */
+function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [erro, setErro]   = useState("");
+  const [busy, setBusy]   = useState(false);
 
   async function entrar() {
     if (!email || !senha) { setErro("Preenche os dois campos."); return; }
@@ -82,7 +172,6 @@ function Login({ onOk }) {
     const { error } = await sb.auth.signInWithPassword({ email, password: senha });
     setBusy(false);
     if (error) setErro(error.message);
-    else onOk();
   }
 
   return (
@@ -96,18 +185,17 @@ function Login({ onOk }) {
       <input type="password" placeholder="Senha" value={senha}
         onChange={e => setSenha(e.target.value)}
         onKeyDown={e => e.key === "Enter" && entrar()} />
-      <button onClick={entrar} disabled={busy}>
-        {busy ? "Entrando..." : "Entrar"}
-      </button>
+      <button onClick={entrar} disabled={busy}>{busy ? "Entrando..." : "Entrar"}</button>
     </div>
   );
 }
 
+/* ---------- Alunos ---------- */
 function iniciais(nome) {
-  return nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase();
+  return String(nome || "?").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase();
 }
 
-function Linha({ a }) {
+function LinhaAluno({ a }) {
   const d = a.dias_sem_treinar;
   const cls = d === null ? "a" : d >= 10 ? "a" : d >= 5 ? "w" : "ok";
   return (
@@ -119,23 +207,21 @@ function Linha({ a }) {
       <div className="nome">{a.nome}</div>
       <div className="dias">
         {d === null
-          ? <><b style={{color:"var(--alert)"}}>—</b><span>sem registro</span></>
+          ? <><b style={{ color: "var(--alert)" }}>—</b><span>sem registro</span></>
           : d === 0
-            ? <><b style={{color:"var(--accent)"}}>hoje</b><span>último treino</span></>
+            ? <><b style={{ color: "var(--accent)" }}>hoje</b><span>último treino</span></>
             : <><b>{d}</b><span>{d === 1 ? "dia atrás" : "dias atrás"}</span></>}
       </div>
     </div>
   );
 }
 
-function Painel({ onSair }) {
+function PainelAlunos() {
   const [alunos, setAlunos] = useState(null);
   const [erro, setErro] = useState("");
 
   const carregar = useCallback(async () => {
-    const { data, error } = await sb
-      .from("vw_alunos_ultimo_treino")
-      .select("*");
+    const { data, error } = await sb.from("vw_alunos_ultimo_treino").select("*");
     if (error) { setErro(error.message); setAlunos([]); return; }
     const ord = [...data].sort((x, y) => {
       if (x.dias_sem_treinar === null) return -1;
@@ -149,25 +235,215 @@ function Painel({ onSair }) {
 
   return (
     <div>
-      <div className="top">
-        <h1>Alunos</h1>
-        <button className="sair" onClick={onSair}>Sair</button>
-      </div>
       <div className="sub">
-        {alunos === null ? "Carregando..." : `${alunos.length} aluno(s) · ordenado por tempo sem treinar`}
+        {alunos === null ? "Carregando..." : alunos.length + " aluno(s) · ordenado por tempo sem treinar"}
       </div>
       {erro && <div className="err">{erro}</div>}
       {alunos === null
         ? <div className="msg">Buscando dados...</div>
         : alunos.length === 0
           ? <div className="msg">Nenhum aluno visível. Confere as policies de RLS.</div>
-          : alunos.map(a => <Linha key={a.id} a={a} />)}
+          : alunos.map(a => <LinhaAluno key={a.id} a={a} />)}
     </div>
   );
 }
 
+/* ---------- Catálogo ---------- */
+function PainelCatalogo() {
+  const [fase, setFase]         = useState("idle");
+  const [prog, setProg]         = useState(0);
+  const [erro, setErro]         = useState("");
+  const [aviso, setAviso]       = useState("");
+  const [ignorados, setIgnor]   = useState([]);
+  const [linhas, setLinhas]     = useState(null);
+  const [manual, setManual]     = useState(false);
+  const [colado, setColado]     = useState("");
+
+  const carregarEstado = useCallback(async () => {
+    const { data, error } = await sb
+      .from("cardapio")
+      .select("id, exercicio, grupos, subgrupo, musculo_alvo, sincronizado_em")
+      .order("exercicio");
+    if (error) { setErro(error.message); return; }
+    setLinhas(data || []);
+  }, []);
+
+  useEffect(() => { carregarEstado(); }, [carregarEstado]);
+
+  async function gravar(brutos) {
+    const { validos, ignorados: ign } = preparar(brutos);
+    setIgnor(ign);
+    if (!validos.length) { setErro("Nenhum exercício válido no retorno."); setFase("idle"); return; }
+
+    setFase("gravando"); setProg(0);
+    for (let i = 0; i < validos.length; i += LOTE) {
+      const lote = validos.slice(i, i + LOTE);
+      const { error } = await sb.from("cardapio").upsert(lote, { onConflict: "id" });
+      if (error) {
+        setErro("Erro ao gravar (lote " + (Math.floor(i / LOTE) + 1) + "): " + error.message);
+        setFase("idle"); await carregarEstado(); return;
+      }
+      setProg(Math.min(i + LOTE, validos.length) / validos.length);
+    }
+    setAviso(validos.length + " exercícios sincronizados." +
+      (ign.length ? " " + ign.length + " ignorado(s), lista abaixo." : ""));
+    setFase("idle");
+    await carregarEstado();
+  }
+
+  async function sincronizar() {
+    setErro(""); setAviso(""); setIgnor([]); setManual(false);
+    setFase("buscando");
+    let json;
+    try {
+      const r = await fetch(CATALOGO_URL, { method: "GET", redirect: "follow" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      json = await r.json();
+    } catch (e) {
+      setErro("Não consegui buscar o Catálogo pelo navegador (" + e.message +
+        "). Provável bloqueio de CORS. Usa o plano B abaixo.");
+      setManual(true); setFase("idle"); return;
+    }
+    if (!json || json.ok !== true || !Array.isArray(json.exercicios)) {
+      setErro("Resposta inesperada do Catálogo. Esperava { ok: true, exercicios: [...] }.");
+      setFase("idle"); return;
+    }
+    await gravar(json.exercicios);
+  }
+
+  async function sincronizarColado() {
+    setErro(""); setAviso(""); setIgnor([]);
+    let json;
+    try { json = JSON.parse(colado); }
+    catch (e) { setErro("JSON inválido: " + e.message); return; }
+    const arr = Array.isArray(json) ? json : json.exercicios;
+    if (!Array.isArray(arr)) { setErro("Não achei a lista de exercícios no JSON colado."); return; }
+    await gravar(arr);
+  }
+
+  const stats = (linhas || []).reduce((a, l) => {
+    const n = (l.grupos || []).length;
+    if (n === 0) a.sem++; else if (n === 1) a.mig++; else a.pend++;
+    return a;
+  }, { mig: 0, pend: 0, sem: 0 });
+
+  const problemas = (linhas || [])
+    .filter(l => (l.grupos || []).length !== 1)
+    .sort((a, b) => (b.grupos || []).length - (a.grupos || []).length);
+
+  function copiarPendencias() {
+    const txt = problemas
+      .map(l => l.id + "\t" + l.exercicio + "\t" + ((l.grupos || []).join(" | ") || "(sem grupo)"))
+      .join("\n");
+    navigator.clipboard.writeText(txt);
+    setAviso("Lista de pendências copiada.");
+  }
+
+  const ultimo = (linhas || []).reduce((max, l) =>
+    l.sincronizado_em && l.sincronizado_em > max ? l.sincronizado_em : max, "");
+
+  return (
+    <div>
+      <div className="box">
+        <h2>Sincronizar Catálogo de Exercícios</h2>
+        <p>
+          Puxa a lista do Catálogo (Apps Script) e grava no Supabase. O Catálogo continua
+          sendo a fonte de verdade — isso aqui é um espelho consultável, seguro de rodar
+          quantas vezes você quiser.
+        </p>
+        {erro && <div className="err">{erro}</div>}
+        {aviso && <div className="ok-msg">{aviso}</div>}
+        <div className="acoes">
+          <button onClick={sincronizar} disabled={fase !== "idle"}>
+            {fase === "buscando" ? "Buscando..." : fase === "gravando" ? "Gravando..." : "Sincronizar agora"}
+          </button>
+          {linhas !== null && (
+            <span className="status">
+              {linhas.length
+                ? linhas.length + " no espelho" + (ultimo ? " · último sync " + new Date(ultimo).toLocaleString("pt-BR") : "")
+                : "espelho vazio"}
+            </span>
+          )}
+        </div>
+        {fase === "gravando" && (
+          <>
+            <div className="barra"><i style={{ width: Math.round(prog * 100) + "%" }} /></div>
+            <div className="status">{Math.round(prog * 100)}%</div>
+          </>
+        )}
+        {manual && (
+          <div style={{ marginTop: 18 }}>
+            <p style={{ marginBottom: 8 }}>
+              <b>Plano B:</b> abre a URL do Catálogo numa aba, copia todo o JSON e cola aqui.
+            </p>
+            <textarea value={colado} onChange={e => setColado(e.target.value)}
+              placeholder='{"ok":true,"exercicios":[...]}' />
+            <div className="acoes" style={{ marginTop: 10 }}>
+              <button className="btn-sec" onClick={sincronizarColado} disabled={!colado.trim()}>
+                Sincronizar do texto colado
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {ignorados.length > 0 && (
+        <div className="box">
+          <h2>Ignorados no último sync ({ignorados.length})</h2>
+          <p>Linhas que não entraram no espelho. Corrige no Catálogo e sincroniza de novo.</p>
+          <div className="lista">
+            {ignorados.map((i, k) => (
+              <div className="item" key={k}>
+                <span className="eid">{String(i.id ?? "—")}</span>
+                <span className="enm">{i.nome}</span>
+                <span className="etg vazio">{i.motivo}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {linhas !== null && linhas.length > 0 && (
+        <>
+          <div className="cards">
+            <div className="kpi g"><b>{stats.mig}</b><span>1 grupo · ok</span></div>
+            <div className="kpi w"><b>{stats.pend}</b><span>2+ grupos · migrar</span></div>
+            <div className="kpi r"><b>{stats.sem}</b><span>sem grupo</span></div>
+          </div>
+
+          {problemas.length > 0 && (
+            <div className="box">
+              <h2>Pendências de reestruturação ({problemas.length})</h2>
+              <p>
+                Exercícios que ainda não têm exatamente um grupo muscular. Enquanto estiverem
+                aqui, ficam fora do cálculo de volume — o número nunca infla.
+              </p>
+              <div className="acoes" style={{ marginBottom: 14 }}>
+                <button className="btn-sec" onClick={copiarPendencias}>Copiar lista</button>
+              </div>
+              <div className="lista">
+                {problemas.map(l => (
+                  <div className="item" key={l.id}>
+                    <span className="eid">{l.id}</span>
+                    <span className="enm">{l.exercicio}</span>
+                    <span className={"etg" + ((l.grupos || []).length ? "" : " vazio")}>
+                      {(l.grupos || []).join(" · ") || "sem grupo"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------- App ---------- */
 function App() {
   const [sessao, setSessao] = useState(undefined);
+  const [aba, setAba] = useState("alunos");
 
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => setSessao(data.session));
@@ -176,8 +452,23 @@ function App() {
   }, []);
 
   if (sessao === undefined) return <div className="msg">Carregando...</div>;
-  if (!sessao) return <Login onOk={() => {}} />;
-  return <Painel onSair={() => sb.auth.signOut()} />;
+  if (!sessao) return <Login />;
+
+  return (
+    <div>
+      <div className="top">
+        <h1>Idealis</h1>
+        <button className="sair" onClick={() => sb.auth.signOut()}>Sair</button>
+      </div>
+      <div className="tabs">
+        <button className={"tab" + (aba === "alunos" ? " on" : "")}
+          onClick={() => setAba("alunos")}>Alunos</button>
+        <button className={"tab" + (aba === "catalogo" ? " on" : "")}
+          onClick={() => setAba("catalogo")}>Catálogo</button>
+      </div>
+      {aba === "alunos" ? <PainelAlunos /> : <PainelCatalogo />}
+    </div>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
