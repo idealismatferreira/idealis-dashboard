@@ -12,8 +12,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <style>
   :root{
-    --bg:#0e1116; --card:#161b22; --line:#232a33;
-    --txt:#e6edf3; --mut:#8b949e; --accent:#7fd858;
+    --bg:#0b0f10; --card:#131a1c; --line:#1f2b2d;
+    --txt:#e6edf3; --mut:#89a0a3; --accent:#00daef;
     --warn:#f0a35e; --alert:#e05c5c;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -32,7 +32,7 @@
     border:1px solid var(--line);border-radius:8px;color:var(--txt);
     font-size:12px;font-family:ui-monospace,monospace;resize:vertical}
   textarea:focus{outline:none;border-color:var(--accent)}
-  button{padding:11px;background:var(--accent);color:#0e1116;border:none;
+  button{padding:11px;background:var(--accent);color:#04191c;border:none;
     border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;
     font-family:inherit;width:100%}
   button:hover{filter:brightness(1.08)}
@@ -96,7 +96,7 @@
   .item .enm{flex:1;font-weight:500}
   .item .etg{color:var(--warn);font-size:11px;text-align:right;max-width:52%}
   .item .etg.vazio{color:var(--alert)}
-  .ok-msg{background:#12240f;border:1px solid #2c4f22;color:#a7e58c;
+  .ok-msg{background:#08282c;border:1px solid #17555c;color:#7fe6f2;
     padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:14px}
   select{padding:9px 12px;background:var(--bg);border:1px solid var(--line);
     border-radius:8px;color:var(--txt);font-size:14px;font-family:inherit;min-width:220px}
@@ -106,15 +106,54 @@
   .vol th{color:var(--accent);font-size:11px;font-weight:600;
     text-transform:uppercase;letter-spacing:.7px}
   .vol th.l,.vol td.l{text-align:left;font-weight:500}
-  .vol td.z{color:#3d454f}
+  .vol td.z{color:#33454a}
   .vol td.tt{font-weight:700;color:var(--accent)}
   .vol tr.tot td{border-top:2px solid var(--line);border-bottom:none;
     font-weight:700;padding-top:10px}
   .vol tr.sec.al td{color:var(--warn)}
   .vol tr.sec td{color:var(--mut);font-size:10px;text-transform:uppercase;
     letter-spacing:.8px;text-align:left;padding-top:18px;border-bottom:1px solid var(--line)}
+  .vol .sc{font-size:9px;color:var(--warn);margin-left:1px;font-weight:500}
   .pend-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;
     background:#2a2118;color:var(--warn);text-transform:uppercase;letter-spacing:.5px}
+  .drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:40}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(660px,94vw);
+    background:var(--card);border-left:1px solid var(--line);z-index:41;
+    display:flex;flex-direction:column}
+  .dr-top{padding:20px 24px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .dr-top h2{font-size:18px;margin-bottom:3px}
+  .dr-top .meta{color:var(--mut);font-size:12px}
+  .dr-x{position:absolute;top:16px;right:20px;background:none;border:none;
+    color:var(--mut);font-size:22px;cursor:pointer;width:auto;padding:0 6px;line-height:1}
+  .dr-x:hover{color:var(--txt);filter:none}
+  .dr-acoes{display:flex;gap:8px;flex-wrap:wrap;padding:14px 24px;
+    border-bottom:1px solid var(--line);flex-shrink:0}
+  .dr-acoes button{width:auto;padding:8px 14px;font-size:12px}
+  .dr-body{overflow-y:auto;padding:18px 24px 40px;flex:1}
+  .sec-card{margin-bottom:16px}
+  .sec-h{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
+  .sec-h b{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent)}
+  .sec-h i{font-style:normal;font-size:10px;color:var(--mut)}
+  .sec-card.dor .sec-h b{color:#ff8f6b}
+  .sec-card.vazia .sec-h b{color:#4a5a5d}
+  .ent{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #182224;
+    font-size:13px;line-height:1.5}
+  .ent:last-child{border-bottom:none}
+  .ent .dt{color:var(--accent);font-size:11px;font-family:ui-monospace,monospace;
+    flex-shrink:0;min-width:62px;padding-top:2px}
+  .ent .dt.sem{color:#4a5a5d}
+  .sec-card.dor .ent .dt{color:#ff8f6b}
+  .ent .tx{flex:1}
+  .vazio-nota{font-size:12px;color:#4a5a5d;font-style:italic}
+  .raw{width:100%;min-height:300px;font-size:12px;line-height:1.6}
+  .hist-it{display:flex;justify-content:space-between;padding:8px 0;
+    border-bottom:1px solid #182224;font-size:12px;color:var(--mut)}
+  .hist-it b{color:var(--txt);font-weight:500}
+  .row.clik{cursor:pointer}
+  .row.clik:hover{border-color:var(--accent)}
+  .badge-an{font-size:10px;padding:3px 8px;border-radius:5px;background:#0f2a2e;
+    color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
+  .badge-an.sem{background:#241a12;color:var(--warn)}
   .futuro{border:1px dashed var(--line);border-radius:12px;padding:18px 22px;
     color:var(--mut);font-size:13px;line-height:1.6}
   .futuro b{color:var(--txt);display:block;margin-bottom:5px;font-size:14px}
@@ -128,7 +167,7 @@ const { useState, useEffect, useCallback } = React;
 
 /* ============ CONFIG ============ */
 const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
-const SUPABASE_ANON_KEY = "COLE_SUA_PUBLISHABLE_KEY_AQUI";
+const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
 /* ================================ */
@@ -215,16 +254,22 @@ function iniciais(nome) {
   return String(nome || "?").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase();
 }
 
-function LinhaAluno({ a }) {
+function LinhaAluno({ a, onAbrir }) {
   const d = a.dias_sem_treinar;
   const cls = d === null ? "a" : d >= 10 ? "a" : d >= 5 ? "w" : "ok";
   return (
-    <div className={"row " + cls}>
+    <div className={"row clik " + cls} onClick={() => onAbrir(a)}>
       {a.foto_url
         ? <img className="av" src={a.foto_url} alt=""
             onError={e => { e.target.style.visibility = "hidden"; }} />
         : <div className="ph">{iniciais(a.nome)}</div>}
-      <div className="nome">{a.nome}</div>
+      <div className="nome">
+        {a.nome}
+        <span className={"badge-an" + (a.tem_anamnese ? "" : " sem")}
+          style={{ marginLeft: 10 }}>
+          {a.tem_anamnese ? "anamnese" : "sem anamnese"}
+        </span>
+      </div>
       <div className="dias">
         {d === null
           ? <><b style={{ color: "var(--alert)" }}>—</b><span>sem registro</span></>
@@ -239,15 +284,23 @@ function LinhaAluno({ a }) {
 function PainelAlunos() {
   const [alunos, setAlunos] = useState(null);
   const [erro, setErro] = useState("");
+  const [aberto, setAberto] = useState(null);
 
   const carregar = useCallback(async () => {
-    const { data, error } = await sb.from("vw_alunos_ultimo_treino").select("*");
-    if (error) { setErro(error.message); setAlunos([]); return; }
-    const ord = [...data].sort((x, y) => {
-      if (x.dias_sem_treinar === null) return -1;
-      if (y.dias_sem_treinar === null) return 1;
-      return y.dias_sem_treinar - x.dias_sem_treinar;
-    });
+    const [v, an] = await Promise.all([
+      sb.from("vw_alunos_ultimo_treino").select("*"),
+      sb.from("vw_alunos_anamnese").select("aluno_id, tem_anamnese, anamnese_em")
+    ]);
+    if (v.error) { setErro(v.error.message); setAlunos([]); return; }
+    const mapaAn = new Map((an.error ? [] : (an.data || []))
+      .map(x => [x.aluno_id, x]));
+    const ord = [...v.data]
+      .map(a => ({ ...a, tem_anamnese: !!(mapaAn.get(a.id) || {}).tem_anamnese }))
+      .sort((x, y) => {
+        if (x.dias_sem_treinar === null) return -1;
+        if (y.dias_sem_treinar === null) return 1;
+        return y.dias_sem_treinar - x.dias_sem_treinar;
+      });
     setAlunos(ord);
   }, []);
 
@@ -263,7 +316,15 @@ function PainelAlunos() {
         ? <div className="msg">Buscando dados...</div>
         : alunos.length === 0
           ? <div className="msg">Nenhum aluno visível. Confere as policies de RLS.</div>
-          : alunos.map(a => <LinhaAluno key={a.id} a={a} />)}
+          : alunos.map(a => (
+              <LinhaAluno key={a.id} a={a} onAbrir={setAberto} />
+            ))}
+      {aberto && (
+        <DrawerAnamnese
+          aluno={aberto}
+          onFechar={() => { setAberto(null); carregar(); }}
+        />
+      )}
     </div>
   );
 }
@@ -494,6 +555,237 @@ function PainelCatalogo() {
   );
 }
 
+
+/* ---------- Anamnese ---------- */
+const SECOES_ANAMNESE = [
+  "Obj", "Diag", "Dor/Pat", "Tempo", "Dif. Exerc", "Pref. Treino", "Pref. Exerc",
+  "Músc + responsivo", "Músc - responsivo", "Coord", "Obs Gerais",
+  "Supl/Med", "Hist", "Outras Ativs"
+];
+const DESTAQUE = new Set(["Dor/Pat", "Diag"]);
+const normSec = t => String(t || "").replace(/\*/g, "")
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase().replace(/\s+/g, " ").trim();
+const CANON_SEC = new Map(SECOES_ANAMNESE.map(x => [normSec(x), x]));
+
+function parseAnamnese(txt) {
+  const linhas = String(txt || "").replace(/\r/g, "").split("\n");
+  const out = [];
+  let atual = null;
+  const abrir = (rot, conhecida) => {
+    atual = { rotulo: rot, conhecida, entradas: [] };
+    out.push(atual);
+  };
+  for (const raw of linhas) {
+    const l = raw.trim();
+    if (!l) continue;
+    const m = l.match(/^-\s*([^:]{1,26}?)\s*:\s*(.*)$/);
+    if (m) {
+      const rot = m[1].replace(/\*/g, "").trim();
+      const canon = CANON_SEC.get(normSec(rot));
+      abrir(canon || rot, !!canon);
+      if (m[2].trim()) atual.entradas.push(m[2].trim());
+      continue;
+    }
+    if (!atual) abrir("(sem seção)", false);
+    atual.entradas.push(l);
+  }
+  return out;
+}
+
+/* separa "25/07/26: texto" -> { data, texto, ano } */
+function fatiarEntrada(e) {
+  const m = String(e).match(/^(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s*:{0,2}\s*(.*)$/);
+  if (!m) return { data: null, texto: String(e), ts: null };
+  const p = m[1].split("/");
+  let ts = null;
+  if (p.length === 3) {
+    let a = parseInt(p[2], 10);
+    if (a < 100) a += 2000;
+    const mes = parseInt(p[1], 10), dia = parseInt(p[0], 10);
+    if (a > 2000 && a < 2100 && mes >= 1 && mes <= 12) ts = new Date(a, mes - 1, dia).getTime();
+  }
+  return { data: m[1], texto: m[2], ts };
+}
+
+/* texto só com entradas recentes (mantém sem data, que não dá pra datar) */
+function resumirAnamnese(txt, meses) {
+  const corte = Date.now() - meses * 30.44 * 864e5;
+  const secs = parseAnamnese(txt);
+  const out = [];
+  for (const s of secs) {
+    const mantidas = s.entradas.filter(e => {
+      const f = fatiarEntrada(e);
+      return f.ts === null || f.ts >= corte;
+    });
+    if (!mantidas.length) continue;
+    out.push("- " + s.rotulo + ":");
+    mantidas.forEach(e => out.push(e));
+  }
+  return out.join("\n");
+}
+
+function DrawerAnamnese({ aluno, onFechar }) {
+  const [atual, setAtual]     = useState(undefined);
+  const [hist, setHist]       = useState([]);
+  const [modo, setModo]       = useState("secoes");
+  const [rascunho, setRasc]   = useState("");
+  const [erro, setErro]       = useState("");
+  const [aviso, setAviso]     = useState("");
+  const [salvando, setSalv]   = useState(false);
+
+  const carregar = useCallback(async () => {
+    setErro("");
+    const { data, error } = await sb
+      .from("anamneses")
+      .select("id, seq, texto, origem, criado_em")
+      .eq("aluno_id", aluno.id)
+      .order("criado_em", { ascending: false })
+      .order("seq", { ascending: false });
+    if (error) { setErro(error.message); setAtual(null); return; }
+    setHist(data || []);
+    setAtual((data && data[0]) || null);
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  async function salvar() {
+    if (!rascunho.trim()) { setErro("Cola o texto da anamnese antes de salvar."); return; }
+    setSalv(true); setErro("");
+    const { error } = await sb.from("anamneses")
+      .insert({ aluno_id: aluno.id, texto: rascunho, origem: "colado" });
+    setSalv(false);
+    if (error) { setErro(error.message); return; }
+    setRasc(""); setAviso("Versão salva."); setModo("secoes");
+    await carregar();
+  }
+
+  function copiar(texto, msg) {
+    navigator.clipboard.writeText(texto);
+    setAviso(msg);
+  }
+
+  const secs = atual ? parseAnamnese(atual.texto) : [];
+  const mapa = new Map(secs.map(x => [x.rotulo, x]));
+  const ordenadas = [
+    ...SECOES_ANAMNESE.map(r => mapa.get(r) || { rotulo: r, conhecida: true, entradas: [] }),
+    ...secs.filter(x => !x.conhecida)
+  ];
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="drawer">
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h2>{aluno.nome}</h2>
+          <div className="meta">
+            {atual === undefined ? "carregando..."
+              : atual === null ? "sem anamnese registrada"
+              : "atualizada em " + new Date(atual.criado_em).toLocaleDateString("pt-BR") +
+                (hist.length > 1 ? " · " + hist.length + " versões" : "")}
+          </div>
+        </div>
+
+        <div className="dr-acoes">
+          <button className="btn-sec" onClick={() => setModo("secoes")}>Seções</button>
+          <button className="btn-sec" onClick={() => setModo("bruto")}>Texto</button>
+          <button className="btn-sec" onClick={() => setModo("colar")}>Colar nova</button>
+          {hist.length > 1 &&
+            <button className="btn-sec" onClick={() => setModo("hist")}>Histórico</button>}
+          {atual && (
+            <>
+              <button onClick={() => copiar(atual.texto, "Anamnese completa copiada.")}>
+                Copiar tudo
+              </button>
+              <button className="btn-sec"
+                onClick={() => copiar(resumirAnamnese(atual.texto, 12),
+                  "Copiado só o que é dos últimos 12 meses.")}>
+                Copiar 12 meses
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+          {aviso && <div className="ok-msg">{aviso}</div>}
+
+          {modo === "colar" ? (
+            <>
+              <p style={{ color: "var(--mut)", fontSize: 13, marginBottom: 12, lineHeight: 1.55 }}>
+                Copia a célula da coluna E no Sheets e cola aqui. Nada é sobrescrito —
+                cada colagem cria uma versão nova e a anterior fica no histórico.
+              </p>
+              <textarea className="raw" value={rascunho}
+                onChange={e => setRasc(e.target.value)}
+                placeholder={"- Obj:\n25/07/26: ...\n- Diag:\n..."} />
+              <div className="acoes" style={{ marginTop: 12 }}>
+                <button onClick={salvar} disabled={salvando || !rascunho.trim()}>
+                  {salvando ? "Salvando..." : "Salvar versão"}
+                </button>
+                <span className="status">
+                  {rascunho ? parseAnamnese(rascunho).length + " seção(ões) detectada(s)" : ""}
+                </span>
+              </div>
+            </>
+          ) : modo === "bruto" ? (
+            atual
+              ? <textarea className="raw" readOnly value={atual.texto} />
+              : <div className="vazio-nota">Nada registrado ainda.</div>
+          ) : modo === "hist" ? (
+            hist.map(h => (
+              <div className="hist-it" key={h.id}>
+                <span>
+                  <b>{new Date(h.criado_em).toLocaleString("pt-BR")}</b> · {h.origem}
+                </span>
+                <span>
+                  {h.texto.length} caracteres
+                  <button className="btn-sec" style={{ marginLeft: 10, padding: "4px 10px", fontSize: 11 }}
+                    onClick={() => copiar(h.texto, "Versão copiada.")}>copiar</button>
+                </span>
+              </div>
+            ))
+          ) : atual === undefined ? (
+            <div className="msg">Buscando...</div>
+          ) : atual === null ? (
+            <div className="msg">
+              Nenhuma anamnese ainda. Usa "Colar nova" para trazer do Sheets.
+            </div>
+          ) : (
+            ordenadas.map(sec => {
+              const cls = "sec-card" + (DESTAQUE.has(sec.rotulo) ? " dor" : "") +
+                (sec.entradas.length ? "" : " vazia");
+              return (
+                <div className={cls} key={sec.rotulo}>
+                  <div className="sec-h">
+                    <b>{sec.rotulo}</b>
+                    {!sec.conhecida && <i>rótulo fora do padrão</i>}
+                    {sec.entradas.length > 1 && <i>{sec.entradas.length} entradas</i>}
+                  </div>
+                  {sec.entradas.length === 0
+                    ? <div className="vazio-nota">—</div>
+                    : sec.entradas.map((e, i) => {
+                        const f = fatiarEntrada(e);
+                        return (
+                          <div className="ent" key={i}>
+                            <span className={"dt" + (f.data ? "" : " sem")}>
+                              {f.data || "—"}
+                            </span>
+                            <span className="tx">{f.texto}</span>
+                          </div>
+                        );
+                      })}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ---------- Volume ---------- */
 const MOTIVOS = {
   sem_link:          "sem link no catálogo",
@@ -506,6 +798,16 @@ const MOTIVOS = {
   grupo_nao_mapeado: "grupo fora do mapeamento"
 };
 
+/* "Juliana Amorim - Treino A - Quadríceps / Costas" -> "A" */
+function rotuloTreino(nome) {
+  const n = String(nome || "").trim();
+  const m = n.match(/treino\s*([A-Za-z0-9]{1,3})(?![A-Za-z0-9])/i);
+  if (m) return m[1].toUpperCase();
+  const p = n.split(/\s+[-–]\s+/);
+  const ult = p[p.length - 1] || n;
+  return ult.length > 14 ? ult.slice(0, 13) + "…" : ult;
+}
+
 /* monta a matriz linha x treino a partir das linhas da view */
 function montarTabela(dados) {
   const treinos = [...new Map(
@@ -517,12 +819,14 @@ function montarTabela(dados) {
     if (!mapa.has(d.linha)) {
       mapa.set(d.linha, {
         linha: d.linha, tipo: d.tipo, ordem: d.linha_ordem,
-        cels: {}, total: 0
+        cels: {}, sec: {}, total: 0, totalSec: 0
       });
     }
     const r = mapa.get(d.linha);
-    r.cels[d.treino] = (r.cels[d.treino] || 0) + d.series;
-    r.total += d.series;
+    r.cels[d.treino] = (r.cels[d.treino] || 0) + (d.series || 0);
+    r.sec[d.treino]  = (r.sec[d.treino]  || 0) + (d.series_sec || 0);
+    r.total    += (d.series || 0);
+    r.totalSec += (d.series_sec || 0);
   }
 
   const ordenar = (a, b) =>
@@ -532,16 +836,34 @@ function montarTabela(dados) {
   const indef = [...mapa.values()].filter(r => r.tipo === "indefinido").sort(ordenar);
 
   const somar = arr => {
-    const t = { cels: {}, total: 0 };
+    const t = { cels: {}, sec: {}, total: 0, totalSec: 0 };
     for (const r of arr) {
-      for (const k of treinos) t.cels[k] = (t.cels[k] || 0) + (r.cels[k] || 0);
-      t.total += r.total;
+      for (const k of treinos) {
+        t.cels[k] = (t.cels[k] || 0) + (r.cels[k] || 0);
+        t.sec[k]  = (t.sec[k]  || 0) + (r.sec[k]  || 0);
+      }
+      t.total    += r.total;
+      t.totalSec += r.totalSec;
     }
     return t;
   };
 
-  return { treinos, musc, comp, indef, totMusc: somar(musc),
+  const rot = {};
+  const usados = {};
+  for (const t of treinos) {
+    let r = rotuloTreino(t);
+    if (usados[r]) { usados[r]++; r = r + "·" + usados[r]; } else usados[r] = 1;
+    rot[t] = r;
+  }
+
+  return { treinos, rot, musc, comp, indef, totMusc: somar(musc),
            totComp: somar(comp), totIndef: somar(indef) };
+}
+
+/* "6+7*" quando há volume secundário; "6" quando não há */
+function fmtCel(direto, sec) {
+  const d = direto || 0, x = sec || 0;
+  return x > 0 ? { d: String(d), s: "+" + x + "*" } : { d: String(d), s: "" };
 }
 
 /* desenha a tabela num canvas e devolve o canvas (para PNG) */
@@ -556,7 +878,7 @@ function desenharCanvas(tb, nomeAluno) {
     + (tb.indef.length ? tb.indef.length + 1 : 0);
   const H = padY * 2 + tituloH + headH + rowH * nRows +
             (tb.musc.length ? rowH + 8 : 0) + (tb.comp.length ? 8 : 0) +
-            (tb.indef.length ? rowH + 16 : 0);
+            (tb.indef.length ? rowH + 16 : 0) + 26;
 
   const cv = document.createElement("canvas");
   cv.width = W * S; cv.height = H * S;
@@ -564,10 +886,10 @@ function desenharCanvas(tb, nomeAluno) {
   x.scale(S, S);
   const F = "600 13px Sora, system-ui, sans-serif";
 
-  x.fillStyle = "#0e1116"; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#0b0f10"; x.fillRect(0, 0, W, H);
 
   let y = padY + 20;
-  x.fillStyle = "#7fd858"; x.font = "700 16px Sora, system-ui, sans-serif";
+  x.fillStyle = "#00daef"; x.font = "700 16px Sora, system-ui, sans-serif";
   x.textAlign = "left";
   x.fillText("Séries por ciclo · " + nomeAluno, padX, y);
   y += 26;
@@ -575,47 +897,69 @@ function desenharCanvas(tb, nomeAluno) {
   const cx = i => padX + colL + colW * i + colW / 2;
 
   // cabeçalho
-  x.font = "600 11px Sora, system-ui, sans-serif"; x.fillStyle = "#7fd858";
+  x.font = "600 11px Sora, system-ui, sans-serif"; x.fillStyle = "#00daef";
   x.textAlign = "center";
-  tb.treinos.forEach((t, i) => x.fillText(t.toUpperCase(), cx(i), y + 14));
+  tb.treinos.forEach((t, i) => x.fillText(tb.rot[t], cx(i), y + 14));
   x.fillText("TOTAL", cx(tb.treinos.length), y + 14);
   y += headH;
-  x.strokeStyle = "#232a33"; x.lineWidth = 1;
+  x.strokeStyle = "#1f2b2d"; x.lineWidth = 1;
   x.beginPath(); x.moveTo(padX, y - 8); x.lineTo(W - padX, y - 8); x.stroke();
 
   const linha = (r, bold) => {
     x.textAlign = "left";
     x.font = (bold ? "700 " : "500 ") + "13px Sora, system-ui, sans-serif";
-    x.fillStyle = bold ? "#7fd858" : "#e6edf3";
+    x.fillStyle = bold ? "#00daef" : "#e6edf3";
     x.fillText(r.linha, padX, y + 17);
     x.textAlign = "center";
-    tb.treinos.forEach((t, i) => {
-      const v = r.cels[t] || 0;
-      x.fillStyle = v ? (bold ? "#7fd858" : "#e6edf3") : "#3d454f";
+    const par = (dv, sv, px) => {
+      const f = fmtCel(dv, sv);
       x.font = (bold ? "700 " : "500 ") + "13px Sora, system-ui, sans-serif";
-      x.fillText(String(v), cx(i), y + 17);
-    });
-    x.fillStyle = "#7fd858"; x.font = "700 13px Sora, system-ui, sans-serif";
-    x.fillText(String(r.total), cx(tb.treinos.length), y + 17);
+      const wd = x.measureText(f.d).width;
+      x.font = "500 10px Sora, system-ui, sans-serif";
+      const ws = f.s ? x.measureText(f.s).width : 0;
+      let cur = px - (wd + ws) / 2;
+      x.textAlign = "left";
+      x.font = (bold ? "700 " : "500 ") + "13px Sora, system-ui, sans-serif";
+      x.fillStyle = (dv || 0) ? (bold ? "#00daef" : "#e6edf3") : "#33454a";
+      x.fillText(f.d, cur, y + 17);
+      if (f.s) {
+        cur += wd;
+        x.font = "500 10px Sora, system-ui, sans-serif";
+        x.fillStyle = "#f0a35e";
+        x.fillText(f.s, cur, y + 17);
+      }
+      x.textAlign = "center";
+    };
+    tb.treinos.forEach((t, i) => par(r.cels[t], r.sec[t], cx(i)));
+    x.fillStyle = "#00daef";
+    par(r.total, r.totalSec, cx(tb.treinos.length));
     y += rowH;
-    x.strokeStyle = "#1b212a";
+    x.strokeStyle = "#182224";
     x.beginPath(); x.moveTo(padX, y); x.lineTo(W - padX, y); x.stroke();
   };
 
   tb.musc.forEach(r => linha(r, false));
   if (tb.musc.length) {
-    x.strokeStyle = "#232a33"; x.lineWidth = 2;
+    x.strokeStyle = "#1f2b2d"; x.lineWidth = 2;
     x.beginPath(); x.moveTo(padX, y + 1); x.lineTo(W - padX, y + 1); x.stroke();
     y += 8; linha({ linha: "TOTAL MUSCULAÇÃO", ...tb.totMusc }, true);
   }
   if (tb.comp.length) {
     y += 8;
-    x.textAlign = "left"; x.fillStyle = "#8b949e";
+    x.textAlign = "left"; x.fillStyle = "#89a0a3";
     x.font = "600 10px Sora, system-ui, sans-serif";
     x.fillText("COMPLEMENTAR · FORA DO TOTAL", padX, y + 14);
     y += rowH;
     tb.comp.forEach(r => linha(r, false));
     linha({ linha: "TOTAL COMPLEMENTAR", ...tb.totComp }, true);
+  }
+  const temSec = [...tb.musc, ...tb.comp].some(r => r.totalSec > 0);
+  if (temSec) {
+    y += 6;
+    x.textAlign = "left"; x.fillStyle = "#f0a35e";
+    x.font = "500 10px Sora, system-ui, sans-serif";
+    x.fillText("* recruta o grupo sem ser motor primario - fora do total", padX, y + 14);
+    y += 20;
   }
   if (tb.indef.length) {
     y += 8;
@@ -631,31 +975,38 @@ function desenharCanvas(tb, nomeAluno) {
 /* HTML da janela espelho */
 function htmlEspelho(tb, nome) {
   const cel = (r, t) => {
-    const v = r.cels[t] || 0;
-    return '<td class="' + (v ? "" : "z") + '">' + v + "</td>";
+    const f = fmtCel(r.cels[t], r.sec[t]);
+    return '<td class="' + ((r.cels[t] || 0) ? "" : "z") + '">' + f.d +
+      (f.s ? '<i class="sc">' + f.s + "</i>" : "") + "</td>";
   };
-  const tr = (r, cls) =>
-    '<tr class="' + (cls || "") + '"><td class="l">' + r.linha + "</td>" +
-    tb.treinos.map(t => cel(r, t)).join("") +
-    '<td class="tt">' + r.total + "</td></tr>";
+  const tr = (r, cls) => {
+    const ft = fmtCel(r.total, r.totalSec);
+    return '<tr class="' + (cls || "") + '"><td class="l">' + r.linha + "</td>" +
+      tb.treinos.map(t => cel(r, t)).join("") +
+      '<td class="tt">' + ft.d + (ft.s ? '<i class="sc">' + ft.s + "</i>" : "") +
+      "</td></tr>";
+  };
 
   return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">' +
     "<title>Volume · " + nome + "</title><style>" +
-    "body{margin:0;padding:18px;background:#0e1116;color:#e6edf3;" +
+    "body{margin:0;padding:18px;background:#0b0f10;color:#e6edf3;" +
     "font-family:Sora,system-ui,sans-serif}" +
-    "h1{font-size:14px;color:#7fd858;margin:0 0 12px;font-weight:700}" +
+    "h1{font-size:14px;color:#00daef;margin:0 0 12px;font-weight:700}" +
     "table{width:100%;border-collapse:collapse;font-size:13px}" +
-    "th,td{padding:6px 10px;border-bottom:1px solid #1b212a;text-align:center}" +
-    "th{color:#7fd858;font-size:10px;text-transform:uppercase;letter-spacing:.7px}" +
+    "th,td{padding:6px 10px;border-bottom:1px solid #182224;text-align:center}" +
+    "th{color:#00daef;font-size:10px;text-transform:uppercase;letter-spacing:.7px}" +
     "th.l,td.l{text-align:left;font-weight:500}" +
-    "td.z{color:#3d454f}td.tt{color:#7fd858;font-weight:700}" +
-    "tr.tot td{border-top:2px solid #232a33;font-weight:700;color:#7fd858}" +
-    "tr.sec td{color:#8b949e;font-size:9px;text-transform:uppercase;" +
+    "td.z{color:#33454a}td.tt{color:#00daef;font-weight:700}" +
+    "tr.tot td{border-top:2px solid #1f2b2d;font-weight:700;color:#00daef}" +
+    "tr.sec td{color:#89a0a3;font-size:9px;text-transform:uppercase;" +
     "letter-spacing:.8px;text-align:left;padding-top:14px}" +
     "tr.sec.al td{color:#f0a35e}" +
+    ".leg{margin-top:14px;font-size:10px;color:#89a0a3;line-height:1.7}" +
+    ".leg b{color:#00daef}" +
+    "i.sc{font-style:normal;font-size:9px;color:#f0a35e;margin-left:1px}" +
     "</style></head><body>" +
     "<h1>Séries por ciclo · " + nome + "</h1><table><tr><th class='l'></th>" +
-    tb.treinos.map(t => "<th>" + t + "</th>").join("") + "<th>Total</th></tr>" +
+    tb.treinos.map(t => "<th>" + tb.rot[t] + "</th>").join("") + "<th>Total</th></tr>" +
     tb.musc.map(r => tr(r)).join("") +
     (tb.musc.length ? tr({ linha: "Total musculação", ...tb.totMusc }, "tot") : "") +
     (tb.comp.length
@@ -669,7 +1020,10 @@ function htmlEspelho(tb, nome) {
         "'>Sem atribuição · ajustar catálogo</td></tr>" +
         tb.indef.map(r => tr(r)).join("")
       : "") +
-    "</table></body></html>";
+    "</table><div class='leg'>" +
+    tb.treinos.map(t => "<div><b>" + tb.rot[t] + "</b> " + t + "</div>").join("") +
+    "<div style='margin-top:6px'>* série que também recruta o grupo, sem ser o motor primário. Não entra no total.</div>" +
+    "</div></body></html>";
 }
 
 function PainelVolume() {
@@ -677,6 +1031,7 @@ function PainelVolume() {
   const [sel, setSel]       = useState("");
   const [dados, setDados]   = useState(null);
   const [pend, setPend]     = useState([]);
+  const [diverg, setDiverg] = useState([]);
   const [erro, setErro]     = useState("");
   const [aviso, setAviso]   = useState("");
   const janela = React.useRef(null);
@@ -692,14 +1047,16 @@ function PainelVolume() {
   const carregar = useCallback(async (alunoId) => {
     if (!alunoId) return;
     setDados(null); setErro("");
-    const [v, p] = await Promise.all([
+    const [v, p, dv] = await Promise.all([
       sb.from("vw_volume_ciclo").select("*").eq("aluno_id", alunoId),
-      sb.from("vw_volume_pendencias").select("*").eq("aluno_id", alunoId)
+      sb.from("vw_volume_pendencias").select("*").eq("aluno_id", alunoId),
+      sb.from("vw_series_divergentes").select("*").eq("aluno_id", alunoId)
     ]);
     if (v.error) { setErro(v.error.message); setDados([]); return; }
     if (p.error) setErro(p.error.message);
     setDados(v.data || []);
     setPend(p.data || []);
+    setDiverg(dv.error ? [] : (dv.data || []));
   }, []);
 
   useEffect(() => { carregar(sel); }, [sel, carregar]);
@@ -738,16 +1095,23 @@ function PainelVolume() {
   }
 
   const cel = (r, t) => {
-    const v = r.cels[t] || 0;
-    return <td key={t} className={v ? "" : "z"}>{v}</td>;
+    const f = fmtCel(r.cels[t], r.sec[t]);
+    return (
+      <td key={t} className={(r.cels[t] || 0) ? "" : "z"}>
+        {f.d}{f.s && <span className="sc">{f.s}</span>}
+      </td>
+    );
   };
-  const tr = (r, k, cls) => (
-    <tr key={k} className={cls || ""}>
-      <td className="l">{r.linha}</td>
-      {tb.treinos.map(t => cel(r, t))}
-      <td className="tt">{r.total}</td>
-    </tr>
-  );
+  const tr = (r, k, cls) => {
+    const ft = fmtCel(r.total, r.totalSec);
+    return (
+      <tr key={k} className={cls || ""}>
+        <td className="l">{r.linha}</td>
+        {tb.treinos.map(t => cel(r, t))}
+        <td className="tt">{ft.d}{ft.s && <span className="sc">{ft.s}</span>}</td>
+      </tr>
+    );
+  };
 
   return (
     <div>
@@ -776,7 +1140,7 @@ function PainelVolume() {
                 <div>
                   <h2>Volume prescrito · séries por ciclo</h2>
                   <p style={{ margin: 0 }}>
-                    Uma passada completa em {tb.treinos.join(" + ")}.
+                    Uma passada completa em {tb.treinos.map(t => tb.rot[t]).join(" + ")}.
                   </p>
                 </div>
                 <div className="acoes">
@@ -789,7 +1153,7 @@ function PainelVolume() {
                 <thead>
                   <tr>
                     <th className="l"></th>
-                    {tb.treinos.map(t => <th key={t}>{t}</th>)}
+                    {tb.treinos.map(t => <th key={t}>{tb.rot[t]}</th>)}
                     <th>Total</th>
                   </tr>
                 </thead>
@@ -811,8 +1175,42 @@ function PainelVolume() {
                   {tb.indef.map((r, i) => tr(r, "i" + i))}
                 </tbody>
               </table>
+              <div style={{ marginTop: 14, fontSize: 11, color: "var(--mut)", lineHeight: 1.8 }}>
+                <div style={{ marginBottom: 8 }}>
+                  <span className="sc" style={{ fontSize: 11 }}>*</span> série que
+                  também recruta o grupo sem ser o motor primário — não entra no total.
+                </div>
+                {tb.treinos.map(t => (
+                  <div key={t}>
+                    <b style={{ color: "var(--accent)" }}>{tb.rot[t]}</b> · {t}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
+
+      {diverg.length > 0 && (
+        <div className="box">
+          <h2>Séries divergentes ({diverg.length})</h2>
+          <p>
+            O campo <code>series</code> não concorda com o que o método calcula.
+            O volume usa o método. Vale corrigir o texto no app para não confundir depois.
+          </p>
+          <div className="lista">
+            {diverg.map(d => (
+              <div className="item" key={d.exercicio + d.treino}>
+                <span className="eid">{tb ? (tb.rot[d.treino] || d.treino) : d.treino}</span>
+                <span className="enm">{d.exercicio}
+                  <span style={{ color: "var(--mut)", fontWeight: 400 }}> · {d.metodo}</span>
+                </span>
+                <span className="etg">
+                  campo diz {d.no_campo_series} · método diz <b>{d.pelo_metodo}</b>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {pend.length > 0 && (
         <div className="box">
