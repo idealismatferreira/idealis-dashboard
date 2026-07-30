@@ -110,6 +110,7 @@
   .vol td.tt{font-weight:700;color:var(--accent)}
   .vol tr.tot td{border-top:2px solid var(--line);border-bottom:none;
     font-weight:700;padding-top:10px}
+  .vol tr.sec.al td{color:var(--warn)}
   .vol tr.sec td{color:var(--mut);font-size:10px;text-transform:uppercase;
     letter-spacing:.8px;text-align:left;padding-top:18px;border-bottom:1px solid var(--line)}
   .pend-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;
@@ -127,7 +128,7 @@ const { useState, useEffect, useCallback } = React;
 
 /* ============ CONFIG ============ */
 const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+const SUPABASE_ANON_KEY = "COLE_SUA_PUBLISHABLE_KEY_AQUI";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
 /* ================================ */
@@ -277,6 +278,7 @@ function PainelCatalogo() {
   const [linhas, setLinhas]     = useState(null);
   const [manual, setManual]     = useState(false);
   const [colado, setColado]     = useState("");
+  const [naoMap, setNaoMap]     = useState([]);
 
   const carregarEstado = useCallback(async () => {
     const { data, error } = await sb
@@ -285,6 +287,8 @@ function PainelCatalogo() {
       .order("exercicio");
     if (error) { setErro(error.message); return; }
     setLinhas(data || []);
+    const nm = await sb.from("vw_grupos_nao_mapeados").select("*");
+    if (!nm.error) setNaoMap(nm.data || []);
   }, []);
 
   useEffect(() => { carregarEstado(); }, [carregarEstado]);
@@ -422,6 +426,37 @@ function PainelCatalogo() {
         </div>
       )}
 
+      {naoMap.length > 0 && (
+        <div className="box">
+          <h2>⚠️ Grupos fora do mapeamento ({naoMap.length})</h2>
+          <p>
+            Existem no Catálogo mas não em <code>grupos_exibicao</code>, então exercícios
+            com esses grupos caem em "Sem atribuição" no Volume. Copia o SQL, ajusta
+            tipo e ordem, e roda no Supabase.
+          </p>
+          <div className="lista" style={{ marginBottom: 14 }}>
+            {naoMap.map(g => (
+              <div className="item" key={g.grupo}>
+                <span className="enm">{g.grupo}</span>
+                <span className="etg">{g.exercicios} exercício(s)</span>
+              </div>
+            ))}
+          </div>
+          <div className="acoes">
+            <button className="btn-sec" onClick={() => {
+              const sql = "insert into public.grupos_exibicao (grupo, linha, tipo, ordem, quebra_subgrupo) values\n" +
+                naoMap.map(g =>
+                  "  ('" + g.grupo.replace(/'/g, "''") + "', '" + g.grupo.replace(/'/g, "''") +
+                  "', 'muscular', 500, false)").join(",\n") +
+                "\non conflict (grupo) do update set linha = excluded.linha," +
+                " tipo = excluded.tipo, ordem = excluded.ordem;";
+              navigator.clipboard.writeText(sql);
+              setAviso("SQL copiado. Revisa tipo (muscular/complementar/nao_classifica) e ordem antes de rodar.");
+            }}>Copiar SQL de mapeamento</button>
+          </div>
+        </div>
+      )}
+
       {linhas !== null && linhas.length > 0 && (
         <>
           <div className="cards">
@@ -464,9 +499,11 @@ const MOTIVOS = {
   sem_link:          "sem link no catálogo",
   link_quebrado:     "link quebrado",
   catalogo_pendente: "catálogo com 2+ grupos",
-  grupo_nao_mapeado: "grupo não mapeado",
   grupo_generico:    "grupo genérico",
-  sem_series:        "sem nº de séries"
+  sem_series:        "sem nº de séries",
+  ambiguo:           "2+ grupos musculares",
+  sem_grupo:         "sem grupo",
+  grupo_nao_mapeado: "grupo fora do mapeamento"
 };
 
 /* monta a matriz linha x treino a partir das linhas da view */
@@ -492,6 +529,7 @@ function montarTabela(dados) {
     a.ordem - b.ordem || a.linha.localeCompare(b.linha, "pt-BR");
   const musc = [...mapa.values()].filter(r => r.tipo === "muscular").sort(ordenar);
   const comp = [...mapa.values()].filter(r => r.tipo === "complementar").sort(ordenar);
+  const indef = [...mapa.values()].filter(r => r.tipo === "indefinido").sort(ordenar);
 
   const somar = arr => {
     const t = { cels: {}, total: 0 };
@@ -502,7 +540,8 @@ function montarTabela(dados) {
     return t;
   };
 
-  return { treinos, musc, comp, totMusc: somar(musc), totComp: somar(comp) };
+  return { treinos, musc, comp, indef, totMusc: somar(musc),
+           totComp: somar(comp), totIndef: somar(indef) };
 }
 
 /* desenha a tabela num canvas e devolve o canvas (para PNG) */
@@ -512,9 +551,12 @@ function desenharCanvas(tb, nomeAluno) {
   const rowH = 26, headH = 34, tituloH = 44;
   const nCols = tb.treinos.length + 1;
   const W = padX * 2 + colL + colW * nCols;
-  const nRows = tb.musc.length + (tb.comp.length ? tb.comp.length + 1 : 0);
+  const nRows = tb.musc.length
+    + (tb.comp.length ? tb.comp.length + 2 : 0)
+    + (tb.indef.length ? tb.indef.length + 1 : 0);
   const H = padY * 2 + tituloH + headH + rowH * nRows +
-            (tb.musc.length ? rowH + 8 : 0) + (tb.comp.length ? rowH + 8 : 0);
+            (tb.musc.length ? rowH + 8 : 0) + (tb.comp.length ? 8 : 0) +
+            (tb.indef.length ? rowH + 16 : 0);
 
   const cv = document.createElement("canvas");
   cv.width = W * S; cv.height = H * S;
@@ -575,6 +617,14 @@ function desenharCanvas(tb, nomeAluno) {
     tb.comp.forEach(r => linha(r, false));
     linha({ linha: "TOTAL COMPLEMENTAR", ...tb.totComp }, true);
   }
+  if (tb.indef.length) {
+    y += 8;
+    x.textAlign = "left"; x.fillStyle = "#f0a35e";
+    x.font = "600 10px Sora, system-ui, sans-serif";
+    x.fillText("SEM ATRIBUICAO · AJUSTAR CATALOGO", padX, y + 14);
+    y += rowH;
+    tb.indef.forEach(r => linha(r, false));
+  }
   return cv;
 }
 
@@ -602,6 +652,7 @@ function htmlEspelho(tb, nome) {
     "tr.tot td{border-top:2px solid #232a33;font-weight:700;color:#7fd858}" +
     "tr.sec td{color:#8b949e;font-size:9px;text-transform:uppercase;" +
     "letter-spacing:.8px;text-align:left;padding-top:14px}" +
+    "tr.sec.al td{color:#f0a35e}" +
     "</style></head><body>" +
     "<h1>Séries por ciclo · " + nome + "</h1><table><tr><th class='l'></th>" +
     tb.treinos.map(t => "<th>" + t + "</th>").join("") + "<th>Total</th></tr>" +
@@ -612,6 +663,11 @@ function htmlEspelho(tb, nome) {
         "'>Complementar · fora do total</td></tr>" +
         tb.comp.map(r => tr(r)).join("") +
         tr({ linha: "Total complementar", ...tb.totComp }, "tot")
+      : "") +
+    (tb.indef.length
+      ? "<tr class='sec al'><td colspan='" + (tb.treinos.length + 2) +
+        "'>Sem atribuição · ajustar catálogo</td></tr>" +
+        tb.indef.map(r => tr(r)).join("")
       : "") +
     "</table></body></html>";
 }
@@ -747,6 +803,12 @@ function PainelVolume() {
                   )}
                   {tb.comp.map((r, i) => tr(r, "c" + i))}
                   {tb.comp.length > 0 && tr({ linha: "Total complementar", ...tb.totComp }, "tc", "tot")}
+                  {tb.indef.length > 0 && (
+                    <tr className="sec al" key="seci">
+                      <td colSpan={tb.treinos.length + 2}>Sem atribuição · ajustar catálogo</td>
+                    </tr>
+                  )}
+                  {tb.indef.map((r, i) => tr(r, "i" + i))}
                 </tbody>
               </table>
             </div>
