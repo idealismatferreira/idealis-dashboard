@@ -154,6 +154,29 @@
   .badge-an{font-size:10px;padding:3px 8px;border-radius:5px;background:#0f2a2e;
     color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
   .badge-an.sem{background:#241a12;color:var(--warn)}
+  .filtros{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .fbtn{background:transparent;border:1px solid var(--line);color:var(--mut);
+    width:auto;padding:7px 14px;font-size:12px;border-radius:20px;font-weight:500}
+  .fbtn:hover{border-color:var(--accent);color:var(--txt);filter:none}
+  .fbtn.on{background:var(--accent);color:#04191c;border-color:var(--accent)}
+  .row.inativo{opacity:.55}
+  .st-tag{font-size:9px;padding:2px 7px;border-radius:4px;background:#2a2418;
+    color:var(--warn);text-transform:uppercase;letter-spacing:.5px;margin-left:8px}
+  .imp-grp{margin-bottom:20px}
+  .imp-grp>h3{font-size:12px;text-transform:uppercase;letter-spacing:.8px;
+    margin-bottom:8px;color:var(--accent)}
+  .imp-grp.warn>h3{color:var(--warn)}
+  .imp-grp.off>h3{color:var(--mut)}
+  .imp-it{display:flex;align-items:center;gap:12px;padding:9px 14px;
+    border-bottom:1px solid #182224;font-size:13px}
+  .imp-it:last-child{border-bottom:none}
+  .imp-it input[type=checkbox]{width:16px;height:16px;margin:0;flex-shrink:0;
+    accent-color:var(--accent);cursor:pointer}
+  .imp-it .n1{flex:1;font-weight:500}
+  .imp-it .seta{color:var(--mut);font-size:11px}
+  .imp-it .n2{flex:1;color:var(--mut)}
+  .imp-it .ch{font-size:10px;color:var(--mut);white-space:nowrap}
+  .imp-it select{min-width:0;flex:1;padding:5px 8px;font-size:12px}
   .futuro{border:1px dashed var(--line);border-radius:12px;padding:18px 22px;
     color:var(--mut);font-size:13px;line-height:1.6}
   .futuro b{color:var(--txt);display:block;margin-bottom:5px;font-size:14px}
@@ -167,7 +190,7 @@ const { useState, useEffect, useCallback } = React;
 
 /* ============ CONFIG ============ */
 const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+const SUPABASE_ANON_KEY = "COLE_SUA_PUBLISHABLE_KEY_AQUI";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
 /* ================================ */
@@ -254,9 +277,10 @@ function iniciais(nome) {
   return String(nome || "?").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase();
 }
 
-function LinhaAluno({ a, onAbrir }) {
+function LinhaAluno({ a, onAbrir, onStatus }) {
   const d = a.dias_sem_treinar;
-  const cls = d === null ? "a" : d >= 10 ? "a" : d >= 5 ? "w" : "ok";
+  const cls = (d === null ? "a" : d >= 10 ? "a" : d >= 5 ? "w" : "ok") +
+    (a.status !== "ativo" ? " inativo" : "");
   return (
     <div className={"row clik " + cls} onClick={() => onAbrir(a)}>
       {a.foto_url
@@ -269,7 +293,13 @@ function LinhaAluno({ a, onAbrir }) {
           style={{ marginLeft: 10 }}>
           {a.tem_anamnese ? "anamnese" : "sem anamnese"}
         </span>
+        {a.status !== "ativo" && <span className="st-tag">{a.status}</span>}
       </div>
+      <button className="fbtn" style={{ marginRight: 4 }}
+        onClick={e => { e.stopPropagation();
+          onStatus(a, a.status === "ativo" ? "inativo" : "ativo"); }}>
+        {a.status === "ativo" ? "Inativar" : "Reativar"}
+      </button>
       <div className="dias">
         {d === null
           ? <><b style={{ color: "var(--alert)" }}>—</b><span>sem registro</span></>
@@ -285,44 +315,77 @@ function PainelAlunos() {
   const [alunos, setAlunos] = useState(null);
   const [erro, setErro] = useState("");
   const [aberto, setAberto] = useState(null);
+  const [filtro, setFiltro] = useState("ativo");
+  const [importar, setImportar] = useState(false);
 
   const carregar = useCallback(async () => {
-    const [v, an] = await Promise.all([
-      sb.from("vw_alunos_ultimo_treino").select("*"),
-      sb.from("vw_alunos_anamnese").select("aluno_id, tem_anamnese, anamnese_em")
-    ]);
-    if (v.error) { setErro(v.error.message); setAlunos([]); return; }
-    const mapaAn = new Map((an.error ? [] : (an.data || []))
-      .map(x => [x.aluno_id, x]));
-    const ord = [...v.data]
-      .map(a => ({ ...a, tem_anamnese: !!(mapaAn.get(a.id) || {}).tem_anamnese }))
-      .sort((x, y) => {
-        if (x.dias_sem_treinar === null) return -1;
-        if (y.dias_sem_treinar === null) return 1;
-        return y.dias_sem_treinar - x.dias_sem_treinar;
-      });
+    const { data, error } = await sb.from("vw_alunos_painel").select("*");
+    if (error) { setErro(error.message); setAlunos([]); return; }
+    const ord = [...(data || [])].sort((x, y) => {
+      if (x.dias_sem_treinar === null && y.dias_sem_treinar !== null) return -1;
+      if (y.dias_sem_treinar === null && x.dias_sem_treinar !== null) return 1;
+      if (x.dias_sem_treinar === null && y.dias_sem_treinar === null)
+        return String(x.nome).localeCompare(String(y.nome), "pt-BR");
+      return y.dias_sem_treinar - x.dias_sem_treinar;
+    });
     setAlunos(ord);
   }, []);
 
   useEffect(() => { carregar(); }, [carregar]);
 
+  async function mudarStatus(aluno, novo) {
+    const { error } = await sb.from("alunos")
+      .update({ status: novo }).eq("id", aluno.id);
+    if (error) { setErro(error.message); return; }
+    await carregar();
+  }
+
+  const visiveis = (alunos || []).filter(a =>
+    filtro === "todos" ? true :
+    filtro === "ativo" ? a.status === "ativo" :
+    a.status !== "ativo");
+  const nAtivos = (alunos || []).filter(a => a.status === "ativo").length;
+  const nOutros = (alunos || []).length - nAtivos;
+
   return (
     <div>
+      <div className="filtros">
+        <button className={"fbtn" + (filtro === "ativo" ? " on" : "")}
+          onClick={() => setFiltro("ativo")}>Ativos ({nAtivos})</button>
+        <button className={"fbtn" + (filtro === "inativo" ? " on" : "")}
+          onClick={() => setFiltro("inativo")}>Inativos ({nOutros})</button>
+        <button className={"fbtn" + (filtro === "todos" ? " on" : "")}
+          onClick={() => setFiltro("todos")}>Todos</button>
+        <span style={{ flex: 1 }} />
+        <button className="fbtn" onClick={() => setImportar(true)}>Importar do Sheets</button>
+      </div>
       <div className="sub">
-        {alunos === null ? "Carregando..." : alunos.length + " aluno(s) · ordenado por tempo sem treinar"}
+        {alunos === null ? "Carregando..."
+          : visiveis.length + " aluno(s) · ordenado por tempo sem treinar"}
       </div>
       {erro && <div className="err">{erro}</div>}
       {alunos === null
         ? <div className="msg">Buscando dados...</div>
-        : alunos.length === 0
-          ? <div className="msg">Nenhum aluno visível. Confere as policies de RLS.</div>
-          : alunos.map(a => (
-              <LinhaAluno key={a.id} a={a} onAbrir={setAberto} />
+        : visiveis.length === 0
+          ? <div className="msg">
+              {filtro === "ativo" ? "Nenhum aluno ativo." :
+               filtro === "inativo" ? "Nenhum aluno inativo." :
+               "Nenhum aluno visível. Confere as policies de RLS."}
+            </div>
+          : visiveis.map(a => (
+              <LinhaAluno key={a.id} a={a} onAbrir={setAberto} onStatus={mudarStatus} />
             ))}
       {aberto && (
         <DrawerAnamnese
           aluno={aberto}
           onFechar={() => { setAberto(null); carregar(); }}
+        />
+      )}
+      {importar && (
+        <ModalImportar
+          alunos={alunos || []}
+          onFechar={() => setImportar(false)}
+          onPronto={carregar}
         />
       )}
     </div>
@@ -340,6 +403,8 @@ function PainelCatalogo() {
   const [manual, setManual]     = useState(false);
   const [colado, setColado]     = useState("");
   const [naoMap, setNaoMap]     = useState([]);
+  const [url, setUrl]           = useState(CATALOGO_URL);
+  const [editUrl, setEditUrl]   = useState(false);
 
   const carregarEstado = useCallback(async () => {
     const { data, error } = await sb
@@ -380,12 +445,23 @@ function PainelCatalogo() {
     setFase("buscando");
     let json;
     try {
-      const r = await fetch(CATALOGO_URL, { method: "GET", redirect: "follow" });
+      const r = await fetch(url, { method: "GET", redirect: "follow" });
+      if (r.status === 404) {
+        throw new Error("HTTP 404 — a implantação do Apps Script não existe nessa URL. " +
+          "Pega a URL atual em Implantar → Gerenciar implantações e cola no campo acima.");
+      }
+      if (r.status === 401 || r.status === 403) {
+        throw new Error("HTTP " + r.status + " — a implantação existe mas está privada. " +
+          "Em Gerenciar implantações, muda 'Quem tem acesso' para 'Qualquer pessoa'.");
+      }
       if (!r.ok) throw new Error("HTTP " + r.status);
       json = await r.json();
     } catch (e) {
-      setErro("Não consegui buscar o Catálogo pelo navegador (" + e.message +
-        "). Provável bloqueio de CORS. Usa o plano B abaixo.");
+      const rede = /Failed to fetch|NetworkError|load failed/i.test(e.message);
+      setErro(rede
+        ? "O navegador bloqueou a requisição (CORS ou rede). Usa o plano B abaixo."
+        : e.message);
+      setEditUrl(true);
       setManual(true); setFase("idle"); return;
     }
     if (!json || json.ok !== true || !Array.isArray(json.exercicios)) {
@@ -437,9 +513,27 @@ function PainelCatalogo() {
         </p>
         {erro && <div className="err">{erro}</div>}
         {aviso && <div className="ok-msg">{aviso}</div>}
+        {editUrl && (
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 11, color: "var(--mut)", textTransform: "uppercase",
+                            letterSpacing: ".7px", display: "block", marginBottom: 6 }}>
+              URL do Apps Script (termina em /exec)
+            </label>
+            <input value={url} onChange={e => setUrl(e.target.value.trim())}
+              placeholder="https://script.google.com/macros/s/.../exec"
+              style={{ marginBottom: 6, fontFamily: "ui-monospace, monospace", fontSize: 12 }} />
+            <div style={{ fontSize: 11, color: "var(--mut)", lineHeight: 1.6 }}>
+              Isso vale só nesta sessão. Para fixar, edita a constante
+              <code> CATALOGO_URL </code> no topo do arquivo.
+            </div>
+          </div>
+        )}
         <div className="acoes">
           <button onClick={sincronizar} disabled={fase !== "idle"}>
             {fase === "buscando" ? "Buscando..." : fase === "gravando" ? "Gravando..." : "Sincronizar agora"}
+          </button>
+          <button className="btn-sec" onClick={() => setEditUrl(v => !v)}>
+            {editUrl ? "Ocultar URL" : "Trocar URL"}
           </button>
           {linhas !== null && (
             <span className="status">
@@ -779,6 +873,267 @@ function DrawerAnamnese({ aluno, onFechar }) {
                 </div>
               );
             })
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+
+/* ---------- Importação de alunos + anamneses ---------- */
+const chaveNome = t => String(t || "").normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  .replace(/[^a-z0-9]+/g, " ").trim();
+
+function conciliar(doSheets, noBanco) {
+  const porChave = new Map(), porPrimeiro = new Map();
+  for (const a of noBanco) {
+    const k = chaveNome(a.nome);
+    if (!porChave.has(k)) porChave.set(k, []);
+    porChave.get(k).push(a);
+    const p = k.split(" ")[0];
+    if (!porPrimeiro.has(p)) porPrimeiro.set(p, []);
+    porPrimeiro.get(p).push(a);
+  }
+  return doSheets.map(s => {
+    const k = chaveNome(s.nome);
+    if (!k || !String(s.texto || "").trim())
+      return { ...s, tipo: "invalido", alvo: null, cands: [] };
+    const ex = porChave.get(k) || [];
+    if (ex.length === 1) return { ...s, tipo: "exato", alvo: ex[0], cands: ex };
+    if (ex.length > 1)   return { ...s, tipo: "ambiguo", alvo: null, cands: ex };
+    const toks = k.split(" ");
+    const cands = (porPrimeiro.get(toks[0]) || []).filter(a => {
+      const y = chaveNome(a.nome).split(" ");
+      if (toks.length === 1 || y.length === 1) return true;
+      return y.some(w => toks.includes(w) && w !== toks[0]) ||
+             toks.every(t => y.includes(t)) || y.every(t => toks.includes(t));
+    });
+    if (cands.length === 1) return { ...s, tipo: "provavel", alvo: cands[0], cands };
+    if (cands.length > 1)   return { ...s, tipo: "ambiguo", alvo: null, cands };
+    return { ...s, tipo: "novo", alvo: null, cands: [] };
+  });
+}
+
+function ModalImportar({ alunos, onFechar, onPronto }) {
+  const [url, setUrl]       = useState("");
+  const [colado, setColado] = useState("");
+  const [linhas, setLinhas] = useState(null);
+  const [sel, setSel]       = useState({});
+  const [alvos, setAlvos]   = useState({});
+  const [erro, setErro]     = useState("");
+  const [aviso, setAviso]   = useState("");
+  const [busy, setBusy]     = useState(false);
+  const [prog, setProg]     = useState(0);
+
+  function processar(arr) {
+    if (!Array.isArray(arr) || !arr.length) {
+      setErro("Não achei nenhuma anamnese no retorno."); return;
+    }
+    const r = conciliar(arr, alunos);
+    setLinhas(r);
+    const s = {}, a = {};
+    r.forEach((x, i) => {
+      s[i] = x.tipo === "exato" || x.tipo === "provavel" || x.tipo === "novo";
+      if (x.alvo) a[i] = x.alvo.id;
+    });
+    setSel(s); setAlvos(a); setErro("");
+  }
+
+  async function buscar() {
+    if (!url.trim()) { setErro("Cola a URL do Apps Script."); return; }
+    setBusy(true); setErro("");
+    try {
+      const rr = await fetch(url.trim(), { method: "GET", redirect: "follow" });
+      if (!rr.ok) throw new Error("HTTP " + rr.status);
+      const j = await rr.json();
+      if (j.ok === false) throw new Error(j.erro || "o script retornou erro");
+      processar(j.anamneses || j);
+    } catch (e) {
+      setErro("Não consegui buscar: " + e.message + ". Usa o campo de colar abaixo.");
+    }
+    setBusy(false);
+  }
+
+  function processarColado() {
+    try {
+      const j = JSON.parse(colado);
+      processar(Array.isArray(j) ? j : (j.anamneses || []));
+    } catch (e) { setErro("JSON inválido: " + e.message); }
+  }
+
+  async function gravar() {
+    const escolhidas = (linhas || []).map((l, i) => ({ l, i }))
+      .filter(({ i }) => sel[i]);
+    if (!escolhidas.length) { setErro("Nada selecionado."); return; }
+    setBusy(true); setErro(""); setProg(0);
+
+    let criados = 0, atualizados = 0, falhas = 0;
+    for (let k = 0; k < escolhidas.length; k++) {
+      const { l, i } = escolhidas[k];
+      try {
+        let alunoId = alvos[i] || null;
+        if (!alunoId) {
+          const ins = await sb.from("alunos")
+            .insert({ nome: l.nome, status: "ativo" })
+            .select("id").single();
+          if (ins.error) throw new Error(ins.error.message);
+          alunoId = ins.data.id; criados++;
+        } else {
+          atualizados++;
+        }
+        const an = await sb.from("anamneses")
+          .insert({ aluno_id: alunoId, texto: l.texto, origem: "sheets" });
+        if (an.error) throw new Error(an.error.message);
+      } catch (e) {
+        falhas++;
+        console.error("falha em " + l.nome + ": " + e.message);
+      }
+      setProg((k + 1) / escolhidas.length);
+    }
+    setBusy(false);
+    setAviso(criados + " aluno(s) criado(s), " + atualizados +
+      " atualizado(s)" + (falhas ? ", " + falhas + " falha(s) — ver console" : "") + ".");
+    onPronto();
+  }
+
+  const grupos = linhas ? {
+    exato:    linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "exato"),
+    provavel: linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "provavel"),
+    novo:     linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "novo"),
+    ambiguo:  linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "ambiguo"),
+    invalido: linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "invalido")
+  } : null;
+
+  const marcados = Object.values(sel).filter(Boolean).length;
+
+  const item = ({ l, i }, comSelect) => (
+    <div className="imp-it" key={i}>
+      <input type="checkbox" checked={!!sel[i]}
+        onChange={e => setSel({ ...sel, [i]: e.target.checked })} />
+      <span className="n1">{l.nome}</span>
+      <span className="seta">→</span>
+      {comSelect ? (
+        <select value={alvos[i] || ""}
+          onChange={e => setAlvos({ ...alvos, [i]: e.target.value || null })}>
+          <option value="">criar aluno novo</option>
+          {(l.cands.length ? l.cands : alunos).map(c =>
+            <option key={c.id} value={c.id}>{c.nome}</option>)}
+        </select>
+      ) : (
+        <span className="n2">{l.alvo ? l.alvo.nome : "criar aluno novo"}</span>
+      )}
+      <span className="ch">{String(l.texto || "").length} chars</span>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="drawer" style={{ width: "min(880px,96vw)" }}>
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h2>Importar do Sheets</h2>
+          <div className="meta">
+            Traz nome + anamnese. Alunos existentes recebem versão nova, não duplicam.
+          </div>
+        </div>
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+          {aviso && <div className="ok-msg">{aviso}</div>}
+
+          {!linhas ? (
+            <>
+              <div className="box">
+                <h2>Opção 1 · URL do Apps Script</h2>
+                <p>Publica o script na planilha WTAN e cola a URL que termina em /exec.</p>
+                <input value={url} onChange={e => setUrl(e.target.value)}
+                  placeholder="https://script.google.com/macros/s/.../exec"
+                  style={{ fontFamily: "ui-monospace,monospace", fontSize: 12 }} />
+                <div className="acoes">
+                  <button onClick={buscar} disabled={busy || !url.trim()}>
+                    {busy ? "Buscando..." : "Buscar"}
+                  </button>
+                </div>
+              </div>
+              <div className="box">
+                <h2>Opção 2 · Colar JSON</h2>
+                <p>Abre a URL numa aba, copia tudo e cola aqui.</p>
+                <textarea className="raw" style={{ minHeight: 160 }}
+                  value={colado} onChange={e => setColado(e.target.value)}
+                  placeholder='{"ok":true,"anamneses":[{"nome":"...","texto":"..."}]}' />
+                <div className="acoes" style={{ marginTop: 10 }}>
+                  <button className="btn-sec" onClick={processarColado}
+                    disabled={!colado.trim()}>Processar</button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="cards" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+                <div className="kpi g"><b>{grupos.exato.length}</b><span>já existe</span></div>
+                <div className="kpi w"><b>{grupos.provavel.length}</b><span>provável</span></div>
+                <div className="kpi"><b>{grupos.novo.length}</b><span>criar novo</span></div>
+                <div className="kpi r"><b>{grupos.ambiguo.length + grupos.invalido.length}</b>
+                  <span>revisar</span></div>
+              </div>
+
+              {grupos.exato.length > 0 && (
+                <div className="imp-grp">
+                  <h3>Casou exato — recebe versão nova ({grupos.exato.length})</h3>
+                  <div className="lista">{grupos.exato.map(x => item(x, false))}</div>
+                </div>
+              )}
+              {grupos.provavel.length > 0 && (
+                <div className="imp-grp warn">
+                  <h3>Provável — confere o destino ({grupos.provavel.length})</h3>
+                  <div className="lista">{grupos.provavel.map(x => item(x, true))}</div>
+                </div>
+              )}
+              {grupos.novo.length > 0 && (
+                <div className="imp-grp">
+                  <h3>Não existe no banco — cria aluno ({grupos.novo.length})</h3>
+                  <div className="lista">{grupos.novo.map(x => item(x, true))}</div>
+                </div>
+              )}
+              {grupos.ambiguo.length > 0 && (
+                <div className="imp-grp warn">
+                  <h3>Ambíguo — escolhe manualmente ({grupos.ambiguo.length})</h3>
+                  <div className="lista">{grupos.ambiguo.map(x => item(x, true))}</div>
+                </div>
+              )}
+              {grupos.invalido.length > 0 && (
+                <div className="imp-grp off">
+                  <h3>Ignorados — sem nome ou sem texto ({grupos.invalido.length})</h3>
+                  <div className="lista">
+                    {grupos.invalido.map(({ l, i }) => (
+                      <div className="imp-it" key={i}>
+                        <span className="n1" style={{ color: "var(--mut)" }}>
+                          {l.nome || "(sem nome)"}
+                        </span>
+                        <span className="ch">{String(l.texto || "").length} chars</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {busy && (
+                <>
+                  <div className="barra"><i style={{ width: Math.round(prog * 100) + "%" }} /></div>
+                  <div className="status">{Math.round(prog * 100)}%</div>
+                </>
+              )}
+              <div className="acoes" style={{ marginTop: 18 }}>
+                <button onClick={gravar} disabled={busy || !marcados}>
+                  {busy ? "Gravando..." : "Importar " + marcados + " selecionado(s)"}
+                </button>
+                <button className="btn-sec" onClick={() => { setLinhas(null); setAviso(""); }}>
+                  Voltar
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
