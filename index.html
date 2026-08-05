@@ -190,9 +190,12 @@ const { useState, useEffect, useCallback } = React;
 
 /* ============ CONFIG ============ */
 const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+const SUPABASE_ANON_KEY = "COLE_SUA_PUBLISHABLE_KEY_AQUI";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
+/* Escrita de volta no Sheets (opcional). Deixe WTAN_URL vazio para desligar. */
+const WTAN_URL   = "";
+const WTAN_TOKEN = "MUDE-ISTO-123";
 /* ================================ */
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -445,7 +448,9 @@ function PainelCatalogo() {
     setFase("buscando");
     let json;
     try {
-      const r = await fetch(url, { method: "GET", redirect: "follow" });
+      const sep = url.indexOf("?") >= 0 ? "&" : "?";
+      const r = await fetch(url + sep + "_t=" + Date.now(),
+        { method: "GET", redirect: "follow", cache: "no-store" });
       if (r.status === 404) {
         throw new Error("HTTP 404 — a implantação do Apps Script não existe nessa URL. " +
           "Pega a URL atual em Implantar → Gerenciar implantações e cola no campo acima.");
@@ -650,6 +655,28 @@ function PainelCatalogo() {
 }
 
 
+/* grava de volta na planilha WTAN; devolve {ok, erro} */
+async function gravarNoSheets(aluno, texto) {
+  if (!WTAN_URL) return { ok: false, erro: "sem URL configurada", pulou: true };
+  if (!aluno.sheets_linha) return { ok: false, erro: "aluno sem linha do Sheets", pulou: true };
+  try {
+    const sep = WTAN_URL.indexOf("?") >= 0 ? "&" : "?";
+    const r = await fetch(WTAN_URL + sep + "_t=" + Date.now(), {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        token: WTAN_TOKEN, linha: aluno.sheets_linha, nome: aluno.nome, texto: texto
+      }),
+      redirect: "follow", cache: "no-store"
+    });
+    if (!r.ok) return { ok: false, erro: "HTTP " + r.status };
+    const j = await r.json();
+    return j.ok ? { ok: true } : { ok: false, erro: j.erro || "erro no script" };
+  } catch (e) {
+    return { ok: false, erro: e.message };
+  }
+}
+
 /* ---------- Anamnese ---------- */
 const SECOES_ANAMNESE = [
   "Obj", "Diag", "Dor/Pat", "Tempo", "Dif. Exerc", "Pref. Treino", "Pref. Exerc",
@@ -727,18 +754,23 @@ function DrawerAnamnese({ aluno, onFechar }) {
   const [erro, setErro]       = useState("");
   const [aviso, setAviso]     = useState("");
   const [salvando, setSalv]   = useState(false);
+  const [edicao, setEdicao]   = useState("");
+  const [sujo, setSujo]       = useState(false);
 
   const carregar = useCallback(async () => {
     setErro("");
     const { data, error } = await sb
       .from("anamneses")
-      .select("id, seq, texto, origem, criado_em")
+      .select("id, seq, texto, origem, criado_em, atualizado_em, congelada")
       .eq("aluno_id", aluno.id)
       .order("criado_em", { ascending: false })
       .order("seq", { ascending: false });
     if (error) { setErro(error.message); setAtual(null); return; }
     setHist(data || []);
-    setAtual((data && data[0]) || null);
+    const a = (data && data[0]) || null;
+    setAtual(a);
+    setEdicao(a ? a.texto : "");
+    setSujo(false);
   }, [aluno.id]);
 
   useEffect(() => { carregar(); }, [carregar]);
@@ -751,6 +783,37 @@ function DrawerAnamnese({ aluno, onFechar }) {
     setSalv(false);
     if (error) { setErro(error.message); return; }
     setRasc(""); setAviso("Versão salva."); setModo("secoes");
+    await carregar();
+  }
+
+  async function salvarEdicao() {
+    if (!atual) { setErro("Não há versão para editar."); return; }
+    setSalv(true); setErro(""); setAviso("");
+    const { error } = await sb.from("anamneses")
+      .update({ texto: edicao, atualizado_em: new Date().toISOString() })
+      .eq("id", atual.id);
+    if (error) { setSalv(false); setErro(error.message); return; }
+
+    let msg = "Salvo no Supabase.";
+    const r = await gravarNoSheets(aluno, edicao);
+    if (r.ok)            msg += " Planilha WTAN atualizada.";
+    else if (!r.pulou)   msg += " ⚠️ Não gravou no Sheets: " + r.erro;
+
+    setSalv(false); setSujo(false); setAviso(msg);
+    await carregar();
+  }
+
+  async function congelar() {
+    if (!atual) return;
+    setSalv(true); setErro("");
+    const { error } = await sb.from("anamneses")
+      .update({ congelada: true }).eq("id", atual.id);
+    if (error) { setSalv(false); setErro(error.message); return; }
+    const ins = await sb.from("anamneses")
+      .insert({ aluno_id: aluno.id, texto: edicao, origem: "app" });
+    setSalv(false);
+    if (ins.error) { setErro(ins.error.message); return; }
+    setAviso("Versão congelada. A cópia nova é a editável agora.");
     await carregar();
   }
 
@@ -783,7 +846,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
 
         <div className="dr-acoes">
           <button className="btn-sec" onClick={() => setModo("secoes")}>Seções</button>
-          <button className="btn-sec" onClick={() => setModo("bruto")}>Texto</button>
+          <button className="btn-sec" onClick={() => setModo("editar")}>
+            Editar{sujo ? " •" : ""}
+          </button>
           <button className="btn-sec" onClick={() => setModo("colar")}>Colar nova</button>
           {hist.length > 1 &&
             <button className="btn-sec" onClick={() => setModo("hist")}>Histórico</button>}
@@ -823,15 +888,49 @@ function DrawerAnamnese({ aluno, onFechar }) {
                 </span>
               </div>
             </>
-          ) : modo === "bruto" ? (
-            atual
-              ? <textarea className="raw" readOnly value={atual.texto} />
-              : <div className="vazio-nota">Nada registrado ainda.</div>
+          ) : modo === "editar" ? (
+            atual ? (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between",
+                              alignItems: "center", marginBottom: 8, fontSize: 12,
+                              color: "var(--mut)" }}>
+                  <span>
+                    Editando a versão atual. Salvar sobrescreve
+                    {WTAN_URL && aluno.sheets_linha
+                      ? " e atualiza a linha " + aluno.sheets_linha + " do Sheets."
+                      : "."}
+                  </span>
+                  <span>{edicao.length} chars</span>
+                </div>
+                <textarea className="raw" value={edicao}
+                  onChange={e => { setEdicao(e.target.value); setSujo(true); }} />
+                <div className="acoes" style={{ marginTop: 12 }}>
+                  <button onClick={salvarEdicao} disabled={salvando || !sujo}>
+                    {salvando ? "Salvando..." : "Salvar"}
+                  </button>
+                  <button className="btn-sec" onClick={congelar} disabled={salvando}>
+                    Congelar versão
+                  </button>
+                  {sujo && (
+                    <button className="btn-sec"
+                      onClick={() => { setEdicao(atual.texto); setSujo(false); }}>
+                      Descartar
+                    </button>
+                  )}
+                  <span className="status">
+                    {parseAnamnese(edicao).length} seção(ões)
+                  </span>
+                </div>
+              </>
+            ) : <div className="vazio-nota">Nada registrado ainda. Usa "Colar nova".</div>
           ) : modo === "hist" ? (
             hist.map(h => (
               <div className="hist-it" key={h.id}>
                 <span>
                   <b>{new Date(h.criado_em).toLocaleString("pt-BR")}</b> · {h.origem}
+                  {h.congelada && <span className="st-tag">congelada</span>}
+                  {h.atualizado_em && <span style={{ marginLeft: 8, fontSize: 11 }}>
+                    editada {new Date(h.atualizado_em).toLocaleDateString("pt-BR")}</span>}
                 </span>
                 <span>
                   {h.texto.length} caracteres
@@ -886,6 +985,21 @@ const chaveNome = t => String(t || "").normalize("NFD")
   .replace(/[\u0300-\u036f]/g, "").toLowerCase()
   .replace(/[^a-z0-9]+/g, " ").trim();
 
+/* heurística: isso parece nome de pessoa, ou é linha de anotação? */
+function nomeSuspeito(n) {
+  const t = String(n || "").trim();
+  if (!t) return "vazio";
+  if (t.length > 45) return "muito longo";
+  if (/[\/;]|\s-\s|:/.test(t)) return "tem separador";
+  if (/\d/.test(t)) return "tem número";
+  const sa = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (sa === sa.toUpperCase() && t.split(/\s+/).length > 1) return "tudo maiúsculo";
+  if (/\b(medidas|fotos|perguntas|anamnese|legenda|obs|full)\b/i.test(t))
+    return "palavra de seção";
+  if (t.split(/\s+/).length > 6) return "palavras demais";
+  return null;
+}
+
 function conciliar(doSheets, noBanco) {
   const porChave = new Map(), porPrimeiro = new Map();
   for (const a of noBanco) {
@@ -898,11 +1012,15 @@ function conciliar(doSheets, noBanco) {
   }
   return doSheets.map(s => {
     const k = chaveNome(s.nome);
+    const nSec = parseAnamnese(s.texto || "").filter(x => x.conhecida).length;
     if (!k || !String(s.texto || "").trim())
-      return { ...s, tipo: "invalido", alvo: null, cands: [] };
+      return { ...s, tipo: "invalido", alvo: null, cands: [], nSec, motivo: "sem nome ou texto" };
+    const susp = nomeSuspeito(s.nome);
+    if (susp && !(porChave.get(k) || []).length)
+      return { ...s, tipo: "suspeito", alvo: null, cands: [], nSec, motivo: susp };
     const ex = porChave.get(k) || [];
-    if (ex.length === 1) return { ...s, tipo: "exato", alvo: ex[0], cands: ex };
-    if (ex.length > 1)   return { ...s, tipo: "ambiguo", alvo: null, cands: ex };
+    if (ex.length === 1) return { ...s, tipo: "exato", alvo: ex[0], cands: ex, nSec };
+    if (ex.length > 1)   return { ...s, tipo: "ambiguo", alvo: null, cands: ex, nSec };
     const toks = k.split(" ");
     const cands = (porPrimeiro.get(toks[0]) || []).filter(a => {
       const y = chaveNome(a.nome).split(" ");
@@ -910,9 +1028,9 @@ function conciliar(doSheets, noBanco) {
       return y.some(w => toks.includes(w) && w !== toks[0]) ||
              toks.every(t => y.includes(t)) || y.every(t => toks.includes(t));
     });
-    if (cands.length === 1) return { ...s, tipo: "provavel", alvo: cands[0], cands };
-    if (cands.length > 1)   return { ...s, tipo: "ambiguo", alvo: null, cands };
-    return { ...s, tipo: "novo", alvo: null, cands: [] };
+    if (cands.length === 1) return { ...s, tipo: "provavel", alvo: cands[0], cands, nSec };
+    if (cands.length > 1)   return { ...s, tipo: "ambiguo", alvo: null, cands, nSec };
+    return { ...s, tipo: "novo", alvo: null, cands: [], nSec };
   });
 }
 
@@ -936,6 +1054,7 @@ function ModalImportar({ alunos, onFechar, onPronto }) {
     const s = {}, a = {};
     r.forEach((x, i) => {
       s[i] = x.tipo === "exato" || x.tipo === "provavel" || x.tipo === "novo";
+      if (x.tipo === "suspeito") s[i] = false;
       if (x.alvo) a[i] = x.alvo.id;
     });
     setSel(s); setAlvos(a); setErro("");
@@ -945,7 +1064,13 @@ function ModalImportar({ alunos, onFechar, onPronto }) {
     if (!url.trim()) { setErro("Cola a URL do Apps Script."); return; }
     setBusy(true); setErro("");
     try {
-      const rr = await fetch(url.trim(), { method: "GET", redirect: "follow" });
+      const u = url.trim();
+      const sep = u.indexOf("?") >= 0 ? "&" : "?";
+      const rr = await fetch(u + sep + "_t=" + Date.now(),
+        { method: "GET", redirect: "follow", cache: "no-store" });
+      if (rr.status === 404) throw new Error(
+        "HTTP 404 — confere se a URL termina em /exec e se a implantação está " +
+        "publicada com acesso 'Qualquer pessoa'. Se acabou de publicar, espera 1 min.");
       if (!rr.ok) throw new Error("HTTP " + rr.status);
       const j = await rr.json();
       if (j.ok === false) throw new Error(j.erro || "o script retornou erro");
@@ -976,11 +1101,16 @@ function ModalImportar({ alunos, onFechar, onPronto }) {
         let alunoId = alvos[i] || null;
         if (!alunoId) {
           const ins = await sb.from("alunos")
-            .insert({ nome: l.nome, status: "ativo" })
+            .insert({ nome: l.nome, status: "ativo",
+                      sheets_linha: l.linha || null })
             .select("id").single();
           if (ins.error) throw new Error(ins.error.message);
           alunoId = ins.data.id; criados++;
         } else {
+          if (l.linha) {
+            await sb.from("alunos")
+              .update({ sheets_linha: l.linha }).eq("id", alunoId);
+          }
           atualizados++;
         }
         const an = await sb.from("anamneses")
@@ -1003,6 +1133,7 @@ function ModalImportar({ alunos, onFechar, onPronto }) {
     provavel: linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "provavel"),
     novo:     linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "novo"),
     ambiguo:  linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "ambiguo"),
+    suspeito: linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "suspeito"),
     invalido: linhas.map((l, i) => ({ l, i })).filter(x => x.l.tipo === "invalido")
   } : null;
 
@@ -1024,7 +1155,10 @@ function ModalImportar({ alunos, onFechar, onPronto }) {
       ) : (
         <span className="n2">{l.alvo ? l.alvo.nome : "criar aluno novo"}</span>
       )}
-      <span className="ch">{String(l.texto || "").length} chars</span>
+      <span className="ch">
+        {String(l.texto || "").length} chars
+        {l.nSec === 0 && <span className="st-tag">texto corrido</span>}
+      </span>
     </div>
   );
 
@@ -1075,7 +1209,8 @@ function ModalImportar({ alunos, onFechar, onPronto }) {
                 <div className="kpi g"><b>{grupos.exato.length}</b><span>já existe</span></div>
                 <div className="kpi w"><b>{grupos.provavel.length}</b><span>provável</span></div>
                 <div className="kpi"><b>{grupos.novo.length}</b><span>criar novo</span></div>
-                <div className="kpi r"><b>{grupos.ambiguo.length + grupos.invalido.length}</b>
+                <div className="kpi r">
+                  <b>{grupos.ambiguo.length + grupos.invalido.length + grupos.suspeito.length}</b>
                   <span>revisar</span></div>
               </div>
 
@@ -1103,6 +1238,28 @@ function ModalImportar({ alunos, onFechar, onPronto }) {
                   <div className="lista">{grupos.ambiguo.map(x => item(x, true))}</div>
                 </div>
               )}
+              {grupos.suspeito.length > 0 && (
+                <div className="imp-grp warn">
+                  <h3>Não parece nome de pessoa ({grupos.suspeito.length})</h3>
+                  <p style={{ color: "var(--mut)", fontSize: 12, marginBottom: 8 }}>
+                    Linhas que provavelmente são anotação da planilha, não aluno.
+                    Desmarcadas por padrão — marca só se for aluno de verdade.
+                  </p>
+                  <div className="lista">
+                    {grupos.suspeito.map(({ l, i }) => (
+                      <div className="imp-it" key={i}>
+                        <input type="checkbox" checked={!!sel[i]}
+                          onChange={e => setSel({ ...sel, [i]: e.target.checked })} />
+                        <span className="n1" style={{ fontSize: 12 }}>
+                          {String(l.nome).slice(0, 60)}
+                        </span>
+                        <span className="ch" style={{ color: "var(--warn)" }}>{l.motivo}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {grupos.invalido.length > 0 && (
                 <div className="imp-grp off">
                   <h3>Ignorados — sem nome ou sem texto ({grupos.invalido.length})</h3>
@@ -1598,6 +1755,133 @@ function PainelVolume() {
   );
 }
 
+
+/* ---------- Backup ---------- */
+const TABELAS_BACKUP = [
+  "alunos", "perfis", "treinos", "exercicios", "logs", "sessoes",
+  "anamneses", "cardapio", "grupos_exibicao"
+];
+
+function PainelBackup() {
+  const [estado, setEstado] = useState("idle");
+  const [prog, setProg]     = useState([]);
+  const [erro, setErro]     = useState("");
+
+  async function exportar() {
+    setEstado("rodando"); setErro(""); setProg([]);
+    const dump = {
+      gerado_em: new Date().toISOString(),
+      projeto: SUPABASE_URL,
+      versao: 1,
+      tabelas: {}
+    };
+    const relato = [];
+
+    for (const t of TABELAS_BACKUP) {
+      let linhas = [], de = 0, pagina = 1000, erroT = null;
+      try {
+        for (;;) {
+          const { data, error } = await sb.from(t).select("*")
+            .range(de, de + pagina - 1);
+          if (error) throw new Error(error.message);
+          linhas = linhas.concat(data || []);
+          if (!data || data.length < pagina) break;
+          de += pagina;
+          if (de > 200000) break;
+        }
+        dump.tabelas[t] = linhas;
+      } catch (e) {
+        erroT = e.message;
+        dump.tabelas[t] = { erro: e.message };
+      }
+      relato.push({ tabela: t, linhas: erroT ? null : linhas.length, erro: erroT });
+      setProg([...relato]);
+    }
+
+    const total = relato.reduce((a, r) => a + (r.linhas || 0), 0);
+    dump.resumo = { total_linhas: total, tabelas: relato };
+
+    const blob = new Blob([JSON.stringify(dump, null, 1)],
+      { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "idealis_backup_" +
+      new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-") + ".json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    setEstado("idle");
+  }
+
+  async function exportarCsv() {
+    setEstado("rodando"); setErro("");
+    try {
+      const { data, error } = await sb.from("anamneses")
+        .select("aluno_id, texto, origem, criado_em");
+      if (error) throw new Error(error.message);
+      const al = await sb.from("alunos").select("id, nome, status");
+      if (al.error) throw new Error(al.error.message);
+      const nomes = new Map((al.data || []).map(x => [x.id, x.nome]));
+      const esc = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+      const linhas = [["nome", "criado_em", "origem", "texto"].map(esc).join(",")];
+      for (const r of (data || [])) {
+        linhas.push([nomes.get(r.aluno_id) || r.aluno_id,
+          r.criado_em, r.origem, r.texto].map(esc).join(","));
+      }
+      const blob = new Blob(["\ufeff" + linhas.join("\r\n")],
+        { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "idealis_anamneses_" +
+        new Date().toISOString().slice(0, 10) + ".csv";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    } catch (e) { setErro(e.message); }
+    setEstado("idle");
+  }
+
+  return (
+    <div>
+      <div className="box">
+        <h2>Backup completo</h2>
+        <p>
+          Baixa um JSON com todas as tabelas. Guarda no Drive ou fora do
+          computador — backup que mora só no fornecedor não é backup.
+          O arquivo respeita as RLS: exporta o que o teu login enxerga.
+        </p>
+        {erro && <div className="err">{erro}</div>}
+        <div className="acoes">
+          <button onClick={exportar} disabled={estado !== "idle"}>
+            {estado === "rodando" ? "Exportando..." : "Baixar backup (JSON)"}
+          </button>
+          <button className="btn-sec" onClick={exportarCsv} disabled={estado !== "idle"}>
+            Só anamneses (CSV)
+          </button>
+        </div>
+        {prog.length > 0 && (
+          <div className="lista" style={{ marginTop: 16 }}>
+            {prog.map(r => (
+              <div className="item" key={r.tabela}>
+                <span className="enm">{r.tabela}</span>
+                <span className={"etg" + (r.erro ? " vazio" : "")}>
+                  {r.erro ? r.erro : r.linhas + " linha(s)"}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="futuro">
+        <b>⚠️ O que este backup NÃO cobre</b>
+        Views, policies, funções e triggers não vêm no JSON — só os dados.
+        Para reconstruir a estrutura, guarda os scripts SQL junto
+        (volume_RECONSTRUIR, anamnese_setup, status_alunos, anamnese_editavel).
+        As fotos do Storage também ficam de fora.
+      </div>
+    </div>
+  );
+}
+
 /* ---------- App ---------- */
 function App() {
   const [sessao, setSessao] = useState(undefined);
@@ -1625,9 +1909,12 @@ function App() {
           onClick={() => setAba("volume")}>Volume</button>
         <button className={"tab" + (aba === "catalogo" ? " on" : "")}
           onClick={() => setAba("catalogo")}>Catálogo</button>
+        <button className={"tab" + (aba === "backup" ? " on" : "")}
+          onClick={() => setAba("backup")}>Backup</button>
       </div>
       {aba === "alunos" ? <PainelAlunos />
         : aba === "volume" ? <PainelVolume />
+        : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
     </div>
   );
