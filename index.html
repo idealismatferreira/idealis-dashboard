@@ -175,6 +175,7 @@
   .badge-an{font-size:10px;padding:3px 8px;border-radius:5px;background:#0f2a2e;
     color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
   .badge-an.sem{background:#241a12;color:var(--warn)}
+  .dias-chip{display:none}
   .filtros{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
   .fbtn{background:transparent;border:1px solid var(--line);color:var(--mut);
     width:auto;padding:7px 14px;font-size:12px;border-radius:20px;font-weight:500}
@@ -229,19 +230,29 @@
     .tabs::-webkit-scrollbar{display:none}
     .tab{padding:10px 13px;font-size:13px;white-space:nowrap;flex-shrink:0}
 
-    /* linha do aluno: 2 linhas fixas
-       [avatar | nome+badges | dias] / [select | botao] */
-    .row{flex-wrap:wrap;gap:9px 10px;padding:12px 13px;align-items:flex-start}
-    .av,.ph{width:38px;height:38px;font-size:13px;order:1}
-    .nome{order:2;flex:1 1 0;min-width:0;font-size:14px;
-      display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;
-      align-self:center}
-    .dias{order:3;flex:0 0 auto;min-width:0;text-align:right;align-self:center}
-    .dias b{font-size:16px}
-    .dias span{font-size:9px}
-    .mod-sel{order:4;flex:1 1 auto;max-width:none;padding:7px 9px;font-size:12px}
-    .row > .fbtn{order:5;flex:0 0 auto;margin:0}
+    /* linha do aluno: GRID de 2 linhas fixas.
+       flex-wrap nao serve aqui porque quebra por espaco disponivel,
+       nao por estrutura — o select cabia ao lado e espremia o nome. */
+    .row{display:grid;align-items:center;
+      grid-template-columns:auto minmax(0,1fr) auto;
+      grid-template-areas:
+        "av   nome nome"
+        "av   sel  btn";
+      gap:8px 10px;padding:12px 13px}
+    .av,.ph{grid-area:av;width:38px;height:38px;font-size:13px;align-self:start}
+    .nome{grid-area:nome;min-width:0;font-size:14px;line-height:1.3;
+      display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+    .dias{grid-area:nome;display:none}
+    .mod-sel{grid-area:sel;max-width:none;width:100%;padding:7px 9px;font-size:12px}
+    .row > .fbtn{grid-area:btn;margin:0;white-space:nowrap}
     .badge-an,.st-tag,.pq-badge{font-size:9px;padding:2px 6px;margin-left:0}
+    /* o tempo sem treinar vira um chip dentro do nome */
+    .dias-chip{display:inline-block;font-size:9px;padding:2px 7px;border-radius:5px;
+      background:#1b2427;color:var(--mut);letter-spacing:.4px;
+      text-transform:uppercase;white-space:nowrap}
+    .dias-chip.w{background:#2a2418;color:var(--warn)}
+    .dias-chip.a{background:#2d1618;color:#f5a3a3}
+    .dias-chip.ok{background:#0f2a2e;color:var(--accent)}
 
     .filtros{gap:5px}
     .fbtn{padding:6px 11px;font-size:11px}
@@ -426,6 +437,12 @@ function LinhaAluno({ a, onAbrir, onStatus, onModalidade, modalidades }) {
         {a.status !== "ativo" && <span className="st-tag">{a.status}</span>}
         {a.perguntas_pendentes > 0 &&
           <span className="pq-badge">{a.perguntas_pendentes} pergunta(s)</span>}
+        <span className={"dias-chip " + cls.trim().split(" ")[0]}>
+          {d === null ? "sem registro"
+            : d === 0 ? "treinou hoje"
+            : d === 1 ? "1 dia atrás"
+            : d + " dias atrás"}
+        </span>
       </div>
       <select className="mod-sel" value={a.modalidade_id || ""}
         onClick={e => e.stopPropagation()}
