@@ -220,6 +220,11 @@
   .pq-it .txt{flex:1}
   .pq-it .bt{display:flex;gap:6px;flex-shrink:0}
   .pq-it .bt button{width:auto;padding:4px 9px;font-size:11px}
+  .btn-sec.ico{display:inline-flex;align-items:center;justify-content:center;
+    padding:5px 8px;color:var(--mut)}
+  .btn-sec.ico:hover{color:var(--accent);border-color:var(--accent)}
+  .pq-data{color:var(--accent);font-size:11px;font-family:ui-monospace,monospace;
+    margin-right:6px;opacity:.85}
 
   /* ================= MOBILE ================= */
   @media (max-width: 720px){
@@ -1977,7 +1982,41 @@ function PainelVolume() {
 
 
 
+/* ---------- Ícones ---------- */
+function IconeCopiar() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+      strokeLinejoin="round" style={{ display: "block" }}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function IconeCheck() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+      strokeLinejoin="round" style={{ display: "block" }}>
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+}
+
 /* ---------- Perguntas bônus ---------- */
+/* "09/08/26" — mesmo formato usado nas anamneses */
+function hojeCurto() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + p(d.getFullYear() % 100);
+}
+
+/* tira o prefixo de data na hora de copiar — o aluno não precisa vê-la */
+function semData(t) {
+  return String(t || "").replace(/^\s*\d{2}\/\d{2}\/\d{2}\s*:\s*/, "").trim();
+}
+
 function PainelPerguntas({ aluno }) {
   const [lista, setLista] = useState(null);
   const [nova, setNova]   = useState("");
@@ -1999,8 +2038,11 @@ function PainelPerguntas({ aluno }) {
   async function adicionar() {
     const t = nova.trim();
     if (!t) return;
+    /* não duplica a data se o texto já vier com uma */
+    const jaTem = /^\s*\d{2}\/\d{2}\/\d{2}\s*:/.test(t);
+    const texto = jaTem ? t : hojeCurto() + ": " + t;
     const { error } = await sb.from("perguntas")
-      .insert({ aluno_id: aluno.id, texto: t });
+      .insert({ aluno_id: aluno.id, texto });
     if (error) { setErro(error.message); return; }
     setNova(""); await carregar();
   }
@@ -2022,10 +2064,18 @@ function PainelPerguntas({ aluno }) {
   const pend = (lista || []).filter(p => p.status === "pendente");
   const resto = (lista || []).filter(p => p.status !== "pendente");
 
+  const [copiado, setCopiado] = useState(null);
+
+  function copiarUma(p) {
+    navigator.clipboard.writeText(semData(p.texto));
+    setCopiado(p.id);
+    setTimeout(() => setCopiado(c => (c === p.id ? null : c)), 1400);
+  }
+
   function copiarPendentes() {
     if (!pend.length) return;
-    navigator.clipboard.writeText(pend.map(p => "• " + p.texto).join("\n"));
-    setAviso("Perguntas pendentes copiadas.");
+    navigator.clipboard.writeText(pend.map(p => "• " + semData(p.texto)).join("\n"));
+    setAviso("Perguntas copiadas (sem as datas).");
   }
 
   return (
@@ -2036,7 +2086,7 @@ function PainelPerguntas({ aluno }) {
       <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
         <input value={nova} onChange={e => setNova(e.target.value)}
           onKeyDown={e => e.key === "Enter" && adicionar()}
-          placeholder="Nova pergunta para puxar assunto..."
+          placeholder={hojeCurto() + ": nova pergunta para puxar assunto..."}
           style={{ marginBottom: 0 }} />
         <button onClick={adicionar} disabled={!nova.trim()}
           style={{ width: "auto", padding: "11px 18px" }}>Adicionar</button>
@@ -2055,8 +2105,19 @@ function PainelPerguntas({ aluno }) {
             ? <div className="vazio-nota">Nenhuma pergunta pendente.</div>
             : pend.map(p => (
                 <div className="pq-it" key={p.id}>
-                  <span className="txt">{p.texto}</span>
+                  <span className="txt">
+                    {/^\s*(\d{2}\/\d{2}\/\d{2})\s*:/.test(p.texto) && (
+                      <span className="pq-data">
+                        {p.texto.match(/^\s*(\d{2}\/\d{2}\/\d{2})/)[1]}
+                      </span>
+                    )}
+                    {semData(p.texto)}
+                  </span>
                   <span className="bt">
+                    <button className="btn-sec ico" title="Copiar pergunta"
+                      aria-label="Copiar pergunta" onClick={() => copiarUma(p)}>
+                      {copiado === p.id ? <IconeCheck /> : <IconeCopiar />}
+                    </button>
                     <button className="btn-sec" onClick={() => marcar(p, "usada")}>usei</button>
                     <button className="btn-sec" onClick={() => remover(p)}>×</button>
                   </span>
@@ -2075,7 +2136,12 @@ function PainelPerguntas({ aluno }) {
               {verUsadas && resto.map(p => (
                 <div className="pq-it usada" key={p.id}>
                   <span className="txt">
-                    {p.texto}
+                    {/^\s*(\d{2}\/\d{2}\/\d{2})\s*:/.test(p.texto) && (
+                      <span className="pq-data">
+                        {p.texto.match(/^\s*(\d{2}\/\d{2}\/\d{2})/)[1]}
+                      </span>
+                    )}
+                    {semData(p.texto)}
                     {p.usada_em && (
                       <span style={{ color: "var(--mut)", fontSize: 11 }}>
                         {" · " + new Date(p.usada_em).toLocaleDateString("pt-BR")}
@@ -2083,6 +2149,10 @@ function PainelPerguntas({ aluno }) {
                     )}
                   </span>
                   <span className="bt">
+                    <button className="btn-sec ico" title="Copiar pergunta"
+                      aria-label="Copiar pergunta" onClick={() => copiarUma(p)}>
+                      {copiado === p.id ? <IconeCheck /> : <IconeCopiar />}
+                    </button>
                     <button className="btn-sec" onClick={() => marcar(p, "pendente")}>voltar</button>
                     <button className="btn-sec" onClick={() => remover(p)}>×</button>
                   </span>
