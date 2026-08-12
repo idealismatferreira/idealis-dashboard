@@ -303,6 +303,10 @@
     #root{padding:16px 10px 50px}
     .cards{grid-template-columns:1fr}
   }
+  .busca-alunos{position:relative;flex:0 1 230px;min-width:150px}
+  .busca-alunos input{margin-bottom:0;padding:7px 26px 7px 12px;font-size:12px;
+    border-radius:20px}
+  .busca-alunos .cb-lim{right:6px}
   /* ============ COMBOBOX ============ */
   .cb{position:relative}
   .cb input{margin-bottom:0;width:100%}
@@ -547,6 +551,7 @@ function PainelAlunos() {
   const [filtro, setFiltro] = useState("ativo");
   const [importar, setImportar] = useState(false);
   const [mods, setMods] = useState([]);
+  const [busca, setBusca] = useState("");
 
   const carregar = useCallback(async () => {
     const m = await sb.from("modalidades").select("*")
@@ -580,10 +585,13 @@ function PainelAlunos() {
     await carregar();
   }
 
-  const visiveis = (alunos || []).filter(a =>
-    filtro === "todos" ? true :
-    filtro === "ativo" ? a.status === "ativo" :
-    a.status !== "ativo");
+  const visiveis = (alunos || [])
+    .filter(a =>
+      filtro === "todos" ? true :
+      filtro === "ativo" ? a.status === "ativo" :
+      a.status !== "ativo")
+    .filter(a => !busca.trim() ||
+      cbCasa((a.nome || "") + " " + (a.modalidade_nome || ""), busca));
   const nAtivos = (alunos || []).filter(a => a.status === "ativo").length;
   const nOutros = (alunos || []).length - nAtivos;
 
@@ -629,19 +637,29 @@ function PainelAlunos() {
           onClick={() => setFiltro("inativo")}>Inativos ({nOutros})</button>
         <button className={"fbtn" + (filtro === "todos" ? " on" : "")}
           onClick={() => setFiltro("todos")}>Todos</button>
+        <div className="busca-alunos">
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar aluno..." />
+          {busca && (
+            <button className="cb-lim" onClick={() => setBusca("")} title="Limpar">×</button>
+          )}
+        </div>
         <span style={{ flex: 1 }} />
         <button className="fbtn" onClick={() => setImportar(true)}>Importar do Sheets</button>
       </div>
       <div className="sub">
         {alunos === null ? "Carregando..."
-          : visiveis.length + " aluno(s) · ordenado por tempo sem treinar"}
+          : visiveis.length + " aluno(s)" +
+            (busca.trim() ? ' encontrado(s) para "' + busca.trim() + '"'
+                          : " · ordenado por tempo sem treinar")}
       </div>
       {erro && <div className="err">{erro}</div>}
       {alunos === null
         ? <div className="msg">Buscando dados...</div>
         : visiveis.length === 0
           ? <div className="msg">
-              {filtro === "ativo" ? "Nenhum aluno ativo." :
+              {busca.trim() ? 'Nenhum aluno encontrado para "' + busca.trim() + '".' :
+               filtro === "ativo" ? "Nenhum aluno ativo." :
                filtro === "inativo" ? "Nenhum aluno inativo." :
                "Nenhum aluno visível. Confere as policies de RLS."}
             </div>
