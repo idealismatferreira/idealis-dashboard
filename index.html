@@ -2401,6 +2401,24 @@ function calcularDatas(inicioISO, semanas) {
   return out;
 }
 
+/* fases.id nao tem default no banco — o UUID e gerado no cliente,
+   igual o App Idealis ja faz. Fallback para quando crypto.randomUUID
+   nao existe (ex.: pagina aberta via file://). */
+function novoUUID() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = [...b].map(x => x.toString(16).padStart(2, "0")).join("");
+    return h.slice(0,8)+"-"+h.slice(8,12)+"-"+h.slice(12,16)+"-"+h.slice(16,20)+"-"+h.slice(20);
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 function faseVazia(pos) {
   return { posicao: pos, template_id: "", nome: "", inicio: "", fim: "",
            objetivo: "", metodos: "", observacao: "" };
@@ -2625,9 +2643,9 @@ function PainelPlanejamento() {
           const u = await sb.from("fases").update(linha).eq("id", f.id);
           if (u.error) throw new Error(u.error.message);
         } else {
-          const ins = await sb.from("fases").insert(linha).select("id").single();
+          const novo = novoUUID();
+          const ins = await sb.from("fases").insert({ id: novo, ...linha });
           if (ins.error) throw new Error(ins.error.message);
-          const novo = ins.data.id;
           setFases(fs => fs.map(y => y.posicao === f.posicao ? { ...y, id: novo } : y));
         }
       }
