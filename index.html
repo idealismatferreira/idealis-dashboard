@@ -325,6 +325,61 @@
     background:none;border:none;color:var(--mut);font-size:16px;cursor:pointer;
     width:auto;padding:0 4px;line-height:1}
   .cb-lim:hover{color:var(--txt);filter:none}
+  /* ============ MONTAGEM (leitura) ============ */
+  .mt-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .mt-cols{display:grid;grid-template-columns:270px minmax(0,1fr);gap:16px;
+    align-items:start}
+  .mt-fase{background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--line);border-radius:9px;padding:11px 13px;
+    margin-bottom:7px;cursor:pointer}
+  .mt-fase:hover{border-color:var(--accent)}
+  .mt-fase.on{border-color:var(--accent);border-left-color:var(--accent);
+    background:#0d1c1f}
+  .mt-fase.ativa{border-left-color:var(--accent)}
+  .mt-fase.futura{border-left-color:var(--mut)}
+  .mt-fase.encerrada{border-left-color:#3a3020}
+  .mt-fase b{display:block;font-size:13px;font-weight:600;margin-bottom:3px}
+  .mt-fase .per{font-size:11px;color:var(--mut)}
+  .mt-fase .rest{font-size:10px;color:var(--accent);margin-top:3px;
+    text-transform:uppercase;letter-spacing:.5px}
+  .mt-treinos{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;
+    align-items:flex-start}
+  .mt-tr{flex:0 0 340px;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;overflow:hidden}
+  .mt-tr-h{padding:12px 14px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:8px}
+  .mt-tr-h b{flex:1;font-size:14px;font-weight:600}
+  .mt-tr-h .cnt{font-size:10px;color:var(--mut);text-transform:uppercase;
+    letter-spacing:.5px}
+  .mt-ex{padding:11px 14px;border-bottom:1px solid #182224;font-size:13px}
+  .mt-ex:last-child{border-bottom:none}
+  .mt-ex .lin1{display:flex;gap:8px;align-items:baseline}
+  .mt-ex .ord{color:#3d4d50;font-family:ui-monospace,monospace;font-size:11px;
+    min-width:16px}
+  .mt-ex .nm{flex:1;font-weight:500;min-width:0}
+  .mt-ex .sr{color:var(--accent);font-size:12px;white-space:nowrap}
+  .mt-ex .sub{margin-left:24px;margin-top:3px;font-size:11px;color:var(--mut);
+    line-height:1.6}
+  .mt-ex .obs{margin-left:24px;margin-top:4px;font-size:11px;color:#9fb3b6;
+    font-style:italic}
+  .mt-tags{display:flex;gap:4px;flex-wrap:wrap;margin-left:24px;margin-top:5px}
+  .mt-tag{font-size:9px;padding:2px 6px;border-radius:4px;background:#16232a;
+    color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+  .mt-tag.met{background:#1a2430;color:#8fb8ff}
+  .mt-tag.car{background:#2b2410;color:#dbff00}
+  .mt-tag.flm{background:#2d1618;color:#f5a3a3}
+  .mt-tag.aud{background:#0f2a2e;color:var(--accent)}
+  .mt-tag.avl{background:#241a12;color:var(--warn)}
+  .mt-det{margin-left:24px;margin-top:5px;padding:7px 9px;background:#0b1416;
+    border-left:2px solid #1f3a3d;border-radius:0 5px 5px 0;font-size:11px;
+    color:#a8c4c7;line-height:1.65;font-family:ui-monospace,monospace}
+  .mt-det .tit{color:#8fb8ff;font-weight:600;margin-bottom:3px;font-family:inherit}
+  .mt-det.c .tit{color:#dbff00}
+  .mt-vazio{padding:26px 14px;text-align:center;color:var(--mut);font-size:12px}
+  @media (max-width: 900px){
+    .mt-cols{grid-template-columns:1fr}
+    .mt-tr{flex:0 0 84vw}
+  }
   /* ============ PLANEJAMENTO ============ */
   .pl-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
   .pl-top select{min-width:200px}
@@ -2777,11 +2832,258 @@ function PainelPlanejamento() {
   );
 }
 
+
+/* ---------- Montagem de treino (leitura) ---------- */
+/* Fase A: só lê. Nada aqui escreve no banco — o App Idealis
+   continua sendo o único que grava treino/exercício por enquanto. */
+
+/* método jsonb -> uma linha de texto por série */
+function fmtMetodo(m) {
+  if (!m || !Array.isArray(m.series) || !m.series.length) return null;
+  return m.series.map((sr, i) => {
+    const p = [(i + 1) + "ª"];
+    if (sr.reps) p.push(sr.reps);
+    if (Array.isArray(sr.blocos) && sr.blocos.length) {
+      p.push("[" + sr.blocos
+        .map(b => b.pausa ? ("pausa " + b.pausa) : (b.reps || ""))
+        .filter(Boolean).join(" → ") + "]");
+    }
+    if (sr.carga) p.push("· " + sr.carga);
+    if (sr.descanso) p.push("· desc " + sr.descanso);
+    if (Array.isArray(sr.extensao) && sr.extensao.length) {
+      p.push("+ " + sr.extensao.map(x => {
+        const det = [x.reducao, x.reps, x.duracao, x.pausa].filter(Boolean).join(" ");
+        return det ? (x.tipo || "ext") + " (" + det + ")" : (x.tipo || "ext");
+      }).join(" + "));
+    }
+    return p.join(" ");
+  });
+}
+
+/* cardio jsonb -> { rep, blocos[] } */
+function fmtCardio(c) {
+  if (!c || !Array.isArray(c.blocos) || !c.blocos.length) return null;
+  return {
+    rep: c.repetir ? c.repetir + "x" : "",
+    blocos: c.blocos.map(b => (b.tempo || "?") + " " + (b.rotulo || b.nivel || ""))
+  };
+}
+
+function nSeriesDe(ex) {
+  if (ex.metodo && Array.isArray(ex.metodo.series)) return ex.metodo.series.length;
+  const m = String(ex.series || "").match(/^\s*(\d+)\s*[x×]/i);
+  return m ? +m[1] : null;
+}
+
+function situacaoFase(f, hojeISO) {
+  if (f.fim && f.fim < hojeISO) return "encerrada";
+  if (f.inicio && f.inicio > hojeISO) return "futura";
+  return "ativa";
+}
+
+function PainelMontagem() {
+  const [alunos, setAlunos] = useState([]);
+  const [sel, setSel]       = useState("");
+  const [fases, setFases]   = useState([]);
+  const [faseSel, setFaseSel] = useState("");
+  const [aba, setAbaF]      = useState("atuais");
+  const [treinos, setTreinos] = useState([]);
+  const [exs, setExs]       = useState({});
+  const [erro, setErro]     = useState("");
+  const [carregando, setCarr] = useState(false);
+
+  const hoje = dISO(new Date());
+
+  useEffect(() => {
+    sb.from("alunos").select("id, nome").order("nome").then(({ data, error }) => {
+      if (error) { setErro(error.message); return; }
+      setAlunos(data || []);
+      if (data && data.length) setSel(data[0].id);
+    });
+  }, []);
+
+  const carregar = useCallback(async (alunoId) => {
+    if (!alunoId) return;
+    setCarr(true); setErro(""); setTreinos([]); setExs({});
+    const f = await sb.from("fases").select("*")
+      .eq("aluno_id", alunoId).order("inicio", { ascending: false });
+    if (f.error) { setErro(f.error.message); setCarr(false); return; }
+    setFases(f.data || []);
+    setFaseSel("");
+    setCarr(false);
+  }, []);
+
+  useEffect(() => { carregar(sel); }, [sel, carregar]);
+
+  /* carrega treinos + exercícios da fase escolhida */
+  const abrirFase = useCallback(async (faseId) => {
+    setFaseSel(faseId);
+    setCarr(true); setErro(""); setTreinos([]); setExs({});
+    const t = await sb.from("treinos").select("*")
+      .eq("fase_id", faseId).order("ordem");
+    if (t.error) { setErro(t.error.message); setCarr(false); return; }
+    const lista = t.data || [];
+    setTreinos(lista);
+    if (lista.length) {
+      const e = await sb.from("exercicios").select("*")
+        .in("treino_id", lista.map(x => x.id)).order("ordem");
+      if (e.error) { setErro(e.error.message); setCarr(false); return; }
+      const mapa = {};
+      for (const x of (e.data || [])) {
+        (mapa[x.treino_id] = mapa[x.treino_id] || []).push(x);
+      }
+      setExs(mapa);
+    }
+    setCarr(false);
+  }, []);
+
+  const porAba = fases.filter(f => {
+    const st = situacaoFase(f, hoje);
+    return aba === "atuais" ? st === "ativa"
+         : aba === "anteriores" ? st === "encerrada"
+         : st === "futura";
+  });
+
+  const cont = {
+    atuais: fases.filter(f => situacaoFase(f, hoje) === "ativa").length,
+    anteriores: fases.filter(f => situacaoFase(f, hoje) === "encerrada").length,
+    futuros: fases.filter(f => situacaoFase(f, hoje) === "futura").length
+  };
+
+  function Exercicio({ ex }) {
+    const n = nSeriesDe(ex);
+    const met = fmtMetodo(ex.metodo);
+    const car = fmtCardio(ex.cardio);
+    const reps = String(ex.series || "").replace(/^\s*\d+\s*[x×]\s*/i, "");
+    return (
+      <div className="mt-ex">
+        <div className="lin1">
+          <span className="ord">{(ex.ordem ?? 0) + 1}</span>
+          <span className="nm">{ex.nome}</span>
+          <span className="sr">
+            {car ? "cardio" : (n ? n + "×" + (reps ? " " + reps : "") : "—")}
+          </span>
+        </div>
+        {(ex.descanso || (ex.metodo && ex.metodo.nome)) && (
+          <div className="sub">
+            {ex.descanso && "desc " + ex.descanso}
+            {ex.descanso && ex.metodo && ex.metodo.nome && " · "}
+            {ex.metodo && ex.metodo.nome}
+          </div>
+        )}
+        {met && (
+          <div className="mt-det">
+            <div className="tit">{(ex.metodo && ex.metodo.nome) || "Método"}</div>
+            {met.map((l, i) => <div key={i}>{l}</div>)}
+          </div>
+        )}
+        {car && (
+          <div className="mt-det c">
+            <div className="tit">{(ex.cardio && ex.cardio.nome) || "Cardio"}</div>
+            <div>{car.rep ? car.rep + " → " : ""}{car.blocos.join("  |  ")}</div>
+          </div>
+        )}
+        {ex.observacao && <div className="obs">“{ex.observacao}”</div>}
+        <div className="mt-tags">
+          {ex.metodo && <span className="mt-tag met">método</span>}
+          {ex.cardio && <span className="mt-tag car">cardio</span>}
+          {ex.filmar && <span className="mt-tag flm">filmar</span>}
+          {ex.audio_url && <span className="mt-tag aud">áudio</span>}
+          {!ex.cardapio_id && <span className="mt-tag avl">avulso</span>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mt-bar">
+        <div style={{ minWidth: 230, flex: "0 1 260px" }}>
+          <Combobox
+            opcoes={alunos.map(a => ({ value: a.id, label: a.nome }))}
+            value={sel} onChange={setSel}
+            placeholder="Buscar aluno..." />
+        </div>
+        <button className={"fbtn" + (aba === "anteriores" ? " on" : "")}
+          onClick={() => setAbaF("anteriores")}>Anteriores ({cont.anteriores})</button>
+        <button className={"fbtn" + (aba === "atuais" ? " on" : "")}
+          onClick={() => setAbaF("atuais")}>Atuais ({cont.atuais})</button>
+        <button className={"fbtn" + (aba === "futuros" ? " on" : "")}
+          onClick={() => setAbaF("futuros")}>Futuros ({cont.futuros})</button>
+      </div>
+
+      {erro && <div className="err">{erro}</div>}
+
+      <div className="mt-cols">
+        <div>
+          {porAba.length === 0
+            ? <div className="mt-vazio">Nenhuma fase nesta aba.</div>
+            : porAba.map(f => {
+                const st = situacaoFase(f, hoje);
+                const rest = f.fim
+                  ? Math.round((parseISO(f.fim) - parseISO(hoje)) / 864e5) : null;
+                return (
+                  <div key={f.id}
+                    className={"mt-fase " + st + (faseSel === f.id ? " on" : "")}
+                    onClick={() => abrirFase(f.id)}>
+                    <b>{f.nome}</b>
+                    <div className="per">{dBR(f.inicio)} → {dBR(f.fim)}</div>
+                    {st === "ativa" && rest !== null && (
+                      <div className="rest">
+                        {rest >= 0 ? "faltam " + rest + " dias" : "vencida"}
+                      </div>
+                    )}
+                    {f.planejamento_id && f.posicao && (
+                      <div className="rest" style={{ color: "var(--mut)" }}>
+                        planejamento · fase {f.posicao}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+        </div>
+
+        <div>
+          {!faseSel
+            ? <div className="mt-vazio">Escolhe uma fase à esquerda para ver os treinos.</div>
+            : carregando
+              ? <div className="mt-vazio">Carregando...</div>
+              : treinos.length === 0
+                ? <div className="mt-vazio">Esta fase ainda não tem treinos.</div>
+                : (
+                  <div className="mt-treinos">
+                    {treinos.map(t => {
+                      const lista = exs[t.id] || [];
+                      return (
+                        <div className="mt-tr" key={t.id}>
+                          <div className="mt-tr-h">
+                            <b>{t.nome}</b>
+                            <span className="cnt">{lista.length} exerc.</span>
+                          </div>
+                          {lista.length === 0
+                            ? <div className="mt-vazio">Sem exercícios.</div>
+                            : lista.map(ex => <Exercicio key={ex.id} ex={ex} />)}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+        </div>
+      </div>
+
+      <div className="pl-hint" style={{ marginTop: 18 }}>
+        Esta aba ainda é <b>somente leitura</b> — a montagem continua no App Idealis.
+        Próximo passo: editar nome, séries, descanso e ordem por aqui.
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Backup ---------- */
 const TABELAS_BACKUP = [
   "alunos", "perfis", "treinos", "exercicios", "logs", "sessoes",
   "anamneses", "cardapio", "grupos_exibicao", "modalidades", "perguntas",
-  "fases", "planejamentos", "fase_templates", "fase_categorias"
+  "fases", "planejamentos", "fase_templates", "fase_categorias", "metodos"
 ];
 
 function PainelBackup() {
@@ -2931,6 +3233,8 @@ function App() {
           onClick={() => setAba("volume")}>Volume</button>
         <button className={"tab" + (aba === "catalogo" ? " on" : "")}
           onClick={() => setAba("catalogo")}>Catálogo</button>
+        <button className={"tab" + (aba === "montagem" ? " on" : "")}
+          onClick={() => setAba("montagem")}>Treinos</button>
         <button className={"tab" + (aba === "planejamento" ? " on" : "")}
           onClick={() => setAba("planejamento")}>Planejamento</button>
         <button className={"tab" + (aba === "backup" ? " on" : "")}
@@ -2938,6 +3242,7 @@ function App() {
       </div>
       {aba === "alunos" ? <PainelAlunos />
         : aba === "volume" ? <PainelVolume />
+        : aba === "montagem" ? <PainelMontagem />
         : aba === "planejamento" ? <PainelPlanejamento />
         : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
