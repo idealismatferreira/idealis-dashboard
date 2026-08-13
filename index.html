@@ -380,6 +380,76 @@
     .mt-cols{grid-template-columns:1fr}
     .mt-tr{flex:0 0 84vw}
   }
+  /* ============ EDITOR DE EXERCICIO ============ */
+  .ed{position:fixed;top:0;right:0;bottom:0;width:min(430px,94vw);
+    background:var(--card);border-left:1px solid var(--accent);z-index:70;
+    display:flex;flex-direction:column}
+  .ed-h{padding:16px 18px 13px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .ed-h h3{font-size:16px;margin:0 0 2px}
+  .ed-h p{font-size:11px;color:var(--mut);margin:0;line-height:1.5}
+  .ed-b{flex:1;overflow-y:auto;padding:16px 18px 30px}
+  .ed-f{padding:13px 18px;border-top:1px solid var(--line);display:flex;gap:9px;
+    flex-shrink:0}
+  .ed-f button{flex:1;padding:11px}
+  .ed-lab{font-size:10px;text-transform:uppercase;letter-spacing:.9px;
+    color:var(--mut);margin:16px 0 7px;display:flex;justify-content:space-between;
+    align-items:baseline}
+  .ed-lab:first-child{margin-top:0}
+  .ed-lab i{font-style:normal;font-size:10px;color:#3d4d50}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    padding:8px 13px;border-radius:8px;font-size:13px;cursor:pointer;width:auto;
+    font-family:inherit;font-weight:500}
+  .chip:hover{border-color:var(--accent);filter:none}
+  .chip.on{background:var(--accent);color:#04191c;border-color:var(--accent)}
+  .chip.mini{padding:6px 10px;font-size:12px}
+  .chip.kb{color:var(--mut);padding:8px 10px}
+  .ed-tog{display:flex;align-items:center;gap:11px;padding:11px 13px;
+    background:var(--bg);border:1px solid var(--line);border-radius:9px;
+    cursor:pointer;margin-bottom:4px}
+  .ed-tog.on{border-color:var(--accent)}
+  .ed-tog .sw{width:38px;height:21px;border-radius:11px;background:#243036;
+    position:relative;flex-shrink:0;transition:background .18s}
+  .ed-tog.on .sw{background:var(--accent)}
+  .ed-tog .sw i{position:absolute;top:3px;left:3px;width:15px;height:15px;
+    border-radius:50%;background:#8fa3a6;transition:left .18s}
+  .ed-tog.on .sw i{left:20px;background:#04191c}
+  .ed-tog b{font-size:13px;font-weight:600;display:block}
+  .ed-tog span{font-size:11px;color:var(--mut)}
+  .ed-met{background:var(--bg);border:1px solid var(--line);border-radius:9px;
+    padding:10px 12px;font-size:12px;color:var(--mut);line-height:1.6;
+    font-family:ui-monospace,monospace;margin-top:7px}
+  .ed-met b{color:#8fb8ff;font-family:inherit;display:block;margin-bottom:3px}
+  .ed-audio{display:flex;gap:8px;align-items:center;background:var(--bg);
+    border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .ed-audio audio{flex:1;height:32px}
+  .ed-cnt{font-size:10px;color:var(--mut)}
+  .ac-lista{position:absolute;left:0;right:0;top:calc(100% + 3px);z-index:80;
+    background:var(--card);border:1px solid var(--accent);border-radius:8px;
+    max-height:230px;overflow-y:auto}
+  .ac-op{padding:8px 11px;font-size:12px;cursor:pointer;
+    border-bottom:1px solid #182224}
+  .ac-op:last-child{border-bottom:none}
+  .ac-op:hover,.ac-op.on{background:#0f2a2e;color:var(--accent)}
+  .ac-op small{display:block;color:var(--mut);font-size:10px;margin-top:1px}
+  .mt-acao{display:flex;gap:6px;padding:9px 14px;border-top:1px solid var(--line)}
+  .mt-acao button{width:auto;flex:1;padding:8px;font-size:12px}
+  .mt-ex{position:relative}
+  .mt-ex .ferr{position:absolute;right:10px;top:9px;display:flex;gap:3px;
+    opacity:0;transition:opacity .15s}
+  .mt-ex:hover .ferr{opacity:1}
+  .mt-ex .ferr button{width:auto;padding:3px 7px;font-size:11px;
+    background:var(--card);border:1px solid var(--line);color:var(--mut)}
+  .mt-ex .ferr button:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .rel{margin-left:24px;margin-top:5px;padding:7px 9px;background:#0d1a1c;
+    border-left:2px solid var(--accent);border-radius:0 5px 5px 0;font-size:11px;
+    line-height:1.55}
+  .rel .quem{color:var(--accent);font-size:9px;text-transform:uppercase;
+    letter-spacing:.5px;margin-bottom:2px}
+  .rel .txt{color:#c3d6d8}
+  .rel.fix{border-left-color:var(--warn);background:#161208}
+  .rel.fix .quem{color:var(--warn)}
+  .rel-mais{margin-left:24px;margin-top:4px;font-size:10px;color:#3d4d50}
   /* ============ PLANEJAMENTO ============ */
   .pl-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
   .pl-top select{min-width:200px}
@@ -2833,6 +2903,284 @@ function PainelPlanejamento() {
 }
 
 
+
+/* ---------- Editor de exercício ---------- */
+const REPS_OPC  = ["4 a 6","6 a 8","6 a 10","8 a 10","8 a 12","10 a 12",
+                   "10 a 15","12 a 15","15 a 20"];
+const DESC_OPC  = ["30~45","45~60","60~90","90~120","120~180"];
+const SERIES_OPC = [1,2,3,4,5,6];
+
+/* formato canônico: "3 x 8 a 12" */
+function montaSeries(n, reps) {
+  const nn = String(n || "").trim(), rr = String(reps || "").trim();
+  if (!nn) return rr || null;
+  return rr ? nn + " x " + rr : nn;
+}
+function parseSeries(txt) {
+  const m = String(txt || "").match(/^\s*(\d+)\s*[x×]\s*(.+)$/i);
+  if (m) return { n: m[1], reps: m[2].trim() };
+  const so = String(txt || "").match(/^\s*(\d+)\s*$/);
+  return so ? { n: so[1], reps: "" } : { n: "", reps: String(txt || "").trim() };
+}
+
+function Chips({ opcoes, valor, onPick, mini }) {
+  return (
+    <div className="chips">
+      {opcoes.map(o => (
+        <button key={o} className={"chip" + (mini ? " mini" : "") +
+          (String(valor) === String(o) ? " on" : "")}
+          onClick={() => onPick(String(o))}>{o}</button>
+      ))}
+    </div>
+  );
+}
+
+/* autocomplete do Catálogo, lendo do espelho `cardapio` no Supabase */
+function BuscaExercicio({ valor, onPick, onTexto }) {
+  const [q, setQ]       = useState(valor || "");
+  const [ops, setOps]   = useState([]);
+  const [abr, setAbr]   = useState(false);
+  const [idx, setIdx]   = useState(0);
+  const [cat, setCat]   = useState(null);
+  const ref = React.useRef(null);
+
+  useEffect(() => { setQ(valor || ""); }, [valor]);
+
+  useEffect(() => {
+    if (cat) return;
+    sb.from("cardapio").select("id, exercicio, grupos").order("exercicio")
+      .then(({ data, error }) => { if (!error) setCat(data || []); });
+  }, [cat]);
+
+  useEffect(() => {
+    const fora = e => { if (ref.current && !ref.current.contains(e.target)) setAbr(false); };
+    document.addEventListener("mousedown", fora);
+    return () => document.removeEventListener("mousedown", fora);
+  }, []);
+
+  useEffect(() => {
+    if (!cat || q.trim().length < 2) { setOps([]); return; }
+    setOps(cat.filter(c => cbCasa(c.exercicio, q)).slice(0, 40));
+    setIdx(0);
+  }, [q, cat]);
+
+  function escolher(c) {
+    onPick(c.id, c.exercicio);
+    setQ(c.exercicio); setAbr(false);
+  }
+
+  return (
+    <div style={{ position: "relative" }} ref={ref}>
+      <input value={q}
+        onChange={e => { setQ(e.target.value); onTexto(e.target.value); setAbr(true); }}
+        onFocus={() => setAbr(true)}
+        onKeyDown={e => {
+          if (e.key === "ArrowDown") { e.preventDefault(); setIdx(i => Math.min(i + 1, ops.length - 1)); }
+          else if (e.key === "ArrowUp") { e.preventDefault(); setIdx(i => Math.max(i - 1, 0)); }
+          else if (e.key === "Enter" && ops[idx]) { e.preventDefault(); escolher(ops[idx]); }
+          else if (e.key === "Escape") setAbr(false);
+        }}
+        placeholder="Ex: Supino Reto" style={{ marginBottom: 0 }} />
+      {abr && ops.length > 0 && (
+        <div className="ac-lista">
+          {ops.map((c, i) => (
+            <div key={c.id} className={"ac-op" + (i === idx ? " on" : "")}
+              onMouseEnter={() => setIdx(i)}
+              onMouseDown={e => { e.preventDefault(); escolher(c); }}>
+              {c.exercicio}
+              <small>{(c.grupos || []).join(" · ") || "sem grupo"}</small>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
+  const novo = !ex;
+  const p0 = parseSeries(ex ? ex.series : "");
+  const [nome, setNome]     = useState(ex ? ex.nome || "" : "");
+  const [cardId, setCardId] = useState(ex ? ex.cardapio_id : null);
+  const [nSer, setNSer]     = useState(p0.n || "3");
+  const [reps, setReps]     = useState(p0.reps || "");
+  const [desc, setDesc]     = useState(ex ? ex.descanso || "" : "");
+  const [obs, setObs]       = useState(ex ? ex.observacao || "" : "");
+  const [filmar, setFilmar] = useState(ex ? !!ex.filmar : false);
+  const [metodo, setMetodo] = useState(ex ? ex.metodo : null);
+  const [mets, setMets]     = useState([]);
+  const [verMet, setVerMet] = useState(false);
+  const [erro, setErro]     = useState("");
+  const [busy, setBusy]     = useState(false);
+
+  useEffect(() => {
+    sb.from("metodos").select("id, nome, familia, tipo, series")
+      .order("familia").order("nome")
+      .then(({ data, error }) => { if (!error) setMets(data || []); });
+  }, []);
+
+  const ehCardio = !!(ex && ex.cardio);
+
+  async function salvar() {
+    if (!nome.trim()) { setErro("Preenche o nome do exercício."); return; }
+    setBusy(true); setErro("");
+    const corpo = {
+      nome: nome.trim(),
+      series: metodo ? montaSeries(metodo.series.length, reps) : montaSeries(nSer, reps),
+      cardapio_id: cardId || null,
+      descanso: desc.trim() || null,
+      observacao: obs.trim() || null,
+      filmar: !!filmar,
+      metodo: metodo || null
+    };
+    try {
+      if (novo) {
+        const id = novoUUID();
+        const r = await sb.from("exercicios")
+          .insert({ id, treino_id: treinoId, ordem, ...corpo });
+        if (r.error) throw new Error(r.error.message);
+      } else {
+        /* update parcial: nao toca em done_date, cardio, audio_url nem ordem */
+        const r = await sb.from("exercicios").update(corpo).eq("id", ex.id);
+        if (r.error) throw new Error(r.error.message);
+      }
+      onSalvo();
+    } catch (e) { setErro(e.message); }
+    setBusy(false);
+  }
+
+  const famMet = [...new Set(mets.map(m => m.familia || "Sem família"))];
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="ed">
+        <div className="ed-h">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h3>{novo ? "Novo exercício" : "Editar exercício"}</h3>
+          <p>Nome, séries e repetições ficam fixos no treino.
+             A carga o aluno registra a cada aula.</p>
+        </div>
+
+        <div className="ed-b">
+          {erro && <div className="err">{erro}</div>}
+          {ehCardio && (
+            <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
+                                          color: "#f0a35e" }}>
+              Exercício de <b>cardio</b>. O editor de blocos ainda não existe aqui —
+              o cardio atual é preservado ao salvar. Edita no App se precisar mudar.
+            </div>
+          )}
+
+          <div className="ed-lab">Exercício</div>
+          <BuscaExercicio valor={nome}
+            onPick={(id, txt) => { setCardId(id); setNome(txt); }}
+            onTexto={t => { setNome(t); setCardId(null); }} />
+          <div className="ed-cnt" style={{ marginTop: 5 }}>
+            {cardId ? "vinculado ao catálogo · id " + cardId
+                    : "avulso — sem vídeo nem grupo muscular"}
+          </div>
+
+          <div className="ed-lab">
+            Método
+            {metodo && <i onClick={() => setMetodo(null)}
+              style={{ cursor: "pointer", color: "var(--warn)" }}>remover</i>}
+          </div>
+          {metodo ? (
+            <div className="ed-met">
+              <b>{metodo.nome}</b>
+              {(fmtMetodo(metodo) || []).map((l, i) => <div key={i}>{l}</div>)}
+            </div>
+          ) : (
+            <button className="chip" style={{ width: "100%" }}
+              onClick={() => setVerMet(v => !v)}>
+              {verMet ? "Fechar" : "Escolher método"}
+            </button>
+          )}
+          {verMet && !metodo && (
+            <div style={{ marginTop: 8 }}>
+              {mets.length === 0
+                ? <div className="ed-cnt">
+                    Nenhum método na tabela ainda. Os ~40 templates estão no código do
+                    App — migra eles para a tabela <code>metodos</code> e eles aparecem aqui.
+                  </div>
+                : <Combobox
+                    opcoes={mets.map(m => ({
+                      value: m.id, label: m.nome, grupo: m.familia || "Sem família" }))}
+                    value="" onChange={v => {
+                      const m = mets.find(x => String(x.id) === String(v));
+                      if (m) { setMetodo({ nome: m.nome, tipo: m.tipo, series: m.series });
+                               setVerMet(false); }
+                    }}
+                    placeholder="Buscar método..." />}
+            </div>
+          )}
+
+          <div className="ed-lab">
+            Séries
+            {metodo && <i>vem do método: {metodo.series.length}</i>}
+          </div>
+          {!metodo && (
+            <>
+              <Chips opcoes={SERIES_OPC} valor={nSer} onPick={setNSer} />
+              <input value={nSer} onChange={e => setNSer(e.target.value)}
+                placeholder="ou digite" style={{ marginTop: 7, marginBottom: 0 }} />
+            </>
+          )}
+
+          <div className="ed-lab">Repetições</div>
+          <Chips opcoes={REPS_OPC} valor={reps} onPick={setReps} mini />
+          <input value={reps} onChange={e => setReps(e.target.value)}
+            placeholder='ou digite (ex: "até a falha")'
+            style={{ marginTop: 7, marginBottom: 0 }} />
+
+          <div className="ed-lab">Descanso <i>segundos</i></div>
+          <Chips opcoes={DESC_OPC} valor={desc} onPick={setDesc} mini />
+          <input value={desc} onChange={e => setDesc(e.target.value)}
+            placeholder="ou digite (ex: 75 ou 60~90)"
+            style={{ marginTop: 7, marginBottom: 0 }} />
+
+          <div className="ed-lab">
+            Observação para o aluno <i>{obs.length}/500</i>
+          </div>
+          <textarea value={obs} maxLength={500} rows={3}
+            onChange={e => setObs(e.target.value)}
+            placeholder="Ex: segure 2s embaixo, escápula retraída..." />
+
+          {ex && ex.audio_url && (
+            <>
+              <div className="ed-lab">Dica em áudio <i>o aluno ouve</i></div>
+              <div className="ed-audio">
+                <audio controls src={ex.audio_url} />
+              </div>
+              <div className="ed-cnt" style={{ marginTop: 5 }}>
+                Gravar áudio só pelo App. Aqui dá para ouvir.
+              </div>
+            </>
+          )}
+
+          <div className="ed-lab">Filmar</div>
+          <div className={"ed-tog" + (filmar ? " on" : "")}
+            onClick={() => setFilmar(v => !v)}>
+            <div className="sw"><i /></div>
+            <div>
+              <b>🎥 Recomendado filmar?</b>
+              <span>O aluno vê um aviso neste exercício</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="ed-f">
+          <button className="btn-sec" onClick={onFechar}>Cancelar</button>
+          <button onClick={salvar} disabled={busy || !nome.trim()}>
+            {busy ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ---------- Montagem de treino (leitura) ---------- */
 /* Fase A: só lê. Nada aqui escreve no banco — o App Idealis
    continua sendo o único que grava treino/exercício por enquanto. */
@@ -2891,6 +3239,8 @@ function PainelMontagem() {
   const [exs, setExs]       = useState({});
   const [erro, setErro]     = useState("");
   const [carregando, setCarr] = useState(false);
+  const [editando, setEdit] = useState(null);   // {ex} ou {treinoId, ordem}
+  const [relatos, setRelatos] = useState({});
 
   const hoje = dISO(new Date());
 
@@ -2933,6 +3283,23 @@ function PainelMontagem() {
         (mapa[x.treino_id] = mapa[x.treino_id] || []).push(x);
       }
       setExs(mapa);
+
+      /* anotações do aluno por exercício — a tabela pode não existir ainda,
+         então falha em silêncio em vez de quebrar a tela */
+      const r = await sb.from("relatos")
+        .select("id, exercicio_id, exercicio_nome, data, texto, fixado, created_at")
+        .in("exercicio_id", (e.data || []).map(x => x.id))
+        .order("fixado", { ascending: false })
+        .order("data", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
+      if (r.error) { setErro("relatos: " + r.error.message); }
+      else {
+        const mr = {};
+        for (const x of (r.data || [])) {
+          (mr[x.exercicio_id] = mr[x.exercicio_id] || []).push(x);
+        }
+        setRelatos(mr);
+      }
     }
     setCarr(false);
   }, []);
@@ -2950,13 +3317,37 @@ function PainelMontagem() {
     futuros: fases.filter(f => situacaoFase(f, hoje) === "futura").length
   };
 
-  function Exercicio({ ex }) {
+  async function moverEx(lista, i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= lista.length) return;
+    const a = lista[i], b = lista[j];
+    const oa = a.ordem ?? i, ob = b.ordem ?? j;
+    const r1 = await sb.from("exercicios").update({ ordem: ob }).eq("id", a.id);
+    const r2 = await sb.from("exercicios").update({ ordem: oa }).eq("id", b.id);
+    if (r1.error || r2.error) { setErro((r1.error || r2.error).message); return; }
+    await abrirFase(faseSel);
+  }
+
+  async function apagarEx(ex) {
+    if (!window.confirm('Apagar "' + ex.nome + '"? Os registros de carga do aluno vão junto.')) return;
+    const r = await sb.from("exercicios").delete().eq("id", ex.id);
+    if (r.error) { setErro(r.error.message); return; }
+    await abrirFase(faseSel);
+  }
+
+  function Exercicio({ ex, lista, i }) {
     const n = nSeriesDe(ex);
     const met = fmtMetodo(ex.metodo);
     const car = fmtCardio(ex.cardio);
     const reps = String(ex.series || "").replace(/^\s*\d+\s*[x×]\s*/i, "");
     return (
       <div className="mt-ex">
+        <div className="ferr">
+          <button onClick={() => moverEx(lista, i, -1)} title="Subir">▲</button>
+          <button onClick={() => moverEx(lista, i, 1)} title="Descer">▼</button>
+          <button onClick={() => setEdit({ ex })} title="Editar">✎</button>
+          <button onClick={() => apagarEx(ex)} title="Apagar">×</button>
+        </div>
         <div className="lin1">
           <span className="ord">{(ex.ordem ?? 0) + 1}</span>
           <span className="nm">{ex.nome}</span>
@@ -2984,6 +3375,29 @@ function PainelMontagem() {
           </div>
         )}
         {ex.observacao && <div className="obs">“{ex.observacao}”</div>}
+        {(() => {
+          const todos = relatos[ex.id] || [];
+          const fix = todos.filter(r => r.fixado);
+          const resto = todos.filter(r => !r.fixado).slice(0, 3);
+          const mostrar = [...fix, ...resto];
+          const ocultos = todos.length - mostrar.length;
+          return (
+            <>
+              {mostrar.map(r => (
+                <div className={"rel" + (r.fixado ? " fix" : "")} key={r.id}>
+                  <div className="quem">
+                    {r.fixado && "📌 "}
+                    {dBR(String(r.data || r.created_at).slice(0, 10))} · aluno
+                  </div>
+                  <div className="txt">{r.texto}</div>
+                </div>
+              ))}
+              {ocultos > 0 && (
+                <div className="rel-mais">+{ocultos} relato(s) mais antigo(s)</div>
+              )}
+            </>
+          );
+        })()}
         <div className="mt-tags">
           {ex.metodo && <span className="mt-tag met">método</span>}
           {ex.cardio && <span className="mt-tag car">cardio</span>}
@@ -3062,7 +3476,14 @@ function PainelMontagem() {
                           </div>
                           {lista.length === 0
                             ? <div className="mt-vazio">Sem exercícios.</div>
-                            : lista.map(ex => <Exercicio key={ex.id} ex={ex} />)}
+                            : lista.map((ex, i) =>
+                                <Exercicio key={ex.id} ex={ex} lista={lista} i={i} />)}
+                          <div className="mt-acao">
+                            <button className="btn-sec"
+                              onClick={() => setEdit({ treinoId: t.id, ordem: lista.length })}>
+                              + Exercício
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -3071,9 +3492,18 @@ function PainelMontagem() {
         </div>
       </div>
 
+      {editando && (
+        <EditorExercicio
+          ex={editando.ex}
+          treinoId={editando.ex ? editando.ex.treino_id : editando.treinoId}
+          ordem={editando.ordem}
+          onFechar={() => setEdit(null)}
+          onSalvo={async () => { setEdit(null); await abrirFase(faseSel); }} />
+      )}
+
       <div className="pl-hint" style={{ marginTop: 18 }}>
-        Esta aba ainda é <b>somente leitura</b> — a montagem continua no App Idealis.
-        Próximo passo: editar nome, séries, descanso e ordem por aqui.
+        Passa o mouse sobre o exercício para <b>reordenar, editar ou apagar</b>.
+        Cardio e criação de novos métodos ainda são feitos no App.
       </div>
     </div>
   );
