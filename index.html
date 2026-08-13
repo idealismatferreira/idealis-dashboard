@@ -424,6 +424,16 @@
     border:1px solid var(--line);border-radius:9px;padding:9px 11px}
   .ed-audio audio{flex:1;height:32px}
   .ed-cnt{font-size:10px;color:var(--mut)}
+  .cd-bl{background:var(--bg);border:1px solid var(--line);border-left:3px solid;
+    border-radius:9px;padding:10px 11px;margin-bottom:8px}
+  .cd-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .cd-n{font-family:ui-monospace,monospace;font-size:11px;color:var(--mut);
+    min-width:14px}
+  .cd-ferr{display:flex;gap:3px;flex-shrink:0}
+  .cd-ferr button{width:auto;padding:3px 6px;font-size:11px;background:var(--card);
+    border:1px solid var(--line);color:var(--mut)}
+  .cd-ferr button:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .cd-lin{display:flex;gap:7px}
   .ac-lista{position:absolute;left:0;right:0;top:calc(100% + 3px);z-index:80;
     background:var(--card);border:1px solid var(--accent);border-radius:8px;
     max-height:230px;overflow-y:auto}
@@ -2907,6 +2917,32 @@ function PainelPlanejamento() {
 /* ---------- Editor de exercício ---------- */
 const REPS_OPC  = ["4 a 6","6 a 8","6 a 10","8 a 10","8 a 12","10 a 12",
                    "10 a 15","12 a 15","15 a 20"];
+/* os 5 níveis válidos — o App mapeia cada um para uma zona de FC */
+const NIVEIS = [
+  { id: "aquecimento", nome: "Aquecimento", cor: "#8fa3a6" },
+  { id: "leve",        nome: "Leve",        cor: "#7fd858" },
+  { id: "moderado",    nome: "Moderado",    cor: "#f0d35e" },
+  { id: "forte",       nome: "Forte",       cor: "#f0855e" },
+  { id: "maximo",      nome: "Máximo",      cor: "#e05c5c" }
+];
+const TEMPO_OPC = ["30s","45s","60s","90s","2min","3min","5min"];
+const corNivel = n => (NIVEIS.find(x => x.id === n) || NIVEIS[1]).cor;
+
+/* soma a duração total do cardio, para mostrar "16min" como o App faz */
+function duracaoCardio(c) {
+  if (!c || !Array.isArray(c.blocos)) return null;
+  const seg = t => {
+    const m = String(t || "").match(/^\s*([\d.,]+)\s*(min|m|'|s|"|seg)?/i);
+    if (!m) return 0;
+    const v = parseFloat(String(m[1]).replace(",", "."));
+    const u = (m[2] || "s").toLowerCase();
+    return (u === "min" || u === "m" || u === "'") ? v * 60 : v;
+  };
+  const um = c.blocos.reduce((a, b) => a + seg(b.tempo), 0);
+  const tot = um * (c.repetir || 1);
+  if (!tot) return null;
+  return tot >= 60 ? Math.round(tot / 60) + "min" : Math.round(tot) + "s";
+}
 const DESC_OPC  = ["30~45","45~60","60~90","90~120","120~180"];
 const SERIES_OPC = [1,2,3,4,5,6];
 
@@ -3012,6 +3048,30 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
   const [verMet, setVerMet] = useState(false);
   const [erro, setErro]     = useState("");
   const [busy, setBusy]     = useState(false);
+  const [ehCard, setEhCard] = useState(!!(ex && ex.cardio));
+  const [card, setCard]     = useState(
+    (ex && ex.cardio) ? ex.cardio : { nome: "", repetir: 1, blocos: [] });
+
+  function mudarBloco(i, campo, v) {
+    setCard(c => ({ ...c, blocos: c.blocos.map((b, k) =>
+      k === i ? { ...b, [campo]: v } : b) }));
+  }
+  function addBloco() {
+    setCard(c => ({ ...c, blocos: [...c.blocos,
+      { tempo: "60s", rotulo: "", nivel: "leve" }] }));
+  }
+  function removeBloco(i) {
+    setCard(c => ({ ...c, blocos: c.blocos.filter((_, k) => k !== i) }));
+  }
+  function moverBloco(i, d) {
+    const j = i + d;
+    setCard(c => {
+      if (j < 0 || j >= c.blocos.length) return c;
+      const b = [...c.blocos];
+      [b[i], b[j]] = [b[j], b[i]];
+      return { ...c, blocos: b };
+    });
+  }
 
   useEffect(() => {
     sb.from("metodos").select("id, nome, familia, tipo, series")
@@ -3019,20 +3079,42 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
       .then(({ data, error }) => { if (!error) setMets(data || []); });
   }, []);
 
-  const ehCardio = !!(ex && ex.cardio);
-
   async function salvar() {
     if (!nome.trim()) { setErro("Preenche o nome do exercício."); return; }
+    if (ehCard && !card.blocos.length) {
+      setErro("Adiciona pelo menos um bloco de cardio."); return;
+    }
     setBusy(true); setErro("");
-    const corpo = {
-      nome: nome.trim(),
-      series: metodo ? montaSeries(metodo.series.length, reps) : montaSeries(nSer, reps),
-      cardapio_id: cardId || null,
-      descanso: desc.trim() || null,
-      observacao: obs.trim() || null,
-      filmar: !!filmar,
-      metodo: metodo || null
-    };
+    /* cardio e musculação são excludentes: um exercício de cardio
+       não tem séries, método nem descanso */
+    const corpo = ehCard
+      ? {
+          nome: nome.trim(),
+          cardapio_id: cardId || null,
+          observacao: obs.trim() || null,
+          filmar: !!filmar,
+          cardio: {
+            nome: card.nome.trim() || nome.trim(),
+            repetir: Math.max(1, parseInt(card.repetir, 10) || 1),
+            blocos: card.blocos.map(b => ({
+              tempo: String(b.tempo || "").trim(),
+              rotulo: String(b.rotulo || "").trim(),
+              nivel: b.nivel || "leve"
+            }))
+          },
+          series: null, descanso: null, metodo: null
+        }
+      : {
+          nome: nome.trim(),
+          series: metodo ? montaSeries(metodo.series.length, reps)
+                         : montaSeries(nSer, reps),
+          cardapio_id: cardId || null,
+          descanso: desc.trim() || null,
+          observacao: obs.trim() || null,
+          filmar: !!filmar,
+          metodo: metodo || null,
+          cardio: null
+        };
     try {
       if (novo) {
         const id = novoUUID();
@@ -3064,13 +3146,6 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
 
         <div className="ed-b">
           {erro && <div className="err">{erro}</div>}
-          {ehCardio && (
-            <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
-                                          color: "#f0a35e" }}>
-              Exercício de <b>cardio</b>. O editor de blocos ainda não existe aqui —
-              o cardio atual é preservado ao salvar. Edita no App se precisar mudar.
-            </div>
-          )}
 
           <div className="ed-lab">Exercício</div>
           <BuscaExercicio valor={nome}
@@ -3081,6 +3156,85 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
                     : "avulso — sem vídeo nem grupo muscular"}
           </div>
 
+          <div className="ed-lab">Tipo</div>
+          <div className={"ed-tog" + (ehCard ? " on" : "")}
+            onClick={() => setEhCard(v => !v)}>
+            <div className="sw"><i /></div>
+            <div>
+              <b>🏃 Cardio</b>
+              <span>Ative se este exercício for cardio</span>
+            </div>
+          </div>
+
+          {ehCard ? (
+            <>
+              <div className="ed-lab">
+                Nome do protocolo <i>{duracaoCardio(card) || "—"}</i>
+              </div>
+              <input value={card.nome}
+                onChange={e => setCard(c => ({ ...c, nome: e.target.value }))}
+                placeholder='Ex: HIIT 60"/30"' style={{ marginBottom: 0 }} />
+
+              <div className="ed-lab">Repetir o conjunto</div>
+              <Chips opcoes={[1,2,3,4,5,6,8,10,12]} valor={card.repetir}
+                onPick={v => setCard(c => ({ ...c, repetir: +v }))} mini />
+              <input type="number" min="1" value={card.repetir}
+                onChange={e => setCard(c => ({ ...c, repetir: e.target.value }))}
+                style={{ marginTop: 7, marginBottom: 0 }} />
+
+              <div className="ed-lab">
+                Blocos <i>{card.blocos.length} bloco(s)</i>
+              </div>
+              {card.blocos.length === 0 && (
+                <div className="ed-cnt" style={{ marginBottom: 8 }}>
+                  Nenhum bloco ainda. Ex: 60s Leve + 30s Forte, repetindo 8×.
+                </div>
+              )}
+              {card.blocos.map((b, i) => (
+                <div className="cd-bl" key={i}
+                  style={{ borderLeftColor: corNivel(b.nivel) }}>
+                  <div className="cd-top">
+                    <span className="cd-n">{i + 1}</span>
+                    <div className="chips" style={{ flex: 1 }}>
+                      {NIVEIS.map(n => (
+                        <button key={n.id}
+                          className={"chip mini" + (b.nivel === n.id ? " on" : "")}
+                          onClick={() => mudarBloco(i, "nivel", n.id)}
+                          style={b.nivel === n.id
+                            ? { background: n.cor, borderColor: n.cor, color: "#04191c" }
+                            : {}}>
+                          {n.nome}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="cd-ferr">
+                      <button onClick={() => moverBloco(i, -1)}>▲</button>
+                      <button onClick={() => moverBloco(i, 1)}>▼</button>
+                      <button onClick={() => removeBloco(i)}>×</button>
+                    </div>
+                  </div>
+                  <div className="cd-lin">
+                    <input value={b.tempo}
+                      onChange={e => mudarBloco(i, "tempo", e.target.value)}
+                      placeholder="60s" style={{ width: 74, marginBottom: 0 }} />
+                    <input value={b.rotulo}
+                      onChange={e => mudarBloco(i, "rotulo", e.target.value)}
+                      placeholder="rótulo (opcional) — ex: Sprint"
+                      style={{ flex: 1, marginBottom: 0 }} />
+                  </div>
+                  <div className="chips" style={{ marginTop: 6 }}>
+                    {TEMPO_OPC.map(t => (
+                      <button key={t} className="chip mini"
+                        onClick={() => mudarBloco(i, "tempo", t)}>{t}</button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <button className="chip" style={{ width: "100%", marginTop: 8 }}
+                onClick={addBloco}>+ Bloco</button>
+            </>
+          ) : (
+          <>
           <div className="ed-lab">
             Método
             {metodo && <i onClick={() => setMetodo(null)}
@@ -3139,6 +3293,9 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
           <input value={desc} onChange={e => setDesc(e.target.value)}
             placeholder="ou digite (ex: 75 ou 60~90)"
             style={{ marginTop: 7, marginBottom: 0 }} />
+
+          </>
+          )}
 
           <div className="ed-lab">
             Observação para o aluno <i>{obs.length}/500</i>
@@ -3480,7 +3637,8 @@ function PainelMontagem() {
                                 <Exercicio key={ex.id} ex={ex} lista={lista} i={i} />)}
                           <div className="mt-acao">
                             <button className="btn-sec"
-                              onClick={() => setEdit({ treinoId: t.id, ordem: lista.length })}>
+                              onClick={() => setEdit({ treinoId: t.id,
+                                ordem: Math.max(-1, ...lista.map(x => x.ordem ?? -1)) + 1 })}>
                               + Exercício
                             </button>
                           </div>
