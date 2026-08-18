@@ -496,6 +496,14 @@
   .ap-h-cnt{display:block;font-size:9px;color:var(--mut);font-weight:500;
     margin-top:2px;letter-spacing:.3px}
   .ap-h-cnt.zero{color:var(--warn)}
+  .ap-tab thead th.cl{cursor:pointer}
+  .ap-tab thead th.cl:hover{background:#16232a;color:var(--accent)}
+  .ap-tab thead th.foco{color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+  .ap-tab.solo thead th{min-width:180px;max-width:180px}
+  .ap-tab.solo .ap-h-nome{max-width:172px;font-size:13px}
+  .ap-tab.solo .ap-cel .v{font-size:15px}
+  .ap-tab.solo .ap-cel .det{font-size:12px}
+  .ap-tab.solo td.eq,.ap-tab.solo thead th.eq{min-width:320px;max-width:320px}
   .ap-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--mut);
     margin-top:11px}
   .ap-leg b{color:var(--txt);font-weight:500}
@@ -3820,6 +3828,8 @@ function PainelAparelhos() {
   const [acs, setAcs]       = useState([]);
   const [mat, setMat]       = useState({});   // "acad|equip" -> {estado, detalhe}
   const [busca, setBusca]   = useState("");
+  const [buscaAc, setBuscaAc] = useState("");
+  const [foco, setFoco]     = useState("");
   const [cat, setCat]       = useState("");
   const [erro, setErro]     = useState("");
   const [aviso, setAviso]   = useState("");
@@ -3961,6 +3971,11 @@ function PainelAparelhos() {
     await carregar();
   }
 
+  /* foco vence tudo: mostra só a academia escolhida */
+  const acsVis = foco
+    ? acs.filter(a => a.id === foco)
+    : acs.filter(a => !buscaAc.trim() || cbCasa(a.nome + " " + (a.cidade || ""), buscaAc));
+
   const cats = [...new Set(eqs.map(e => e.categoria))];
   const visiveis = eqs.filter(e =>
     (!cat || e.categoria === cat) &&
@@ -4004,21 +4019,43 @@ function PainelAparelhos() {
         ))}
       </div>
 
+      <div className="ap-bar">
+        <div style={{ position: "relative", flex: "0 1 230px" }}>
+          <input value={buscaAc} onChange={e => { setBuscaAc(e.target.value); setFoco(""); }}
+            placeholder="Buscar academia..." />
+          {buscaAc && <button className="cb-lim"
+            onClick={() => setBuscaAc("")}>×</button>}
+        </div>
+        {foco ? (
+          <button className="fbtn on" onClick={() => setFoco("")}>
+            {(acs.find(a => a.id === foco) || {}).nome} · ver todas
+          </button>
+        ) : (
+          <span className="ed-cnt">
+            {acsVis.length} de {acs.length} academia(s) · clique no nome para focar
+          </span>
+        )}
+      </div>
+
       {erro && <div className="err">{erro}</div>}
       {aviso && <div className="ok-msg">{aviso}</div>}
 
       {carr ? <div className="msg">Carregando matriz...</div>
        : acs.length === 0 ? <div className="msg">Nenhuma academia cadastrada.</div>
+       : acsVis.length === 0 ? <div className="msg">
+           Nenhuma academia encontrada para "{buscaAc.trim()}".</div>
        : (
         <div className="ap-wrap">
-          <table className="ap-tab">
+          <table className={"ap-tab" + (foco ? " solo" : "")}>
             <thead>
               <tr>
                 <th className="eq">Equipamento</th>
-                {acs.map(a => {
+                {acsVis.map(a => {
                   const c = contaAc(a);
                   return (
-                    <th key={a.id} title={a.nome}>
+                    <th key={a.id} className={"cl" + (foco === a.id ? " foco" : "")}
+                      title={a.nome + "\nclique para ver só esta academia"}
+                      onClick={() => setFoco(f => f === a.id ? "" : a.id)}>
                       <span className="ap-h-nome">{a.nome}</span>
                       <span className={"ap-h-cnt" + (c.total === 0 ? " zero" : "")}>
                         {c.total === 0 ? "não inventariada"
@@ -4033,7 +4070,7 @@ function PainelAparelhos() {
               {linhas.map((l, i) => l.cat ? (
                 <tr className="ap-cat" key={"c" + i}>
                   <td className="eq">{l.cat}</td>
-                  {acs.map(a => (
+                  {acsVis.map(a => (
                     <td key={a.id} style={{ textAlign: "center" }}>
                       <button className="mk" title={"Marcar/desmarcar toda a categoria em " + a.nome}
                         onClick={() => marcarCategoria(a.id, l.cat)}>✓ tudo</button>
@@ -4043,7 +4080,7 @@ function PainelAparelhos() {
               ) : (
                 <tr key={l.eq.id}>
                   <td className="eq" title={l.eq.nome}>{l.eq.nome}</td>
-                  {acs.map(a => {
+                  {acsVis.map(a => {
                     const v = mat[a.id + "|" + l.eq.id];
                     const st = v ? v.estado : "nao_tem";
                     return (
