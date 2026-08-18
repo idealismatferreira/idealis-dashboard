@@ -460,6 +460,61 @@
   .rel.fix{border-left-color:var(--warn);background:#161208}
   .rel.fix .quem{color:var(--warn)}
   .rel-mais{margin-left:24px;margin-top:4px;font-size:10px;color:#3d4d50}
+  /* ============ APARELHOS (matriz) ============ */
+  .ap-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .ap-bar input{margin-bottom:0}
+  .ap-bar button{width:auto;padding:8px 14px;font-size:12px}
+  .ap-wrap{overflow:auto;max-height:calc(100vh - 240px);border:1px solid var(--line);
+    border-radius:10px;background:var(--card)}
+  .ap-tab{border-collapse:separate;border-spacing:0;font-size:12px;width:max-content;
+    min-width:100%}
+  .ap-tab th,.ap-tab td{border-bottom:1px solid #16201f;border-right:1px solid #16201f}
+  .ap-tab thead th{position:sticky;top:0;z-index:3;background:#111a1c;
+    padding:9px 8px;font-weight:600;font-size:11px;vertical-align:bottom;
+    min-width:104px;max-width:104px;text-align:center;line-height:1.35}
+  .ap-tab thead th.eq{left:0;z-index:5;text-align:left;min-width:238px;
+    max-width:238px;background:#111a1c}
+  .ap-tab td.eq{position:sticky;left:0;z-index:2;background:var(--card);
+    padding:7px 11px;min-width:238px;max-width:238px;font-weight:500;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ap-tab tr:hover td.eq{background:#16232a}
+  .ap-cel{text-align:center;cursor:pointer;padding:0;height:31px;position:relative;
+    user-select:none}
+  .ap-cel:hover{background:#16232a}
+  .ap-cel .v{display:block;font-size:13px;line-height:31px}
+  .ap-cel.tem .v{color:var(--accent)}
+  .ap-cel.incerto .v{color:var(--warn)}
+  .ap-cel .det{font-size:10px;color:var(--accent);line-height:31px;font-weight:600}
+  .ap-cat td{background:#0d1618;font-size:10px;text-transform:uppercase;
+    letter-spacing:1px;color:var(--accent);padding:8px 11px;font-weight:700}
+  .ap-cat td.eq{position:sticky;left:0;z-index:2;background:#0d1618}
+  .ap-cat .mk{background:none;border:1px solid var(--line);color:var(--mut);
+    width:auto;padding:2px 6px;font-size:10px;border-radius:4px}
+  .ap-cat .mk:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .ap-h-nome{display:block;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;max-width:96px}
+  .ap-h-cnt{display:block;font-size:9px;color:var(--mut);font-weight:500;
+    margin-top:2px;letter-spacing:.3px}
+  .ap-h-cnt.zero{color:var(--warn)}
+  .ap-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--mut);
+    margin-top:11px}
+  .ap-leg b{color:var(--txt);font-weight:500}
+  .ap-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;margin-top:14px}
+  .ap-add input,.ap-add select{margin-bottom:0;width:auto;min-width:150px}
+  .ap-add button{width:auto;padding:9px 15px;font-size:12px}
+  .ac-chip{display:flex;align-items:center;gap:9px;padding:9px 12px;
+    background:var(--bg);border:1px solid var(--line);border-radius:9px;
+    margin-bottom:7px;cursor:pointer;font-size:13px}
+  .ac-chip:hover{border-color:var(--accent)}
+  .ac-chip.on{border-color:var(--accent);background:#0d1c1f}
+  .ac-chip .bx{width:17px;height:17px;border-radius:5px;border:1px solid var(--line);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:#04191c}
+  .ac-chip.on .bx{background:var(--accent);border-color:var(--accent)}
+  .ac-chip .inv{font-size:10px;color:var(--mut);margin-left:auto}
+  .ac-chip .inv.zero{color:var(--warn)}
   /* ============ PLANEJAMENTO ============ */
   .pl-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
   .pl-top select{min-width:200px}
@@ -1291,6 +1346,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
           <button className="btn-sec" onClick={() => setModo("perguntas")}>
             Perguntas{aluno.perguntas_pendentes ? " (" + aluno.perguntas_pendentes + ")" : ""}
           </button>
+          <button className="btn-sec" onClick={() => setModo("academias")}>
+            Academias
+          </button>
           <button className="btn-sec" onClick={() => setModo("colar")}>Colar nova</button>
           {hist.length > 1 &&
             <button className="btn-sec" onClick={() => setModo("hist")}>Histórico</button>}
@@ -1312,7 +1370,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
           {erro && <div className="err">{erro}</div>}
           {aviso && <div className="ok-msg">{aviso}</div>}
 
-          {modo === "perguntas" ? (
+          {modo === "academias" ? (
+            <PainelAcademiasAluno aluno={aluno} />
+          ) : modo === "perguntas" ? (
             <PainelPerguntas aluno={aluno} />
           ) : modo === "colar" ? (
             <>
@@ -3667,11 +3727,396 @@ function PainelMontagem() {
   );
 }
 
+
+
+/* ---------- Academias do aluno ---------- */
+function PainelAcademiasAluno({ aluno }) {
+  const [acs, setAcs]   = useState([]);
+  const [meus, setMeus] = useState(new Set());
+  const [inv, setInv]   = useState({});
+  const [erro, setErro] = useState("");
+  const [busca, setBusca] = useState("");
+  const [carr, setCarr] = useState(true);
+
+  const carregar = useCallback(async () => {
+    setCarr(true); setErro("");
+    const [a, v, m] = await Promise.all([
+      sb.from("academias").select("id, nome, cidade").eq("ativa", true).order("nome"),
+      sb.from("aluno_academias").select("academia_id, principal").eq("aluno_id", aluno.id),
+      sb.from("academia_equipamentos").select("academia_id")
+    ]);
+    if (a.error || v.error) { setErro((a.error || v.error).message); setCarr(false); return; }
+    setAcs(a.data || []);
+    setMeus(new Set((v.data || []).map(x => x.academia_id)));
+    const cnt = {};
+    for (const x of (m.error ? [] : (m.data || []))) {
+      cnt[x.academia_id] = (cnt[x.academia_id] || 0) + 1;
+    }
+    setInv(cnt); setCarr(false);
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  async function alternar(ac) {
+    const tinha = meus.has(ac.id);
+    setMeus(m => { const n = new Set(m); tinha ? n.delete(ac.id) : n.add(ac.id); return n; });
+    const r = tinha
+      ? await sb.from("aluno_academias").delete()
+          .eq("aluno_id", aluno.id).eq("academia_id", ac.id)
+      : await sb.from("aluno_academias")
+          .insert({ aluno_id: aluno.id, academia_id: ac.id });
+    if (r.error) {
+      setErro(r.error.message);
+      setMeus(m => { const n = new Set(m); tinha ? n.add(ac.id) : n.delete(ac.id); return n; });
+    }
+  }
+
+  const lista = acs.filter(a => !busca.trim() || cbCasa(a.nome + " " + (a.cidade || ""), busca));
+  const ordenada = [...lista].sort((x, y) => {
+    const mx = meus.has(x.id), my = meus.has(y.id);
+    if (mx !== my) return mx ? -1 : 1;
+    return String(x.nome).localeCompare(String(y.nome), "pt-BR");
+  });
+
+  return (
+    <div>
+      {erro && <div className="err">{erro}</div>}
+      <div style={{ position: "relative", marginBottom: 14 }}>
+        <input value={busca} onChange={e => setBusca(e.target.value)}
+          placeholder="Buscar academia..." style={{ marginBottom: 0 }} />
+        {busca && <button className="cb-lim" onClick={() => setBusca("")}>×</button>}
+      </div>
+      <div className="ed-cnt" style={{ marginBottom: 10 }}>
+        {meus.size === 0 ? "Nenhuma academia vinculada."
+          : meus.size + " academia(s) vinculada(s) · clique para alternar"}
+      </div>
+      {carr ? <div className="msg">Carregando...</div>
+       : ordenada.map(a => {
+          const on = meus.has(a.id);
+          const n = inv[a.id] || 0;
+          return (
+            <div key={a.id} className={"ac-chip" + (on ? " on" : "")}
+              onClick={() => alternar(a)}>
+              <span className="bx">{on ? "✓" : ""}</span>
+              <span>{a.nome}{a.cidade ? " · " + a.cidade : ""}</span>
+              <span className={"inv" + (n === 0 ? " zero" : "")}>
+                {n === 0 ? "sem inventário" : n + " marcados"}
+              </span>
+            </div>
+          );
+        })}
+    </div>
+  );
+}
+
+/* ---------- Aparelhos por academia ---------- */
+/* Ausência de linha em academia_equipamentos SIGNIFICA "não tem".
+   Por isso o ciclo apaga a linha em vez de gravar 'nao_tem' — mantém
+   a tabela pequena e faz "academia sem marcação = não inventariada". */
+const CICLO = { undefined: "tem", nao_tem: "tem", tem: "incerto", incerto: null };
+
+function PainelAparelhos() {
+  const [eqs, setEqs]       = useState([]);
+  const [acs, setAcs]       = useState([]);
+  const [mat, setMat]       = useState({});   // "acad|equip" -> {estado, detalhe}
+  const [busca, setBusca]   = useState("");
+  const [cat, setCat]       = useState("");
+  const [erro, setErro]     = useState("");
+  const [aviso, setAviso]   = useState("");
+  const [carr, setCarr]     = useState(true);
+  const [novoEq, setNovoEq] = useState("");
+  const [novaCat, setNovaCat] = useState("Acessórios");
+  const [novaAc, setNovaAc] = useState("");
+  const [copiaDe, setCopiaDe] = useState("");
+  const [copiaPara, setCopiaPara] = useState("");
+
+  const carregar = useCallback(async () => {
+    setCarr(true); setErro("");
+    const [e, a, m] = await Promise.all([
+      sb.from("equipamentos").select("*").eq("ativo", true)
+        .order("categoria").order("ordem").order("nome"),
+      sb.from("academias").select("*").eq("ativa", true).order("nome"),
+      sb.from("academia_equipamentos").select("*")
+    ]);
+    if (e.error || a.error || m.error) {
+      setErro((e.error || a.error || m.error).message); setCarr(false); return;
+    }
+    setEqs(e.data || []); setAcs(a.data || []);
+    const mp = {};
+    for (const x of (m.data || [])) {
+      mp[x.academia_id + "|" + x.equipamento_id] = { estado: x.estado, detalhe: x.detalhe };
+    }
+    setMat(mp); setCarr(false);
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  async function gravar(acId, eqId, estado, detalhe) {
+    const k = acId + "|" + eqId;
+    const antes = mat[k];
+    /* otimista: pinta na hora, desfaz se o banco recusar */
+    setMat(m => {
+      const n = { ...m };
+      if (estado) n[k] = { estado, detalhe: detalhe ?? null };
+      else delete n[k];
+      return n;
+    });
+    let r;
+    if (estado) {
+      r = await sb.from("academia_equipamentos").upsert({
+        academia_id: acId, equipamento_id: eqId, estado,
+        detalhe: detalhe ?? null, atualizado_em: new Date().toISOString()
+      }, { onConflict: "academia_id,equipamento_id" });
+    } else {
+      r = await sb.from("academia_equipamentos").delete()
+        .eq("academia_id", acId).eq("equipamento_id", eqId);
+    }
+    if (r.error) {
+      setErro(r.error.message);
+      setMat(m => { const n = { ...m }; if (antes) n[k] = antes; else delete n[k]; return n; });
+    }
+  }
+
+  function clicar(acId, eqId) {
+    const at = mat[acId + "|" + eqId];
+    const prox = CICLO[at ? at.estado : "undefined"];
+    gravar(acId, eqId, prox, prox === "tem" ? (at && at.detalhe) : null);
+  }
+
+  function editarDetalhe(acId, eqId, nomeEq) {
+    const at = mat[acId + "|" + eqId];
+    if (!at || at.estado !== "tem") {
+      setAviso("Marca como ✅ primeiro para poder anotar a faixa."); return;
+    }
+    const v = window.prompt(
+      'Faixa ou quantidade de "' + nomeEq + '"\n(ex: 1~5, 1~10, 2 — vazio para limpar)',
+      at.detalhe || "");
+    if (v === null) return;
+    gravar(acId, eqId, "tem", v.trim() || null);
+  }
+
+  async function marcarCategoria(acId, categoria) {
+    const lista = eqs.filter(e => e.categoria === categoria);
+    const todos = lista.every(e => (mat[acId + "|" + e.id] || {}).estado === "tem");
+    if (todos) {
+      const r = await sb.from("academia_equipamentos").delete()
+        .eq("academia_id", acId).in("equipamento_id", lista.map(e => e.id));
+      if (r.error) { setErro(r.error.message); return; }
+    } else {
+      const r = await sb.from("academia_equipamentos").upsert(
+        lista.map(e => ({ academia_id: acId, equipamento_id: e.id, estado: "tem",
+                          atualizado_em: new Date().toISOString() })),
+        { onConflict: "academia_id,equipamento_id" });
+      if (r.error) { setErro(r.error.message); return; }
+    }
+    await carregar();
+  }
+
+  async function addEquip() {
+    const n = novoEq.trim();
+    if (!n) return;
+    const maxOrd = Math.max(0, ...eqs.filter(e => e.categoria === novaCat)
+      .map(e => e.ordem || 0));
+    const r = await sb.from("equipamentos")
+      .insert({ nome: n, categoria: novaCat, ordem: maxOrd + 10 });
+    if (r.error) { setErro(r.error.message); return; }
+    setNovoEq(""); setAviso('Equipamento "' + n + '" adicionado.');
+    await carregar();
+  }
+
+  async function addAcademia() {
+    const n = novaAc.trim();
+    if (!n) return;
+    const r = await sb.from("academias").insert({ nome: n });
+    if (r.error) { setErro(r.error.message); return; }
+    setNovaAc(""); setAviso('Academia "' + n + '" adicionada.');
+    await carregar();
+  }
+
+  async function copiar() {
+    if (!copiaDe || !copiaPara || copiaDe === copiaPara) {
+      setErro("Escolhe duas academias diferentes."); return;
+    }
+    const nomeDe = (acs.find(a => a.id === copiaDe) || {}).nome;
+    const nomePara = (acs.find(a => a.id === copiaPara) || {}).nome;
+    const jaTem = Object.keys(mat).filter(k => k.startsWith(copiaPara + "|")).length;
+    if (!window.confirm(
+      'Copiar o inventário de "' + nomeDe + '" para "' + nomePara + '"?' +
+      (jaTem ? "\n\nATENÇÃO: " + nomePara + " já tem " + jaTem +
+               " marcação(ões). Elas serão substituídas." : ""))) return;
+    const linhas = Object.entries(mat)
+      .filter(([k]) => k.startsWith(copiaDe + "|"))
+      .map(([k, v]) => ({
+        academia_id: copiaPara, equipamento_id: k.split("|")[1],
+        estado: v.estado, detalhe: v.detalhe,
+        atualizado_em: new Date().toISOString()
+      }));
+    if (!linhas.length) { setErro("A academia de origem não tem marcações."); return; }
+    const del = await sb.from("academia_equipamentos").delete().eq("academia_id", copiaPara);
+    if (del.error) { setErro(del.error.message); return; }
+    const r = await sb.from("academia_equipamentos").upsert(linhas,
+      { onConflict: "academia_id,equipamento_id" });
+    if (r.error) { setErro(r.error.message); return; }
+    setAviso(linhas.length + " marcação(ões) copiada(s) para " + nomePara + ".");
+    await carregar();
+  }
+
+  const cats = [...new Set(eqs.map(e => e.categoria))];
+  const visiveis = eqs.filter(e =>
+    (!cat || e.categoria === cat) &&
+    (!busca.trim() || cbCasa(e.nome + " " + e.categoria, busca)));
+
+  const contaAc = ac => {
+    let tem = 0, inc = 0;
+    for (const e of eqs) {
+      const v = mat[ac.id + "|" + e.id];
+      if (!v) continue;
+      if (v.estado === "tem") tem++;
+      else if (v.estado === "incerto") inc++;
+    }
+    return { tem, inc, total: tem + inc };
+  };
+
+  /* agrupa mantendo a ordem das categorias */
+  const linhas = [];
+  let catAtual = null;
+  for (const e of visiveis) {
+    if (e.categoria !== catAtual) { catAtual = e.categoria; linhas.push({ cat: catAtual }); }
+    linhas.push({ eq: e });
+  }
+
+  return (
+    <div>
+      <div className="ap-bar">
+        <div style={{ position: "relative", flex: "0 1 230px" }}>
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar equipamento..." />
+          {busca && <button className="cb-lim" onClick={() => setBusca("")}>×</button>}
+        </div>
+        <button className={"fbtn" + (!cat ? " on" : "")} onClick={() => setCat("")}>
+          Todas ({eqs.length})
+        </button>
+        {cats.map(c => (
+          <button key={c} className={"fbtn" + (cat === c ? " on" : "")}
+            onClick={() => setCat(c)}>
+            {c} ({eqs.filter(e => e.categoria === c).length})
+          </button>
+        ))}
+      </div>
+
+      {erro && <div className="err">{erro}</div>}
+      {aviso && <div className="ok-msg">{aviso}</div>}
+
+      {carr ? <div className="msg">Carregando matriz...</div>
+       : acs.length === 0 ? <div className="msg">Nenhuma academia cadastrada.</div>
+       : (
+        <div className="ap-wrap">
+          <table className="ap-tab">
+            <thead>
+              <tr>
+                <th className="eq">Equipamento</th>
+                {acs.map(a => {
+                  const c = contaAc(a);
+                  return (
+                    <th key={a.id} title={a.nome}>
+                      <span className="ap-h-nome">{a.nome}</span>
+                      <span className={"ap-h-cnt" + (c.total === 0 ? " zero" : "")}>
+                        {c.total === 0 ? "não inventariada"
+                          : c.tem + " de " + eqs.length + (c.inc ? " · " + c.inc + "?" : "")}
+                      </span>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {linhas.map((l, i) => l.cat ? (
+                <tr className="ap-cat" key={"c" + i}>
+                  <td className="eq">{l.cat}</td>
+                  {acs.map(a => (
+                    <td key={a.id} style={{ textAlign: "center" }}>
+                      <button className="mk" title={"Marcar/desmarcar toda a categoria em " + a.nome}
+                        onClick={() => marcarCategoria(a.id, l.cat)}>✓ tudo</button>
+                    </td>
+                  ))}
+                </tr>
+              ) : (
+                <tr key={l.eq.id}>
+                  <td className="eq" title={l.eq.nome}>{l.eq.nome}</td>
+                  {acs.map(a => {
+                    const v = mat[a.id + "|" + l.eq.id];
+                    const st = v ? v.estado : "nao_tem";
+                    return (
+                      <td key={a.id} className={"ap-cel " + st}
+                        onClick={() => clicar(a.id, l.eq.id)}
+                        onDoubleClick={e => { e.preventDefault();
+                          editarDetalhe(a.id, l.eq.id, l.eq.nome); }}
+                        title={l.eq.nome + " · " + a.nome +
+                          "\nclique: alterna · duplo clique: faixa/quantidade"}>
+                        {st === "tem" && v.detalhe
+                          ? <span className="det">{v.detalhe}</span>
+                          : <span className="v">
+                              {st === "tem" ? "✓" : st === "incerto" ? "?" : ""}
+                            </span>}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="ap-leg">
+        <span><b>clique</b> alterna: vazio → ✓ tem → ? incerto → vazio</span>
+        <span><b>duplo clique</b> anota faixa (ex: halteres 1~5)</span>
+        <span><b>vazio</b> = não tem</span>
+        <span>academia sem nenhuma marcação = ainda não inventariada</span>
+      </div>
+
+      <div className="ap-add">
+        <b style={{ fontSize: 12 }}>Novo equipamento</b>
+        <input value={novoEq} onChange={e => setNovoEq(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && addEquip()}
+          placeholder="Nome do equipamento" />
+        <select value={novaCat} onChange={e => setNovaCat(e.target.value)}>
+          {cats.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button onClick={addEquip} disabled={!novoEq.trim()}>Adicionar</button>
+      </div>
+
+      <div className="ap-add">
+        <b style={{ fontSize: 12 }}>Nova academia</b>
+        <input value={novaAc} onChange={e => setNovaAc(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && addAcademia()}
+          placeholder="Nome da academia" />
+        <button onClick={addAcademia} disabled={!novaAc.trim()}>Adicionar</button>
+      </div>
+
+      <div className="ap-add">
+        <b style={{ fontSize: 12 }}>Copiar inventário</b>
+        <select value={copiaDe} onChange={e => setCopiaDe(e.target.value)}>
+          <option value="">de...</option>
+          {acs.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
+        </select>
+        <select value={copiaPara} onChange={e => setCopiaPara(e.target.value)}>
+          <option value="">para...</option>
+          {acs.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
+        </select>
+        <button className="btn-sec" onClick={copiar}
+          disabled={!copiaDe || !copiaPara}>Copiar</button>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Backup ---------- */
 const TABELAS_BACKUP = [
   "alunos", "perfis", "treinos", "exercicios", "logs", "sessoes",
   "anamneses", "cardapio", "grupos_exibicao", "modalidades", "perguntas",
-  "fases", "planejamentos", "fase_templates", "fase_categorias", "metodos"
+  "fases", "planejamentos", "fase_templates", "fase_categorias", "metodos",
+  "equipamentos", "academias", "academia_equipamentos", "aluno_academias"
 ];
 
 function PainelBackup() {
@@ -3825,6 +4270,8 @@ function App() {
           onClick={() => setAba("montagem")}>Treinos</button>
         <button className={"tab" + (aba === "planejamento" ? " on" : "")}
           onClick={() => setAba("planejamento")}>Planejamento</button>
+        <button className={"tab" + (aba === "aparelhos" ? " on" : "")}
+          onClick={() => setAba("aparelhos")}>Aparelhos</button>
         <button className={"tab" + (aba === "backup" ? " on" : "")}
           onClick={() => setAba("backup")}>Backup</button>
       </div>
@@ -3832,6 +4279,7 @@ function App() {
         : aba === "volume" ? <PainelVolume />
         : aba === "montagem" ? <PainelMontagem />
         : aba === "planejamento" ? <PainelPlanejamento />
+        : aba === "aparelhos" ? <PainelAparelhos />
         : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
     </div>
