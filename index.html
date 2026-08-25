@@ -307,6 +307,13 @@
   .busca-alunos input{margin-bottom:0;padding:7px 26px 7px 12px;font-size:12px;
     border-radius:20px}
   .busca-alunos .cb-lim{right:6px}
+  .barra-aluno{display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+    padding:11px 14px;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;margin-bottom:16px}
+  .ba-dica{font-size:11px;color:var(--mut)}
+  .sem-aluno{text-align:center;padding:46px 20px;color:var(--mut);font-size:14px;
+    line-height:1.7}
+  .sem-aluno b{display:block;color:var(--txt);font-size:15px;margin-bottom:5px}
   /* ============ COMBOBOX ============ */
   .cb{position:relative}
   .cb input{margin-bottom:0;width:100%}
@@ -1357,6 +1364,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
           <button className="btn-sec" onClick={() => setModo("academias")}>
             Academias
           </button>
+          <button className="btn-sec" onClick={() => setModo("aparelhos")}>
+            Aparelhos
+          </button>
           <button className="btn-sec" onClick={() => setModo("colar")}>Colar nova</button>
           {hist.length > 1 &&
             <button className="btn-sec" onClick={() => setModo("hist")}>Histórico</button>}
@@ -1378,7 +1388,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
           {erro && <div className="err">{erro}</div>}
           {aviso && <div className="ok-msg">{aviso}</div>}
 
-          {modo === "academias" ? (
+          {modo === "aparelhos" ? (
+            <PainelAparelhosAluno aluno={aluno} />
+          ) : modo === "academias" ? (
             <PainelAcademiasAluno aluno={aluno} />
           ) : modo === "perguntas" ? (
             <PainelPerguntas aluno={aluno} />
@@ -2051,8 +2063,7 @@ function htmlEspelho(tb, nome) {
 }
 
 function PainelVolume() {
-  const [alunos, setAlunos] = useState([]);
-  const [sel, setSel]       = useState("");
+  const { alunoId: sel, alunos } = usarAluno();
   const [dados, setDados]   = useState(null);
   const [pend, setPend]     = useState([]);
   const [diverg, setDiverg] = useState([]);
@@ -2060,16 +2071,8 @@ function PainelVolume() {
   const [aviso, setAviso]   = useState("");
   const janela = React.useRef(null);
 
-  useEffect(() => {
-    sb.from("alunos").select("id, nome").order("nome").then(({ data, error }) => {
-      if (error) { setErro(error.message); return; }
-      setAlunos(data || []);
-      if (data && data.length) setSel(data[0].id);
-    });
-  }, []);
-
   const carregar = useCallback(async (alunoId) => {
-    if (!alunoId) return;
+    if (!alunoId) { setDados(null); return; }
     setDados(null); setErro("");
     const [v, p, dv] = await Promise.all([
       sb.from("vw_volume_ciclo").select("*").eq("aluno_id", alunoId),
@@ -2140,19 +2143,19 @@ function PainelVolume() {
   return (
     <div>
       <div className="acoes" style={{ marginBottom: 20 }}>
-        <div style={{ minWidth: 230, flex: "0 1 260px" }}>
-          <Combobox
-            opcoes={alunos.map(a => ({ value: a.id, label: a.nome }))}
-            value={sel} onChange={setSel}
-            placeholder="Buscar aluno..." />
-        </div>
+
         <button className="btn-sec" onClick={() => carregar(sel)}>Recarregar</button>
       </div>
 
       {erro && <div className="err">{erro}</div>}
       {aviso && <div className="ok-msg">{aviso}</div>}
 
-      {dados === null
+      {!sel ? (
+        <div className="sem-aluno">
+          <b>Escolhe um aluno lá em cima</b>
+          O volume prescrito aparece aqui.
+        </div>
+      ) : dados === null
         ? <div className="msg">Calculando...</div>
         : !tb
           ? <div className="msg">
@@ -2459,6 +2462,56 @@ function PainelPerguntas({ aluno }) {
 
 
 
+
+/* ---------- Aluno global ---------- */
+/* Um seletor só para a dashboard inteira. Antes cada aba tinha o seu,
+   então trocar de aba obrigava a escolher o aluno de novo. */
+const CtxAluno = React.createContext({ alunoId: "", setAlunoId: () => {}, alunos: [] });
+const usarAluno = () => React.useContext(CtxAluno);
+
+function ProvedorAluno({ children }) {
+  const [alunos, setAlunos]   = useState([]);
+  const [alunoId, setAlunoId] = useState("");
+  const [carr, setCarr]       = useState(true);
+
+  const recarregar = useCallback(async () => {
+    const { data, error } = await sb.from("alunos")
+      .select("id, nome, status").order("nome");
+    if (!error) setAlunos(data || []);
+    setCarr(false);
+  }, []);
+
+  useEffect(() => { recarregar(); }, [recarregar]);
+
+  const valor = { alunoId, setAlunoId, alunos, carregando: carr, recarregar,
+                  aluno: alunos.find(a => a.id === alunoId) || null };
+  return <CtxAluno.Provider value={valor}>{children}</CtxAluno.Provider>;
+}
+
+function BarraAluno() {
+  const { alunoId, setAlunoId, alunos } = usarAluno();
+  const ativos = alunos.filter(a => a.status === "ativo");
+  const outros = alunos.filter(a => a.status !== "ativo");
+  return (
+    <div className="barra-aluno">
+      <div style={{ flex: "0 1 320px", minWidth: 200 }}>
+        <Combobox
+          opcoes={[
+            ...ativos.map(a => ({ value: a.id, label: a.nome, grupo: "Ativos" })),
+            ...outros.map(a => ({ value: a.id, label: a.nome, grupo: "Inativos" }))
+          ]}
+          value={alunoId} onChange={setAlunoId}
+          placeholder="Escolher aluno..." />
+      </div>
+      {alunoId && (
+        <span className="ba-dica">
+          este aluno vale para Volume, Treinos e Planejamento
+        </span>
+      )}
+    </div>
+  );
+}
+
 /* ---------- Combobox com busca fuzzy ---------- */
 /* tolera acento, maiúscula e termos fora de ordem: "fabio silva"
    encontra "Ana Paula Silva Di Fabio" */
@@ -2716,8 +2769,7 @@ function desenharPlanejamento(plan, fases, aluno) {
 }
 
 function PainelPlanejamento() {
-  const [alunos, setAlunos]   = useState([]);
-  const [sel, setSel]         = useState("");
+  const { alunoId: sel, alunos } = usarAluno();
   const [tpls, setTpls]       = useState([]);
   const [cats, setCats]       = useState([]);
   const [plan, setPlan]       = useState(null);
@@ -2729,12 +2781,10 @@ function PainelPlanejamento() {
 
   useEffect(() => {
     (async () => {
-      const [a, t, c] = await Promise.all([
-        sb.from("alunos").select("id, nome").order("nome"),
+      const [t, c] = await Promise.all([
         sb.from("fase_templates").select("*").eq("ativo", true).order("ordem"),
         sb.from("fase_categorias").select("*").order("ordem")
       ]);
-      if (!a.error) { setAlunos(a.data || []); if (a.data && a.data.length) setSel(a.data[0].id); }
       if (!t.error) setTpls(t.data || []);
       if (!c.error) setCats(c.data || []);
     })();
@@ -2888,12 +2938,7 @@ function PainelPlanejamento() {
   return (
     <div>
       <div className="pl-top">
-        <div style={{ minWidth: 230, flex: "0 1 260px" }}>
-          <Combobox
-            opcoes={alunos.map(a => ({ value: a.id, label: a.nome }))}
-            value={sel} onChange={setSel}
-            placeholder="Buscar aluno..." />
-        </div>
+
         <input type="date" value={(plan && plan.data_emissao) || ""}
           onChange={e => { setPlan(p => ({ ...p, data_emissao: e.target.value })); setSujo(true); }}
           title="Data de emissão" />
@@ -2917,12 +2962,19 @@ function PainelPlanejamento() {
         </div>
       )}
 
-      <div className="pl-tit">
+      {!sel && (
+        <div className="sem-aluno">
+          <b>Escolhe um aluno lá em cima</b>
+          O planejamento de periodização dele aparece aqui.
+        </div>
+      )}
+
+      <div className="pl-tit" style={{ display: sel ? "block" : "none" }}>
         <h2>{(plan && plan.titulo) || "Planejamento de Periodização"}</h2>
         <div className="aln">{nomeAluno}</div>
       </div>
 
-      <div className="pl-grid">
+      <div className="pl-grid" style={{ display: sel ? "" : "none" }}>
         <div className="pl-lab" />
         {fases.map((f, i) => (
           <div className={"pl-cel " + (i % 2 ? "cb2" : "ca")} key={"h" + i}>
@@ -3455,8 +3507,7 @@ function situacaoFase(f, hojeISO) {
 }
 
 function PainelMontagem() {
-  const [alunos, setAlunos] = useState([]);
-  const [sel, setSel]       = useState("");
+  const { alunoId: sel, alunos } = usarAluno();
   const [fases, setFases]   = useState([]);
   const [faseSel, setFaseSel] = useState("");
   const [aba, setAbaF]      = useState("atuais");
@@ -3469,16 +3520,8 @@ function PainelMontagem() {
 
   const hoje = dISO(new Date());
 
-  useEffect(() => {
-    sb.from("alunos").select("id, nome").order("nome").then(({ data, error }) => {
-      if (error) { setErro(error.message); return; }
-      setAlunos(data || []);
-      if (data && data.length) setSel(data[0].id);
-    });
-  }, []);
-
   const carregar = useCallback(async (alunoId) => {
-    if (!alunoId) return;
+    if (!alunoId) { setFases([]); setTreinos([]); setExs({}); setCarr(false); return; }
     setCarr(true); setErro(""); setTreinos([]); setExs({});
     const f = await sb.from("fases").select("*")
       .eq("aluno_id", alunoId).order("inicio", { ascending: false });
@@ -3637,12 +3680,7 @@ function PainelMontagem() {
   return (
     <div>
       <div className="mt-bar">
-        <div style={{ minWidth: 230, flex: "0 1 260px" }}>
-          <Combobox
-            opcoes={alunos.map(a => ({ value: a.id, label: a.nome }))}
-            value={sel} onChange={setSel}
-            placeholder="Buscar aluno..." />
-        </div>
+
         <button className={"fbtn" + (aba === "anteriores" ? " on" : "")}
           onClick={() => setAbaF("anteriores")}>Anteriores ({cont.anteriores})</button>
         <button className={"fbtn" + (aba === "atuais" ? " on" : "")}
@@ -3653,6 +3691,12 @@ function PainelMontagem() {
 
       {erro && <div className="err">{erro}</div>}
 
+      {!sel ? (
+        <div className="sem-aluno">
+          <b>Escolhe um aluno lá em cima</b>
+          As fases e os treinos dele aparecem aqui.
+        </div>
+      ) : (
       <div className="mt-cols">
         <div>
           {porAba.length === 0
@@ -3717,6 +3761,7 @@ function PainelMontagem() {
                 )}
         </div>
       </div>
+      )}
 
       {editando && (
         <EditorExercicio
@@ -3736,6 +3781,192 @@ function PainelMontagem() {
 }
 
 
+
+
+/* ---------- Aparelhos das academias do aluno ---------- */
+/* Mesma matriz da aba geral, mas filtrada nas academias do aluno.
+   É o contexto em que a informação realmente importa. */
+function PainelAparelhosAluno({ aluno }) {
+  const [eqs, setEqs]     = useState([]);
+  const [acs, setAcs]     = useState([]);
+  const [mat, setMat]     = useState({});
+  const [busca, setBusca] = useState("");
+  const [cat, setCat]     = useState("");
+  const [soFalta, setSoFalta] = useState(false);
+  const [erro, setErro]   = useState("");
+  const [carr, setCarr]   = useState(true);
+
+  const carregar = useCallback(async () => {
+    setCarr(true); setErro("");
+    const v = await sb.from("aluno_academias")
+      .select("academia_id, principal, academias(id, nome, cidade)")
+      .eq("aluno_id", aluno.id);
+    if (v.error) { setErro(v.error.message); setCarr(false); return; }
+    const minhas = (v.data || []).map(x => x.academias).filter(Boolean);
+    setAcs(minhas);
+    if (!minhas.length) { setCarr(false); return; }
+
+    const [e, m] = await Promise.all([
+      sb.from("equipamentos").select("*").eq("ativo", true)
+        .order("categoria").order("ordem").order("nome"),
+      sb.from("academia_equipamentos").select("*")
+        .in("academia_id", minhas.map(a => a.id))
+    ]);
+    if (e.error || m.error) { setErro((e.error || m.error).message); setCarr(false); return; }
+    setEqs(e.data || []);
+    const mp = {};
+    for (const x of (m.data || [])) {
+      mp[x.academia_id + "|" + x.equipamento_id] = { estado: x.estado, detalhe: x.detalhe };
+    }
+    setMat(mp); setCarr(false);
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  async function gravar(acId, eqId, estado, detalhe) {
+    const k = acId + "|" + eqId;
+    const antes = mat[k];
+    setMat(m => {
+      const n = { ...m };
+      if (estado) n[k] = { estado, detalhe: detalhe ?? null }; else delete n[k];
+      return n;
+    });
+    const r = estado
+      ? await sb.from("academia_equipamentos").upsert({
+          academia_id: acId, equipamento_id: eqId, estado,
+          detalhe: detalhe ?? null, atualizado_em: new Date().toISOString()
+        }, { onConflict: "academia_id,equipamento_id" })
+      : await sb.from("academia_equipamentos").delete()
+          .eq("academia_id", acId).eq("equipamento_id", eqId);
+    if (r.error) {
+      setErro(r.error.message);
+      setMat(m => { const n = { ...m }; if (antes) n[k] = antes; else delete n[k]; return n; });
+    }
+  }
+
+  function clicar(acId, eqId) {
+    const at = mat[acId + "|" + eqId];
+    const prox = CICLO[at ? at.estado : "undefined"];
+    gravar(acId, eqId, prox, prox === "tem" ? (at && at.detalhe) : null);
+  }
+
+  function editarDetalhe(acId, eqId, nomeEq) {
+    const at = mat[acId + "|" + eqId];
+    if (!at || at.estado !== "tem") return;
+    const v = window.prompt('Faixa ou quantidade de "' + nomeEq + '" (ex: 1~5)',
+      at.detalhe || "");
+    if (v === null) return;
+    gravar(acId, eqId, "tem", v.trim() || null);
+  }
+
+  if (carr) return <div className="msg">Carregando...</div>;
+  if (erro)  return <div className="err">{erro}</div>;
+  if (!acs.length) return (
+    <div className="sem-aluno">
+      <b>Sem academia vinculada</b>
+      Vincula uma academia na aba <b>Academias</b> para ver os aparelhos aqui.
+    </div>
+  );
+
+  const cats = [...new Set(eqs.map(e => e.categoria))];
+  const semMarca = e => acs.every(a => !mat[a.id + "|" + e.id]);
+  const visiveis = eqs.filter(e =>
+    (!cat || e.categoria === cat) &&
+    (!busca.trim() || cbCasa(e.nome + " " + e.categoria, busca)) &&
+    (!soFalta || semMarca(e)));
+
+  const totalMarcado = eqs.filter(e => !semMarca(e)).length;
+  const faltam = eqs.length - totalMarcado;
+
+  const linhas = [];
+  let catAtual = null;
+  for (const e of visiveis) {
+    if (e.categoria !== catAtual) { catAtual = e.categoria; linhas.push({ cat: catAtual }); }
+    linhas.push({ eq: e });
+  }
+
+  return (
+    <div>
+      <div className="ed-cnt" style={{ marginBottom: 11, lineHeight: 1.7 }}>
+        {acs.map(a => a.nome).join(" · ")}
+        <br />
+        <b style={{ color: faltam ? "var(--warn)" : "var(--accent)" }}>
+          {totalMarcado} de {eqs.length} equipamentos marcados
+        </b>
+        {faltam > 0 && " · faltam " + faltam + " sem marcação"}
+      </div>
+
+      <div className="ap-bar">
+        <div style={{ position: "relative", flex: "0 1 200px" }}>
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar equipamento..." />
+          {busca && <button className="cb-lim" onClick={() => setBusca("")}>×</button>}
+        </div>
+        <button className={"fbtn" + (soFalta ? " on" : "")}
+          onClick={() => setSoFalta(v => !v)}>
+          {soFalta ? "Vendo só os que faltam" : "Só o que falta"}
+        </button>
+      </div>
+      <div className="ap-bar">
+        <button className={"fbtn" + (!cat ? " on" : "")} onClick={() => setCat("")}>Todas</button>
+        {cats.map(c => (
+          <button key={c} className={"fbtn" + (cat === c ? " on" : "")}
+            onClick={() => setCat(c)}>{c}</button>
+        ))}
+      </div>
+
+      {visiveis.length === 0
+        ? <div className="msg">
+            {soFalta ? "Tudo marcado nesta seleção. 🎉" : "Nada encontrado."}
+          </div>
+        : (
+        <div className="ap-wrap" style={{ maxHeight: "none" }}>
+          <table className="ap-tab solo">
+            <thead>
+              <tr>
+                <th className="eq">Equipamento</th>
+                {acs.map(a => <th key={a.id} title={a.nome}>
+                  <span className="ap-h-nome">{a.nome}</span></th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {linhas.map((l, i) => l.cat ? (
+                <tr className="ap-cat" key={"c" + i}>
+                  <td className="eq">{l.cat}</td>
+                  {acs.map(a => <td key={a.id} />)}
+                </tr>
+              ) : (
+                <tr key={l.eq.id}>
+                  <td className="eq" title={l.eq.nome}>{l.eq.nome}</td>
+                  {acs.map(a => {
+                    const v = mat[a.id + "|" + l.eq.id];
+                    const st = v ? v.estado : "nao_tem";
+                    return (
+                      <td key={a.id} className={"ap-cel " + st}
+                        onClick={() => clicar(a.id, l.eq.id)}
+                        onDoubleClick={ev => { ev.preventDefault();
+                          editarDetalhe(a.id, l.eq.id, l.eq.nome); }}
+                        title="clique: alterna · duplo clique: faixa">
+                        {st === "tem" && v.detalhe
+                          ? <span className="det">{v.detalhe}</span>
+                          : <span className="v">
+                              {st === "tem" ? "✓" : st === "incerto" ? "?" : ""}
+                            </span>}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="ap-leg">
+        <span><b>clique</b> alterna · <b>duplo clique</b> anota faixa</span>
+      </div>
+    </div>
+  );
+}
 
 /* ---------- Academias do aluno ---------- */
 function PainelAcademiasAluno({ aluno }) {
@@ -4290,7 +4521,10 @@ function App() {
   if (sessao === undefined) return <div className="msg">Carregando...</div>;
   if (!sessao) return <Login />;
 
+  const abasComAluno = ["volume", "montagem", "planejamento"];
+
   return (
+    <ProvedorAluno>
     <div>
       <div className="top">
         <Logo size={36} />
@@ -4308,10 +4542,12 @@ function App() {
         <button className={"tab" + (aba === "planejamento" ? " on" : "")}
           onClick={() => setAba("planejamento")}>Planejamento</button>
         <button className={"tab" + (aba === "aparelhos" ? " on" : "")}
-          onClick={() => setAba("aparelhos")}>Aparelhos</button>
+          onClick={() => setAba("aparelhos")}>Aparelhos Geral</button>
         <button className={"tab" + (aba === "backup" ? " on" : "")}
           onClick={() => setAba("backup")}>Backup</button>
       </div>
+      {abasComAluno.includes(aba) && <BarraAluno />}
+
       {aba === "alunos" ? <PainelAlunos />
         : aba === "volume" ? <PainelVolume />
         : aba === "montagem" ? <PainelMontagem />
@@ -4320,6 +4556,7 @@ function App() {
         : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
     </div>
+    </ProvedorAluno>
   );
 }
 
