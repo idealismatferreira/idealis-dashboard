@@ -166,6 +166,29 @@
   .sec-card.dor .ent .dt{color:#ff8f6b}
   .ent .tx{flex:1}
   .vazio-nota{font-size:12px;color:#4a5a5d;font-style:italic}
+  .dr-copiar{position:absolute;top:15px;right:52px;display:flex;gap:2px}
+  .dr-copiar .ico{padding:6px 9px}
+  .dr-copiar .car{padding:6px 6px;font-size:11px}
+  .dr-menu{position:absolute;top:calc(100% + 4px);right:0;background:var(--card);
+    border:1px solid var(--accent);border-radius:8px;z-index:60;min-width:200px;
+    box-shadow:0 10px 30px rgba(0,0,0,.6);overflow:hidden}
+  .dr-menu div{padding:10px 13px;font-size:12px;cursor:pointer;
+    border-bottom:1px solid #182224;white-space:nowrap}
+  .dr-menu div:last-child{border-bottom:none}
+  .dr-menu div:hover{background:#0f2a2e;color:var(--accent)}
+  .sec-h{align-items:center}
+  .sec-lapis{background:none;border:1px solid transparent;color:#3d4d50;
+    width:auto;padding:2px 7px;font-size:12px;border-radius:6px;cursor:pointer}
+  .sec-card:hover .sec-lapis{color:var(--mut);border-color:var(--line)}
+  .sec-lapis:hover{color:var(--accent) !important;border-color:var(--accent) !important;
+    filter:none}
+  .sec-bloq{font-size:11px;opacity:.35;cursor:help}
+  .sec-ed{margin-top:6px}
+  .sec-ed textarea{font-size:13px;line-height:1.55;min-height:70px}
+  .sec-vazias{background:none;border:1px dashed var(--line);color:var(--mut);
+    width:100%;padding:9px;font-size:11px;border-radius:9px;margin-top:6px;
+    cursor:pointer}
+  .sec-vazias:hover{border-color:var(--accent);color:var(--accent);filter:none}
   .raw{width:100%;min-height:300px;font-size:12px;line-height:1.6}
   .hist-it{display:flex;justify-content:space-between;padding:8px 0;
     border-bottom:1px solid #182224;font-size:12px;color:var(--mut)}
@@ -307,6 +330,28 @@
   .busca-alunos input{margin-bottom:0;padding:7px 26px 7px 12px;font-size:12px;
     border-radius:20px}
   .busca-alunos .cb-lim{right:6px}
+  .toasts{position:fixed;right:18px;bottom:18px;z-index:200;display:flex;
+    flex-direction:column;gap:8px;pointer-events:none;max-width:min(380px,90vw)}
+  .toast{background:var(--card);border:1px solid var(--line);border-left:3px solid;
+    border-radius:9px;padding:12px 15px;font-size:13px;line-height:1.5;
+    box-shadow:0 10px 34px rgba(0,0,0,.6);animation:tin .22s ease-out}
+  .toast.ok{border-left-color:var(--accent);color:#c8f4f8}
+  .toast.erro{border-left-color:var(--alert);color:#f5b8b8}
+  .toast.aviso{border-left-color:var(--warn);color:#f3d1a8}
+  @keyframes tin{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  .conf{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:91;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:24px;width:min(430px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.7)}
+  .conf h3{font-size:17px;margin:0 0 8px}
+  .conf p{font-size:13px;color:var(--mut);line-height:1.6;margin:0 0 14px}
+  .conf-al{background:#2a1a12;border:1px solid #5c3a24;color:var(--warn);
+    padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.55;
+    margin-bottom:16px}
+  .conf-bt{display:flex;gap:9px}
+  .conf-bt button{flex:1;padding:11px}
+  .conf-bt button.perigo{background:var(--alert);color:#fff}
+  .tab.eng{margin-left:auto;padding:10px 12px;font-size:15px;border-bottom-color:transparent}
+  .tab.eng.on{color:var(--accent);border-bottom-color:var(--accent)}
   .barra-aluno{display:flex;gap:12px;align-items:center;flex-wrap:wrap;
     padding:11px 14px;background:var(--card);border:1px solid var(--line);
     border-radius:11px;margin-bottom:16px}
@@ -1255,7 +1300,120 @@ function resumirAnamnese(txt, meses) {
   return out.join("\n");
 }
 
+
+/* nome curto na planilha -> nome legível na tela */
+const SECAO_NOME = {
+  "Obj": "Objetivos",
+  "Diag": "Diagnóstico",
+  "Dor/Pat": "Dor / Patologia",
+  "Tempo": "Tempo de treino",
+  "Dif. Exerc": "Dificuldade em exercícios",
+  "Pref. Treino": "Preferências de treino",
+  "Pref. Exerc": "Preferências de exercícios",
+  "Músc + responsivo": "Músculo mais responsivo",
+  "Músc - responsivo": "Músculo menos responsivo",
+  "Coord": "Coordenação",
+  "Obs Gerais": "Observações gerais",
+  "Supl/Med": "Suplementos e medicamentos",
+  "Hist": "Histórico",
+  "Outras Ativs": "Outras atividades"
+};
+const nomeSecao = r => SECAO_NOME[r] || r;
+
+/* ---------- Edição cirúrgica de uma seção ----------
+   NÃO remonta o texto inteiro: acha as linhas daquela seção no texto
+   original e troca só elas, preservando o cabeçalho byte a byte.
+   Remontar tudo alteraria espaços e quebraria seções vizinhas — testei. */
+function limitesSecao(txt, rotulo) {
+  const linhas = String(txt).replace(/\r/g, "").split("\n");
+  let ini = -1, fim = linhas.length;
+  for (let i = 0; i < linhas.length; i++) {
+    const m = linhas[i].trim().match(/^-\s*([^:]{1,26}?)\s*:\s*(.*)$/);
+    if (!m) continue;
+    const rot = CANON_SEC.get(normSec(m[1].replace(/\*/g, "").trim())) || m[1].trim();
+    if (ini === -1 && rot === rotulo) { ini = i; continue; }
+    if (ini !== -1) { fim = i; break; }
+  }
+  return { linhas, ini, fim };
+}
+
+function corpoSecao(txt, rotulo) {
+  const { linhas, ini, fim } = limitesSecao(txt, rotulo);
+  if (ini === -1) return null;
+  const m = linhas[ini].trim().match(/^-\s*[^:]{1,26}?\s*:\s*(.*)$/);
+  const naMesmaLinha = m && m[1].trim() ? [m[1].trim()] : [];
+  return [...naMesmaLinha, ...linhas.slice(ini + 1, fim)]
+    .filter(l => l.trim() !== "").join("\n");
+}
+
+function substituirSecao(txt, rotulo, novoCorpo) {
+  const { linhas, ini, fim } = limitesSecao(txt, rotulo);
+  if (ini === -1) return null;
+
+  const cab = linhas[ini];
+  const m = cab.match(/^(\s*-\s*[^:]{1,26}?\s*:)(.*)$/);
+  const prefixo = m ? m[1] : "- " + rotulo + ":";
+  /* a planilha às vezes traz o conteúdo na MESMA linha do rótulo
+     ("- Diag: Possui fascite plantar"). Se era assim e continua cabendo
+     numa linha, mantém assim — senão o formato mudaria sozinho. */
+  const eraInline = !!(m && m[2].trim());
+  const sufixoCab = m ? m[2].match(/^(\s*)/)[1] : " ";
+
+  const corpo = String(novoCorpo).replace(/\r/g, "").split("\n")
+    .filter(l => l.trim() !== "");
+
+  /* preserva as linhas em branco no fim do bloco (inclusive a quebra
+     final do arquivo, que some se a seção for a última) */
+  const cauda = [];
+  for (let i = fim - 1; i > ini && linhas[i].trim() === ""; i--) cauda.unshift(linhas[i]);
+
+  let bloco;
+  if (eraInline && corpo.length <= 1) {
+    bloco = [prefixo + sufixoCab + (corpo[0] || "")];
+    if (!corpo.length) bloco = [prefixo];
+  } else {
+    bloco = [prefixo, ...corpo];
+  }
+
+  return [...linhas.slice(0, ini), ...bloco, ...cauda, ...linhas.slice(fim)].join("\n");
+}
+
+/* quantas vezes esse rótulo aparece no texto */
+function contarSecao(txt, rotulo) {
+  let n = 0;
+  for (const l of String(txt).replace(/\r/g, "").split("\n")) {
+    const m = l.trim().match(/^-\s*([^:]{1,26}?)\s*:\s*(.*)$/);
+    if (!m) continue;
+    const rot = CANON_SEC.get(normSec(m[1].replace(/\*/g, "").trim())) || m[1].trim();
+    if (rot === rotulo) n++;
+  }
+  return n;
+}
+
+/* o corpo digitado não pode conter algo que o parser leia como cabeçalho,
+   senão o texto se reorganiza sozinho ao salvar */
+function linhaVirariaSecao(linha) {
+  return /^-\s*[^:]{1,26}?\s*:/.test(String(linha).trim());
+}
+function corpoTemCabecalho(corpo) {
+  return String(corpo).replace(/\r/g, "").split("\n").filter(linhaVirariaSecao);
+}
+
+/* uma seção só é editável se:
+   1) aparecer uma única vez no texto
+   2) salvar SEM MUDAR NADA devolver o texto byte a byte idêntico
+   Se qualquer uma falhar, mostra cadeado em vez do lápis. */
+function secaoSegura(txt, rotulo) {
+  try {
+    if (contarSecao(txt, rotulo) !== 1) return false;
+    const corpo = corpoSecao(txt, rotulo);
+    if (corpo === null) return false;
+    return substituirSecao(txt, rotulo, corpo) === txt;
+  } catch (e) { return false; }
+}
+
 function DrawerAnamnese({ aluno, onFechar }) {
+  useEsc(true, onFechar);
   const [atual, setAtual]     = useState(undefined);
   const [hist, setHist]       = useState([]);
   const [modo, setModo]       = useState("secoes");
@@ -1265,6 +1423,10 @@ function DrawerAnamnese({ aluno, onFechar }) {
   const [salvando, setSalv]   = useState(false);
   const [edicao, setEdicao]   = useState("");
   const [sujo, setSujo]       = useState(false);
+  const [secEdit, setSecEdit] = useState(null);   // rótulo em edição
+  const [secTexto, setSecTexto] = useState("");
+  const [verVazias, setVerVazias] = useState(false);
+  const [menuCopiar, setMenuCopiar] = useState(false);
 
   const carregar = useCallback(async () => {
     setErro("");
@@ -1312,6 +1474,66 @@ function DrawerAnamnese({ aluno, onFechar }) {
     await carregar();
   }
 
+  function abrirSecao(rot) {
+    if (!atual) return;
+    setSecEdit(rot);
+    setSecTexto(corpoSecao(atual.texto, rot) || "");
+  }
+
+  async function salvarSecao() {
+    if (!atual || !secEdit) return;
+
+    /* o corpo não pode conter linha que o parser leia como cabeçalho */
+    const intrusas = corpoTemCabecalho(secTexto);
+    if (intrusas.length) {
+      setErro('Esta linha seria lida como uma seção nova e reorganizaria o texto: "' +
+        intrusas[0].trim() + '". Tira o hífen do começo ou os dois-pontos.');
+      return;
+    }
+
+    setSalv(true); setErro("");
+
+    /* relê do banco antes de gravar: se mudou desde que a tela abriu
+       (você editou no App, ou em outra aba), aborta em vez de sobrescrever */
+    const chk = await sb.from("anamneses").select("id, texto")
+      .eq("id", atual.id).single();
+    if (chk.error) { setSalv(false); setErro(chk.error.message); return; }
+    if (chk.data.texto !== atual.texto) {
+      setSalv(false);
+      setErro("Esta anamnese mudou em outro lugar depois que você abriu. " +
+        "Nada foi salvo — fecha e abre de novo para pegar a versão nova.");
+      return;
+    }
+
+    const novo = substituirSecao(atual.texto, secEdit, secTexto);
+    if (novo === null) { setSalv(false); setErro("Não achei essa seção no texto."); return; }
+    if (novo === atual.texto) { setSalv(false); setSecEdit(null); return; }
+
+    /* congela a versão anterior uma vez por dia, para sempre existir o "ontem" */
+    const hojeStr = new Date().toISOString().slice(0, 10);
+    const jaCongelouHoje = hist.some(h =>
+      h.congelada && String(h.criado_em).slice(0, 10) === hojeStr);
+    if (!jaCongelouHoje) {
+      await sb.from("anamneses").update({ congelada: true }).eq("id", atual.id);
+      const ins = await sb.from("anamneses")
+        .insert({ aluno_id: aluno.id, texto: novo, origem: "app" });
+      if (ins.error) { setSalv(false); setErro(ins.error.message); return; }
+    } else {
+      const up = await sb.from("anamneses")
+        .update({ texto: novo, atualizado_em: new Date().toISOString() })
+        .eq("id", atual.id);
+      if (up.error) { setSalv(false); setErro(up.error.message); return; }
+    }
+
+    let msg = nomeSecao(secEdit) + " salva.";
+    const r = await gravarNoSheets(aluno, novo);
+    if (r.ok) msg += " Planilha atualizada.";
+    else if (!r.pulou) msg += " ⚠️ Não gravou no Sheets: " + r.erro;
+
+    setSalv(false); setSecEdit(null); setAviso(msg);
+    await carregar();
+  }
+
   async function congelar() {
     if (!atual) return;
     setSalv(true); setErro("");
@@ -1344,6 +1566,25 @@ function DrawerAnamnese({ aluno, onFechar }) {
       <div className="drawer">
         <div className="dr-top">
           <button className="dr-x" onClick={onFechar}>×</button>
+          {atual && (
+            <div className="dr-copiar">
+              <button className="btn-sec ico" title="Copiar anamnese completa"
+                onClick={() => copiar(atual.texto, "Anamnese completa copiada.")}>
+                <IconeCopiar />
+              </button>
+              <button className="btn-sec ico car" title="Mais opções"
+                onClick={() => setMenuCopiar(v => !v)}>▾</button>
+              {menuCopiar && (
+                <div className="dr-menu">
+                  <div onClick={() => { copiar(atual.texto, "Anamnese completa copiada.");
+                    setMenuCopiar(false); }}>Copiar tudo</div>
+                  <div onClick={() => { copiar(resumirAnamnese(atual.texto, 12),
+                    "Copiado só o que é dos últimos 12 meses."); setMenuCopiar(false); }}>
+                    Copiar últimos 12 meses</div>
+                </div>
+              )}
+            </div>
+          )}
           <h2>{aluno.nome}</h2>
           <div className="meta">
             {atual === undefined ? "carregando..."
@@ -1370,18 +1611,7 @@ function DrawerAnamnese({ aluno, onFechar }) {
           <button className="btn-sec" onClick={() => setModo("colar")}>Colar nova</button>
           {hist.length > 1 &&
             <button className="btn-sec" onClick={() => setModo("hist")}>Histórico</button>}
-          {atual && (
-            <>
-              <button onClick={() => copiar(atual.texto, "Anamnese completa copiada.")}>
-                Copiar tudo
-              </button>
-              <button className="btn-sec"
-                onClick={() => copiar(resumirAnamnese(atual.texto, 12),
-                  "Copiado só o que é dos últimos 12 meses.")}>
-                Copiar 12 meses
-              </button>
-            </>
-          )}
+
         </div>
 
         <div className="dr-body">
@@ -1470,32 +1700,91 @@ function DrawerAnamnese({ aluno, onFechar }) {
               Nenhuma anamnese ainda. Usa "Colar nova" para trazer do Sheets.
             </div>
           ) : (
-            ordenadas.map(sec => {
-              const cls = "sec-card" + (DESTAQUE.has(sec.rotulo) ? " dor" : "") +
-                (sec.entradas.length ? "" : " vazia");
+            (() => {
+              const cheias = ordenadas.filter(x => x.entradas.length);
+              const vazias = ordenadas.filter(x => !x.entradas.length);
+              const lista = verVazias ? ordenadas : cheias;
               return (
-                <div className={cls} key={sec.rotulo}>
-                  <div className="sec-h">
-                    <b>{sec.rotulo}</b>
-                    {!sec.conhecida && <i>rótulo fora do padrão</i>}
-                    {sec.entradas.length > 1 && <i>{sec.entradas.length} entradas</i>}
-                  </div>
-                  {sec.entradas.length === 0
-                    ? <div className="vazio-nota">—</div>
-                    : sec.entradas.map((e, i) => {
-                        const f = fatiarEntrada(e);
-                        return (
-                          <div className="ent" key={i}>
-                            <span className={"dt" + (f.data ? "" : " sem")}>
-                              {f.data || "—"}
+                <>
+                  {lista.map(sec => {
+                    const cls = "sec-card" + (DESTAQUE.has(sec.rotulo) ? " dor" : "") +
+                      (sec.entradas.length ? "" : " vazia");
+                    const editavel = atual && sec.conhecida &&
+                      secaoSegura(atual.texto, sec.rotulo);
+                    const emEdicao = secEdit === sec.rotulo;
+                    return (
+                      <div className={cls} key={sec.rotulo}>
+                        <div className="sec-h">
+                          <b>{nomeSecao(sec.rotulo)}</b>
+                          {!sec.conhecida && <i>rótulo fora do padrão</i>}
+                          {sec.entradas.length > 1 && <i>{sec.entradas.length} entradas</i>}
+                          <span style={{ flex: 1 }} />
+                          {!emEdicao && (editavel ? (
+                            <button className="sec-lapis" title={"Editar " + nomeSecao(sec.rotulo)}
+                              onClick={() => abrirSecao(sec.rotulo)}>✎</button>
+                          ) : sec.conhecida && atual ? (
+                            <span className="sec-bloq"
+                              title={contarSecao(atual.texto, sec.rotulo) > 1
+                                ? "Este rótulo aparece " + contarSecao(atual.texto, sec.rotulo) +
+                                  "x no texto. Edição por seção ficaria ambígua — use a aba Editar."
+                                : "O formato desta seção (linha em branco no meio, por exemplo) " +
+                                  "não permite edição segura. Use a aba Editar."}>
+                              🔒
                             </span>
-                            <span className="tx">{f.texto}</span>
+                          ) : null)}
+                        </div>
+
+                        {emEdicao ? (
+                          <div className="sec-ed">
+                            <textarea value={secTexto} rows={Math.max(3, secTexto.split("\n").length + 1)}
+                              onChange={e => setSecTexto(e.target.value)}
+                              placeholder={"Uma entrada por linha. Ex:\n" + hojeCurto() + ": ..."} />
+                            <div className="acoes" style={{ marginTop: 8 }}>
+                              <button onClick={salvarSecao} disabled={salvando}>
+                                {salvando ? "Salvando..." : "Salvar seção"}
+                              </button>
+                              <button className="btn-sec" onClick={() => setSecEdit(null)}>
+                                Cancelar
+                              </button>
+                              <span className="status">só esta seção é alterada</span>
+                            </div>
                           </div>
-                        );
-                      })}
-                </div>
+                        ) : sec.entradas.length === 0
+                          ? <div className="vazio-nota">—</div>
+                          : sec.entradas.map((e, i) => {
+                              const f = fatiarEntrada(e);
+                              return (
+                                <div className="ent" key={i}>
+                                  <span className={"dt" + (f.data ? "" : " sem")}>
+                                    {f.data || "—"}
+                                  </span>
+                                  <span className="tx">{f.texto}</span>
+                                </div>
+                              );
+                            })}
+                      </div>
+                    );
+                  })}
+                  {atual && SECOES_ANAMNESE.filter(r =>
+                    contarSecao(atual.texto, r) > 1).length > 0 && (
+                    <div className="err" style={{ background: "#2a2418",
+                      borderColor: "#5c4a24", color: "#f0a35e", marginTop: 10 }}>
+                      ⚠️ Rótulo repetido no texto:{" "}
+                      {SECOES_ANAMNESE.filter(r => contarSecao(atual.texto, r) > 1)
+                        .map(nomeSecao).join(", ")}. A tela mostra as entradas juntas,
+                      mas o texto original tem duas seções separadas. Vale unificar na aba Editar.
+                    </div>
+                  )}
+                  {vazias.length > 0 && (
+                    <button className="sec-vazias" onClick={() => setVerVazias(v => !v)}>
+                      {verVazias
+                        ? "ocultar seções vazias"
+                        : vazias.length + " seção(ões) vazia(s) · mostrar"}
+                    </button>
+                  )}
+                </>
               );
-            })
+            })()
           )}
         </div>
       </div>
@@ -1559,6 +1848,7 @@ function conciliar(doSheets, noBanco) {
 }
 
 function ModalImportar({ alunos, onFechar, onPronto }) {
+  useEsc(true, onFechar);
   const [url, setUrl]       = useState("");
   const [colado, setColado] = useState("");
   const [linhas, setLinhas] = useState(null);
@@ -2463,6 +2753,77 @@ function PainelPerguntas({ aluno }) {
 
 
 
+
+/* ---------- Toast e confirmação ---------- */
+const CtxUI = React.createContext({ toast: () => {}, confirmar: async () => false });
+const usarUI = () => React.useContext(CtxUI);
+
+function ProvedorUI({ children }) {
+  const [toasts, setToasts] = useState([]);
+  const [conf, setConf]     = useState(null);
+
+  const toast = useCallback((texto, tipo) => {
+    const id = Math.random().toString(36).slice(2);
+    setToasts(t => [...t, { id, texto, tipo: tipo || "ok" }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3600);
+  }, []);
+
+  const confirmar = useCallback((opts) => new Promise(resolve => {
+    setConf({ ...opts, resolve });
+  }), []);
+
+  function fechar(v) { if (conf) { conf.resolve(v); setConf(null); } }
+
+  useEffect(() => {
+    if (!conf) return;
+    const t = e => {
+      if (e.key === "Escape") fechar(false);
+      if (e.key === "Enter")  fechar(true);
+    };
+    document.addEventListener("keydown", t);
+    return () => document.removeEventListener("keydown", t);
+  }, [conf]);
+
+  return (
+    <CtxUI.Provider value={{ toast, confirmar }}>
+      {children}
+      <div className="toasts">
+        {toasts.map(t => (
+          <div key={t.id} className={"toast " + t.tipo}>{t.texto}</div>
+        ))}
+      </div>
+      {conf && (
+        <>
+          <div className="drawer-bg" style={{ zIndex: 90 }} onClick={() => fechar(false)} />
+          <div className="conf">
+            <h3>{conf.titulo}</h3>
+            {conf.texto && <p>{conf.texto}</p>}
+            {conf.alerta && <div className="conf-al">⚠️ {conf.alerta}</div>}
+            <div className="conf-bt">
+              <button className="btn-sec" onClick={() => fechar(false)}>
+                {conf.cancelar || "Cancelar"}
+              </button>
+              <button className={conf.perigo ? "perigo" : ""} onClick={() => fechar(true)}>
+                {conf.ok || "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </CtxUI.Provider>
+  );
+}
+
+/* Esc fecha o overlay mais recente */
+function useEsc(ativo, aoFechar) {
+  useEffect(() => {
+    if (!ativo) return;
+    const t = e => { if (e.key === "Escape") { e.stopPropagation(); aoFechar(); } };
+    document.addEventListener("keydown", t);
+    return () => document.removeEventListener("keydown", t);
+  }, [ativo, aoFechar]);
+}
+
 /* ---------- Aluno global ---------- */
 /* Um seletor só para a dashboard inteira. Antes cada aba tinha o seu,
    então trocar de aba obrigava a escolher o aluno de novo. */
@@ -2471,7 +2832,10 @@ const usarAluno = () => React.useContext(CtxAluno);
 
 function ProvedorAluno({ children }) {
   const [alunos, setAlunos]   = useState([]);
-  const [alunoId, setAlunoId] = useState("");
+  const [alunoId, setAlunoId] = useState(() => {
+    const p = (location.hash || "").replace(/^#\/?/, "").split("/");
+    return p[1] || "";
+  });
   const [carr, setCarr]       = useState(true);
 
   const recarregar = useCallback(async () => {
@@ -2482,6 +2846,13 @@ function ProvedorAluno({ children }) {
   }, []);
 
   useEffect(() => { recarregar(); }, [recarregar]);
+
+  /* o aluno também vai para a URL: #/treinos/<id> sobrevive ao F5 */
+  useEffect(() => {
+    const base = (location.hash || "#/alunos").split("/")[1] || "alunos";
+    const novo = "#/" + base + (alunoId ? "/" + alunoId : "");
+    if (location.hash !== novo) history.replaceState(null, "", novo);
+  }, [alunoId]);
 
   const valor = { alunoId, setAlunoId, alunos, carregando: carr, recarregar,
                   aluno: alunos.find(a => a.id === alunoId) || null };
@@ -3154,6 +3525,7 @@ function BuscaExercicio({ valor, onPick, onTexto }) {
 }
 
 function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
+  useEsc(true, onFechar);
   const novo = !ex;
   const p0 = parseSeries(ex ? ex.series : "");
   const [nome, setNome]     = useState(ex ? ex.nome || "" : "");
@@ -3508,6 +3880,7 @@ function situacaoFase(f, hojeISO) {
 
 function PainelMontagem() {
   const { alunoId: sel, alunos } = usarAluno();
+  const { toast, confirmar } = usarUI();
   const [fases, setFases]   = useState([]);
   const [faseSel, setFaseSel] = useState("");
   const [aba, setAbaF]      = useState("atuais");
@@ -3597,9 +3970,16 @@ function PainelMontagem() {
   }
 
   async function apagarEx(ex) {
-    if (!window.confirm('Apagar "' + ex.nome + '"? Os registros de carga do aluno vão junto.')) return;
+    const ok = await confirmar({
+      titulo: "Apagar exercício?",
+      texto: '"' + ex.nome + '" será removido do treino.',
+      alerta: "Os registros de carga do aluno neste exercício vão junto e não voltam.",
+      ok: "Apagar", perigo: true
+    });
+    if (!ok) return;
     const r = await sb.from("exercicios").delete().eq("id", ex.id);
-    if (r.error) { setErro(r.error.message); return; }
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    toast("Exercício apagado.");
     await abrirFase(faseSel);
   }
 
@@ -4055,6 +4435,7 @@ function PainelAcademiasAluno({ aluno }) {
 const CICLO = { undefined: "tem", nao_tem: "tem", tem: "incerto", incerto: null };
 
 function PainelAparelhos() {
+  const { toast, confirmar } = usarUI();
   const [eqs, setEqs]       = useState([]);
   const [acs, setAcs]       = useState([]);
   const [mat, setMat]       = useState({});   // "acad|equip" -> {estado, detalhe}
@@ -4181,10 +4562,14 @@ function PainelAparelhos() {
     const nomeDe = (acs.find(a => a.id === copiaDe) || {}).nome;
     const nomePara = (acs.find(a => a.id === copiaPara) || {}).nome;
     const jaTem = Object.keys(mat).filter(k => k.startsWith(copiaPara + "|")).length;
-    if (!window.confirm(
-      'Copiar o inventário de "' + nomeDe + '" para "' + nomePara + '"?' +
-      (jaTem ? "\n\nATENÇÃO: " + nomePara + " já tem " + jaTem +
-               " marcação(ões). Elas serão substituídas." : ""))) return;
+    const ok = await confirmar({
+      titulo: "Copiar inventário?",
+      texto: 'De "' + nomeDe + '" para "' + nomePara + '".',
+      alerta: jaTem ? nomePara + " já tem " + jaTem +
+        " marcação(ões). Todas serão substituídas." : null,
+      ok: "Copiar", perigo: !!jaTem
+    });
+    if (!ok) return;
     const linhas = Object.entries(mat)
       .filter(([k]) => k.startsWith(copiaDe + "|"))
       .map(([k, v]) => ({
@@ -4508,9 +4893,30 @@ function PainelBackup() {
 }
 
 /* ---------- App ---------- */
+const ABAS_VALIDAS = ["alunos","volume","montagem","planejamento","catalogo","aparelhos","backup"];
+
 function App() {
   const [sessao, setSessao] = useState(undefined);
-  const [aba, setAba] = useState("alunos");
+  /* aba na URL: F5 não perde o lugar, e dá para abrir duas janelas
+     comparando alunos diferentes */
+  const [aba, setAba] = useState(() => {
+    const h = (location.hash || "").replace(/^#\/?/, "").split("/")[0];
+    return ABAS_VALIDAS.includes(h) ? h : "alunos";
+  });
+
+  useEffect(() => {
+    const novo = "#/" + aba;
+    if (!location.hash.startsWith(novo)) history.replaceState(null, "", novo);
+  }, [aba]);
+
+  useEffect(() => {
+    const t = () => {
+      const h = (location.hash || "").replace(/^#\/?/, "").split("/")[0];
+      if (ABAS_VALIDAS.includes(h)) setAba(h);
+    };
+    window.addEventListener("hashchange", t);
+    return () => window.removeEventListener("hashchange", t);
+  }, []);
 
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => setSessao(data.session));
@@ -4524,6 +4930,7 @@ function App() {
   const abasComAluno = ["volume", "montagem", "planejamento"];
 
   return (
+    <ProvedorUI>
     <ProvedorAluno>
     <div>
       <div className="top">
@@ -4543,8 +4950,9 @@ function App() {
           onClick={() => setAba("planejamento")}>Planejamento</button>
         <button className={"tab" + (aba === "aparelhos" ? " on" : "")}
           onClick={() => setAba("aparelhos")}>Aparelhos Geral</button>
-        <button className={"tab" + (aba === "backup" ? " on" : "")}
-          onClick={() => setAba("backup")}>Backup</button>
+        <button className={"tab eng" + (aba === "backup" ? " on" : "")}
+          title="Backup e exportação"
+          onClick={() => setAba("backup")}>⚙</button>
       </div>
       {abasComAluno.includes(aba) && <BarraAluno />}
 
@@ -4557,6 +4965,7 @@ function App() {
         : <PainelCatalogo />}
     </div>
     </ProvedorAluno>
+    </ProvedorUI>
   );
 }
 
