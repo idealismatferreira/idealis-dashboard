@@ -176,6 +176,10 @@
     border-bottom:1px solid #182224;white-space:nowrap}
   .dr-menu div:last-child{border-bottom:none}
   .dr-menu div:hover{background:#0f2a2e;color:var(--accent)}
+  .nv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  @media (max-width:640px){ .nv-grid{grid-template-columns:1fr} }
+  .fbtn.mais{background:var(--accent);color:#04191c;border-color:var(--accent);
+    font-weight:700;padding:7px 15px}
   .ent.en2{align-items:flex-start;position:relative;padding-right:74px}
   .ent.en2.arq{opacity:.42}
   .en-ferr{position:absolute;right:0;top:4px;display:flex;gap:3px;opacity:0;
@@ -190,6 +194,7 @@
     color:var(--mut);letter-spacing:.3px;white-space:nowrap}
   .en-tag.ex{background:#0f2a2e;color:var(--accent)}
   .en-tag.rg{background:#241a2e;color:#c9a6ff}
+  .en-tag.es{background:#12240f;color:#a7e58c;font-weight:600}
   .mig-cols{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;
     align-items:start}
   .mig-al{padding:9px 12px;border:1px solid var(--line);border-radius:9px;
@@ -837,6 +842,7 @@ function PainelAlunos() {
   const [filtro, setFiltro] = useState("ativo");
   const [importar, setImportar] = useState(false);
   const [migrar, setMigrar] = useState(false);
+  const [novo, setNovo] = useState(false);
   const [mods, setMods] = useState([]);
   const [busca, setBusca] = useState("");
 
@@ -932,6 +938,7 @@ function PainelAlunos() {
           )}
         </div>
         <span style={{ flex: 1 }} />
+        <button className="fbtn mais" onClick={() => setNovo(true)}>+ Aluno</button>
         <button className="fbtn" onClick={() => setMigrar(true)}>Migrar anamneses</button>
         <button className="fbtn" onClick={() => setImportar(true)}>Importar do Sheets</button>
       </div>
@@ -975,6 +982,10 @@ function PainelAlunos() {
           aluno={aberto}
           onFechar={() => { setAberto(null); carregar(); }}
         />
+      )}
+      {novo && (
+        <ModalNovoAluno onFechar={() => setNovo(false)}
+          onCriado={async () => { setNovo(false); await carregar(); }} />
       )}
       {migrar && <PainelMigracao onFechar={() => { setMigrar(false); carregar(); }} />}
       {importar && (
@@ -1277,7 +1288,8 @@ const SECOES_ANAMNESE = [
   "Supl/Med", "Hist", "Outras Ativs"
 ];
 const DESTAQUE = new Set(["Dor/Pat", "Diag"]);
-const normSec = t => String(t || "").replace(/\*/g, "")
+/* ignora o que está entre parênteses: "Coord (Coordenação)" casa com "Coord" */
+const normSec = t => String(t || "").replace(/\*/g, "").replace(/\([^)]*\)/g, " ")
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .toLowerCase().replace(/\s+/g, " ").trim();
 const CANON_SEC = new Map(SECOES_ANAMNESE.map(x => [normSec(x), x]));
@@ -2632,6 +2644,191 @@ function IconeCheck() {
 
 
 
+
+/* ---------- Novo aluno ---------- */
+/* Cria a FICHA. O login (Auth) é passo separado — ver aviso na tela. */
+function ModalNovoAluno({ onFechar, onCriado }) {
+  const { toast } = usarUI();
+  useEsc(true, onFechar);
+  const [nome, setNome]   = useState("");
+  const [email, setEmail] = useState("");
+  const [tel, setTel]     = useState("");
+  const [nasc, setNasc]   = useState("");
+  const [sexo, setSexo]   = useState("");
+  const [modId, setModId] = useState("");
+  const [acId, setAcId]   = useState("");
+  const [obs, setObs]     = useState("");
+  const [texto, setTexto] = useState("");
+  const [mods, setMods]   = useState([]);
+  const [acs, setAcs]     = useState([]);
+  const [erro, setErro]   = useState("");
+  const [busy, setBusy]   = useState(false);
+  const [dupes, setDupes] = useState([]);
+
+  useEffect(() => {
+    Promise.all([
+      sb.from("modalidades").select("id, nome").eq("ativa", true).order("ordem"),
+      sb.from("academias").select("id, nome").eq("ativa", true).order("nome")
+    ]).then(([m, a]) => {
+      if (!m.error) setMods(m.data || []);
+      if (!a.error) setAcs(a.data || []);
+    });
+  }, []);
+
+  /* avisa se já existe alguém com nome parecido, antes de duplicar */
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      const n = nome.trim();
+      if (n.length < 3) { setDupes([]); return; }
+      const { data } = await sb.from("alunos").select("id, nome, status");
+      setDupes((data || []).filter(a => cbCasa(a.nome, n)).slice(0, 4));
+    }, 350);
+    return () => clearTimeout(t);
+  }, [nome]);
+
+  const prev = texto.trim() ? textoParaEntradas(texto) : [];
+  const validas = prev.filter(e => e.conhecida);
+
+  async function criar() {
+    if (!nome.trim()) { setErro("O nome é obrigatório."); return; }
+    setBusy(true); setErro("");
+    try {
+      const ins = await sb.from("alunos").insert({
+        nome: nome.trim(), status: "ativo",
+        modalidade_id: modId || null,
+        email: email.trim() || null,
+        telefone: tel.trim() || null,
+        nascimento: nasc || null,
+        sexo: sexo || null,
+        observacao: obs.trim() || null
+      }).select("id").single();
+      if (ins.error) throw new Error(ins.error.message);
+      const alunoId = ins.data.id;
+
+      if (acId) {
+        const v = await sb.from("aluno_academias")
+          .insert({ aluno_id: alunoId, academia_id: acId, principal: true });
+        if (v.error) throw new Error(v.error.message);
+      }
+
+      if (validas.length) {
+        const linhas = validas.map(e => ({
+          aluno_id: alunoId, secao_id: e.secao_id, data: e.data,
+          data_texto: e.data_texto, texto: e.texto, escala: e.escala || null,
+          ordem: e.ordem, origem: "manual"
+        }));
+        const en = await sb.from("anamnese_entradas").insert(linhas);
+        if (en.error) throw new Error(en.error.message);
+      }
+
+      toast(nome.trim() + " criado(a)" +
+        (validas.length ? " com " + validas.length + " entrada(s)." : "."));
+      onCriado(alunoId);
+    } catch (e) { setErro(e.message); }
+    setBusy(false);
+  }
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="drawer" style={{ width: "min(700px,96vw)" }}>
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h2>Novo aluno</h2>
+          <div className="meta">Cria a ficha. O login do app é um passo separado.</div>
+        </div>
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+
+          <div className="ed-lab">Nome *</div>
+          <input value={nome} onChange={e => setNome(e.target.value)}
+            placeholder="Nome completo" style={{ marginBottom: 0 }} />
+          {dupes.length > 0 && (
+            <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
+              color: "#f0a35e", marginTop: 8 }}>
+              ⚠️ Já existe: {dupes.map(d => d.nome +
+                (d.status !== "ativo" ? " (" + d.status + ")" : "")).join(" · ")}.
+              Confere se não é a mesma pessoa.
+            </div>
+          )}
+
+          <div className="nv-grid">
+            <div>
+              <div className="ed-lab">E-mail</div>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="para o login depois" style={{ marginBottom: 0 }} />
+            </div>
+            <div>
+              <div className="ed-lab">Telefone</div>
+              <input value={tel} onChange={e => setTel(e.target.value)}
+                placeholder="(11) 9..." style={{ marginBottom: 0 }} />
+            </div>
+            <div>
+              <div className="ed-lab">Nascimento</div>
+              <input type="date" value={nasc} onChange={e => setNasc(e.target.value)}
+                style={{ marginBottom: 0 }} />
+            </div>
+            <div>
+              <div className="ed-lab">Sexo</div>
+              <div className="chips">
+                {["Feminino", "Masculino"].map(o => (
+                  <button key={o} className={"chip mini" + (sexo === o ? " on" : "")}
+                    onClick={() => setSexo(sexo === o ? "" : o)}>{o}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="ed-lab">Formato</div>
+          <div className="chips">
+            {mods.map(m => (
+              <button key={m.id} className={"chip mini" + (modId === m.id ? " on" : "")}
+                onClick={() => setModId(modId === m.id ? "" : m.id)}>{m.nome}</button>
+            ))}
+          </div>
+
+          <div className="ed-lab">Academia</div>
+          <Combobox opcoes={acs.map(a => ({ value: a.id, label: a.nome }))}
+            value={acId} onChange={setAcId} placeholder="Buscar academia..." />
+
+          <div className="ed-lab">Observação interna</div>
+          <textarea value={obs} rows={2} onChange={e => setObs(e.target.value)}
+            placeholder="anotação sua, o aluno não vê" />
+
+          <div className="ed-lab">
+            Anamnese inicial <i>opcional · cola o texto e vira entradas</i>
+          </div>
+          <textarea className="raw" style={{ minHeight: 130 }} value={texto}
+            onChange={e => setTexto(e.target.value)}
+            placeholder={"- Obj:\n" + hojeCurto() + ": objetivo do aluno\n- Dor/Pat:\n..."} />
+          {texto.trim() && (
+            <div className="ed-cnt" style={{ marginTop: 6 }}>
+              {validas.length} entrada(s) em{" "}
+              {[...new Set(validas.map(e => nomeSecao(e.secao_id)))].join(", ") || "—"}
+              {prev.length - validas.length > 0 &&
+                " · " + (prev.length - validas.length) + " fora do padrão (ignoradas)"}
+            </div>
+          )}
+
+          <div className="futuro" style={{ marginTop: 18 }}>
+            <b>🔑 Login do app</b>
+            Isto cria só a ficha. Para o aluno entrar no App Idealis, é preciso criar
+            o usuário no Supabase (Authentication → Users) e ligar em <code>perfis</code>.
+            Aluno de consultoria que você acompanha pelo Wiki4Fit não precisa de login.
+          </div>
+
+          <div className="conf-bt" style={{ marginTop: 16 }}>
+            <button className="btn-sec" onClick={onFechar}>Cancelar</button>
+            <button onClick={criar} disabled={busy || !nome.trim()}>
+              {busy ? "Criando..." : "Criar aluno"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ---------- Entradas segmentadas do aluno ---------- */
 function PainelEntradas({ aluno }) {
   const { toast, confirmar } = usarUI();
@@ -2672,7 +2869,8 @@ function PainelEntradas({ aluno }) {
       texto: edit.texto.trim(),
       cardapio_id: edit.cardapio_id || null,
       tipo_id: edit.tipo_id || null,
-      regiao: (edit.regiao || "").trim() || null
+      regiao: (edit.regiao || "").trim() || null,
+      escala: edit.escala || null
     };
     const r = edit.id
       ? await sb.from("anamnese_entradas")
@@ -2767,8 +2965,9 @@ function PainelEntradas({ aluno }) {
                   </span>
                   <span className="tx">
                     {e.texto}
-                    {(e.exercicio || e.tipo || e.regiao) && (
+                    {(e.exercicio || e.tipo || e.regiao || e.escala) && (
                       <span className="en-tags">
+                        {e.escala && <span className="en-tag es">{e.escala}</span>}
                         {e.exercicio && <span className="en-tag ex">{e.exercicio}</span>}
                         {e.tipo && <span className="en-tag"
                           style={{ background: (e.tipo_cor || "#333") + "22",
@@ -2837,6 +3036,19 @@ function PainelEntradas({ aluno }) {
               </>
             )}
 
+            {secEd.usa_escala && (
+              <>
+                <div className="ed-lab">Autorrelato</div>
+                <div className="chips">
+                  {(secEd.escala_opcoes || []).map(o => (
+                    <button key={o} className={"chip mini" + (edit.escala === o ? " on" : "")}
+                      onClick={() => setEdit({ ...edit,
+                        escala: edit.escala === o ? null : o })}>{o}</button>
+                  ))}
+                </div>
+              </>
+            )}
+
             {secEd.usa_regiao && (
               <>
                 <div className="ed-lab">Região</div>
@@ -2866,6 +3078,19 @@ function PainelEntradas({ aluno }) {
 /* ---------- Anamnese segmentada ---------- */
 /* Converte o texto da anamnese em entradas, usando o MESMO parser
    já testado. Não inventa parse novo. */
+/* autorrelato de escala: reconhece "Boa", "MUITO RUIM" etc. no texto */
+const ESCALAS = ["Muito ruim", "Ruim", "Razoável", "Boa", "Excelente"];
+function detectarEscala(texto) {
+  const t = cbNorm(texto).trim();
+  /* do mais longo para o mais curto, senão "Ruim" casaria dentro de "Muito ruim" */
+  const ord = [...ESCALAS].sort((a, b) => b.length - a.length);
+  for (const e of ord) {
+    const n = cbNorm(e);
+    if (t === n || new RegExp("(^|[^a-z])" + n + "([^a-z]|$)").test(t)) return e;
+  }
+  return null;
+}
+
 function textoParaEntradas(txt) {
   const out = [];
   for (const sec of parseAnamnese(txt)) {
@@ -2879,6 +3104,7 @@ function textoParaEntradas(txt) {
         data: f.ts ? dISO(new Date(f.ts)) : null,
         data_texto: f.data || null,
         texto: f.texto.trim(),
+        escala: sec.rotulo === "Coord" ? detectarEscala(f.texto) : null,
         ordem: i
       });
     });
@@ -2925,7 +3151,8 @@ function PainelMigracao({ onFechar }) {
     }
     const linhas = prev.filter(e => e.conhecida).map(e => ({
       aluno_id: sel, secao_id: e.secao_id, data: e.data,
-      data_texto: e.data_texto, texto: e.texto, ordem: e.ordem, origem: "migrado"
+      data_texto: e.data_texto, texto: e.texto, escala: e.escala || null,
+      ordem: e.ordem, origem: "migrado"
     }));
     const r = await sb.from("anamnese_entradas").insert(linhas);
     setBusy(false);
@@ -3022,7 +3249,11 @@ function PainelMigracao({ onFechar }) {
                           <span className={"dt" + (e.data ? "" : " sem")}>
                             {e.data_texto || "—"}
                           </span>
-                          <span className="tx">{e.texto}</span>
+                          <span className="tx">
+                            {e.texto}
+                            {e.escala && <span className="en-tag es"
+                              style={{ marginLeft: 7 }}>{e.escala}</span>}
+                          </span>
                         </div>
                       ))}
                     </div>
