@@ -1474,6 +1474,8 @@ function DrawerAnamnese({ aluno, onFechar }) {
   const [salvando, setSalv]   = useState(false);
   const [edicao, setEdicao]   = useState("");
   const [sujo, setSujo]       = useState(false);
+  const [ents, setEnts]       = useState(null);  // entradas segmentadas
+  const [secDefs, setSecDefs] = useState([]);
   const [secEdit, setSecEdit] = useState(null);   // rótulo em edição
   const [secTexto, setSecTexto] = useState("");
   const [verVazias, setVerVazias] = useState(false);
@@ -1493,6 +1495,13 @@ function DrawerAnamnese({ aluno, onFechar }) {
     setAtual(a);
     setEdicao(a ? a.texto : "");
     setSujo(false);
+
+    const [en, se] = await Promise.all([
+      sb.from("vw_anamnese_entradas").select("*").eq("aluno_id", aluno.id),
+      sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem")
+    ]);
+    setEnts(en.error ? [] : (en.data || []));
+    setSecDefs(se.error ? [] : (se.data || []));
   }, [aluno.id]);
 
   useEffect(() => { carregar(); }, [carregar]);
@@ -1599,6 +1608,16 @@ function DrawerAnamnese({ aluno, onFechar }) {
     await carregar();
   }
 
+  const temEnt = !!(ents && ents.length);
+
+  /* depois da migração, copiar SEMPRE vem das entradas — o texto
+     original não acompanha as edições feitas por lá */
+  function txtCopiar(meses) {
+    if (temEnt) return entradasParaTexto(secDefs, ents, meses);
+    if (!atual) return "";
+    return meses ? resumirAnamnese(atual.texto, meses) : atual.texto;
+  }
+
   function copiar(texto, msg) {
     navigator.clipboard.writeText(texto);
     setAviso(msg);
@@ -1617,21 +1636,30 @@ function DrawerAnamnese({ aluno, onFechar }) {
       <div className="drawer">
         <div className="dr-top">
           <button className="dr-x" onClick={onFechar}>×</button>
-          {atual && (
+          {(atual || temEnt) && (
             <div className="dr-copiar">
-              <button className="btn-sec ico" title="Copiar anamnese completa"
-                onClick={() => copiar(atual.texto, "Anamnese completa copiada.")}>
+              <button className="btn-sec ico"
+                title={"Copiar anamnese" + (temEnt ? " (das entradas)" : " (texto original)")}
+                onClick={() => copiar(txtCopiar(null), "Anamnese copiada.")}>
                 <IconeCopiar />
               </button>
               <button className="btn-sec ico car" title="Mais opções"
                 onClick={() => setMenuCopiar(v => !v)}>▾</button>
               {menuCopiar && (
                 <div className="dr-menu">
-                  <div onClick={() => { copiar(atual.texto, "Anamnese completa copiada.");
-                    setMenuCopiar(false); }}>Copiar tudo</div>
-                  <div onClick={() => { copiar(resumirAnamnese(atual.texto, 12),
+                  <div onClick={() => { copiar(txtCopiar(null), "Anamnese copiada.");
+                    setMenuCopiar(false); }}>
+                    Copiar tudo {temEnt && <i style={{ color: "var(--mut)" }}>· das entradas</i>}
+                  </div>
+                  <div onClick={() => { copiar(txtCopiar(12),
                     "Copiado só o que é dos últimos 12 meses."); setMenuCopiar(false); }}>
                     Copiar últimos 12 meses</div>
+                  {temEnt && atual && (
+                    <div onClick={() => { copiar(atual.texto,
+                      "Texto original (anterior à migração) copiado."); setMenuCopiar(false); }}
+                      style={{ color: "var(--mut)" }}>
+                      Copiar texto original</div>
+                  )}
                 </div>
               )}
             </div>
@@ -1669,6 +1697,14 @@ function DrawerAnamnese({ aluno, onFechar }) {
         <div className="dr-body">
           {erro && <div className="err">{erro}</div>}
           {aviso && <div className="ok-msg">{aviso}</div>}
+
+          {temEnt && modo !== "entradas" && modo !== "hist" && (
+            <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
+              color: "#f0a35e" }}>
+              ⚠️ Este aluno já foi migrado. As <b>Entradas</b> são a fonte de verdade —
+              este texto é a foto de antes da migração e <b>não acompanha</b> as edições.
+            </div>
+          )}
 
           {modo === "entradas" ? (
             <PainelEntradas aluno={aluno} />
@@ -2900,17 +2936,10 @@ function PainelEntradas({ aluno }) {
     toast("Entrada apagada."); await carregar();
   }
 
-  function copiarTudo() {
-    const L = [];
-    for (const s of secoes) {
-      const itens = (ents || []).filter(e => e.secao_id === s.id && !e.arquivada);
-      if (!itens.length) continue;
-      L.push("- " + s.id + ":");
-      ordenar(itens).forEach(e =>
-        L.push((e.data_texto ? e.data_texto + ": " : "") + e.texto));
-    }
-    navigator.clipboard.writeText(L.join("\n"));
-    toast("Anamnese copiada.");
+  function copiarTudo(meses) {
+    navigator.clipboard.writeText(entradasParaTexto(secoes, ents || [], meses));
+    toast(meses ? "Copiado só o que é dos últimos " + meses + " meses."
+                : "Anamnese copiada.");
   }
 
   const ordenar = arr => [...arr].sort((x, y) => {
@@ -2935,8 +2964,12 @@ function PainelEntradas({ aluno }) {
     <div>
       {erro && <div className="err">{erro}</div>}
       <div className="acoes" style={{ marginBottom: 14 }}>
-        <button className="btn-sec ico" title="Copiar anamnese" onClick={copiarTudo}>
+        <button className="btn-sec ico" title="Copiar anamnese"
+          onClick={() => copiarTudo(null)}>
           <IconeCopiar />
+        </button>
+        <button className="btn-sec" onClick={() => copiarTudo(12)}>
+          Copiar 12 meses
         </button>
         <button className="btn-sec" onClick={() => setVerArq(v => !v)}>
           {verArq ? "Ocultar arquivadas" : "Ver arquivadas"}
@@ -3110,6 +3143,37 @@ function textoParaEntradas(txt) {
     });
   }
   return out;
+}
+
+/* regenera o texto no formato da planilha a partir das entradas.
+   Depois de migrar, a fonte de verdade são as entradas — o campo
+   `anamneses.texto` vira foto do estado anterior e NÃO acompanha as edições. */
+function entradasParaTexto(secoes, entradas, meses) {
+  const corte = meses ? Date.now() - meses * 30.44 * 864e5 : null;
+  const ordenar = arr => [...arr].sort((x, y) => {
+    if (!!x.data !== !!y.data) return x.data ? -1 : 1;
+    if (x.data && y.data) return x.data < y.data ? 1 : x.data > y.data ? -1 : 0;
+    return (x.ordem || 0) - (y.ordem || 0);
+  });
+  const L = [];
+  for (const sec of secoes) {
+    let itens = entradas.filter(e => e.secao_id === sec.id && !e.arquivada);
+    if (corte) {
+      /* sem data não dá para filtrar: mantém, é mais seguro que esconder */
+      itens = itens.filter(e => !e.data || parseISO(e.data).getTime() >= corte);
+    }
+    if (!itens.length) continue;
+    L.push("- " + sec.id + ":");
+    ordenar(itens).forEach(e => {
+      const extras = [];
+      if (e.escala) extras.push(e.escala);
+      if (e.exercicio) extras.push(e.exercicio);
+      const pref = e.data_texto ? e.data_texto + ": " : "";
+      const suf = extras.length ? " [" + extras.join(" · ") + "]" : "";
+      L.push(pref + e.texto + suf);
+    });
+  }
+  return L.join("\n");
 }
 
 function PainelMigracao({ onFechar }) {
