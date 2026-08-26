@@ -176,6 +176,42 @@
     border-bottom:1px solid #182224;white-space:nowrap}
   .dr-menu div:last-child{border-bottom:none}
   .dr-menu div:hover{background:#0f2a2e;color:var(--accent)}
+  .ent.en2{align-items:flex-start;position:relative;padding-right:74px}
+  .ent.en2.arq{opacity:.42}
+  .en-ferr{position:absolute;right:0;top:4px;display:flex;gap:3px;opacity:0;
+    transition:opacity .15s}
+  .ent.en2:hover .en-ferr{opacity:1}
+  .en-ferr button{width:auto;padding:2px 6px;font-size:11px;background:var(--card);
+    border:1px solid var(--line);color:var(--mut);border-radius:5px}
+  .en-ferr button:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .en-tags{display:inline-flex;gap:5px;flex-wrap:wrap;margin-left:8px;
+    vertical-align:middle}
+  .en-tag{font-size:9px;padding:2px 7px;border-radius:4px;background:#16232a;
+    color:var(--mut);letter-spacing:.3px;white-space:nowrap}
+  .en-tag.ex{background:#0f2a2e;color:var(--accent)}
+  .en-tag.rg{background:#241a2e;color:#c9a6ff}
+  .mig-cols{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;
+    align-items:start}
+  .mig-al{padding:9px 12px;border:1px solid var(--line);border-radius:9px;
+    margin-bottom:6px;cursor:pointer;background:var(--bg)}
+  .mig-al:hover{border-color:var(--accent)}
+  .mig-al.on{border-color:var(--accent);background:#0d1c1f}
+  .mig-al.feito{opacity:.6}
+  .mig-al b{display:block;font-size:13px;font-weight:500;margin-bottom:2px}
+  .mig-al span{font-size:10px;color:var(--mut)}
+  .mig-al.feito span{color:var(--accent)}
+  .mig-sec{margin-bottom:14px}
+  .mig-sh{font-size:10px;text-transform:uppercase;letter-spacing:.9px;
+    color:var(--accent);margin-bottom:5px}
+  .mig-sh i{font-style:normal;color:var(--mut);margin-left:5px}
+  .mig-it{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #182224;
+    font-size:12px;line-height:1.5}
+  .mig-it:last-child{border-bottom:none}
+  .mig-it .dt{color:var(--accent);font-family:ui-monospace,monospace;font-size:11px;
+    min-width:62px;flex-shrink:0}
+  .mig-it .dt.sem{color:#3d4d50}
+  .mig-it .tx{flex:1}
+  @media (max-width: 900px){ .mig-cols{grid-template-columns:1fr} }
   .sec-h{align-items:center}
   .sec-lapis{background:none;border:1px solid transparent;color:#3d4d50;
     width:auto;padding:2px 7px;font-size:12px;border-radius:6px;cursor:pointer}
@@ -800,6 +836,7 @@ function PainelAlunos() {
   const [aberto, setAberto] = useState(null);
   const [filtro, setFiltro] = useState("ativo");
   const [importar, setImportar] = useState(false);
+  const [migrar, setMigrar] = useState(false);
   const [mods, setMods] = useState([]);
   const [busca, setBusca] = useState("");
 
@@ -895,6 +932,7 @@ function PainelAlunos() {
           )}
         </div>
         <span style={{ flex: 1 }} />
+        <button className="fbtn" onClick={() => setMigrar(true)}>Migrar anamneses</button>
         <button className="fbtn" onClick={() => setImportar(true)}>Importar do Sheets</button>
       </div>
       <div className="sub">
@@ -938,6 +976,7 @@ function PainelAlunos() {
           onFechar={() => { setAberto(null); carregar(); }}
         />
       )}
+      {migrar && <PainelMigracao onFechar={() => { setMigrar(false); carregar(); }} />}
       {importar && (
         <ModalImportar
           alunos={alunos || []}
@@ -1595,7 +1634,8 @@ function DrawerAnamnese({ aluno, onFechar }) {
         </div>
 
         <div className="dr-acoes">
-          <button className="btn-sec" onClick={() => setModo("secoes")}>Seções</button>
+          <button className="btn-sec" onClick={() => setModo("entradas")}>Entradas</button>
+          <button className="btn-sec" onClick={() => setModo("secoes")}>Texto original</button>
           <button className="btn-sec" onClick={() => setModo("editar")}>
             Editar{sujo ? " •" : ""}
           </button>
@@ -1618,7 +1658,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
           {erro && <div className="err">{erro}</div>}
           {aviso && <div className="ok-msg">{aviso}</div>}
 
-          {modo === "aparelhos" ? (
+          {modo === "entradas" ? (
+            <PainelEntradas aluno={aluno} />
+          ) : modo === "aparelhos" ? (
             <PainelAparelhosAluno aluno={aluno} />
           ) : modo === "academias" ? (
             <PainelAcademiasAluno aluno={aluno} />
@@ -2585,6 +2627,424 @@ function IconeCheck() {
       strokeLinejoin="round" style={{ display: "block" }}>
       <path d="M20 6L9 17l-5-5" />
     </svg>
+  );
+}
+
+
+
+/* ---------- Entradas segmentadas do aluno ---------- */
+function PainelEntradas({ aluno }) {
+  const { toast, confirmar } = usarUI();
+  const [secoes, setSecoes] = useState([]);
+  const [tipos, setTipos]   = useState([]);
+  const [ents, setEnts]     = useState(null);
+  const [cat, setCat]       = useState([]);
+  const [erro, setErro]     = useState("");
+  const [edit, setEdit]     = useState(null);   // {id?} + campos
+  const [verArq, setVerArq] = useState(false);
+
+  const carregar = useCallback(async () => {
+    setErro("");
+    const [se, ti, en, ca] = await Promise.all([
+      sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem"),
+      sb.from("ocorrencia_tipos").select("*").eq("ativo", true).order("ordem"),
+      sb.from("vw_anamnese_entradas").select("*").eq("aluno_id", aluno.id),
+      sb.from("cardapio").select("id, exercicio").order("exercicio")
+    ]);
+    if (se.error || en.error) { setErro((se.error || en.error).message); return; }
+    setSecoes(se.data || []); setTipos(ti.error ? [] : (ti.data || []));
+    setEnts(en.data || []); setCat(ca.error ? [] : (ca.data || []));
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  function novaEntrada(secaoId) {
+    setEdit({ secao_id: secaoId, data: dISO(new Date()), data_texto: "",
+              texto: "", cardapio_id: null, tipo_id: null, regiao: "" });
+  }
+
+  async function salvar() {
+    if (!edit || !edit.texto.trim()) { setErro("Escreve o texto da entrada."); return; }
+    const corpo = {
+      aluno_id: aluno.id, secao_id: edit.secao_id,
+      data: edit.data || null,
+      data_texto: edit.data ? dBR(edit.data) : (edit.data_texto || null),
+      texto: edit.texto.trim(),
+      cardapio_id: edit.cardapio_id || null,
+      tipo_id: edit.tipo_id || null,
+      regiao: (edit.regiao || "").trim() || null
+    };
+    const r = edit.id
+      ? await sb.from("anamnese_entradas")
+          .update({ ...corpo, atualizado_em: new Date().toISOString() }).eq("id", edit.id)
+      : await sb.from("anamnese_entradas").insert({ ...corpo, origem: "manual" });
+    if (r.error) { setErro(r.error.message); return; }
+    toast(edit.id ? "Entrada atualizada." : "Entrada adicionada.");
+    setEdit(null); await carregar();
+  }
+
+  async function arquivar(e, valor) {
+    const r = await sb.from("anamnese_entradas")
+      .update({ arquivada: valor }).eq("id", e.id);
+    if (r.error) { setErro(r.error.message); return; }
+    await carregar();
+  }
+
+  async function apagar(e) {
+    const ok = await confirmar({
+      titulo: "Apagar entrada?", texto: e.texto.slice(0, 90),
+      alerta: "Não volta. Se for só para tirar da vista, use arquivar.",
+      ok: "Apagar", perigo: true
+    });
+    if (!ok) return;
+    const r = await sb.from("anamnese_entradas").delete().eq("id", e.id);
+    if (r.error) { setErro(r.error.message); return; }
+    toast("Entrada apagada."); await carregar();
+  }
+
+  function copiarTudo() {
+    const L = [];
+    for (const s of secoes) {
+      const itens = (ents || []).filter(e => e.secao_id === s.id && !e.arquivada);
+      if (!itens.length) continue;
+      L.push("- " + s.id + ":");
+      ordenar(itens).forEach(e =>
+        L.push((e.data_texto ? e.data_texto + ": " : "") + e.texto));
+    }
+    navigator.clipboard.writeText(L.join("\n"));
+    toast("Anamnese copiada.");
+  }
+
+  const ordenar = arr => [...arr].sort((x, y) => {
+    if (!!x.data !== !!y.data) return x.data ? -1 : 1;
+    if (x.data && y.data) return x.data < y.data ? 1 : x.data > y.data ? -1 : 0;
+    return (x.ordem || 0) - (y.ordem || 0);
+  });
+
+  if (ents === null) return <div className="msg">Carregando...</div>;
+
+  if (!ents.length) return (
+    <div className="sem-aluno">
+      <b>Ainda não migrado</b>
+      Este aluno ainda não tem entradas segmentadas.
+      Use <b>Migrar anamneses</b> na aba Alunos.
+    </div>
+  );
+
+  const secEd = edit ? secoes.find(x => x.id === edit.secao_id) : null;
+
+  return (
+    <div>
+      {erro && <div className="err">{erro}</div>}
+      <div className="acoes" style={{ marginBottom: 14 }}>
+        <button className="btn-sec ico" title="Copiar anamnese" onClick={copiarTudo}>
+          <IconeCopiar />
+        </button>
+        <button className="btn-sec" onClick={() => setVerArq(v => !v)}>
+          {verArq ? "Ocultar arquivadas" : "Ver arquivadas"}
+        </button>
+      </div>
+
+      {secoes.map(s => {
+        const itens = ordenar((ents || []).filter(e =>
+          e.secao_id === s.id && (verArq || !e.arquivada)));
+        return (
+          <div className={"sec-card" + (s.destaque ? " dor" : "") +
+                          (itens.length ? "" : " vazia")} key={s.id}>
+            <div className="sec-h">
+              <b>{s.nome}</b>
+              {itens.length > 1 && <i>{itens.length} entradas</i>}
+              <span style={{ flex: 1 }} />
+              <button className="sec-lapis" title={"Nova entrada em " + s.nome}
+                onClick={() => novaEntrada(s.id)}>+</button>
+            </div>
+            {itens.length === 0
+              ? <div className="vazio-nota">—</div>
+              : itens.map(e => (
+                <div className={"ent en2" + (e.arquivada ? " arq" : "")} key={e.id}>
+                  <span className={"dt" + (e.data ? "" : " sem")}>
+                    {e.data_texto || "—"}
+                  </span>
+                  <span className="tx">
+                    {e.texto}
+                    {(e.exercicio || e.tipo || e.regiao) && (
+                      <span className="en-tags">
+                        {e.exercicio && <span className="en-tag ex">{e.exercicio}</span>}
+                        {e.tipo && <span className="en-tag"
+                          style={{ background: (e.tipo_cor || "#333") + "22",
+                                   color: e.tipo_cor || "var(--mut)" }}>{e.tipo}</span>}
+                        {e.regiao && <span className="en-tag rg">{e.regiao}</span>}
+                      </span>
+                    )}
+                  </span>
+                  <span className="en-ferr">
+                    <button onClick={() => setEdit({ ...e })} title="Editar">✎</button>
+                    <button onClick={() => arquivar(e, !e.arquivada)}
+                      title={e.arquivada ? "Desarquivar" : "Arquivar"}>
+                      {e.arquivada ? "↩" : "▾"}
+                    </button>
+                    <button onClick={() => apagar(e)} title="Apagar">×</button>
+                  </span>
+                </div>
+              ))}
+          </div>
+        );
+      })}
+
+      {edit && secEd && (
+        <>
+          <div className="drawer-bg" style={{ zIndex: 88 }} onClick={() => setEdit(null)} />
+          <div className="conf" style={{ width: "min(520px,94vw)", zIndex: 89 }}>
+            <h3>{edit.id ? "Editar entrada" : "Nova entrada"} · {secEd.nome}</h3>
+
+            <div className="ed-lab">Data</div>
+            <input type="date" value={edit.data || ""}
+              onChange={e => setEdit({ ...edit, data: e.target.value })}
+              style={{ marginBottom: 0 }} />
+            {!edit.data && (
+              <input value={edit.data_texto || ""}
+                onChange={e => setEdit({ ...edit, data_texto: e.target.value })}
+                placeholder="ou data solta (ex: 15/03)"
+                style={{ marginTop: 7, marginBottom: 0 }} />
+            )}
+
+            {secEd.usa_exercicio && (
+              <>
+                <div className="ed-lab">Exercício</div>
+                <Combobox
+                  opcoes={cat.map(c => ({ value: String(c.id), label: c.exercicio }))}
+                  value={edit.cardapio_id ? String(edit.cardapio_id) : ""}
+                  onChange={v => setEdit({ ...edit, cardapio_id: v ? Number(v) : null })}
+                  placeholder="Buscar no catálogo..." />
+              </>
+            )}
+
+            {secEd.usa_tipo && (
+              <>
+                <div className="ed-lab">Tipo</div>
+                <div className="chips">
+                  {tipos.map(t => (
+                    <button key={t.id}
+                      className={"chip mini" + (edit.tipo_id === t.id ? " on" : "")}
+                      onClick={() => setEdit({ ...edit,
+                        tipo_id: edit.tipo_id === t.id ? null : t.id })}
+                      style={edit.tipo_id === t.id
+                        ? { background: t.cor, borderColor: t.cor, color: "#04191c" } : {}}>
+                      {t.nome}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {secEd.usa_regiao && (
+              <>
+                <div className="ed-lab">Região</div>
+                <input value={edit.regiao || ""}
+                  onChange={e => setEdit({ ...edit, regiao: e.target.value })}
+                  placeholder="ex: ombro direito, lombar"
+                  style={{ marginBottom: 0 }} />
+              </>
+            )}
+
+            <div className="ed-lab">Texto</div>
+            <textarea value={edit.texto} rows={3}
+              onChange={e => setEdit({ ...edit, texto: e.target.value })}
+              placeholder="O que aconteceu / o que observar" />
+
+            <div className="conf-bt" style={{ marginTop: 16 }}>
+              <button className="btn-sec" onClick={() => setEdit(null)}>Cancelar</button>
+              <button onClick={salvar} disabled={!edit.texto.trim()}>Salvar</button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Anamnese segmentada ---------- */
+/* Converte o texto da anamnese em entradas, usando o MESMO parser
+   já testado. Não inventa parse novo. */
+function textoParaEntradas(txt) {
+  const out = [];
+  for (const sec of parseAnamnese(txt)) {
+    if (!sec.entradas.length) continue;
+    sec.entradas.forEach((e, i) => {
+      const f = fatiarEntrada(e);
+      if (!f.texto.trim()) return;
+      out.push({
+        secao_id: sec.rotulo,
+        conhecida: sec.conhecida,
+        data: f.ts ? dISO(new Date(f.ts)) : null,
+        data_texto: f.data || null,
+        texto: f.texto.trim(),
+        ordem: i
+      });
+    });
+  }
+  return out;
+}
+
+function PainelMigracao({ onFechar }) {
+  const { toast } = usarUI();
+  const [lista, setLista]   = useState(null);
+  const [sel, setSel]       = useState("");
+  const [texto, setTexto]   = useState("");
+  const [prev, setPrev]     = useState([]);
+  const [erro, setErro]     = useState("");
+  const [busy, setBusy]     = useState(false);
+  const [busca, setBusca]   = useState("");
+  useEsc(true, onFechar);
+
+  const carregar = useCallback(async () => {
+    const { data, error } = await sb.from("vw_anamnese_migracao")
+      .select("*").order("nome");
+    if (error) { setErro(error.message); return; }
+    setLista(data || []);
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  async function abrir(alunoId) {
+    setSel(alunoId); setErro(""); setPrev([]); setTexto("");
+    const { data, error } = await sb.from("vw_anamnese_atual")
+      .select("texto").eq("aluno_id", alunoId).single();
+    if (error) { setErro("Este aluno não tem anamnese em texto."); return; }
+    setTexto(data.texto || "");
+    setPrev(textoParaEntradas(data.texto || ""));
+  }
+
+  async function migrar() {
+    if (!sel || !prev.length) return;
+    setBusy(true); setErro("");
+    const jaTem = (lista.find(l => l.aluno_id === sel) || {}).entradas || 0;
+    if (jaTem > 0) {
+      const del = await sb.from("anamnese_entradas").delete().eq("aluno_id", sel);
+      if (del.error) { setBusy(false); setErro(del.error.message); return; }
+    }
+    const linhas = prev.filter(e => e.conhecida).map(e => ({
+      aluno_id: sel, secao_id: e.secao_id, data: e.data,
+      data_texto: e.data_texto, texto: e.texto, ordem: e.ordem, origem: "migrado"
+    }));
+    const r = await sb.from("anamnese_entradas").insert(linhas);
+    setBusy(false);
+    if (r.error) { setErro(r.error.message); return; }
+    toast(linhas.length + " entrada(s) migrada(s).");
+    await carregar();
+  }
+
+  const desconhecidas = prev.filter(e => !e.conhecida);
+  const validas = prev.filter(e => e.conhecida);
+  const semData = validas.filter(e => !e.data).length;
+
+  const porSecao = [];
+  for (const e of validas) {
+    let g = porSecao.find(x => x.secao === e.secao_id);
+    if (!g) { g = { secao: e.secao_id, itens: [] }; porSecao.push(g); }
+    g.itens.push(e);
+  }
+
+  const visiveis = (lista || []).filter(l =>
+    !busca.trim() || cbCasa(l.nome, busca));
+  const jaMigrados = (lista || []).filter(l => l.migrado).length;
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="drawer" style={{ width: "min(980px,97vw)" }}>
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h2>Migrar anamnese para entradas</h2>
+          <div className="meta">
+            O texto original continua intacto. Migrar cria as entradas segmentadas.
+            {lista && " · " + jaMigrados + " de " + lista.length + " já migrados"}
+          </div>
+        </div>
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+
+          <div className="mig-cols">
+            <div>
+              <div style={{ position: "relative", marginBottom: 10 }}>
+                <input value={busca} onChange={e => setBusca(e.target.value)}
+                  placeholder="Buscar aluno..." style={{ marginBottom: 0 }} />
+                {busca && <button className="cb-lim" onClick={() => setBusca("")}>×</button>}
+              </div>
+              {lista === null ? <div className="msg">Carregando...</div>
+               : visiveis.map(l => (
+                <div key={l.aluno_id}
+                  className={"mig-al" + (sel === l.aluno_id ? " on" : "") +
+                    (l.migrado ? " feito" : "")}
+                  onClick={() => abrir(l.aluno_id)}>
+                  <b>{l.nome}</b>
+                  <span>
+                    {l.migrado ? "✓ " + l.entradas + " entradas"
+                      : l.tem_texto ? l.tamanho_texto + " chars"
+                      : "sem anamnese"}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              {!sel ? (
+                <div className="sem-aluno">
+                  <b>Escolhe um aluno à esquerda</b>
+                  A prévia da migração aparece aqui.
+                </div>
+              ) : (
+                <>
+                  <div className="cards" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
+                    <div className="kpi g"><b>{validas.length}</b><span>entradas</span></div>
+                    <div className="kpi w"><b>{semData}</b><span>sem data</span></div>
+                    <div className="kpi r"><b>{desconhecidas.length}</b>
+                      <span>fora do padrão</span></div>
+                  </div>
+
+                  {desconhecidas.length > 0 && (
+                    <div className="err" style={{ background: "#2a2418",
+                      borderColor: "#5c4a24", color: "#f0a35e" }}>
+                      ⚠️ {desconhecidas.length} entrada(s) com rótulo fora das 14 seções
+                      conhecidas <b>não serão migradas</b>:{" "}
+                      {[...new Set(desconhecidas.map(e => e.secao_id))].join(", ")}.
+                      O texto original continua com elas.
+                    </div>
+                  )}
+
+                  {porSecao.map(g => (
+                    <div className="mig-sec" key={g.secao}>
+                      <div className="mig-sh">
+                        {nomeSecao(g.secao)} <i>{g.itens.length}</i>
+                      </div>
+                      {g.itens.map((e, i) => (
+                        <div className="mig-it" key={i}>
+                          <span className={"dt" + (e.data ? "" : " sem")}>
+                            {e.data_texto || "—"}
+                          </span>
+                          <span className="tx">{e.texto}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+
+                  <div className="acoes" style={{ marginTop: 18 }}>
+                    <button onClick={migrar} disabled={busy || !validas.length}>
+                      {busy ? "Migrando..."
+                        : ((lista.find(l => l.aluno_id === sel) || {}).migrado
+                            ? "Refazer migração" : "Migrar " + validas.length + " entradas")}
+                    </button>
+                    <span className="status">
+                      o texto original não é alterado
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -4769,7 +5229,8 @@ const TABELAS_BACKUP = [
   "alunos", "perfis", "treinos", "exercicios", "logs", "sessoes",
   "anamneses", "cardapio", "grupos_exibicao", "modalidades", "perguntas",
   "fases", "planejamentos", "fase_templates", "fase_categorias", "metodos",
-  "equipamentos", "academias", "academia_equipamentos", "aluno_academias"
+  "equipamentos", "academias", "academia_equipamentos", "aluno_academias",
+  "anamnese_secoes", "ocorrencia_tipos", "anamnese_entradas"
 ];
 
 function PainelBackup() {
