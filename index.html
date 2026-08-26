@@ -1612,8 +1612,15 @@ function DrawerAnamnese({ aluno, onFechar }) {
 
   /* depois da migração, copiar SEMPRE vem das entradas — o texto
      original não acompanha as edições feitas por lá */
-  function txtCopiar(meses) {
-    if (temEnt) return entradasParaTexto(secDefs, ents, meses);
+  function txtCopiar(meses, modo) {
+    if (temEnt) {
+      const corpo = entradasParaTexto(secDefs, ents, meses, modo);
+      if (modo === "planilha") return corpo;
+      const cab = "ANAMNESE · " + aluno.nome +
+        (meses ? "  (últimos " + meses + " meses)" : "") +
+        "\n" + "─".repeat(46) + "\n";
+      return cab + corpo;
+    }
     if (!atual) return "";
     return meses ? resumirAnamnese(atual.texto, meses) : atual.texto;
   }
@@ -1654,6 +1661,11 @@ function DrawerAnamnese({ aluno, onFechar }) {
                   <div onClick={() => { copiar(txtCopiar(12),
                     "Copiado só o que é dos últimos 12 meses."); setMenuCopiar(false); }}>
                     Copiar últimos 12 meses</div>
+                  {temEnt && (
+                    <div onClick={() => { copiar(txtCopiar(null, "planilha"),
+                      "Copiado no formato da planilha."); setMenuCopiar(false); }}>
+                      Copiar no formato da planilha</div>
+                  )}
                   {temEnt && atual && (
                     <div onClick={() => { copiar(atual.texto,
                       "Texto original (anterior à migração) copiado."); setMenuCopiar(false); }}
@@ -2897,12 +2909,19 @@ function PainelEntradas({ aluno }) {
   }
 
   async function salvar() {
-    if (!edit || !edit.texto.trim()) { setErro("Escreve o texto da entrada."); return; }
+    if (!edit) return;
+    /* em seção de escala o autorrelato JÁ é a informação — texto vazio é válido.
+       O mesmo vale quando você só quer registrar o exercício. */
+    const temConteudo = edit.texto.trim() || edit.escala || edit.cardapio_id;
+    if (!temConteudo) {
+      setErro("Preenche pelo menos o texto, o autorrelato ou o exercício.");
+      return;
+    }
     const corpo = {
       aluno_id: aluno.id, secao_id: edit.secao_id,
       data: edit.data || null,
       data_texto: edit.data ? dBR(edit.data) : (edit.data_texto || null),
-      texto: edit.texto.trim(),
+      texto: edit.texto.trim(),   /* pode ser vazio quando há escala/exercício */
       cardapio_id: edit.cardapio_id || null,
       tipo_id: edit.tipo_id || null,
       regiao: (edit.regiao || "").trim() || null,
@@ -2936,8 +2955,12 @@ function PainelEntradas({ aluno }) {
     toast("Entrada apagada."); await carregar();
   }
 
-  function copiarTudo(meses) {
-    navigator.clipboard.writeText(entradasParaTexto(secoes, ents || [], meses));
+  function copiarTudo(meses, modo) {
+    const corpo = entradasParaTexto(secoes, ents || [], meses, modo);
+    const txt = modo === "planilha" ? corpo
+      : "ANAMNESE · " + aluno.nome + (meses ? "  (últimos " + meses + " meses)" : "") +
+        "\n" + "─".repeat(46) + "\n" + corpo;
+    navigator.clipboard.writeText(txt);
     toast(meses ? "Copiado só o que é dos últimos " + meses + " meses."
                 : "Anamnese copiada.");
   }
@@ -2997,10 +3020,13 @@ function PainelEntradas({ aluno }) {
                     {e.data_texto || "—"}
                   </span>
                   <span className="tx">
-                    {e.texto}
-                    {(e.exercicio || e.tipo || e.regiao || e.escala) && (
+                    {e.texto ? e.texto
+                      : <span style={{ color: "var(--mut)", fontStyle: "italic" }}>
+                          {e.escala || e.exercicio || "—"}
+                        </span>}
+                    {(e.exercicio || e.tipo || e.regiao || (e.escala && e.texto)) && (
                       <span className="en-tags">
-                        {e.escala && <span className="en-tag es">{e.escala}</span>}
+                        {e.escala && e.texto && <span className="en-tag es">{e.escala}</span>}
                         {e.exercicio && <span className="en-tag ex">{e.exercicio}</span>}
                         {e.tipo && <span className="en-tag"
                           style={{ background: (e.tipo_cor || "#333") + "22",
@@ -3092,14 +3118,21 @@ function PainelEntradas({ aluno }) {
               </>
             )}
 
-            <div className="ed-lab">Texto</div>
+            <div className="ed-lab">
+              {secEd.usa_escala ? "Observação" : "Texto"}
+              {secEd.usa_escala && <i>opcional</i>}
+            </div>
             <textarea value={edit.texto} rows={3}
               onChange={e => setEdit({ ...edit, texto: e.target.value })}
-              placeholder="O que aconteceu / o que observar" />
+              placeholder={secEd.usa_escala
+                ? "opcional — o autorrelato acima já basta"
+                : "O que aconteceu / o que observar"} />
 
             <div className="conf-bt" style={{ marginTop: 16 }}>
               <button className="btn-sec" onClick={() => setEdit(null)}>Cancelar</button>
-              <button onClick={salvar} disabled={!edit.texto.trim()}>Salvar</button>
+              <button onClick={salvar}
+                disabled={!(edit.texto.trim() || edit.escala || edit.cardapio_id)}>
+                Salvar</button>
             </div>
           </div>
         </>
@@ -3148,13 +3181,40 @@ function textoParaEntradas(txt) {
 /* regenera o texto no formato da planilha a partir das entradas.
    Depois de migrar, a fonte de verdade são as entradas — o campo
    `anamneses.texto` vira foto do estado anterior e NÃO acompanha as edições. */
-function entradasParaTexto(secoes, entradas, meses) {
+/* Regenera o texto a partir das entradas.
+   modo "leitura"  = para colar em bloco de notas (padrão)
+   modo "planilha" = formato "- Obj:" da WTAN, para voltar ao Sheets
+
+   Depois de migrar, a fonte de verdade são as entradas — o campo
+   `anamneses.texto` vira foto do estado anterior e NÃO acompanha as edições. */
+function entradasParaTexto(secoes, entradas, meses, modo) {
+  const planilha = modo === "planilha";
   const corte = meses ? Date.now() - meses * 30.44 * 864e5 : null;
+
   const ordenar = arr => [...arr].sort((x, y) => {
     if (!!x.data !== !!y.data) return x.data ? -1 : 1;
     if (x.data && y.data) return x.data < y.data ? 1 : x.data > y.data ? -1 : 0;
     return (x.ordem || 0) - (y.ordem || 0);
   });
+
+  /* texto só com pontuação não vale nada ao lado da escala:
+     "- Coord: . [Boa]" deve virar só "Boa" */
+  const trivial = t => !String(t || "").replace(/[\s.,;:\-–—]/g, "").length;
+
+  const linhaDe = e => {
+    let corpo = trivial(e.texto) ? "" : String(e.texto).trim();
+    const extras = [];
+    if (e.escala) extras.push(e.escala);
+    /* não repete o exercício se ele já está escrito na frase */
+    if (e.exercicio && !cbNorm(corpo).includes(cbNorm(e.exercicio))) {
+      extras.push(e.exercicio);
+    }
+    if (!corpo && extras.length) { corpo = extras.shift(); }
+    const suf = extras.length ? " [" + extras.join(" · ") + "]" : "";
+    const pref = e.data_texto ? e.data_texto + (planilha ? ": " : "  ·  ") : "";
+    return pref + corpo + suf;
+  };
+
   const L = [];
   for (const sec of secoes) {
     let itens = entradas.filter(e => e.secao_id === sec.id && !e.arquivada);
@@ -3163,15 +3223,14 @@ function entradasParaTexto(secoes, entradas, meses) {
       itens = itens.filter(e => !e.data || parseISO(e.data).getTime() >= corte);
     }
     if (!itens.length) continue;
-    L.push("- " + sec.id + ":");
-    ordenar(itens).forEach(e => {
-      const extras = [];
-      if (e.escala) extras.push(e.escala);
-      if (e.exercicio) extras.push(e.exercicio);
-      const pref = e.data_texto ? e.data_texto + ": " : "";
-      const suf = extras.length ? " [" + extras.join(" · ") + "]" : "";
-      L.push(pref + e.texto + suf);
-    });
+    if (planilha) {
+      L.push("- " + sec.id + ":");
+      ordenar(itens).forEach(e => L.push(linhaDe(e)));
+    } else {
+      if (L.length) L.push("");
+      L.push(String(sec.nome).toUpperCase());
+      ordenar(itens).forEach(e => L.push(linhaDe(e)));
+    }
   }
   return L.join("\n");
 }
