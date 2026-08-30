@@ -553,6 +553,58 @@
   .rel.fix{border-left-color:var(--warn);background:#161208}
   .rel.fix .quem{color:var(--warn)}
   .rel-mais{margin-left:24px;margin-top:4px;font-size:10px;color:#3d4d50}
+  /* ============ ACOMPANHAMENTO ============ */
+  .ac-ciclo{display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:11px;padding:13px 16px;margin-bottom:16px}
+  .ac-ciclo .sem{font-size:20px;font-weight:700;color:var(--accent);line-height:1}
+  .ac-ciclo .rot{font-size:13px;font-weight:600}
+  .ac-ciclo .det{font-size:11px;color:var(--mut);margin-top:2px}
+  .ac-ciclo.vazio{border-left-color:var(--warn)}
+  .ac-ciclo.vazio .sem{color:var(--warn)}
+  .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 62px 78px 170px auto;
+    gap:13px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--line);border-radius:10px;padding:10px 14px;
+    margin-bottom:7px;cursor:pointer}
+  .ac-lin:hover{border-color:var(--accent)}
+  .ac-lin.r{border-left-color:var(--alert)}
+  .ac-lin.a{border-left-color:var(--warn)}
+  .ac-lin.v{border-left-color:var(--accent)}
+  .ac-nome{min-width:0;font-size:14px;font-weight:500;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ac-nome i{font-style:normal;font-size:10px;color:var(--mut);display:block;
+    font-weight:400;margin-top:2px}
+  .ac-hm{display:block;image-rendering:pixelated}
+  .ac-num{text-align:center}
+  .ac-num b{display:block;font-size:17px;font-weight:600;line-height:1.1}
+  .ac-num span{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+  .ac-num.zero b{color:#3d4d50}
+  .ac-tar{min-width:0}
+  .ac-tar .top{display:flex;justify-content:space-between;font-size:11px;
+    margin-bottom:4px;gap:8px}
+  .ac-tar .top b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ac-tar .top span{color:var(--mut);flex-shrink:0}
+  .ac-bar{height:5px;background:#1b2427;border-radius:3px;overflow:hidden}
+  .ac-bar i{display:block;height:100%;background:var(--accent);transition:width .2s}
+  .ac-bar i.parcial{background:var(--warn)}
+  .ac-badge{width:11px;height:11px;border-radius:50%;flex-shrink:0;cursor:help}
+  .ac-badge.r{background:var(--alert);box-shadow:0 0 0 3px #e05c5c22}
+  .ac-badge.a{background:var(--warn);box-shadow:0 0 0 3px #f0a35e22}
+  .ac-badge.v{background:var(--accent);box-shadow:0 0 0 3px #00daef22}
+  .ac-head{display:grid;grid-template-columns:auto minmax(0,1fr) 62px 78px 170px auto;
+    gap:13px;padding:0 14px 7px;font-size:9px;text-transform:uppercase;
+    letter-spacing:.9px;color:var(--mut)}
+  .ac-head span{text-align:center}
+  .ac-head span:nth-child(2){text-align:left}
+  .ac-diag{background:#2a2418;border:1px solid #5c4a24;color:#f0a35e;
+    padding:11px 14px;border-radius:9px;font-size:12px;line-height:1.6;
+    margin-bottom:14px;font-family:ui-monospace,monospace}
+  @media (max-width:900px){
+    .ac-head{display:none}
+    .ac-lin{grid-template-columns:auto minmax(0,1fr) auto;gap:10px}
+    .ac-lin .ac-hm{grid-column:2;justify-self:start}
+    .ac-tar{grid-column:1/-1}
+  }
   /* ============ APARELHOS (matriz) ============ */
   .ap-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
   .ap-bar input{margin-bottom:0}
@@ -5242,6 +5294,261 @@ function PainelAcademiasAluno({ aluno }) {
   );
 }
 
+
+/* ---------- Modo Acompanhamento ---------- */
+/* pega o primeiro campo que existir — os nomes das views podem variar */
+const campo = (o, ...nomes) => {
+  for (const n of nomes) if (o && o[n] !== undefined && o[n] !== null) return o[n];
+  return null;
+};
+
+/* Heatmap em CANVAS, não SVG.
+   87 alunos × 56 dias daria ~4.900 nós no DOM e travaria a lista.
+   Em canvas é 1 elemento por aluno, desenhado uma vez. */
+function Heatmap({ dias, titulo }) {
+  const ref = React.useRef(null);
+  const CEL = 5, GAP = 1, COLS = 8, LINS = 7;
+
+  useEffect(() => {
+    const cv = ref.current;
+    if (!cv) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = COLS * (CEL + GAP) - GAP, h = LINS * (CEL + GAP) - GAP;
+    cv.width = w * dpr; cv.height = h * dpr;
+    cv.style.width = w + "px"; cv.style.height = h + "px";
+    const x = cv.getContext("2d");
+    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    x.clearRect(0, 0, w, h);
+
+    const hoje = new Date();
+    const mapa = dias || {};
+    for (let i = 0; i < 56; i++) {
+      const d = new Date(hoje.getTime() - (55 - i) * 864e5);
+      const iso = dISO(d);
+      const v = mapa[iso] || 0;
+      const col = Math.floor(i / 7), lin = i % 7;
+      x.fillStyle = v >= 2 ? "#00daef" : v === 1 ? "#0d7a86" : "#18262a";
+      x.fillRect(col * (CEL + GAP), lin * (CEL + GAP), CEL, CEL);
+    }
+  }, [dias]);
+
+  return <canvas ref={ref} className="ac-hm" title={titulo || "56 dias"} />;
+}
+
+function PainelAcompanhamento() {
+  const { setAlunoId } = usarAluno();
+  const [linhas, setLinhas] = useState(null);
+  const [cal, setCal]       = useState({});
+  const [semana, setSemana] = useState(undefined);
+  const [erro, setErro]     = useState("");
+  const [diag, setDiag]     = useState("");
+  const [busca, setBusca]   = useState("");
+  const [aberto, setAberto] = useState(null);
+  const [ordem, setOrdem]   = useState("risco");
+
+  const carregar = useCallback(async () => {
+    setErro(""); setDiag("");
+    const [ac, sm] = await Promise.all([
+      sb.from("v_acompanhamento").select("*"),
+      sb.from("v_semana_atual").select("*")
+    ]);
+    if (ac.error) { setErro("v_acompanhamento: " + ac.error.message); setLinhas([]); return; }
+    const dados = ac.data || [];
+    setLinhas(dados);
+    setSemana(sm.error ? null : ((sm.data && sm.data[0]) || null));
+
+    /* se os campos esperados não vierem, mostra o que veio em vez de quebrar */
+    if (dados.length) {
+      const k = Object.keys(dados[0]);
+      const faltando = ["semana_atual", "tarefas_feitas", "tarefas_total", "treinos_7d"]
+        .filter(x => !k.includes(x));
+      if (faltando.length) {
+        setDiag("Campos não encontrados em v_acompanhamento: " + faltando.join(", ") +
+          "\nColunas disponíveis: " + k.join(", "));
+      }
+    }
+
+    /* calendário em UMA consulta, agrupado no cliente */
+    const cl = await sb.from("v_calendario_treinos").select("*");
+    if (!cl.error) {
+      const m = {};
+      for (const r of (cl.data || [])) {
+        const aid = campo(r, "aluno_id", "aluno");
+        const dt = String(campo(r, "data", "dia") || "").slice(0, 10);
+        const vz = campo(r, "vezes", "treinos", "qtd") || 1;
+        if (!aid || !dt) continue;
+        (m[aid] = m[aid] || {})[dt] = vz;
+      }
+      setCal(m);
+    }
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  /* badge: só o que dá para afirmar com os dados desta view.
+     Vermelho por red flag é certeza; amarelo aqui é sinal operacional. */
+  function risco(l) {
+    const rf = campo(l, "red_flags_abertas", "red_flags") || 0;
+    if (rf > 0) return { n: "r", txt: rf + " red flag(s) aberta(s)" };
+
+    const feitas = campo(l, "tarefas_feitas") || 0;
+    const total  = campo(l, "tarefas_total") || 0;
+    const t7     = campo(l, "treinos_7d", "treinos") || 0;
+
+    if (t7 === 0) return { n: "a", txt: "nenhum treino nos últimos 7 dias" };
+    if (total > 0 && feitas === 0)
+      return { n: "a", txt: "nenhuma tarefa entregue nesta semana" };
+    return { n: "v", txt: "sem sinal de alerta nos dados desta tela" };
+  }
+
+  const visiveis = (linhas || [])
+    .filter(l => !busca.trim() || cbCasa(String(campo(l, "aluno", "nome") || ""), busca))
+    .map(l => ({ l, r: risco(l) }))
+    .sort((a, b) => {
+      if (ordem === "risco") {
+        const p = { r: 0, a: 1, v: 2 };
+        if (p[a.r.n] !== p[b.r.n]) return p[a.r.n] - p[b.r.n];
+      }
+      if (ordem === "treinos") {
+        const ta = campo(a.l, "treinos_7d", "treinos") || 0;
+        const tb = campo(b.l, "treinos_7d", "treinos") || 0;
+        if (ta !== tb) return ta - tb;
+      }
+      return String(campo(a.l, "aluno", "nome") || "")
+        .localeCompare(String(campo(b.l, "aluno", "nome") || ""), "pt-BR");
+    });
+
+  const cont = (linhas || []).reduce((acc, l) => {
+    acc[risco(l).n]++; return acc;
+  }, { r: 0, a: 0, v: 0 });
+
+  return (
+    <div>
+      {semana === undefined ? null : semana ? (
+        <div className="ac-ciclo">
+          <div>
+            <div className="sem">
+              Semana {campo(semana, "semana", "numero", "semana_atual") || "?"}
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="rot">{campo(semana, "rotulo", "semana_rotulo") || "—"}</div>
+            <div className="det">
+              {campo(semana, "nota", "observacao") ||
+                "timeline global · vale para todos os alunos"}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 14 }}>
+            <div className="ac-num"><b style={{ color: "var(--alert)" }}>{cont.r}</b>
+              <span>atenção alta</span></div>
+            <div className="ac-num"><b style={{ color: "var(--warn)" }}>{cont.a}</b>
+              <span>observar</span></div>
+            <div className="ac-num"><b style={{ color: "var(--accent)" }}>{cont.v}</b>
+              <span>estável</span></div>
+          </div>
+        </div>
+      ) : (
+        <div className="ac-ciclo vazio">
+          <div className="sem">—</div>
+          <div style={{ flex: 1 }}>
+            <div className="rot">Nenhum ciclo ativo</div>
+            <div className="det">
+              <code>v_semana_atual</code> voltou vazia. Ou o ciclo terminou,
+              ou você está entre ciclos. A lista abaixo continua funcionando.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {erro && <div className="err">{erro}</div>}
+      {diag && <div className="ac-diag">{diag}</div>}
+
+      <div className="ap-bar">
+        <div style={{ position: "relative", flex: "0 1 230px" }}>
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar aluno..." />
+          {busca && <button className="cb-lim" onClick={() => setBusca("")}>×</button>}
+        </div>
+        <button className={"fbtn" + (ordem === "risco" ? " on" : "")}
+          onClick={() => setOrdem("risco")}>Por atenção</button>
+        <button className={"fbtn" + (ordem === "treinos" ? " on" : "")}
+          onClick={() => setOrdem("treinos")}>Por treinos</button>
+        <button className={"fbtn" + (ordem === "nome" ? " on" : "")}
+          onClick={() => setOrdem("nome")}>Por nome</button>
+        <span style={{ flex: 1 }} />
+        <span className="ed-cnt">{visiveis.length} aluno(s)</span>
+      </div>
+
+      {linhas === null ? <div className="msg">Carregando...</div>
+       : visiveis.length === 0 ? <div className="msg">Nenhum aluno encontrado.</div>
+       : (
+        <>
+          <div className="ac-head">
+            <span />
+            <span>Aluno</span>
+            <span>7 dias</span>
+            <span>56 dias</span>
+            <span>Semana</span>
+            <span />
+          </div>
+          {visiveis.map(({ l, r }) => {
+            const aid  = campo(l, "aluno_id", "id");
+            const nome = campo(l, "aluno", "nome") || "(sem nome)";
+            const t7   = campo(l, "treinos_7d", "treinos") || 0;
+            const feitas = campo(l, "tarefas_feitas") || 0;
+            const total  = campo(l, "tarefas_total") || 0;
+            const sem    = campo(l, "semana_atual");
+            const rot    = campo(l, "semana_rotulo");
+            const entrou = campo(l, "entrou_na_semana");
+            /* aluno que entrou depois: mostra a ordem dele, não a global */
+            const minhaSem = (sem && entrou && entrou > 1)
+              ? (sem - entrou + 1) : null;
+            return (
+              <div className={"ac-lin " + r.n} key={aid || nome}
+                onClick={() => { if (aid) { setAlunoId(aid); setAberto({ id: aid, nome }); } }}>
+                <div className="ph" style={{ width: 32, height: 32, fontSize: 11 }}>
+                  {iniciais(nome)}
+                </div>
+                <div className="ac-nome">
+                  {nome}
+                  {minhaSem && <i>entrou na semana {entrou} · {minhaSem}ª dele</i>}
+                </div>
+                <div className={"ac-num" + (t7 === 0 ? " zero" : "")}>
+                  <b>{t7}</b><span>treinos</span>
+                </div>
+                <Heatmap dias={cal[aid]} titulo={nome + " · últimos 56 dias"} />
+                <div className="ac-tar">
+                  <div className="top">
+                    <b>{sem ? "Sem " + sem : "—"}{rot ? " · " + rot : ""}</b>
+                    <span>{total ? feitas + "/" + total : "—"}</span>
+                  </div>
+                  <div className="ac-bar">
+                    <i className={feitas && feitas < total ? "parcial" : ""}
+                      style={{ width: total ? Math.round(feitas / total * 100) + "%" : "0%" }} />
+                  </div>
+                </div>
+                <span className={"ac-badge " + r.n} title={r.txt}
+                  onClick={e => e.stopPropagation()} />
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {aberto && (
+        <DrawerAnamnese aluno={{ id: aberto.id, nome: aberto.nome }}
+          onFechar={() => setAberto(null)} />
+      )}
+
+      <div className="pl-hint" style={{ marginTop: 16 }}>
+        Clica no aluno para abrir a ficha. O ponto colorido é sinal operacional
+        (red flag, ausência de treino, tarefas não entregues) — os sinais clínicos
+        de irritabilidade e mecanismo entram na aba Dores.
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Aparelhos por academia ---------- */
 /* Ausência de linha em academia_equipamentos SIGNIFICA "não tem".
    Por isso o ciclo apaga a linha em vez de gravar 'nao_tem' — mantém
@@ -5708,7 +6015,8 @@ function PainelBackup() {
 }
 
 /* ---------- App ---------- */
-const ABAS_VALIDAS = ["alunos","volume","montagem","planejamento","catalogo","aparelhos","backup"];
+const ABAS_VALIDAS = ["alunos","acompanhamento","volume","montagem","planejamento",
+                      "catalogo","aparelhos","backup"];
 
 function App() {
   const [sessao, setSessao] = useState(undefined);
@@ -5755,6 +6063,8 @@ function App() {
       <div className="tabs">
         <button className={"tab" + (aba === "alunos" ? " on" : "")}
           onClick={() => setAba("alunos")}>Alunos</button>
+        <button className={"tab" + (aba === "acompanhamento" ? " on" : "")}
+          onClick={() => setAba("acompanhamento")}>Acompanhamento</button>
         <button className={"tab" + (aba === "volume" ? " on" : "")}
           onClick={() => setAba("volume")}>Volume</button>
         <button className={"tab" + (aba === "catalogo" ? " on" : "")}
@@ -5772,6 +6082,7 @@ function App() {
       {abasComAluno.includes(aba) && <BarraAluno />}
 
       {aba === "alunos" ? <PainelAlunos />
+        : aba === "acompanhamento" ? <PainelAcompanhamento />
         : aba === "volume" ? <PainelVolume />
         : aba === "montagem" ? <PainelMontagem />
         : aba === "planejamento" ? <PainelPlanejamento />
