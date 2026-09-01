@@ -5304,10 +5304,36 @@ const campo = (o, ...nomes) => {
 
 /* Heatmap em CANVAS, não SVG.
    87 alunos × 56 dias daria ~4.900 nós no DOM e travaria a lista.
-   Em canvas é 1 elemento por aluno, desenhado uma vez. */
-function Heatmap({ dias, titulo }) {
+   Em canvas é 1 elemento por aluno, desenhado uma vez.
+
+   ATENÇÃO ao alinhamento: a grade precisa começar num DOMINGO.
+   Antes eu montava blocos de 7 dias corridos a partir de "56 dias atrás",
+   então cada dia caía numa linha errada e o desenho não tinha relação
+   com a agenda real. */
+
+/* mesma escala do App Idealis: menos → mais volume */
+const HM_CORES = ["#16232a", "#1a5f63", "#0d9aa3", "#00daef", "#dbff00"];
+const HM_SEMANAS = 8;
+
+function gradeHeatmap() {
+  const hoje = new Date();
+  const dom = new Date(hoje);
+  dom.setHours(12, 0, 0, 0);
+  dom.setDate(dom.getDate() - dom.getDay());     /* domingo desta semana */
+  const ini = new Date(dom);
+  ini.setDate(ini.getDate() - 7 * (HM_SEMANAS - 1));
+  const cels = [];
+  for (let i = 0; i < HM_SEMANAS * 7; i++) {
+    const d = new Date(ini.getTime() + i * 864e5);
+    cels.push({ iso: dISO(d), col: Math.floor(i / 7), lin: d.getDay(),
+                futuro: d > hoje });
+  }
+  return cels;
+}
+
+function Heatmap({ dias, nome }) {
   const ref = React.useRef(null);
-  const CEL = 5, GAP = 1, COLS = 8, LINS = 7;
+  const CEL = 5, GAP = 1, COLS = HM_SEMANAS, LINS = 7;
 
   useEffect(() => {
     const cv = ref.current;
@@ -5320,25 +5346,33 @@ function Heatmap({ dias, titulo }) {
     x.setTransform(dpr, 0, 0, dpr, 0, 0);
     x.clearRect(0, 0, w, h);
 
-    const hoje = new Date();
     const mapa = dias || {};
-    for (let i = 0; i < 56; i++) {
-      const d = new Date(hoje.getTime() - (55 - i) * 864e5);
-      const iso = dISO(d);
-      const v = mapa[iso] || 0;
-      const col = Math.floor(i / 7), lin = i % 7;
-      x.fillStyle = v >= 2 ? "#00daef" : v === 1 ? "#0d7a86" : "#18262a";
-      x.fillRect(col * (CEL + GAP), lin * (CEL + GAP), CEL, CEL);
+    for (const c of gradeHeatmap()) {
+      const v = mapa[c.iso] || 0;
+      const nivel = v <= 0 ? 0 : Math.min(4, v);
+      x.globalAlpha = c.futuro ? 0.3 : 1;
+      x.fillStyle = HM_CORES[nivel];
+      x.fillRect(c.col * (CEL + GAP), c.lin * (CEL + GAP), CEL, CEL);
     }
+    x.globalAlpha = 1;
   }, [dias]);
 
-  return <canvas ref={ref} className="ac-hm" title={titulo || "56 dias"} />;
+  /* tooltip com os dias reais, para conferir contra o app */
+  const mapa = dias || {};
+  const marcados = Object.keys(mapa).filter(k => mapa[k] > 0).sort().slice(-10);
+  const titulo = (nome ? nome + " · " : "") + HM_SEMANAS + " semanas" +
+    (marcados.length
+      ? "\núltimos treinos: " + marcados.map(k => dBR(k)).join(", ")
+      : "\nnenhum treino registrado no período");
+
+  return <canvas ref={ref} className="ac-hm" title={titulo} />;
 }
 
 function PainelAcompanhamento() {
   const { setAlunoId } = usarAluno();
   const [linhas, setLinhas] = useState(null);
   const [cal, setCal]       = useState({});
+  const [resumo, setResumo] = useState({});
   const [semana, setSemana] = useState(undefined);
   const [erro, setErro]     = useState("");
   const [diag, setDiag]     = useState("");
@@ -5360,12 +5394,21 @@ function PainelAcompanhamento() {
     /* se os campos esperados não vierem, mostra o que veio em vez de quebrar */
     if (dados.length) {
       const k = Object.keys(dados[0]);
-      const faltando = ["semana_atual", "tarefas_feitas", "tarefas_total", "treinos_7d"]
+      const faltando = ["semana", "tarefas_feitas", "tarefas_total", "treinos_7d"]
         .filter(x => !k.includes(x));
       if (faltando.length) {
         setDiag("Campos não encontrados em v_acompanhamento: " + faltando.join(", ") +
           "\nColunas disponíveis: " + k.join(", "));
       }
+    }
+
+    /* v_acompanhamento.treinos_7d conta ACESSOS ao app.
+       v_treinos_resumo separa: dias com treino concluído × acessos. */
+    const rs = await sb.from("v_treinos_resumo").select("*");
+    if (!rs.error) {
+      const m = {};
+      for (const r of (rs.data || [])) m[r.aluno_id] = r;
+      setResumo(m);
     }
 
     /* calendário em UMA consulta, agrupado no cliente */
@@ -5391,14 +5434,25 @@ function PainelAcompanhamento() {
     const rf = campo(l, "red_flags_abertas", "red_flags") || 0;
     if (rf > 0) return { n: "r", txt: rf + " red flag(s) aberta(s)" };
 
-    const feitas = campo(l, "tarefas_feitas") || 0;
-    const total  = campo(l, "tarefas_total") || 0;
-    const t7     = campo(l, "treinos_7d", "treinos") || 0;
+    const aid = campo(l, "aluno_id", "id");
+    const rz  = resumo[aid] || {};
+    const dias    = rz.dias_7d ?? null;
+    const acessos = rz.acessos_7d ?? 0;
+    const abertos = rz.nao_concluidos_7d ?? 0;
+    const feitas  = campo(l, "tarefas_feitas") || 0;
+    const total   = campo(l, "tarefas_total") || 0;
 
-    if (t7 === 0) return { n: "a", txt: "nenhum treino nos últimos 7 dias" };
+    if (dias === 0 && acessos === 0)
+      return { n: "a", txt: "não abriu o app nos últimos 7 dias" };
+    if (dias === 0 && acessos > 0)
+      return { n: "a", txt: "abriu o app " + acessos + "× mas não concluiu nenhum treino" };
+    /* abre bastante e conclui pouco: sinal de desistência no meio */
+    if (dias > 0 && abertos >= 2 && abertos > dias)
+      return { n: "a", txt: abertos + " treino(s) abertos sem concluir contra " +
+        dias + " concluído(s)" };
     if (total > 0 && feitas === 0)
       return { n: "a", txt: "nenhuma tarefa entregue nesta semana" };
-    return { n: "v", txt: "sem sinal de alerta nos dados desta tela" };
+    return { n: "v", txt: (dias || 0) + " dia(s) com treino concluído em 7 dias" };
   }
 
   const visiveis = (linhas || [])
@@ -5410,8 +5464,8 @@ function PainelAcompanhamento() {
         if (p[a.r.n] !== p[b.r.n]) return p[a.r.n] - p[b.r.n];
       }
       if (ordem === "treinos") {
-        const ta = campo(a.l, "treinos_7d", "treinos") || 0;
-        const tb = campo(b.l, "treinos_7d", "treinos") || 0;
+        const ta = (resumo[campo(a.l, "aluno_id", "id")] || {}).dias_7d ?? 0;
+        const tb = (resumo[campo(b.l, "aluno_id", "id")] || {}).dias_7d ?? 0;
         if (ta !== tb) return ta - tb;
       }
       return String(campo(a.l, "aluno", "nome") || "")
@@ -5486,18 +5540,20 @@ function PainelAcompanhamento() {
           <div className="ac-head">
             <span />
             <span>Aluno</span>
-            <span>7 dias</span>
-            <span>56 dias</span>
+            <span>treinou</span>
+            <span>8 semanas</span>
             <span>Semana</span>
             <span />
           </div>
           {visiveis.map(({ l, r }) => {
             const aid  = campo(l, "aluno_id", "id");
             const nome = campo(l, "aluno", "nome") || "(sem nome)";
-            const t7   = campo(l, "treinos_7d", "treinos") || 0;
+            const rz   = resumo[aid] || {};
+            const dias = rz.dias_7d ?? campo(l, "treinos_7d", "treinos") ?? 0;
+            const aces = rz.acessos_7d ?? null;
             const feitas = campo(l, "tarefas_feitas") || 0;
             const total  = campo(l, "tarefas_total") || 0;
-            const sem    = campo(l, "semana_atual");
+            const sem    = campo(l, "semana", "semana_atual");
             const rot    = campo(l, "semana_rotulo");
             const entrou = campo(l, "entrou_na_semana");
             /* aluno que entrou depois: mostra a ordem dele, não a global */
@@ -5506,20 +5562,29 @@ function PainelAcompanhamento() {
             return (
               <div className={"ac-lin " + r.n} key={aid || nome}
                 onClick={() => { if (aid) { setAlunoId(aid); setAberto({ id: aid, nome }); } }}>
-                <div className="ph" style={{ width: 32, height: 32, fontSize: 11 }}>
-                  {iniciais(nome)}
-                </div>
+                {campo(l, "foto_url")
+                  ? <img className="av" style={{ width: 32, height: 32 }}
+                      src={campo(l, "foto_url")} alt=""
+                      onError={e => { e.target.style.visibility = "hidden"; }} />
+                  : <div className="ph" style={{ width: 32, height: 32, fontSize: 11 }}>
+                      {iniciais(nome)}
+                    </div>}
                 <div className="ac-nome">
                   {nome}
                   {minhaSem && <i>entrou na semana {entrou} · {minhaSem}ª dele</i>}
                 </div>
-                <div className={"ac-num" + (t7 === 0 ? " zero" : "")}>
-                  <b>{t7}</b><span>treinos</span>
+                <div className={"ac-num" + (dias === 0 ? " zero" : "")}
+                  title={"dias com treino concluído nos últimos 7 dias" +
+                    (aces !== null ? "\napp acessado " + aces + "×" : "")}>
+                  <b>{dias}</b>
+                  <span>{aces !== null && aces > 0
+                    ? "de " + aces + " acessos" : "treinos"}</span>
                 </div>
-                <Heatmap dias={cal[aid]} titulo={nome + " · últimos 56 dias"} />
+                <Heatmap dias={cal[aid]} nome={nome} />
                 <div className="ac-tar">
                   <div className="top">
-                    <b>{sem ? "Sem " + sem : "—"}{rot ? " · " + rot : ""}</b>
+                    <b>{sem ? "Sem " + sem + (campo(l, "semanas") ? "/" + campo(l, "semanas") : "")
+                        : "—"}{rot ? " · " + rot : ""}</b>
                     <span>{total ? feitas + "/" + total : "—"}</span>
                   </div>
                   <div className="ac-bar">
@@ -5540,7 +5605,21 @@ function PainelAcompanhamento() {
           onFechar={() => setAberto(null)} />
       )}
 
-      <div className="pl-hint" style={{ marginTop: 16 }}>
+      <div className="ap-leg" style={{ marginTop: 12 }}>
+        <span><b>8 semanas</b> de treinos <b>concluídos</b> · coluna = semana, linha = dia (domingo em cima)</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          menos
+          {HM_CORES.slice(1).map(c => (
+            <i key={c} style={{ width: 9, height: 9, borderRadius: 2, background: c,
+                                display: "inline-block" }} />
+          ))}
+          mais volume
+        </span>
+        <span>passa o mouse para ver as datas</span>
+        <span>o número à esquerda é <b>dias treinados</b>, não acessos ao app</span>
+      </div>
+
+      <div className="pl-hint" style={{ marginTop: 12 }}>
         Clica no aluno para abrir a ficha. O ponto colorido é sinal operacional
         (red flag, ausência de treino, tarefas não entregues) — os sinais clínicos
         de irritabilidade e mecanismo entram na aba Dores.
