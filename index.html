@@ -588,7 +588,7 @@
   .ac-ciclo .det{font-size:11px;color:var(--mut);margin-top:2px}
   .ac-ciclo.vazio{border-left-color:var(--warn)}
   .ac-ciclo.vazio .sem{color:var(--warn)}
-  .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 62px 78px 170px auto;
+  .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 66px 62px 170px auto;
     gap:13px;align-items:center;background:var(--card);border:1px solid var(--line);
     border-left:3px solid var(--line);border-radius:10px;padding:10px 14px;
     margin-bottom:7px;cursor:pointer}
@@ -617,7 +617,7 @@
   .ac-badge.r{background:var(--alert);box-shadow:0 0 0 3px #e05c5c22}
   .ac-badge.a{background:var(--warn);box-shadow:0 0 0 3px #f0a35e22}
   .ac-badge.v{background:var(--accent);box-shadow:0 0 0 3px #00daef22}
-  .ac-head{display:grid;grid-template-columns:auto minmax(0,1fr) 62px 78px 170px auto;
+  .ac-head{display:grid;grid-template-columns:auto minmax(0,1fr) 66px 62px 170px auto;
     gap:13px;padding:0 14px 7px;font-size:9px;text-transform:uppercase;
     letter-spacing:.9px;color:var(--mut)}
   .ac-head span{text-align:center}
@@ -930,13 +930,10 @@ function PainelAlunos() {
     if (!m.error) setMods(m.data || []);
     const { data, error } = await sb.from("vw_alunos_painel").select("*");
     if (error) { setErro(error.message); setAlunos([]); return; }
-    const ord = [...(data || [])].sort((x, y) => {
-      if (x.dias_sem_treinar === null && y.dias_sem_treinar !== null) return -1;
-      if (y.dias_sem_treinar === null && x.dias_sem_treinar !== null) return 1;
-      if (x.dias_sem_treinar === null && y.dias_sem_treinar === null)
-        return String(x.nome).localeCompare(String(y.nome), "pt-BR");
-      return y.dias_sem_treinar - x.dias_sem_treinar;
-    });
+    /* sempre alfabético — ordenar por tempo sem treinar embaralhava
+       a lista a cada carregamento e dificultava achar alguém */
+    const ord = [...(data || [])].sort((x, y) =>
+      String(x.nome || "").localeCompare(String(y.nome || ""), "pt-BR"));
     setAlunos(ord);
   }, []);
 
@@ -1024,7 +1021,7 @@ function PainelAlunos() {
         {alunos === null ? "Carregando..."
           : visiveis.length + " aluno(s)" +
             (busca.trim() ? ' encontrado(s) para "' + busca.trim() + '"'
-                          : " · ordenado por tempo sem treinar")}
+                          : " · ordem alfabética")}
       </div>
       {erro && <div className="err">{erro}</div>}
       {alunos === null
@@ -5632,29 +5629,36 @@ const campo = (o, ...nomes) => {
    então cada dia caía numa linha errada e o desenho não tinha relação
    com a agenda real. */
 
-/* mesma escala do App Idealis: menos → mais volume */
-const HM_CORES = ["#16232a", "#1a5f63", "#0d9aa3", "#00daef", "#dbff00"];
-const HM_SEMANAS = 8;
+/* Escala do App Idealis. No app os níveis 1 e 2 são rgba sobre fundo escuro;
+   no canvas preciso do hex já composto sobre o card da dashboard. */
+const HM_CORES = ["#16232a", "#0e4b4d", "#097a7d", "#00c9cc", "#ddff00"];
+const HM_SEMANAS = 12;   /* mesmas 12 do app */
 
+/* A semana começa no DOMINGO, como no app.
+   date_trunc('week') do Postgres usa segunda — daria tudo deslocado. */
 function gradeHeatmap() {
   const hoje = new Date();
+  hoje.setHours(12, 0, 0, 0);
   const dom = new Date(hoje);
-  dom.setHours(12, 0, 0, 0);
-  dom.setDate(dom.getDate() - dom.getDay());     /* domingo desta semana */
+  dom.setDate(dom.getDate() - dom.getDay());
   const ini = new Date(dom);
   ini.setDate(ini.getDate() - 7 * (HM_SEMANAS - 1));
+  const hojeISO = dISO(hoje);
   const cels = [];
   for (let i = 0; i < HM_SEMANAS * 7; i++) {
     const d = new Date(ini.getTime() + i * 864e5);
-    cels.push({ iso: dISO(d), col: Math.floor(i / 7), lin: d.getDay(),
-                futuro: d > hoje });
+    const iso = dISO(d);
+    cels.push({ iso, col: Math.floor(i / 7), lin: d.getDay(),
+                futuro: iso > hojeISO, hoje: iso === hojeISO });
   }
   return cels;
 }
 
+/* dias: { 'YYYY-MM-DD': nivel } — o nível já vem calculado pela view,
+   com a referência por aluno E por treino, igual ao app. */
 function Heatmap({ dias, nome }) {
   const ref = React.useRef(null);
-  const CEL = 5, GAP = 1, COLS = HM_SEMANAS, LINS = 7;
+  const CEL = 4, GAP = 1, COLS = HM_SEMANAS, LINS = 7;
 
   useEffect(() => {
     const cv = ref.current;
@@ -5669,22 +5673,26 @@ function Heatmap({ dias, nome }) {
 
     const mapa = dias || {};
     for (const c of gradeHeatmap()) {
-      const v = mapa[c.iso] || 0;
-      const nivel = v <= 0 ? 0 : Math.min(4, v);
+      const n = Math.max(0, Math.min(4, mapa[c.iso] || 0));
       x.globalAlpha = c.futuro ? 0.3 : 1;
-      x.fillStyle = HM_CORES[nivel];
+      x.fillStyle = HM_CORES[n];
       x.fillRect(c.col * (CEL + GAP), c.lin * (CEL + GAP), CEL, CEL);
+      if (c.hoje) {
+        x.globalAlpha = 1;
+        x.strokeStyle = "#71fcff"; x.lineWidth = 1;
+        x.strokeRect(c.col * (CEL + GAP) - 0.5, c.lin * (CEL + GAP) - 0.5,
+                     CEL + 1, CEL + 1);
+      }
     }
     x.globalAlpha = 1;
   }, [dias]);
 
-  /* tooltip com os dias reais, para conferir contra o app */
   const mapa = dias || {};
   const marcados = Object.keys(mapa).filter(k => mapa[k] > 0).sort().slice(-10);
-  const titulo = (nome ? nome + " · " : "") + HM_SEMANAS + " semanas" +
+  const titulo = (nome ? nome + " · " : "") + HM_SEMANAS + " semanas de treinos concluídos" +
     (marcados.length
-      ? "\núltimos treinos: " + marcados.map(k => dBR(k)).join(", ")
-      : "\nnenhum treino registrado no período");
+      ? "\núltimos: " + marcados.map(k => dBR(k)).join(", ")
+      : "\nnenhum treino confirmado no período");
 
   return <canvas ref={ref} className="ac-hm" title={titulo} />;
 }
@@ -5694,6 +5702,7 @@ function PainelAcompanhamento() {
   const [linhas, setLinhas] = useState(null);
   const [cal, setCal]       = useState({});
   const [resumo, setResumo] = useState({});
+  const [segm, setSegm]     = useState({});
   const [semana, setSemana] = useState(undefined);
   const [erro, setErro]     = useState("");
   const [diag, setDiag]     = useState("");
@@ -5725,6 +5734,14 @@ function PainelAcompanhamento() {
 
     /* v_acompanhamento.treinos_7d conta ACESSOS ao app.
        v_treinos_resumo separa: dias com treino concluído × acessos. */
+    /* v_acompanhamento não traz modalidade — vem de vw_alunos_segmentados */
+    const sg = await sb.from("vw_alunos_segmentados").select("*");
+    if (!sg.error) {
+      const m = {};
+      for (const r of (sg.data || [])) m[r.id] = r;
+      setSegm(m);
+    }
+
     const rs = await sb.from("v_treinos_resumo").select("*");
     if (!rs.error) {
       const m = {};
@@ -5739,9 +5756,9 @@ function PainelAcompanhamento() {
       for (const r of (cl.data || [])) {
         const aid = campo(r, "aluno_id", "aluno");
         const dt = String(campo(r, "data", "dia") || "").slice(0, 10);
-        const vz = campo(r, "vezes", "treinos", "qtd") || 1;
+        const nv = campo(r, "vezes", "nivel") || 1;   /* `vezes` = nível 1..4 */
         if (!aid || !dt) continue;
-        (m[aid] = m[aid] || {})[dt] = vz;
+        (m[aid] = m[aid] || {})[dt] = nv;
       }
       setCal(m);
     }
@@ -5796,6 +5813,31 @@ function PainelAcompanhamento() {
   const cont = (linhas || []).reduce((acc, l) => {
     acc[risco(l).n]++; return acc;
   }, { r: 0, a: 0, v: 0 });
+
+  /* mesma segmentação da aba Alunos: família > modalidade.
+     A ordem escolhida no chip vale DENTRO de cada modalidade. */
+  const familias = [];
+  const idxF = new Map();
+  for (const item of visiveis) {
+    const sg  = segm[campo(item.l, "aluno_id", "id")] || {};
+    const fam = sg.familia || "Sem formato definido";
+    const mid = sg.modalidade_id || "__none";
+    if (!idxF.has(fam)) {
+      idxF.set(fam, { nome: fam, ordem: sg.ordem || 999, mods: new Map() });
+      familias.push(idxF.get(fam));
+    }
+    const F = idxF.get(fam);
+    F.ordem = Math.min(F.ordem, sg.ordem || 999);
+    if (!F.mods.has(mid)) {
+      F.mods.set(mid, { id: mid, nome: sg.modalidade || "Sem formato",
+                        cor: sg.cor || "#3d454f", ordem: sg.ordem || 999, itens: [] });
+    }
+    F.mods.get(mid).itens.push(item);
+  }
+  familias.sort((x, y) => x.ordem - y.ordem);
+  for (const F of familias) {
+    F.lista = [...F.mods.values()].sort((x, y) => x.ordem - y.ordem);
+  }
 
   return (
     <div>
@@ -5862,11 +5904,21 @@ function PainelAcompanhamento() {
             <span />
             <span>Aluno</span>
             <span>treinou</span>
-            <span>8 semanas</span>
+            <span>12 semanas</span>
             <span>Semana</span>
             <span />
           </div>
-          {visiveis.map(({ l, r }) => {
+          {familias.map(F => (
+            <div key={F.nome}>
+              <div className="fam">{F.nome}</div>
+              {F.lista.map(M => (
+                <div key={M.id}>
+                  <div className="mod-h">
+                    <span className="mod-dot" style={{ background: M.cor }} />
+                    <b>{M.nome}</b>
+                    <i>{M.itens.length}</i>
+                  </div>
+                  {M.itens.map(({ l, r }) => {
             const aid  = campo(l, "aluno_id", "id");
             const nome = campo(l, "aluno", "nome") || "(sem nome)";
             const rz   = resumo[aid] || {};
@@ -5917,7 +5969,11 @@ function PainelAcompanhamento() {
                   onClick={e => e.stopPropagation()} />
               </div>
             );
-          })}
+                  })}
+                </div>
+              ))}
+            </div>
+          ))}
         </>
       )}
 
@@ -5927,7 +5983,8 @@ function PainelAcompanhamento() {
       )}
 
       <div className="ap-leg" style={{ marginTop: 12 }}>
-        <span><b>8 semanas</b> de treinos <b>concluídos</b> · coluna = semana, linha = dia (domingo em cima)</span>
+        <span><b>12 semanas</b> de treinos <b>confirmados</b> (origem manual) ·
+          coluna = semana, linha = dia (domingo em cima)</span>
         <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
           menos
           {HM_CORES.slice(1).map(c => (
@@ -5938,6 +5995,8 @@ function PainelAcompanhamento() {
         </span>
         <span>passa o mouse para ver as datas</span>
         <span>o número à esquerda é <b>dias treinados</b>, não acessos ao app</span>
+        <span style={{ color: "#3d4d50" }}>a cor compara o aluno com ele mesmo,
+          naquele treino — não serve para comparar alunos entre si</span>
       </div>
 
       <div className="pl-hint" style={{ marginTop: 12 }}>
