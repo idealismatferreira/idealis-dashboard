@@ -588,37 +588,37 @@
   .ac-ciclo .det{font-size:11px;color:var(--mut);margin-top:2px}
   .ac-ciclo.vazio{border-left-color:var(--warn)}
   .ac-ciclo.vazio .sem{color:var(--warn)}
-  .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 66px 62px 170px auto;
-    gap:13px;align-items:center;background:var(--card);border:1px solid var(--line);
-    border-left:3px solid var(--line);border-radius:10px;padding:10px 14px;
-    margin-bottom:7px;cursor:pointer}
+  .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 76px 70px 200px auto;
+    gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--line);border-radius:11px;padding:13px 17px;
+    margin-bottom:9px;cursor:pointer}
   .ac-lin:hover{border-color:var(--accent)}
   .ac-lin.r{border-left-color:var(--alert)}
   .ac-lin.a{border-left-color:var(--warn)}
   .ac-lin.v{border-left-color:var(--accent)}
-  .ac-nome{min-width:0;font-size:14px;font-weight:500;
+  .ac-nome{min-width:0;font-size:15px;font-weight:500;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ac-nome i{font-style:normal;font-size:10px;color:var(--mut);display:block;
+  .ac-nome i{font-style:normal;font-size:11px;color:var(--mut);display:block;
     font-weight:400;margin-top:2px}
   .ac-hm{display:block;image-rendering:pixelated}
   .ac-num{text-align:center}
-  .ac-num b{display:block;font-size:17px;font-weight:600;line-height:1.1}
-  .ac-num span{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+  .ac-num b{display:block;font-size:20px;font-weight:600;line-height:1.1}
+  .ac-num span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
   .ac-num.zero b{color:#3d4d50}
   .ac-tar{min-width:0}
-  .ac-tar .top{display:flex;justify-content:space-between;font-size:11px;
-    margin-bottom:4px;gap:8px}
+  .ac-tar .top{display:flex;justify-content:space-between;font-size:12px;
+    margin-bottom:5px;gap:9px}
   .ac-tar .top b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ac-tar .top span{color:var(--mut);flex-shrink:0}
-  .ac-bar{height:5px;background:#1b2427;border-radius:3px;overflow:hidden}
+  .ac-bar{height:6px;background:#1b2427;border-radius:3px;overflow:hidden}
   .ac-bar i{display:block;height:100%;background:var(--accent);transition:width .2s}
   .ac-bar i.parcial{background:var(--warn)}
-  .ac-badge{width:11px;height:11px;border-radius:50%;flex-shrink:0;cursor:help}
+  .ac-badge{width:13px;height:13px;border-radius:50%;flex-shrink:0;cursor:help}
   .ac-badge.r{background:var(--alert);box-shadow:0 0 0 3px #e05c5c22}
   .ac-badge.a{background:var(--warn);box-shadow:0 0 0 3px #f0a35e22}
   .ac-badge.v{background:var(--accent);box-shadow:0 0 0 3px #00daef22}
-  .ac-head{display:grid;grid-template-columns:auto minmax(0,1fr) 66px 62px 170px auto;
-    gap:13px;padding:0 14px 7px;font-size:9px;text-transform:uppercase;
+  .ac-head{display:grid;grid-template-columns:auto minmax(0,1fr) 76px 70px 200px auto;
+    gap:16px;padding:0 17px 8px;font-size:10px;text-transform:uppercase;
     letter-spacing:.9px;color:var(--mut)}
   .ac-head span{text-align:center}
   .ac-head span:nth-child(2){text-align:left}
@@ -5632,24 +5632,26 @@ const campo = (o, ...nomes) => {
 /* Escala do App Idealis. No app os níveis 1 e 2 são rgba sobre fundo escuro;
    no canvas preciso do hex já composto sobre o card da dashboard. */
 const HM_CORES = ["#16232a", "#0e4b4d", "#097a7d", "#00c9cc", "#ddff00"];
-const HM_SEMANAS = 12;   /* mesmas 12 do app */
+const HM_SEMANAS = 6;   /* 6 semanas: o que cabe legível numa linha de lista */
 
-/* A semana começa no DOMINGO, como no app.
-   date_trunc('week') do Postgres usa segunda — daria tudo deslocado. */
+/* Mesma orientação do app: cada LINHA é uma semana (a atual no topo),
+   cada COLUNA é um dia — domingo à esquerda.
+   date_trunc('week') do Postgres começa na segunda, por isso o cálculo é manual. */
 function gradeHeatmap() {
   const hoje = new Date();
   hoje.setHours(12, 0, 0, 0);
   const dom = new Date(hoje);
-  dom.setDate(dom.getDate() - dom.getDay());
-  const ini = new Date(dom);
-  ini.setDate(ini.getDate() - 7 * (HM_SEMANAS - 1));
+  dom.setDate(dom.getDate() - dom.getDay());   /* domingo desta semana */
   const hojeISO = dISO(hoje);
   const cels = [];
-  for (let i = 0; i < HM_SEMANAS * 7; i++) {
-    const d = new Date(ini.getTime() + i * 864e5);
-    const iso = dISO(d);
-    cels.push({ iso, col: Math.floor(i / 7), lin: d.getDay(),
-                futuro: iso > hojeISO, hoje: iso === hojeISO });
+  for (let sem = 0; sem < HM_SEMANAS; sem++) {
+    for (let d = 0; d < 7; d++) {
+      const dt = new Date(dom);
+      dt.setDate(dt.getDate() - 7 * sem + d);
+      const iso = dISO(dt);
+      cels.push({ iso, lin: sem, col: d,      /* linha = semana, coluna = dia */
+                  futuro: iso > hojeISO, hoje: iso === hojeISO });
+    }
   }
   return cels;
 }
@@ -5658,7 +5660,7 @@ function gradeHeatmap() {
    com a referência por aluno E por treino, igual ao app. */
 function Heatmap({ dias, nome }) {
   const ref = React.useRef(null);
-  const CEL = 4, GAP = 1, COLS = HM_SEMANAS, LINS = 7;
+  const CEL = 7, GAP = 2, COLS = 7, LINS = HM_SEMANAS;
 
   useEffect(() => {
     const cv = ref.current;
@@ -5672,24 +5674,34 @@ function Heatmap({ dias, nome }) {
     x.clearRect(0, 0, w, h);
 
     const mapa = dias || {};
+    const r = 2;
+    const quad = (px, py, cor) => {
+      x.beginPath();
+      if (x.roundRect) x.roundRect(px, py, CEL, CEL, r);
+      else x.rect(px, py, CEL, CEL);
+      x.fillStyle = cor; x.fill();
+    };
+
     for (const c of gradeHeatmap()) {
       const n = Math.max(0, Math.min(4, mapa[c.iso] || 0));
-      x.globalAlpha = c.futuro ? 0.3 : 1;
-      x.fillStyle = HM_CORES[n];
-      x.fillRect(c.col * (CEL + GAP), c.lin * (CEL + GAP), CEL, CEL);
+      const px = c.col * (CEL + GAP), py = c.lin * (CEL + GAP);
+      x.globalAlpha = c.futuro ? 0.35 : 1;
+      quad(px, py, HM_CORES[n]);
       if (c.hoje) {
         x.globalAlpha = 1;
-        x.strokeStyle = "#71fcff"; x.lineWidth = 1;
-        x.strokeRect(c.col * (CEL + GAP) - 0.5, c.lin * (CEL + GAP) - 0.5,
-                     CEL + 1, CEL + 1);
+        x.beginPath();
+        if (x.roundRect) x.roundRect(px - 0.5, py - 0.5, CEL + 1, CEL + 1, r + 1);
+        else x.rect(px - 0.5, py - 0.5, CEL + 1, CEL + 1);
+        x.strokeStyle = "#71fcff"; x.lineWidth = 1; x.stroke();
       }
     }
     x.globalAlpha = 1;
   }, [dias]);
 
   const mapa = dias || {};
-  const marcados = Object.keys(mapa).filter(k => mapa[k] > 0).sort().slice(-10);
-  const titulo = (nome ? nome + " · " : "") + HM_SEMANAS + " semanas de treinos concluídos" +
+  const marcados = Object.keys(mapa).filter(k => mapa[k] > 0).sort().slice(-8);
+  const titulo = (nome ? nome + " · " : "") + HM_SEMANAS +
+    " semanas de treinos confirmados" +
     (marcados.length
       ? "\núltimos: " + marcados.map(k => dBR(k)).join(", ")
       : "\nnenhum treino confirmado no período");
@@ -5904,7 +5916,7 @@ function PainelAcompanhamento() {
             <span />
             <span>Aluno</span>
             <span>treinou</span>
-            <span>12 semanas</span>
+            <span>6 semanas</span>
             <span>Semana</span>
             <span />
           </div>
@@ -5936,10 +5948,10 @@ function PainelAcompanhamento() {
               <div className={"ac-lin " + r.n} key={aid || nome}
                 onClick={() => { if (aid) { setAlunoId(aid); setAberto({ id: aid, nome }); } }}>
                 {campo(l, "foto_url")
-                  ? <img className="av" style={{ width: 32, height: 32 }}
+                  ? <img className="av" style={{ width: 38, height: 38 }}
                       src={campo(l, "foto_url")} alt=""
                       onError={e => { e.target.style.visibility = "hidden"; }} />
-                  : <div className="ph" style={{ width: 32, height: 32, fontSize: 11 }}>
+                  : <div className="ph" style={{ width: 38, height: 38, fontSize: 12 }}>
                       {iniciais(nome)}
                     </div>}
                 <div className="ac-nome">
@@ -5983,8 +5995,8 @@ function PainelAcompanhamento() {
       )}
 
       <div className="ap-leg" style={{ marginTop: 12 }}>
-        <span><b>12 semanas</b> de treinos <b>confirmados</b> (origem manual) ·
-          coluna = semana, linha = dia (domingo em cima)</span>
+        <span><b>6 semanas</b> de treinos <b>confirmados</b> · cada linha é uma semana
+          (a atual no topo), cada coluna um dia — domingo à esquerda</span>
         <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
           menos
           {HM_CORES.slice(1).map(c => (
