@@ -176,6 +176,32 @@
     border-bottom:1px solid #182224;white-space:nowrap}
   .dr-menu div:last-child{border-bottom:none}
   .dr-menu div:hover{background:#0f2a2e;color:var(--accent)}
+  .lg-lin{display:grid;grid-template-columns:minmax(0,1fr) 250px auto 150px;
+    gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:7px}
+  .lg-lin.v{border-left-color:var(--accent)}
+  .lg-lin.a{border-left-color:var(--warn)}
+  .lg-lin.r{border-left-color:var(--alert)}
+  .lg-nome{min-width:0;font-size:14px;font-weight:500}
+  .lg-nome i{display:block;font-style:normal;font-size:10px;color:var(--mut);
+    font-weight:400;margin-top:2px}
+  .lg-mail{margin-bottom:0 !important;font-size:12px;padding:8px 11px}
+  .lg-mail.pronto{color:var(--mut);font-family:ui-monospace,monospace;
+    padding:8px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lg-acao{text-align:right}
+  .lg-acao button{width:auto;padding:8px 14px;font-size:12px}
+  .lg-cred{grid-column:1/-1;display:flex;gap:9px;align-items:center;flex-wrap:wrap;
+    background:#0d1c1f;border:1px solid var(--accent);border-radius:8px;
+    padding:9px 12px;margin-top:9px}
+  .lg-cred code{font-size:12px;color:var(--txt);font-family:ui-monospace,monospace}
+  .lg-cred code.sen{color:var(--accent);font-weight:700;letter-spacing:.5px}
+  @media (max-width:820px){
+    .lg-lin{grid-template-columns:1fr auto}
+    .lg-mail{grid-column:1/-1}
+    .lg-acao{grid-column:1/-1;text-align:left}
+  }
+  .lg-box{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:10px;padding:13px 15px;margin-top:9px}
   .nv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
   @media (max-width:640px){ .nv-grid{grid-template-columns:1fr} }
   .fbtn.mais{background:var(--accent);color:#04191c;border-color:var(--accent);
@@ -731,7 +757,7 @@ const { useState, useEffect, useCallback } = React;
 
 /* ============ CONFIG ============ */
 const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+const SUPABASE_ANON_KEY = "COLE_SUA_PUBLISHABLE_KEY_AQUI";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
 /* Escrita de volta no Sheets (opcional). Deixe WTAN_URL vazio para desligar. */
@@ -2745,6 +2771,246 @@ function IconeCheck() {
 
 
 
+
+
+/* ---------- Acessos (login dos alunos) ---------- */
+function PainelAcessos() {
+  const { toast, confirmar } = usarUI();
+  const [lista, setLista] = useState(null);
+  const [dups, setDups]   = useState([]);
+  const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState("pronto");
+  const [erro, setErro]   = useState("");
+  const [emails, setEmails] = useState({});   // rascunho por aluno
+  const [ocupado, setOcupado] = useState(null);
+  const [feito, setFeito] = useState({});     // credenciais recém-criadas
+
+  const carregar = useCallback(async () => {
+    setErro("");
+    const [l, d] = await Promise.all([
+      sb.from("vw_alunos_acesso").select("*").order("nome"),
+      sb.from("vw_emails_duplicados").select("*")
+    ]);
+    if (l.error) { setErro(l.error.message); setLista([]); return; }
+    setLista(l.data || []);
+    setDups(d.error ? [] : (d.data || []));
+    setEmails({});
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  async function salvarEmail(al) {
+    const v = (emails[al.id] ?? "").trim();
+    if (v === (al.email || "")) return;
+    const r = await sb.from("alunos").update({ email: v || null }).eq("id", al.id);
+    if (r.error) { setErro(r.error.message); return; }
+    toast("E-mail salvo.");
+    await carregar();
+  }
+
+  async function darAcesso(al) {
+    const email = ((emails[al.id] ?? al.email) || "").trim();
+    if (!email) { setErro("Preenche o e-mail de " + al.nome + " antes."); return; }
+    const ok = await confirmar({
+      titulo: "Criar acesso para " + al.nome + "?",
+      texto: "E-mail: " + email + "\nUma senha será gerada e o login ficará ligado a esta ficha.",
+      alerta: al.treinos + " treino(s) e " + al.entradas +
+        " entrada(s) de anamnese continuam nesta ficha.",
+      ok: "Criar acesso"
+    });
+    if (!ok) return;
+
+    setOcupado(al.id); setErro("");
+    /* o e-mail precisa estar na ficha ANTES: é por ele que o trigger acha */
+    if (email !== (al.email || "")) {
+      const up = await sb.from("alunos").update({ email }).eq("id", al.id);
+      if (up.error) { setOcupado(null); setErro(up.error.message); return; }
+    }
+    const senha = gerarSenha();
+    const r = await criarLogin(al.id, email, senha);
+    setOcupado(null);
+    if (!r.ok) { setErro(al.nome + ": " + r.msg); return; }
+    setFeito(f => ({ ...f, [al.id]: { email, senha, confirmar: r.precisaConfirmar } }));
+    toast("Acesso criado para " + al.nome + ".");
+    await carregar();
+  }
+
+  function copiarCred(al) {
+    const c = feito[al.id];
+    if (!c) return;
+    navigator.clipboard.writeText(
+      "App Idealis\ne-mail: " + c.email + "\nsenha: " + c.senha +
+      "\n\nEntra e troca a senha no primeiro acesso.");
+    toast("Credenciais copiadas.");
+  }
+
+  const cont = (lista || []).reduce((a, x) => {
+    if (x.status === "ativo") a[x.situacao] = (a[x.situacao] || 0) + 1;
+    return a;
+  }, {});
+
+  const visiveis = (lista || [])
+    .filter(x => filtro === "todos" ? true : x.situacao === filtro)
+    .filter(x => !busca.trim() || cbCasa(x.nome + " " + (x.email || ""), busca));
+
+  const SIT = {
+    ok:        { txt: "com login",     cls: "v" },
+    pronto:    { txt: "pronto",        cls: "a" },
+    sem_email: { txt: "falta e-mail",  cls: "" },
+    duplicado: { txt: "2+ logins",     cls: "r" }
+  };
+
+  return (
+    <div>
+      {erro && <div className="err">{erro}</div>}
+
+      {dups.length > 0 && (
+        <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
+          color: "#f0a35e" }}>
+          ⚠️ E-mail repetido em mais de uma ficha — o vínculo automático
+          <b> não funciona</b> nesses casos:{" "}
+          {dups.map(d => d.email + " (" + d.quem + ")").join(" · ")}
+        </div>
+      )}
+
+      <div className="cards" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+        <div className="kpi g"><b>{cont.ok || 0}</b><span>com login</span></div>
+        <div className="kpi w"><b>{cont.pronto || 0}</b><span>prontos</span></div>
+        <div className="kpi"><b>{cont.sem_email || 0}</b><span>falta e-mail</span></div>
+        <div className="kpi r"><b>{cont.duplicado || 0}</b><span>duplicado</span></div>
+      </div>
+
+      <div className="ap-bar">
+        <div style={{ position: "relative", flex: "0 1 220px" }}>
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar aluno..." />
+          {busca && <button className="cb-lim" onClick={() => setBusca("")}>×</button>}
+        </div>
+        {[["pronto", "Prontos"], ["sem_email", "Falta e-mail"],
+          ["ok", "Com login"], ["duplicado", "Duplicado"], ["todos", "Todos"]].map(([k, t]) => (
+          <button key={k} className={"fbtn" + (filtro === k ? " on" : "")}
+            onClick={() => setFiltro(k)}>{t}</button>
+        ))}
+        <span style={{ flex: 1 }} />
+        <span className="ed-cnt">{visiveis.length} aluno(s)</span>
+      </div>
+
+      {lista === null ? <div className="msg">Carregando...</div>
+       : visiveis.length === 0 ? <div className="msg">Nada nesta seleção.</div>
+       : visiveis.map(al => {
+        const sit = SIT[al.situacao] || {};
+        const cred = feito[al.id];
+        const rasc = emails[al.id] ?? (al.email || "");
+        return (
+          <div className={"lg-lin " + (sit.cls || "")} key={al.id}>
+            <div className="lg-nome">
+              {al.nome}
+              {al.status !== "ativo" && <span className="st-tag">{al.status}</span>}
+              <i>{al.modalidade || "sem formato"} · {al.treinos} treino(s)</i>
+            </div>
+
+            {al.situacao === "ok" ? (
+              <div className="lg-mail pronto">{al.email || "—"}</div>
+            ) : (
+              <input className="lg-mail" value={rasc} type="email"
+                placeholder="e-mail do aluno"
+                onChange={e => setEmails(m => ({ ...m, [al.id]: e.target.value }))}
+                onBlur={() => salvarEmail(al)}
+                onKeyDown={e => e.key === "Enter" && e.target.blur()} />
+            )}
+
+            <span className={"ac-badge " + (sit.cls || "")} title={sit.txt} />
+
+            <div className="lg-acao">
+              {al.situacao === "ok" ? (
+                <span className="ed-cnt">criado{al.primeiro_login_em
+                  ? " em " + dBR(String(al.primeiro_login_em).slice(0, 10)) : ""}</span>
+              ) : al.situacao === "duplicado" ? (
+                <span className="ed-cnt" style={{ color: "var(--alert)" }}>
+                  {al.logins} logins nesta ficha</span>
+              ) : (
+                <button className="btn-sec" disabled={ocupado === al.id || !rasc.trim()}
+                  onClick={() => darAcesso(al)}>
+                  {ocupado === al.id ? "Criando..." : "Criar acesso"}
+                </button>
+              )}
+            </div>
+
+            {cred && (
+              <div className="lg-cred">
+                <code>{cred.email}</code>
+                <code className="sen">{cred.senha}</code>
+                <button className="btn-sec ico" title="Copiar credenciais"
+                  onClick={() => copiarCred(al)}><IconeCopiar /></button>
+                {cred.confirmar && (
+                  <span style={{ color: "var(--warn)", fontSize: 11 }}>
+                    precisa confirmar o e-mail antes de entrar
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      <div className="pl-hint" style={{ marginTop: 16 }}>
+        Preenche o e-mail e clica em <b>Criar acesso</b> — a senha é gerada e o login
+        já fica ligado a esta ficha, com treinos e anamnese no lugar.
+        A senha só aparece uma vez: copia antes de sair da tela.
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Criação de login do aluno ---------- */
+/* signUp() troca a sessão do navegador pela do usuário criado.
+   Para não deslogar o treinador, usamos um cliente SECUNDÁRIO isolado,
+   sem persistir sessão. Assim `sb` continua com a sua sessão intacta. */
+let sbAux = null;
+function clienteAux() {
+  if (!sbAux) {
+    sbAux = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { storageKey: "idealis-aux", persistSession: false,
+              autoRefreshToken: false, detectSessionInUrl: false }
+    });
+  }
+  return sbAux;
+}
+
+/* senha pronunciável, sem 0/O/1/l/I — dá para ditar por telefone */
+function gerarSenha() {
+  const C = "bcdfghjkmnpqrstvwxz", V = "aeiou", N = "23456789";
+  const r = a => a[Math.floor(Math.random() * a.length)];
+  const sil = () => r(C) + r(V);
+  return sil() + sil() + "-" + sil() + sil() + "-" + r(N) + r(N);
+}
+
+/* cria usuário no Auth e liga à ficha. Devolve {ok, msg, precisaConfirmar} */
+async function criarLogin(alunoId, email, senha) {
+  const aux = clienteAux();
+  const { data, error } = await aux.auth.signUp({
+    email: email.trim(), password: senha
+  });
+  if (error) return { ok: false, msg: error.message };
+  const uid = data && data.user && data.user.id;
+  if (!uid) return { ok: false, msg: "o Supabase não devolveu o usuário criado" };
+
+  /* sessão nula = confirmação de e-mail está ligada; o aluno só entra
+     depois de clicar no link, e sem SMTP esse link não chega */
+  const precisaConfirmar = !data.session;
+
+  const r = await sb.from("perfis")
+    .upsert({ user_id: uid, papel: "aluno", aluno_id: alunoId },
+            { onConflict: "user_id" });
+  if (r.error) {
+    return { ok: false,
+      msg: "usuário criado no Auth, mas o vínculo falhou: " + r.error.message +
+           "  (user_id " + uid + ")" };
+  }
+  try { await aux.auth.signOut(); } catch (e) {}
+  return { ok: true, precisaConfirmar };
+}
+
 /* ---------- Novo aluno ---------- */
 /* Cria a FICHA. O login (Auth) é passo separado — ver aviso na tela. */
 function ModalNovoAluno({ onFechar, onCriado }) {
@@ -2759,6 +3025,8 @@ function ModalNovoAluno({ onFechar, onCriado }) {
   const [acId, setAcId]   = useState("");
   const [obs, setObs]     = useState("");
   const [texto, setTexto] = useState("");
+  const [criarAcesso, setCriarAcesso] = useState(false);
+  const [senha, setSenha] = useState("");
   const [mods, setMods]   = useState([]);
   const [acs, setAcs]     = useState([]);
   const [erro, setErro]   = useState("");
@@ -2791,6 +3059,10 @@ function ModalNovoAluno({ onFechar, onCriado }) {
 
   async function criar() {
     if (!nome.trim()) { setErro("O nome é obrigatório."); return; }
+    if (criarAcesso) {
+      if (!email.trim()) { setErro("Para criar o login, o e-mail é obrigatório."); return; }
+      if (senha.length < 6) { setErro("A senha precisa ter ao menos 6 caracteres."); return; }
+    }
     setBusy(true); setErro("");
     try {
       const ins = await sb.from("alunos").insert({
@@ -2821,8 +3093,20 @@ function ModalNovoAluno({ onFechar, onCriado }) {
         if (en.error) throw new Error(en.error.message);
       }
 
+      let extra = "";
+      if (criarAcesso) {
+        const r = await criarLogin(alunoId, email, senha);
+        if (!r.ok) {
+          setErro("Ficha criada, mas o login falhou: " + r.msg +
+            "  A ficha está salva — dá para criar o acesso depois.");
+          setBusy(false); await onCriado(alunoId); return;
+        }
+        extra = r.precisaConfirmar
+          ? " Login criado, mas precisa confirmar o e-mail antes de entrar."
+          : " Login criado.";
+      }
       toast(nome.trim() + " criado(a)" +
-        (validas.length ? " com " + validas.length + " entrada(s)." : "."));
+        (validas.length ? " com " + validas.length + " entrada(s)." : ".") + extra);
       onCriado(alunoId);
     } catch (e) { setErro(e.message); }
     setBusy(false);
@@ -2910,12 +3194,49 @@ function ModalNovoAluno({ onFechar, onCriado }) {
             </div>
           )}
 
-          <div className="futuro" style={{ marginTop: 18 }}>
-            <b>🔑 Login do app</b>
-            Isto cria só a ficha. Para o aluno entrar no App Idealis, é preciso criar
-            o usuário no Supabase (Authentication → Users) e ligar em <code>perfis</code>.
-            Aluno de consultoria que você acompanha pelo Wiki4Fit não precisa de login.
+          <div className="ed-lab">Acesso ao app</div>
+          <div className={"ed-tog" + (criarAcesso ? " on" : "")}
+            onClick={() => {
+              const v = !criarAcesso;
+              setCriarAcesso(v);
+              if (v && !senha) setSenha(gerarSenha());
+            }}>
+            <div className="sw"><i /></div>
+            <div>
+              <b>🔑 Criar login agora</b>
+              <span>{criarAcesso
+                ? "cria o usuário e já liga na ficha"
+                : "só a ficha — o acesso fica para depois"}</span>
+            </div>
           </div>
+
+          {criarAcesso && (
+            <div className="lg-box">
+              {!email.trim() && (
+                <div className="err" style={{ background: "#2d1618",
+                  borderColor: "#5c2427", color: "#f5a3a3" }}>
+                  Preenche o e-mail acima — é com ele que o aluno entra.
+                </div>
+              )}
+              <div className="ed-lab">Senha</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input value={senha} onChange={e => setSenha(e.target.value)}
+                  style={{ marginBottom: 0, fontFamily: "ui-monospace,monospace" }} />
+                <button className="btn-sec" style={{ width: "auto", padding: "0 14px" }}
+                  onClick={() => setSenha(gerarSenha())}>Gerar</button>
+                <button className="btn-sec ico" title="Copiar e-mail e senha"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      "App Idealis\ne-mail: " + email.trim() + "\nsenha: " + senha);
+                    toast("E-mail e senha copiados.");
+                  }}><IconeCopiar /></button>
+              </div>
+              <div className="ed-cnt" style={{ marginTop: 7, lineHeight: 1.6 }}>
+                Senha pronunciável, sem caracteres ambíguos — dá para ditar por telefone.
+                Peça para o aluno trocar no primeiro acesso.
+              </div>
+            </div>
+          )}
 
           <div className="conf-bt" style={{ marginTop: 16 }}>
             <button className="btn-sec" onClick={onFechar}>Cancelar</button>
@@ -6095,7 +6416,7 @@ function PainelBackup() {
 
 /* ---------- App ---------- */
 const ABAS_VALIDAS = ["alunos","acompanhamento","volume","montagem","planejamento",
-                      "catalogo","aparelhos","backup"];
+                      "catalogo","aparelhos","acessos","backup"];
 
 function App() {
   const [sessao, setSessao] = useState(undefined);
@@ -6154,6 +6475,8 @@ function App() {
           onClick={() => setAba("planejamento")}>Planejamento</button>
         <button className={"tab" + (aba === "aparelhos" ? " on" : "")}
           onClick={() => setAba("aparelhos")}>Aparelhos Geral</button>
+        <button className={"tab" + (aba === "acessos" ? " on" : "")}
+          onClick={() => setAba("acessos")}>Acessos</button>
         <button className={"tab eng" + (aba === "backup" ? " on" : "")}
           title="Backup e exportação"
           onClick={() => setAba("backup")}>⚙</button>
@@ -6166,6 +6489,7 @@ function App() {
         : aba === "montagem" ? <PainelMontagem />
         : aba === "planejamento" ? <PainelPlanejamento />
         : aba === "aparelhos" ? <PainelAparelhos />
+        : aba === "acessos" ? <PainelAcessos />
         : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
     </div>
