@@ -760,6 +760,10 @@ const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
+/* Sync Sheets -> Supabase da tabela `cardapio`.
+   Desligado: o Catálogo de Exercícios passou a escrever direto no Supabase,
+   e este sync reverteria as edições feitas por lá. */
+const SYNC_CARDAPIO_ATIVO = false;
 /* Escrita de volta no Sheets (opcional). Deixe WTAN_URL vazio para desligar. */
 const WTAN_URL   = "";
 const WTAN_TOKEN = "MUDE-ISTO-123";
@@ -1102,6 +1106,18 @@ function PainelCatalogo() {
   useEffect(() => { carregarEstado(); }, [carregarEstado]);
 
   async function gravar(brutos) {
+    /* ===== TRAVA: sync Sheets -> Supabase DESATIVADO =====
+       A tabela `cardapio` passou a ser gerenciada pelo Catálogo de Exercícios,
+       que escreve direto no Supabase. Rodar este sync sobrescreveria as edições
+       feitas por lá com os dados velhos da planilha — sem erro, em silêncio.
+       O código fica aqui como referência até a migração estabilizar.
+       Para reativar temporariamente: SYNC_CARDAPIO_ATIVO = true, no topo. */
+    if (!SYNC_CARDAPIO_ATIVO) {
+      setErro("Sync desativado: a tabela cardapio agora é gerenciada pelo " +
+              "Catálogo de Exercícios. Rodar isto sobrescreveria as edições feitas lá.");
+      setFase("idle");
+      return;
+    }
     const { validos, ignorados: ign } = preparar(brutos);
     setIgnor(ign);
     if (!validos.length) { setErro("Nenhum exercício válido no retorno."); setFase("idle"); return; }
@@ -1189,12 +1205,24 @@ function PainelCatalogo() {
   return (
     <div>
       <div className="box">
-        <h2>Sincronizar Catálogo de Exercícios</h2>
-        <p>
-          Puxa a lista do Catálogo (Apps Script) e grava no Supabase. O Catálogo continua
-          sendo a fonte de verdade — isso aqui é um espelho consultável, seguro de rodar
-          quantas vezes você quiser.
-        </p>
+        <h2>Catálogo de Exercícios</h2>
+        {SYNC_CARDAPIO_ATIVO ? (
+          <p>
+            Puxa a lista do Catálogo (Apps Script) e grava no Supabase.
+          </p>
+        ) : (
+          <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
+            color: "#f0a35e" }}>
+            <b>🔒 Sync desligado.</b> A tabela <code>cardapio</code> agora é gerenciada
+            pelo <b>Catálogo de Exercícios</b>, que escreve direto no Supabase.
+            Rodar o sync da planilha sobrescreveria as edições feitas lá — sem erro,
+            em silêncio. A planilha virou arquivo morto.
+            <br />
+            <span style={{ fontSize: 11, opacity: .85 }}>
+              As telas abaixo continuam funcionando: elas leem a tabela, não a planilha.
+            </span>
+          </div>
+        )}
         {erro && <div className="err">{erro}</div>}
         {aviso && <div className="ok-msg">{aviso}</div>}
         {editUrl && (
@@ -1213,12 +1241,18 @@ function PainelCatalogo() {
           </div>
         )}
         <div className="acoes">
-          <button onClick={sincronizar} disabled={fase !== "idle"}>
-            {fase === "buscando" ? "Buscando..." : fase === "gravando" ? "Gravando..." : "Sincronizar agora"}
+          <button onClick={sincronizar}
+            disabled={!SYNC_CARDAPIO_ATIVO || fase !== "idle"}
+            title={SYNC_CARDAPIO_ATIVO ? "" : "Desativado — o Catálogo escreve direto no Supabase"}>
+            {!SYNC_CARDAPIO_ATIVO ? "Sincronizar (desativado)"
+              : fase === "buscando" ? "Buscando..."
+              : fase === "gravando" ? "Gravando..." : "Sincronizar agora"}
           </button>
-          <button className="btn-sec" onClick={() => setEditUrl(v => !v)}>
-            {editUrl ? "Ocultar URL" : "Trocar URL"}
-          </button>
+          {SYNC_CARDAPIO_ATIVO && (
+            <button className="btn-sec" onClick={() => setEditUrl(v => !v)}>
+              {editUrl ? "Ocultar URL" : "Trocar URL"}
+            </button>
+          )}
           {linhas !== null && (
             <span className="status">
               {linhas.length
@@ -1233,7 +1267,7 @@ function PainelCatalogo() {
             <div className="status">{Math.round(prog * 100)}%</div>
           </>
         )}
-        {manual && (
+        {manual && SYNC_CARDAPIO_ATIVO && (
           <div style={{ marginTop: 18 }}>
             <p style={{ marginBottom: 8 }}>
               <b>Plano B:</b> abre a URL do Catálogo numa aba, copia todo o JSON e cola aqui.
@@ -1269,9 +1303,9 @@ function PainelCatalogo() {
         <div className="box">
           <h2>⚠️ Grupos fora do mapeamento ({naoMap.length})</h2>
           <p>
-            Existem no Catálogo mas não em <code>grupos_exibicao</code>, então exercícios
-            com esses grupos caem em "Sem atribuição" no Volume. Copia o SQL, ajusta
-            tipo e ordem, e roda no Supabase.
+            Existem na tabela <code>cardapio</code> mas não em <code>grupos_exibicao</code>,
+            então exercícios com esses grupos caem em "Sem atribuição" no Volume.
+            Copia o SQL, ajusta tipo e ordem, e roda no Supabase.
           </p>
           <div className="lista" style={{ marginBottom: 14 }}>
             {naoMap.map(g => (
