@@ -24,6 +24,7 @@
     --bg:#0b0f10; --card:#131a1c; --line:#1f2b2d;
     --txt:#e6edf3; --mut:#89a0a3; --accent:#00daef;
     --warn:#f0a35e; --alert:#e05c5c; --marca:#ddff00;
+    --soft-orange:#ffc48a;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--txt);
@@ -176,6 +177,27 @@
     border-bottom:1px solid #182224;white-space:nowrap}
   .dr-menu div:last-child{border-bottom:none}
   .dr-menu div:hover{background:#0f2a2e;color:var(--accent)}
+  /* chip de login no topo da gaveta do aluno */
+  .lg-wrap{position:relative;display:inline-block;vertical-align:middle}
+  .lg-chip{display:inline-flex;align-items:center;gap:6px;width:auto;
+    margin-left:10px;padding:5px 11px;font-size:11px;font-weight:600;
+    letter-spacing:.2px;border-radius:7px;font-family:inherit;line-height:1.2}
+  .lg-chip.criar{background:var(--accent);color:#04191c;
+    border:1px solid var(--accent);cursor:pointer}
+  .lg-chip.ativo{background:transparent;color:var(--accent);
+    border:1px solid var(--accent);cursor:default}
+  .lg-chip.dup{background:transparent;color:var(--alert);
+    border:1px solid var(--alert);cursor:help}
+  .lg-chip.carreg{background:transparent;color:var(--mut);
+    border:1px solid var(--line);cursor:default}
+  .lg-pop-bg{position:fixed;inset:0;z-index:55}
+  .lg-pop{position:absolute;top:calc(100% + 7px);left:0;width:min(360px,86vw);
+    background:var(--card);border:1px solid var(--accent);border-radius:10px;
+    padding:14px 15px;z-index:60;box-shadow:0 12px 34px rgba(0,0,0,.6);
+    font-size:12px;font-weight:400;letter-spacing:0;text-align:left;cursor:default}
+  @media (max-width:820px){
+    .lg-pop{position:fixed;top:auto;bottom:12px;left:10px;right:10px;width:auto}
+  }
   .lg-lin{display:grid;grid-template-columns:minmax(0,1fr) 250px auto 150px;
     gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
     border-left:3px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:7px}
@@ -494,6 +516,32 @@
     color:#a8c4c7;line-height:1.65;font-family:ui-monospace,monospace}
   .mt-det .tit{color:#8fb8ff;font-weight:600;margin-bottom:3px;font-family:inherit}
   .mt-det.c .tit{color:#dbff00}
+  /* bi-set / tri-set / circuito: trilho laranja envolvendo os membros */
+  .mt-gr{border-bottom:1px solid #182224;border-left:3px solid var(--soft-orange);
+    background:#16130e}
+  .mt-gr:last-child{border-bottom:none}
+  .mt-gr-h{position:relative;display:flex;align-items:baseline;gap:8px;
+    padding:9px 14px 2px;font-size:11px;font-weight:600;color:var(--soft-orange);
+    letter-spacing:.3px}
+  .mt-gr-h .rod{font-weight:400;color:var(--mut);font-size:10px;flex:1}
+  .mt-gr .mt-ex{border-bottom:1px dashed #2b2418}
+  .mt-gr .mt-ex:last-child{border-bottom:none}
+  .mt-gr .ord.gl{color:var(--soft-orange);font-weight:700}
+  .gr-ferr{position:absolute;right:10px;top:5px;display:flex;gap:3px;
+    opacity:0;transition:opacity .15s}
+  .mt-gr:hover .gr-ferr{opacity:1}
+  .gr-ferr button{width:auto;padding:3px 7px;font-size:11px;background:var(--card);
+    border:1px solid var(--line);color:var(--mut)}
+  .gr-ferr button:hover{border-color:var(--soft-orange);color:var(--soft-orange);
+    filter:none}
+  .mt-join{padding:0 14px;height:0;overflow:visible;display:flex;
+    justify-content:center;opacity:.25;transition:opacity .15s}
+  .mt-tr:hover .mt-join{opacity:1}
+  .mt-join button{position:relative;top:-9px;width:auto;padding:2px 9px;
+    font-size:9.5px;letter-spacing:.4px;background:var(--card);
+    border:1px dashed #3a3020;color:var(--mut);border-radius:20px}
+  .mt-join button:hover{border-color:var(--soft-orange);color:var(--soft-orange);
+    border-style:solid;filter:none}
   .mt-vazio{padding:26px 14px;text-align:center;color:var(--mut);font-size:12px}
   @media (max-width: 900px){
     .mt-cols{grid-template-columns:1fr}
@@ -1785,7 +1833,7 @@ function DrawerAnamnese({ aluno, onFechar }) {
               )}
             </div>
           )}
-          <h2>{aluno.nome}</h2>
+          <h2>{aluno.nome}<BotaoLoginAluno aluno={aluno} /></h2>
           <div className="meta">
             {atual === undefined ? "carregando..."
               : atual === null ? "sem anamnese registrada"
@@ -3040,6 +3088,163 @@ async function criarLogin(alunoId, email, senha) {
   }
   try { await aux.auth.signOut(); } catch (e) {}
   return { ok: true, precisaConfirmar };
+}
+
+/* ---------- Login do aluno · chip no topo da gaveta ---------- */
+/* Mesma mecânica do "+ Aluno" e do painel Acessos (gerarSenha + criarLogin).
+   Aqui muda só a embalagem: um chip ao lado do nome, dentro da ficha aberta. */
+function IconeCelular() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+      strokeLinejoin="round" style={{ display: "block" }}>
+      <rect x="6" y="2" width="12" height="20" rx="2.5" />
+      <path d="M11 18.4h2" />
+    </svg>
+  );
+}
+
+function BotaoLoginAluno({ aluno }) {
+  const { toast } = usarUI();
+  const [st, setSt]       = useState(undefined);   // linha de vw_alunos_acesso
+  const [aberto, setAb]   = useState(false);
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [busy, setBusy]   = useState(false);
+  const [erro, setErro]   = useState("");
+  const [cred, setCred]   = useState(null);
+
+  const carregar = useCallback(async () => {
+    const { data, error } = await sb.from("vw_alunos_acesso")
+      .select("id, email, situacao, logins, primeiro_login_em")
+      .eq("id", aluno.id).limit(1);
+    if (error) { setSt(null); return; }
+    const linha = (data && data[0]) || null;
+    setSt(linha);
+    setEmail(prev => prev || ((linha && linha.email) || ""));
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  function abrir() {
+    setErro("");
+    if (!senha) setSenha(gerarSenha());
+    setAb(true);
+  }
+
+  async function criar() {
+    const mail = email.trim();
+    if (!mail) { setErro("Preenche o e-mail — é por ele que o aluno entra."); return; }
+    if (senha.length < 6) { setErro("A senha precisa ter ao menos 6 caracteres."); return; }
+    setBusy(true); setErro("");
+    /* o e-mail precisa estar na ficha ANTES: é por ele que o vínculo é achado */
+    if (mail !== ((st && st.email) || "")) {
+      const up = await sb.from("alunos").update({ email: mail }).eq("id", aluno.id);
+      if (up.error) { setBusy(false); setErro(up.error.message); return; }
+    }
+    const r = await criarLogin(aluno.id, mail, senha);
+    setBusy(false);
+    if (!r.ok) { setErro(r.msg); return; }
+    setCred({ email: mail, senha, confirmar: r.precisaConfirmar });
+    toast("Login criado para " + aluno.nome + ".");
+    await carregar();
+  }
+
+  function copiarCred() {
+    if (!cred) return;
+    navigator.clipboard.writeText(
+      "App Idealis\ne-mail: " + cred.email + "\nsenha: " + cred.senha +
+      "\n\nEntra e troca a senha no primeiro acesso.");
+    toast("Credenciais copiadas.");
+  }
+
+  const sit = st === undefined ? "carregando" : (st ? st.situacao : "sem");
+
+  return (
+    <span className="lg-wrap">
+      {sit === "carregando" ? (
+        <span className="lg-chip carreg"><IconeCelular /> login</span>
+      ) : sit === "duplicado" ? (
+        <span className="lg-chip dup"
+          title="Esta ficha tem mais de um login ligado — resolve no painel Acessos.">
+          <IconeCelular /> {st.logins} logins
+        </span>
+      ) : sit === "ok" ? (
+        <span className="lg-chip ativo"
+          title={"Login criado" + (st.primeiro_login_em
+            ? " · 1º acesso em " + dBR(String(st.primeiro_login_em).slice(0, 10))
+            : " · ainda não entrou")}>
+          <IconeCelular /> Login ativo
+        </span>
+      ) : (
+        <button className="lg-chip criar" onClick={abrir}>
+          <IconeCelular /> Criar login
+        </button>
+      )}
+
+      {aberto && (
+        <>
+          <span className="lg-pop-bg" onClick={() => setAb(false)} />
+          <div className="lg-pop">
+            {cred ? (
+              <>
+                <b style={{ fontSize: 13 }}>Login criado</b>
+                <div className="lg-cred" style={{ marginTop: 9 }}>
+                  <code>{cred.email}</code>
+                  <code className="sen">{cred.senha}</code>
+                  <button className="btn-sec ico" title="Copiar credenciais"
+                    onClick={copiarCred}><IconeCopiar /></button>
+                </div>
+                {cred.confirmar && (
+                  <div style={{ color: "var(--warn)", fontSize: 11, marginTop: 8 }}>
+                    Precisa confirmar o e-mail antes de entrar.
+                  </div>
+                )}
+                <div className="ed-cnt" style={{ marginTop: 8, lineHeight: 1.6 }}>
+                  A senha só aparece uma vez: copia antes de fechar.
+                </div>
+                <div className="conf-bt" style={{ marginTop: 12 }}>
+                  <button className="btn-sec" onClick={() => setAb(false)}>Fechar</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <b style={{ fontSize: 13 }}>Criar login · {aluno.nome}</b>
+                {erro && <div className="err" style={{ marginTop: 9 }}>{erro}</div>}
+
+                <div className="ed-lab">E-mail</div>
+                <input type="email" value={email} placeholder="e-mail do aluno"
+                  onChange={e => setEmail(e.target.value)}
+                  style={{ marginBottom: 0, fontSize: 13 }} />
+
+                <div className="ed-lab">Senha</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input value={senha} onChange={e => setSenha(e.target.value)}
+                    style={{ marginBottom: 0, fontSize: 13,
+                             fontFamily: "ui-monospace,monospace" }} />
+                  <button className="btn-sec" style={{ width: "auto", padding: "0 13px" }}
+                    onClick={() => setSenha(gerarSenha())}>Gerar</button>
+                </div>
+
+                <div className="ed-cnt" style={{ marginTop: 7, lineHeight: 1.6 }}>
+                  Senha pronunciável, sem caracteres ambíguos — dá para ditar por telefone.
+                  O e-mail é salvo na ficha antes de criar o acesso.
+                </div>
+
+                <div className="conf-bt" style={{ marginTop: 12 }}>
+                  <button className="btn-sec" onClick={() => setAb(false)}>Cancelar</button>
+                  <button style={{ width: "auto", padding: "9px 15px" }}
+                    onClick={criar} disabled={busy || !email.trim()}>
+                    {busy ? "Criando..." : "Criar login"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </span>
+  );
 }
 
 /* ---------- Novo aluno ---------- */
@@ -5090,6 +5295,46 @@ function nSeriesDe(ex) {
   return m ? +m[1] : null;
 }
 
+/* ---------- Grupos de execução (bi-set / tri-set / circuito) ----------
+   Cada exercício continua sendo uma linha própria em `exercicios`, com log e
+   histórico intactos. O campo `grupo jsonb` só LIGA exercícios vizinhos.
+   Três regras: adjacência é a fonte da verdade; grupo com menos de 2 membros
+   não é grupo; o nome vem da contagem, não do banco. */
+function grupoIdDe(ex) {
+  return (ex && ex.grupo && ex.grupo.id) ? String(ex.grupo.id) : null;
+}
+
+function rotuloGrupo(n) {
+  return n <= 2 ? "Bi-set" : (n === 3 ? "Tri-set" : "Circuito");
+}
+
+/* Quebra a lista ORDENADA de exercícios em blocos.
+   Exercício solto vira um bloco de 1 (com grupo = null). */
+function blocosDoTreino(exs) {
+  const out = [];
+  (exs || []).forEach((ex, idx) => {
+    const g = grupoIdDe(ex);
+    const ant = out.length ? out[out.length - 1] : null;
+    if (g && ant && ant.grupo === g) { ant.itens.push({ ex, idx }); return; }
+    out.push({ grupo: g, itens: [{ ex, idx }] });
+  });
+  /* regra 2: grupo órfão deixa de ser grupo */
+  out.forEach(b => { if (b.grupo && b.itens.length < 2) b.grupo = null; });
+  return out;
+}
+
+/* nº de rodadas = maior nº de séries entre os membros */
+function rodadasDoBloco(bl) {
+  return Math.max(1, ...bl.itens.map(it => nSeriesDe(it.ex) || 1));
+}
+
+/* ids que carregam grupo mas ficaram sozinhos — precisam persistir grupo = null */
+function orfaosDeGrupo(lista) {
+  return blocosDoTreino(lista)
+    .filter(b => !b.grupo && b.itens.length === 1 && grupoIdDe(b.itens[0].ex))
+    .map(b => b.itens[0].ex.id);
+}
+
 function situacaoFase(f, hojeISO) {
   if (f.fim && f.fim < hojeISO) return "encerrada";
   if (f.inicio && f.inicio > hojeISO) return "futura";
@@ -5176,46 +5421,113 @@ function PainelMontagem() {
     futuros: fases.filter(f => situacaoFase(f, hoje) === "futura").length
   };
 
-  async function moverEx(lista, i, dir) {
-    const j = i + dir;
-    if (j < 0 || j >= lista.length) return;
-    const a = lista[i], b = lista[j];
-    const oa = a.ordem ?? i, ob = b.ordem ?? j;
-    const r1 = await sb.from("exercicios").update({ ordem: ob }).eq("id", a.id);
-    const r2 = await sb.from("exercicios").update({ ordem: oa }).eq("id", b.id);
-    if (r1.error || r2.error) { setErro((r1.error || r2.error).message); return; }
+  /* reescreve a coluna ordem do treino a partir da lista nova, tocando
+     só as linhas que realmente mudaram de posição */
+  async function gravarOrdem(nova) {
+    const rs = await Promise.all(nova
+      .map((ex, i) => (ex.ordem === i
+        ? null
+        : sb.from("exercicios").update({ ordem: i }).eq("id", ex.id)))
+      .filter(Boolean));
+    const err = rs.find(r => r && r.error);
+    return err ? err.error.message : null;
+  }
+
+  /* mover é por BLOCO, nunca por exercício: mover exercício a exercício
+     separa membros de um grupo sem que ninguém perceba */
+  async function moverBlocoTreino(blocos, bi, dir) {
+    const bj = bi + dir;
+    if (bj < 0 || bj >= blocos.length) return;
+    const arr = [...blocos];
+    [arr[bi], arr[bj]] = [arr[bj], arr[bi]];
+    const e = await gravarOrdem(arr.flatMap(b => b.itens.map(it => it.ex)));
+    if (e) { setErro(e); return; }
     await abrirFase(faseSel);
   }
 
-  async function apagarEx(ex) {
+  /* dentro do grupo a ordem dos membros muda sem quebrar a adjacência */
+  async function moverDentro(lista, bl, k, dir) {
+    const j = k + dir;
+    if (j < 0 || j >= bl.itens.length) return;
+    const nova = [...lista];
+    const a = bl.itens[k].idx, b = bl.itens[j].idx;
+    [nova[a], nova[b]] = [nova[b], nova[a]];
+    const e = await gravarOrdem(nova);
+    if (e) { setErro(e); return; }
+    await abrirFase(faseSel);
+  }
+
+  /* agrupar é juntar dois BLOCOS vizinhos — assim "somar o 3º ao bi-set"
+     é o mesmo gesto que "criar bi-set" */
+  async function agrupar(blocos, bi) {
+    const a = blocos[bi], b = blocos[bi + 1];
+    if (!b) return;
+    const gid = a.grupo || b.grupo || novoUUID();
+    const ids = [...a.itens, ...b.itens].map(it => it.ex.id);
+    const rs = await Promise.all(ids.map(id => sb.from("exercicios")
+      .update({ grupo: { id: gid, tipo: "combo" } }).eq("id", id)));
+    const err = rs.find(r => r.error);
+    if (err) { setErro(err.error.message); return; }
+    toast(rotuloGrupo(ids.length) + " criado.");
+    await abrirFase(faseSel);
+  }
+
+  async function desagrupar(bl) {
+    const rs = await Promise.all(bl.itens.map(it =>
+      sb.from("exercicios").update({ grupo: null }).eq("id", it.ex.id)));
+    const err = rs.find(r => r.error);
+    if (err) { setErro(err.error.message); return; }
+    toast("Grupo desfeito — os exercícios continuam no treino.");
+    await abrirFase(faseSel);
+  }
+
+  async function apagarEx(ex, lista) {
+    const bl = blocosDoTreino(lista).find(b =>
+      b.grupo && b.itens.some(it => it.ex.id === ex.id));
     const ok = await confirmar({
       titulo: "Apagar exercício?",
       texto: '"' + ex.nome + '" será removido do treino.',
-      alerta: "Os registros de carga do aluno neste exercício vão junto e não voltam.",
+      alerta: "Os registros de carga do aluno neste exercício vão junto e não voltam." +
+        (bl && bl.itens.length === 2
+          ? "  Ele está num " + rotuloGrupo(2).toLowerCase() +
+            " — o grupo será desfeito e o outro exercício vira solto."
+          : ""),
       ok: "Apagar", perigo: true
     });
     if (!ok) return;
     const r = await sb.from("exercicios").delete().eq("id", ex.id);
     if (r.error) { toast(r.error.message, "erro"); return; }
-    toast("Exercício apagado.");
+    /* regra 2: quem sobrou sozinho carregando grupo deixa de ser grupo */
+    const orfaos = orfaosDeGrupo((lista || []).filter(x => x.id !== ex.id));
+    if (orfaos.length) {
+      await Promise.all(orfaos.map(id =>
+        sb.from("exercicios").update({ grupo: null }).eq("id", id)));
+    }
+    toast("Exercício apagado." + (orfaos.length ? " O grupo foi desfeito." : ""));
     await abrirFase(faseSel);
   }
 
-  function Exercicio({ ex, lista, i }) {
+  function Exercicio({ ex, lista, blocos, bl, bi, k, letra }) {
     const n = nSeriesDe(ex);
     const met = fmtMetodo(ex.metodo);
     const car = fmtCardio(ex.cardio);
     const reps = String(ex.series || "").replace(/^\s*\d+\s*[x×]\s*/i, "");
+    const emGrupo = !!bl.grupo;
     return (
       <div className="mt-ex">
         <div className="ferr">
-          <button onClick={() => moverEx(lista, i, -1)} title="Subir">▲</button>
-          <button onClick={() => moverEx(lista, i, 1)} title="Descer">▼</button>
+          <button title={emGrupo ? "Subir dentro do grupo" : "Subir"}
+            onClick={() => emGrupo ? moverDentro(lista, bl, k, -1)
+                                   : moverBlocoTreino(blocos, bi, -1)}>▲</button>
+          <button title={emGrupo ? "Descer dentro do grupo" : "Descer"}
+            onClick={() => emGrupo ? moverDentro(lista, bl, k, 1)
+                                   : moverBlocoTreino(blocos, bi, 1)}>▼</button>
           <button onClick={() => setEdit({ ex })} title="Editar">✎</button>
-          <button onClick={() => apagarEx(ex)} title="Apagar">×</button>
+          <button onClick={() => apagarEx(ex, lista)} title="Apagar">×</button>
         </div>
         <div className="lin1">
-          <span className="ord">{(ex.ordem ?? 0) + 1}</span>
+          <span className={"ord" + (letra ? " gl" : "")}>
+            {letra || ((ex.ordem ?? 0) + 1)}</span>
           <span className="nm">{ex.nome}</span>
           <span className="sr">
             {car ? "cardio" : (n ? n + "×" + (reps ? " " + reps : "") : "—")}
@@ -5343,8 +5655,47 @@ function PainelMontagem() {
                           </div>
                           {lista.length === 0
                             ? <div className="mt-vazio">Sem exercícios.</div>
-                            : lista.map((ex, i) =>
-                                <Exercicio key={ex.id} ex={ex} lista={lista} i={i} />)}
+                            : (() => {
+                                const blocos = blocosDoTreino(lista);
+                                return blocos.map((bl, bi) => (
+                                  <React.Fragment key={bl.itens[0].ex.id}>
+                                    {bl.grupo ? (
+                                      <div className="mt-gr">
+                                        <div className="mt-gr-h">
+                                          <span>🔗 {rotuloGrupo(bl.itens.length)}</span>
+                                          <span className="rod">
+                                            {rodadasDoBloco(bl)} rodadas · descanso só no fim
+                                          </span>
+                                          <div className="gr-ferr">
+                                            <button title="Subir o bloco inteiro"
+                                              onClick={() => moverBlocoTreino(blocos, bi, -1)}>▲</button>
+                                            <button title="Descer o bloco inteiro"
+                                              onClick={() => moverBlocoTreino(blocos, bi, 1)}>▼</button>
+                                            <button title="Desagrupar"
+                                              onClick={() => desagrupar(bl)}>✕</button>
+                                          </div>
+                                        </div>
+                                        {bl.itens.map((it, k) => (
+                                          <Exercicio key={it.ex.id} ex={it.ex} lista={lista}
+                                            blocos={blocos} bl={bl} bi={bi} k={k}
+                                            letra={"ABCDEFGH"[k] || "•"} />
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <Exercicio ex={bl.itens[0].ex} lista={lista}
+                                        blocos={blocos} bl={bl} bi={bi} k={0} />
+                                    )}
+                                    {bi < blocos.length - 1 && (
+                                      <div className="mt-join">
+                                        <button onClick={() => agrupar(blocos, bi)}>
+                                          🔗 {bl.grupo ? "Somar o próximo"
+                                                       : "Agrupar com o próximo"}
+                                        </button>
+                                      </div>
+                                    )}
+                                  </React.Fragment>
+                                ));
+                              })()}
                           <div className="mt-acao">
                             <button className="btn-sec"
                               onClick={() => setEdit({ treinoId: t.id,
@@ -5372,6 +5723,10 @@ function PainelMontagem() {
 
       <div className="pl-hint" style={{ marginTop: 18 }}>
         Passa o mouse sobre o exercício para <b>reordenar, editar ou apagar</b>.
+        As setas movem o <b>bloco inteiro</b> — dentro de um grupo elas trocam a ordem
+        dos membros. <b>🔗 Agrupar com o próximo</b> junta dois blocos vizinhos em
+        bi-set, tri-set ou circuito (o nome vem da contagem). Sem descanso entre os
+        membros: ele acontece uma vez, no fim da rodada.
         Cardio e criação de novos métodos ainda são feitos no App.
       </div>
     </div>
