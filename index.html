@@ -243,6 +243,26 @@
   .en-tag.ex{background:#0f2a2e;color:var(--accent)}
   .en-tag.rg{background:#241a2e;color:#c9a6ff}
   .en-tag.es{background:#12240f;color:#a7e58c;font-weight:600}
+  .cr-form{background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    padding:13px 15px;margin-bottom:16px}
+  .cr-exs{display:flex;flex-wrap:wrap;gap:6px;max-height:132px;overflow-y:auto;
+    padding:2px 0 6px}
+  .cr-mini{padding:4px 10px;font-size:11px;margin-top:2px}
+  .cr-avulso{font-style:normal;color:var(--warn)}
+  .cr-chave{font-size:11px;color:var(--mut);margin:9px 0 4px;line-height:1.6}
+  .cr-chave code{background:#0f2a2e;color:var(--accent);padding:1px 6px;
+    border-radius:4px;font-family:ui-monospace,monospace}
+  .cr-txt{min-height:104px}
+  .cr-it .cr-ex{display:block;font-size:13px;font-weight:600;color:var(--txt);
+    margin-bottom:3px}
+  .cr-it .cr-tt{font-size:13px;line-height:1.55;white-space:pre-wrap;
+    margin-bottom:5px}
+  .cr-it.nova{border-left:2px solid var(--marca);padding-left:9px}
+  .cr-it.ed{border-left:2px solid var(--accent);padding-left:9px}
+  .en-tag.nv{background:#2b2f10;color:var(--marca);font-weight:600}
+  .en-tag.al{background:#2e1a1a;color:#ff9c9c;font-weight:600}
+  .cr-sh{font-size:10px;text-transform:uppercase;letter-spacing:.9px;
+    color:var(--mut);margin:16px 0 6px}
   .mig-cols{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;
     align-items:start}
   .mig-al{padding:9px 12px;border:1px solid var(--line);border-radius:9px;
@@ -1637,6 +1657,7 @@ function DrawerAnamnese({ aluno, onFechar }) {
   const [secTexto, setSecTexto] = useState("");
   const [verVazias, setVerVazias] = useState(false);
   const [menuCopiar, setMenuCopiar] = useState(false);
+  const [nvCorr, setNvCorr] = useState(0);   // correções não vistas
 
   const carregar = useCallback(async () => {
     setErro("");
@@ -1653,12 +1674,16 @@ function DrawerAnamnese({ aluno, onFechar }) {
     setEdicao(a ? a.texto : "");
     setSujo(false);
 
-    const [en, se] = await Promise.all([
+    const [en, se, co] = await Promise.all([
       sb.from("vw_anamnese_entradas").select("*").eq("aluno_id", aluno.id),
-      sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem")
+      sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem"),
+      /* contagem para o badge da aba — precisa existir mesmo com a aba fechada */
+      sb.from("correcoes").select("id").eq("aluno_id", aluno.id)
+        .is("vista_em", null).is("arquivada_em", null)
     ]);
     setEnts(en.error ? [] : (en.data || []));
     setSecDefs(se.error ? [] : (se.data || []));
+    setNvCorr(co.error ? 0 : (co.data || []).length);
   }, [aluno.id]);
 
   useEffect(() => { carregar(); }, [carregar]);
@@ -1848,6 +1873,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
           <button className="btn-sec" onClick={() => setModo("editar")}>
             Editar{sujo ? " •" : ""}
           </button>
+          <button className="btn-sec" onClick={() => setModo("correcoes")}>
+            Correções{nvCorr ? " (" + nvCorr + ")" : ""}
+          </button>
           <button className="btn-sec" onClick={() => setModo("perguntas")}>
             Perguntas{aluno.perguntas_pendentes ? " (" + aluno.perguntas_pendentes + ")" : ""}
           </button>
@@ -1881,6 +1909,8 @@ function DrawerAnamnese({ aluno, onFechar }) {
             <PainelAparelhosAluno aluno={aluno} />
           ) : modo === "academias" ? (
             <PainelAcademiasAluno aluno={aluno} />
+          ) : modo === "correcoes" ? (
+            <PainelCorrecoes aluno={aluno} onContagem={setNvCorr} />
           ) : modo === "perguntas" ? (
             <PainelPerguntas aluno={aluno} />
           ) : modo === "colar" ? (
@@ -4176,6 +4206,358 @@ function PainelPerguntas({ aluno }) {
 
 
 
+
+/* ---------- Correções de execução ----------
+   A correção pertence ao par ALUNO + EXERCÍCIO, nunca ao treino: o treino é
+   descartável (cada fase duplica e gera id novo), enquanto a orientação de
+   execução é permanente até eu arquivar. O casamento acontece em tempo de
+   LEITURA, dentro do App Idealis:
+     cardapio_id nos DOIS lados -> compara os ids (como string)
+     qualquer um dos dois null  -> compara exercicio_chave com normAcc(nome)
+   `treino_id` é gravado só como contexto e NUNCA lido como chave. */
+
+/* ATENÇÃO: esta é a normalização do App Idealis copiada byte a byte, na mesma
+   ordem (toLowerCase -> normalize -> replace -> trim).
+   NÃO trocar por `chaveNome` (~linha 2056): aquela também come pontuação, e
+   "Supino Inclinado (Halteres)" viraria "supino inclinado halteres". A chave
+   ficaria diferente da que o app grava e a correção existiria no banco sem
+   nunca aparecer pro aluno.
+   Também não confundir com o `norm` do app (o que PRESERVA acento) — aquele é
+   do histórico de carga, não das correções. */
+const normAcc = (t) => (t || "").toLowerCase()
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+/* espelho do corrCasa() do app — serve só para eu prever, aqui no Dashboard,
+   se a correção vai mesmo aparecer na tela do aluno */
+function corrCasaEx(c, ex) {
+  if (!c || !ex) return false;
+  if (c.cardapio_id != null && ex.cardapio_id != null)
+    return String(c.cardapio_id) === String(ex.cardapio_id);
+  return !!c.exercicio_chave && c.exercicio_chave === normAcc(ex.nome);
+}
+
+function dHora(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("pt-BR") + " " +
+    d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      .replace(":", "h");
+}
+
+function PainelCorrecoes({ aluno, onContagem }) {
+  const { toast, confirmar } = usarUI();
+  const [lista, setLista]   = useState(null);
+  const [exs, setExs]       = useState([]);
+  const [semFase, setSemF]  = useState(false);
+  const [erro, setErro]     = useState("");
+  const [busy, setBusy]     = useState(false);
+  const [verArq, setVerArq] = useState(false);
+  const [alvo, setAlvo]     = useState(null);   // {nome, cardapio_id, treino_id}
+  const [livre, setLivre]   = useState(false);
+  const [texto, setTexto]   = useState("");
+  const [edit, setEdit]     = useState(null);
+  const [busca, setBusca]   = useState("");
+
+  const carregar = useCallback(async () => {
+    setErro("");
+    const c = await sb.from("correcoes").select("*")
+      .eq("aluno_id", aluno.id)
+      .order("criado_em", { ascending: false });
+    if (c.error) { setErro(c.error.message); setLista([]); return; }
+    const dados = c.data || [];
+    setLista(dados);
+    if (onContagem) {
+      onContagem(dados.filter(x => !x.arquivada_em && !x.vista_em).length);
+    }
+  }, [aluno.id, onContagem]);
+
+  /* os exercícios que o aluno JÁ TEM nas fases vigentes — é quase sempre um
+     deles, e escolher daqui garante nome e cardapio_id vindos da fonte certa */
+  const carregarExs = useCallback(async () => {
+    const hoje = dISO(new Date());
+    const f = await sb.from("fases").select("id, inicio, fim").eq("aluno_id", aluno.id);
+    if (f.error) { setErro("fases: " + f.error.message); return; }
+    const vig = (f.data || []).filter(x => situacaoFase(x, hoje) === "ativa")
+      .map(x => x.id);
+    if (!vig.length) { setExs([]); setSemF(true); return; }
+    const t = await sb.from("treinos").select("id").in("fase_id", vig);
+    if (t.error) { setErro("treinos: " + t.error.message); return; }
+    const ids = (t.data || []).map(x => x.id);
+    if (!ids.length) { setExs([]); setSemF(true); return; }
+    const e = await sb.from("exercicios").select("nome, cardapio_id, treino_id")
+      .in("treino_id", ids);
+    if (e.error) { setErro("exercicios: " + e.error.message); return; }
+    setSemF(false);
+    /* distinct pela chave normalizada. Quem tem cardapio_id ganha do avulso:
+       o match por id é mais forte e sobrevive a diferença de digitação. */
+    const m = new Map();
+    for (const x of (e.data || [])) {
+      const k = normAcc(x.nome);
+      const at = m.get(k);
+      if (!at || (at.cardapio_id == null && x.cardapio_id != null)) m.set(k, x);
+    }
+    setExs([...m.values()].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")));
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); carregarExs(); }, [carregar, carregarExs]);
+
+  function limpar() {
+    setEdit(null); setAlvo(null); setTexto(""); setBusca("");
+    setLivre(false); setErro("");
+  }
+
+  function abrirEdicao(c) {
+    setEdit(c);
+    setTexto(c.texto || "");
+    setAlvo({ nome: c.exercicio_nome || "", cardapio_id: c.cardapio_id,
+              treino_id: c.treino_id });
+    setLivre(!exs.some(x => normAcc(x.nome) === normAcc(c.exercicio_nome || "")));
+    setErro("");
+  }
+
+  async function salvar() {
+    const t = texto.trim();
+    if (!t)    { setErro("Escreve a correção antes de salvar."); return; }
+    if (!alvo || !String(alvo.nome || "").trim()) {
+      setErro("Escolhe o exercício."); return;
+    }
+    setBusy(true); setErro("");
+    const nome = String(alvo.nome).trim();
+    if (edit) {
+      /* o App nunca reescreve cardapio_id/nome/chave numa edição. Se eu troquei
+         o exercício aqui, os TRÊS têm que ir juntos — mandar só o nome deixaria
+         a chave apontando pro exercício antigo. Por isso mando sempre os três:
+         quando nada mudou, é no-op. */
+      const r = await sb.from("correcoes").update({
+        texto: t,
+        editada_em: new Date().toISOString(),
+        cardapio_id: alvo.cardapio_id != null ? alvo.cardapio_id : null,
+        exercicio_nome: nome,
+        exercicio_chave: normAcc(nome)
+      }).eq("id", edit.id);
+      setBusy(false);
+      if (r.error) { setErro(r.error.message); return; }
+      toast("Correção editada — o aluno vê a marca de editada.");
+    } else {
+      const r = await sb.from("correcoes").insert({
+        aluno_id: aluno.id,
+        cardapio_id: alvo.cardapio_id != null ? alvo.cardapio_id : null,
+        exercicio_nome: nome,
+        exercicio_chave: normAcc(nome),
+        texto: t,
+        audio_url: null,
+        treino_id: alvo.treino_id || null
+      });
+      setBusy(false);
+      if (r.error) { setErro(r.error.message); return; }
+      toast("Correção criada para " + nome + ".");
+    }
+    limpar();
+    await carregar();
+  }
+
+  /* arquivar é o "excluir": a correção some da tela do aluno mas o histórico
+     do que eu já orientei continua consultável. Nunca delete de verdade. */
+  async function arquivar(c) {
+    const ok = await confirmar({
+      titulo: "Arquivar correção?",
+      texto: '"' + (c.exercicio_nome || "sem exercício") + '" sai da tela do aluno.',
+      alerta: "Nada é apagado — dá para desarquivar depois.",
+      ok: "Arquivar"
+    });
+    if (!ok) return;
+    const r = await sb.from("correcoes")
+      .update({ arquivada_em: new Date().toISOString() }).eq("id", c.id);
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    if (edit && edit.id === c.id) limpar();
+    toast("Arquivada."); await carregar();
+  }
+
+  async function desarquivar(c) {
+    const r = await sb.from("correcoes").update({ arquivada_em: null }).eq("id", c.id);
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    toast("Voltou para as ativas."); await carregar();
+  }
+
+  /* reenviar = volta a contar como nova. É o que eu uso quando ele repete o
+     mesmo erro semanas depois, sem precisar reescrever tudo. */
+  async function reenviar(c) {
+    const r = await sb.from("correcoes").update({ vista_em: null }).eq("id", c.id);
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    toast("Reenviada — conta como nova pro aluno."); await carregar();
+  }
+
+  const ativas = (lista || []).filter(c => !c.arquivada_em);
+  const arqs   = (lista || []).filter(c => c.arquivada_em);
+  const naoVistas = ativas.filter(c => !c.vista_em).length;
+  const opcoes = busca.trim() ? exs.filter(x => cbCasa(x.nome, busca)) : exs;
+
+  function Item({ c, arq }) {
+    /* se nenhum exercício das fases vigentes casa, a correção está no banco
+       mas invisível pro aluno — quase sempre chave divergente */
+    const casa = exs.some(x => corrCasaEx(c, x));
+    return (
+      <div className={"ent en2 cr-it" + (arq ? " arq" : "") +
+        (!arq && !c.vista_em ? " nova" : "") +
+        (edit && edit.id === c.id ? " ed" : "")}>
+        <span className="dt">{dBR(String(c.criado_em).slice(0, 10))}</span>
+        <span className="tx">
+          <b className="cr-ex">{c.exercicio_nome || "— sem exercício —"}</b>
+          <div className="cr-tt">{c.texto}</div>
+          <span className="en-tags">
+            <span className={"en-tag " + (c.vista_em ? "es" : "nv")}>
+              {c.vista_em ? "vista " + dHora(c.vista_em) : "ainda não vista"}
+            </span>
+            {c.editada_em && (
+              <span className="en-tag">
+                editada {dBR(String(c.editada_em).slice(0, 10))}
+              </span>
+            )}
+            {c.audio_url && <span className="en-tag ex">áudio</span>}
+            {c.cardapio_id != null
+              ? <span className="en-tag ex">cardápio {c.cardapio_id}</span>
+              : <span className="en-tag">casa por nome</span>}
+            {!arq && !casa && (
+              <span className="en-tag al" title={
+                "Nenhum exercício das fases vigentes casa com esta correção — " +
+                "hoje ela não aparece pro aluno.\nchave gravada: " +
+                (c.exercicio_chave || "(vazia)")}>
+                não casa
+              </span>
+            )}
+          </span>
+        </span>
+        <span className="en-ferr">
+          {arq ? (
+            <button onClick={() => desarquivar(c)} title="Desarquivar">↩</button>
+          ) : (
+            <>
+              <button onClick={() => abrirEdicao(c)} title="Editar">✎</button>
+              {c.vista_em && (
+                <button onClick={() => reenviar(c)}
+                  title="Reenviar — volta a contar como nova">↻</button>
+              )}
+              <button onClick={() => arquivar(c)} title="Arquivar">▾</button>
+            </>
+          )}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {erro && <div className="err">{erro}</div>}
+
+      <div className="cr-form">
+        <div className="ed-lab" style={{ marginTop: 0 }}>
+          {edit ? "Editando correção" : "Nova correção"}
+        </div>
+
+        {!livre ? (
+          <>
+            <input value={busca} onChange={e => setBusca(e.target.value)}
+              placeholder={exs.length
+                ? "Filtrar os exercícios do aluno..."
+                : "Nenhum exercício nas fases vigentes"}
+              style={{ marginBottom: 8 }} />
+            <div className="cr-exs">
+              {opcoes.length === 0
+                ? <div className="vazio-nota">
+                    {semFase
+                      ? "Este aluno não tem fase vigente com treinos."
+                      : "Nenhum exercício encontrado."}
+                  </div>
+                : opcoes.map(x => (
+                    <button key={x.nome}
+                      className={"chip mini" +
+                        (alvo && normAcc(alvo.nome) === normAcc(x.nome) ? " on" : "")}
+                      onClick={() => setAlvo(x)}>
+                      {x.nome}
+                      {x.cardapio_id == null && <i className="cr-avulso"> ~</i>}
+                    </button>
+                  ))}
+            </div>
+            <button className="btn-sec cr-mini"
+              onClick={() => { setLivre(true); setAlvo(null); }}>
+              corrigir um exercício que ele ainda não tem
+            </button>
+          </>
+        ) : (
+          <>
+            <BuscaExercicio valor={alvo ? alvo.nome : ""}
+              onPick={(id, txt) => setAlvo({ nome: txt, cardapio_id: id, treino_id: null })}
+              onTexto={t => setAlvo(t.trim()
+                ? { nome: t, cardapio_id: null, treino_id: null } : null)} />
+            <button className="btn-sec cr-mini" style={{ marginTop: 7 }}
+              onClick={() => { setLivre(false); setAlvo(null); }}>
+              voltar para os exercícios do aluno
+            </button>
+          </>
+        )}
+
+        {alvo && String(alvo.nome || "").trim() && (
+          <div className="cr-chave">
+            grava <b>{String(alvo.nome).trim()}</b> · chave{" "}
+            <code>{normAcc(alvo.nome)}</code>
+            {alvo.cardapio_id != null
+              ? " · cardapio_id " + alvo.cardapio_id
+              : " · sem cardapio_id, casa pelo nome"}
+          </div>
+        )}
+
+        <textarea className="raw cr-txt" value={texto}
+          onChange={e => setTexto(e.target.value)}
+          placeholder="O que ele precisa ajustar na execução..." />
+
+        <div className="acoes" style={{ marginTop: 10 }}>
+          <button onClick={salvar}
+            disabled={busy || !texto.trim() || !alvo || !String(alvo.nome || "").trim()}>
+            {busy ? "Salvando..." : (edit ? "Salvar edição" : "Criar correção")}
+          </button>
+          {edit && <button className="btn-sec" onClick={limpar}>Cancelar</button>}
+          <span className="status">
+            {edit ? "o aluno vê “editada em”" : "vai como não vista"}
+          </span>
+        </div>
+      </div>
+
+      {lista === null ? (
+        <div className="msg">Buscando...</div>
+      ) : (
+        <>
+          <div className="cr-sh">
+            Ativas ({ativas.length})
+            {naoVistas ? " · " + naoVistas + " não vista(s)" : ""}
+          </div>
+          {ativas.length === 0
+            ? <div className="vazio-nota">Nenhuma correção ativa para este aluno.</div>
+            : ativas.map(c => <Item key={c.id} c={c} />)}
+
+          {arqs.length > 0 && (
+            <>
+              <div className="cr-sh">
+                <button className="btn-sec cr-mini"
+                  onClick={() => setVerArq(v => !v)}>
+                  {verArq ? "ocultar" : "ver"} arquivadas ({arqs.length})
+                </button>
+              </div>
+              {verArq && arqs.map(c => <Item key={c.id} c={c} arq />)}
+            </>
+          )}
+        </>
+      )}
+
+      <div className="pl-hint" style={{ marginTop: 14 }}>
+        A correção pertence ao par <b>aluno + exercício</b>, não ao treino — ela
+        sobrevive à troca de fase. <b>Arquivar</b> é o excluir: some da tela do
+        aluno e o histórico fica. <b>↻ Reenviar</b> zera o “vista” e ela volta a
+        contar como nova. O <i className="cr-avulso">~</i> marca exercício sem
+        cardapio_id, que casa pelo nome normalizado.
+      </div>
+    </>
+  );
+}
 
 /* ---------- Toast e confirmação ---------- */
 const CtxUI = React.createContext({ toast: () => {}, confirmar: async () => false });
