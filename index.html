@@ -563,10 +563,55 @@
   .mt-join button:hover{border-color:var(--soft-orange);color:var(--soft-orange);
     border-style:solid;filter:none}
   .mt-vazio{padding:26px 14px;text-align:center;color:var(--mut);font-size:12px}
+  /* barra de acoes da fase aberta (importar sessao, nova sessao) */
+  .mt-sub{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .mt-sub .nm{font-size:12px;color:var(--mut);margin-right:2px}
+  .mt-sub .nm b{color:var(--txt);font-weight:600}
+  .mt-sub input{flex:0 1 190px;min-width:130px;padding:7px 10px;font-size:12px;
+    margin-bottom:0}
+  /* textarea do drawer de fase: a .raw tem min-height 300px e nao cabe aqui */
+  .nf-ta{min-height:0;font-size:12px;line-height:1.55}
+  /* apagar fase avulsa: so aparece no hover e so em fase fora do planejamento */
+  .mt-fase{position:relative}
+  .mt-fase .fx{position:absolute;top:6px;right:6px;width:20px;height:20px;padding:0;
+    line-height:1;background:transparent;border:1px solid var(--line);
+    color:var(--mut);border-radius:5px;font-size:12px;opacity:0;transition:opacity .12s}
+  .mt-fase:hover .fx{opacity:1}
+  .mt-fase .fx:hover{border-color:var(--alert);color:var(--alert);filter:none}
   @media (max-width: 900px){
     .mt-cols{grid-template-columns:1fr}
     .mt-tr{flex:0 0 84vw}
   }
+  /* ============ SELETOR DE SESSOES (copiar/importar) ============ */
+  .ss-p{font-size:10px;text-transform:uppercase;letter-spacing:.9px;color:var(--mut);
+    margin:16px 0 7px;display:flex;align-items:center;gap:7px}
+  .ss-p:first-child{margin-top:0}
+  .ss-p i{font-style:normal;width:17px;height:17px;border-radius:50%;flex-shrink:0;
+    background:#1b2528;color:var(--mut);font-size:10px;display:flex;
+    align-items:center;justify-content:center;font-weight:700}
+  .ss-p.on i{background:var(--accent);color:#04191c}
+  .ss-gr{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#3d4d50;
+    margin:9px 0 5px}
+  .ss-it{display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    padding:9px 11px;border-radius:8px;margin-bottom:5px;font-size:13px}
+  .ss-it:hover{border-color:var(--accent);filter:none}
+  .ss-it.on{border-color:var(--accent);background:#0e2226}
+  .ss-it .sub{font-size:10px;color:var(--mut);font-weight:400}
+  .ss-it .cx{width:15px;height:15px;border-radius:4px;border:1px solid var(--line);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:10px;color:#04191c}
+  .ss-it.on .cx{background:var(--accent);border-color:var(--accent)}
+  .ss-it .tx{flex:1;min-width:0}
+  .ss-it .tx b{display:block;font-weight:500}
+  .ss-foco{border-color:var(--marca)}
+  .ss-foco.on{border-color:var(--marca);background:#1d2205}
+  .ss-foco .cx{border-color:var(--marca)}
+  .ss-foco.on .cx{background:var(--marca);border-color:var(--marca)}
+  .ss-tag{font-size:9px;padding:2px 6px;border-radius:4px;background:#241a12;
+    color:var(--warn);flex-shrink:0}
+  .ss-vazio{padding:16px 11px;color:var(--mut);font-size:12px;text-align:center;
+    border:1px dashed var(--line);border-radius:8px}
   /* ============ EDITOR DE EXERCICIO ============ */
   .ed{position:fixed;top:0;right:0;bottom:0;width:min(430px,94vw);
     background:var(--card);border-left:1px solid var(--accent);z-index:70;
@@ -5723,6 +5768,471 @@ function situacaoFase(f, hojeISO) {
   return "ativa";
 }
 
+/* ---------- Cópia de sessões entre fases e alunos ----------
+   Regra fechada junto com o App Idealis. Os dois lados TÊM que copiar a mesma
+   coisa; mudar aqui sem mudar lá cria fase que abre diferente em cada tela.
+
+   Vem junto: nome do treino; por exercício nome, series, descanso, filmar,
+   metodo, cardio, cardapio_id, observacao; o grupo (bi-set/tri-set) COM ID
+   NOVO; e a ordem reindexada a partir de 0.
+
+   Não vem: done_date e logs (a fase nova começaria "já feita"), audio_url
+   (dois exercícios apontando para o mesmo arquivo fazem "remover" em um
+   quebrar o outro, e dica gravada para o aluno Y não serve para o X),
+   sessoes/relatos/acessos (histórico é de quem executou).
+
+   E principalmente: NÃO copiar `correcoes` nem histórico de carga. Os dois
+   casam por cardapio_id + nome normalizado DENTRO do aluno — o aluno de
+   destino tem que abrir a sessão importada vendo a carga e as correções
+   dele, não as do aluno de origem. Copiar junto quebra o modelo. */
+function montarCopia(origem, alunoDestId, faseDestId, ordemBase, limparObs) {
+  const treinos = [], exercicios = [];
+  origem.forEach((o, i) => {
+    const tid = novoUUID();
+    treinos.push({
+      id: tid,
+      aluno_id: alunoDestId,
+      nome: o.treino.nome,
+      /* ordem do treino é sequência de criação do aluno, não posição dentro
+         da fase — mesmo critério do App, senão os dois ordenam diferente */
+      ordem: ordemBase + i,
+      fase_id: faseDestId || null,
+      concluido_data: null
+    });
+    /* o mapa de grupo é POR TREINO: reaproveitar o id antigo faria dois
+       treinos de fases diferentes compartilharem o mesmo bi-set. Quem estava
+       agrupado entre si continua agrupado entre si, com o id novo. */
+    const mapaG = new Map();
+    [...(o.exs || [])]
+      .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+      .forEach((ex, k) => {
+        let grupo = null;
+        const gid = (ex.grupo && ex.grupo.id) ? String(ex.grupo.id) : null;
+        if (gid) {
+          if (!mapaG.has(gid)) mapaG.set(gid, novoUUID());
+          grupo = { ...ex.grupo, id: mapaG.get(gid) };
+        }
+        exercicios.push({
+          id: novoUUID(),
+          treino_id: tid,
+          nome: ex.nome,
+          series: ex.series ?? null,
+          descanso: ex.descanso ?? null,
+          filmar: !!ex.filmar,
+          metodo: ex.metodo ?? null,
+          cardio: ex.cardio ?? null,
+          cardapio_id: ex.cardapio_id ?? null,
+          observacao: limparObs ? null : (ex.observacao ?? null),
+          grupo,
+          ordem: k
+        });
+      });
+  });
+  return { treinos, exercicios };
+}
+
+/* base da coluna ordem: quantos treinos o aluno já tem no total */
+async function proximaOrdemTreino(alunoId) {
+  const r = await sb.from("treinos")
+    .select("id", { count: "exact", head: true }).eq("aluno_id", alunoId);
+  return r.error ? 0 : (r.count || 0);
+}
+
+const SEM_FASE = "__sem_fase__";
+
+/* ---------- Seletor de sessões (3 passos: aluno → fase → sessões) ----------
+   Mesmo componente serve para "copiar de outro aluno" e para "duplicar uma
+   sessão que este aluno já teve". */
+function SeletorSessoes({ alunoDest, faseDest, nomesDestino, onFechar, onPronto }) {
+  useEsc(true, onFechar);
+  const { alunos } = usarAluno();
+  const [alunoOrig, setAlunoOrig] = useState(alunoDest.id);
+  const [fasesOrig, setFasesOrig] = useState([]);
+  const [semFase, setSemFase]     = useState(0);
+  const [origem, setOrigem]       = useState("");
+  const [trs, setTrs]             = useState([]);
+  const [marc, setMarc]           = useState([]);
+  const [limparObs, setLimpar]    = useState(false);
+  const [carr, setCarr]           = useState(false);
+  const [busy, setBusy]           = useState(false);
+  const [erro, setErro]           = useState("");
+
+  const nomeDe = id => (alunos.find(a => a.id === id) || {}).nome || "aluno";
+  const ativos = alunos.filter(a => a.status === "ativo" && a.id !== alunoDest.id);
+  const outros = alunos.filter(a => a.status !== "ativo" && a.id !== alunoDest.id);
+
+  /* passo 2: fases do aluno de origem + bolsão "Sem fase" */
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      setOrigem(""); setTrs([]); setMarc([]); setErro("");
+      if (!alunoOrig) { setFasesOrig([]); setSemFase(0); return; }
+      setCarr(true);
+      const [f, sf] = await Promise.all([
+        sb.from("fases").select("id, nome, inicio, fim")
+          .eq("aluno_id", alunoOrig).order("inicio", { ascending: false }),
+        sb.from("treinos").select("id", { count: "exact", head: true })
+          .eq("aluno_id", alunoOrig).is("fase_id", null)
+      ]);
+      if (!vivo) return;
+      if (f.error) { setErro(f.error.message); setCarr(false); return; }
+      setFasesOrig(f.data || []);
+      setSemFase(sf.error ? 0 : (sf.count || 0));
+      setCarr(false);
+    })();
+    return () => { vivo = false; };
+  }, [alunoOrig]);
+
+  /* passo 3: sessões da origem escolhida, com a contagem de exercícios */
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      setTrs([]); setMarc([]);
+      if (!origem) return;
+      setCarr(true); setErro("");
+      let q = sb.from("treinos").select("id, nome, ordem, fase_id");
+      q = origem === SEM_FASE
+        ? q.eq("aluno_id", alunoOrig).is("fase_id", null)
+        : q.eq("fase_id", origem);
+      const t = await q.order("ordem");
+      if (!vivo) return;
+      if (t.error) { setErro(t.error.message); setCarr(false); return; }
+      const lista = t.data || [];
+      let conta = {};
+      if (lista.length) {
+        const e = await sb.from("exercicios").select("treino_id")
+          .in("treino_id", lista.map(x => x.id));
+        if (!vivo) return;
+        if (!e.error) {
+          for (const x of (e.data || [])) {
+            conta[x.treino_id] = (conta[x.treino_id] || 0) + 1;
+          }
+        }
+      }
+      setTrs(lista.map(t2 => ({ ...t2, n: conta[t2.id] || 0 })));
+      setMarc(lista.map(t2 => t2.id));   // fase inteira vem marcada por padrão
+      setCarr(false);
+    })();
+    return () => { vivo = false; };
+  }, [origem, alunoOrig]);
+
+  const alterna = id =>
+    setMarc(m => m.includes(id) ? m.filter(x => x !== id) : [...m, id]);
+
+  const sel = trs.filter(t => marc.includes(t.id));
+  const nomes = new Set(nomesDestino || []);
+  const colide = sel.filter(t => nomes.has(t.nome)).length;
+
+  async function copiar() {
+    if (!sel.length) return;
+    setBusy(true); setErro("");
+    try {
+      const ids = sel.map(t => t.id);
+      const e = await sb.from("exercicios").select("*").in("treino_id", ids);
+      if (e.error) throw new Error(e.error.message);
+      const porTreino = {};
+      for (const x of (e.data || [])) {
+        (porTreino[x.treino_id] = porTreino[x.treino_id] || []).push(x);
+      }
+      const base = await proximaOrdemTreino(alunoDest.id);
+      const { treinos, exercicios } = montarCopia(
+        sel.map(t => ({ treino: t, exs: porTreino[t.id] || [] })),
+        alunoDest.id, faseDest ? faseDest.id : null, base, limparObs);
+
+      const it = await sb.from("treinos").insert(treinos);
+      if (it.error) throw new Error(it.error.message);
+      if (exercicios.length) {
+        const ie = await sb.from("exercicios").insert(exercicios);
+        if (ie.error) {
+          /* meia cópia é pior que nenhuma — desfaz os treinos recém-criados */
+          await sb.from("treinos").delete().in("id", treinos.map(t => t.id));
+          throw new Error(ie.error.message);
+        }
+      }
+      onPronto(treinos.length, exercicios.length, colide);
+    } catch (ex) { setErro(ex.message); setBusy(false); }
+  }
+
+  const passo = !alunoOrig ? 1 : !origem ? 2 : 3;
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="ed">
+        <div className="ed-h">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h3>Importar sessões</h3>
+          <p>
+            Para <b>{alunoDest.nome}</b>
+            {faseDest ? " · " + faseDest.nome : " · sem fase"}.
+            Carga, correções e histórico não vêm junto — o aluno abre a sessão
+            já com os dele.
+          </p>
+        </div>
+
+        <div className="ed-b">
+          {erro && <div className="err">{erro}</div>}
+
+          <div className={"ss-p" + (passo >= 1 ? " on" : "")}><i>1</i> De qual aluno</div>
+          <button className={"ss-it ss-foco" + (alunoOrig === alunoDest.id ? " on" : "")}
+            onClick={() => setAlunoOrig(alunoDest.id)}>
+            <span className="cx">{alunoOrig === alunoDest.id ? "✓" : ""}</span>
+            <span className="tx">
+              <b>{alunoDest.nome}</b>
+              <span className="sub">o próprio aluno — duplicar uma sessão que ele já teve</span>
+            </span>
+          </button>
+          <div style={{ marginTop: 7 }}>
+            <Combobox
+              opcoes={[
+                ...ativos.map(a => ({ value: a.id, label: a.nome, grupo: "Ativos" })),
+                ...outros.map(a => ({ value: a.id, label: a.nome, grupo: "Inativos" }))
+              ]}
+              value={alunoOrig === alunoDest.id ? "" : alunoOrig}
+              onChange={v => setAlunoOrig(v || alunoDest.id)}
+              placeholder="...ou buscar outro aluno" />
+          </div>
+          {alunoOrig !== alunoDest.id && (
+            <div className="ed-cnt" style={{ marginTop: 5 }}>
+              copiando de <b>{nomeDe(alunoOrig)}</b>
+            </div>
+          )}
+
+          <div className={"ss-p" + (passo >= 2 ? " on" : "")}><i>2</i> De qual fase</div>
+          {carr && !fasesOrig.length
+            ? <div className="ss-vazio">Carregando...</div>
+            : (!fasesOrig.length && !semFase)
+              ? <div className="ss-vazio">Este aluno não tem fase nem treino.</div>
+              : (
+                <>
+                  {fasesOrig.map(f => (
+                    <button key={f.id}
+                      className={"ss-it" + (origem === f.id ? " on" : "")}
+                      onClick={() => setOrigem(f.id)}>
+                      <span className="cx">{origem === f.id ? "✓" : ""}</span>
+                      <span className="tx">
+                        <b>{f.nome}</b>
+                        <span className="sub">{dBR(f.inicio)} → {dBR(f.fim)}</span>
+                      </span>
+                    </button>
+                  ))}
+                  {semFase > 0 && (
+                    <button className={"ss-it" + (origem === SEM_FASE ? " on" : "")}
+                      onClick={() => setOrigem(SEM_FASE)}>
+                      <span className="cx">{origem === SEM_FASE ? "✓" : ""}</span>
+                      <span className="tx">
+                        <b>Sem fase</b>
+                        <span className="sub">
+                          {semFase} treino(s) soltos deste aluno
+                        </span>
+                      </span>
+                    </button>
+                  )}
+                </>
+              )}
+
+          <div className={"ss-p" + (passo >= 3 ? " on" : "")}>
+            <i>3</i> Quais sessões
+            {trs.length > 0 && (
+              <button className="btn-sec cr-mini" style={{ marginLeft: "auto" }}
+                onClick={() => setMarc(marc.length === trs.length
+                  ? [] : trs.map(t => t.id))}>
+                {marc.length === trs.length ? "desmarcar todas" : "a fase inteira"}
+              </button>
+            )}
+          </div>
+          {!origem
+            ? <div className="ss-vazio">Escolhe a fase de origem acima.</div>
+            : carr
+              ? <div className="ss-vazio">Carregando...</div>
+              : !trs.length
+                ? <div className="ss-vazio">Esta fase não tem sessões.</div>
+                : trs.map(t => (
+                    <button key={t.id}
+                      className={"ss-it" + (marc.includes(t.id) ? " on" : "")}
+                      onClick={() => alterna(t.id)}>
+                      <span className="cx">{marc.includes(t.id) ? "✓" : ""}</span>
+                      <span className="tx">
+                        <b>{t.nome}</b>
+                        <span className="sub">{t.n} exercício(s)</span>
+                      </span>
+                      {nomes.has(t.nome) && <span className="ss-tag">nome repetido</span>}
+                    </button>
+                  ))}
+
+          {sel.length > 0 && (
+            <>
+              <div className={"ed-tog" + (limparObs ? " on" : "")}
+                style={{ marginTop: 13 }}
+                onClick={() => setLimpar(v => !v)}>
+                <div className="sw"><i /></div>
+                <div>
+                  <b>Limpar observações</b>
+                  <span>
+                    quando a dica era específica do aluno de origem
+                  </span>
+                </div>
+              </div>
+              {colide > 0 && (
+                <div className="ed-cnt" style={{ marginTop: 9, color: "var(--warn)" }}>
+                  ⚠️ {colide} sessão(ões) com nome que já existe no destino. Vai
+                  entrar assim mesmo — nada é renomeado sozinho.
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="ed-f">
+          <button className="btn-sec" onClick={onFechar}>Cancelar</button>
+          <button onClick={copiar} disabled={busy || !sel.length}>
+            {busy ? "Copiando..." : "Copiar " + sel.length + " sessão(ões)"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---------- Nova fase avulsa ----------
+   Fase criada aqui NÃO entra no planejamento: planejamento_id e posicao ficam
+   null, então ela não aparece na grade de 4 colunas do Planejamento nem
+   embaralha as posições de lá. É a fase extra, fora da periodização. */
+function DrawerNovaFase({ aluno, onFechar, onCriada }) {
+  useEsc(true, onFechar);
+  const [tpls, setTpls]   = useState([]);
+  const [cats, setCats]   = useState([]);
+  const [tpl, setTpl]     = useState("");
+  const [nome, setNome]   = useState("");
+  const [ini, setIni]     = useState(dISO(new Date()));
+  const [fim, setFim]     = useState(dISO(addDias(new Date(), 41)));
+  const [sem, setSem]     = useState(6);
+  const [obj, setObj]     = useState("");
+  const [met, setMet]     = useState("");
+  const [obs, setObs]     = useState("");
+  const [copiar, setCopiar] = useState(false);
+  const [busy, setBusy]   = useState(false);
+  const [erro, setErro]   = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const [t, c] = await Promise.all([
+        sb.from("fase_templates").select("*").eq("ativo", true).order("ordem"),
+        sb.from("fase_categorias").select("*").order("ordem")
+      ]);
+      if (!t.error) setTpls(t.data || []);
+      if (!c.error) setCats(c.data || []);
+    })();
+  }, []);
+
+  /* fim acompanha início + duração, mas continua editável na mão */
+  function recalcular(inicio, semanas) {
+    if (!inicio) return;
+    setFim(dISO(addDias(parseISO(inicio), semanas * 7 - 1)));
+  }
+
+  function aplicarTpl(id) {
+    setTpl(id);
+    const t = tpls.find(x => x.id === id);
+    if (!t) return;
+    setNome("Fase de " + t.nome + " I");
+    setObj(t.objetivo || "");
+    setMet(t.metodos || "");
+  }
+
+  async function salvar() {
+    if (!nome.trim()) { setErro("A fase precisa de um nome."); return; }
+    if (!ini || !fim)  { setErro("Início e fim são obrigatórios."); return; }
+    if (fim < ini)     { setErro("O fim está antes do início."); return; }
+    setBusy(true); setErro("");
+    /* fases.id não tem default no banco — o uuid sai daqui, igual o App faz */
+    const linha = {
+      id: novoUUID(), aluno_id: aluno.id, nome: nome.trim(),
+      inicio: ini, fim, objetivo: obj.trim() || null,
+      metodos: met.trim() || null, observacao: obs.trim() || null,
+      template_id: tpl || null, planejamento_id: null, posicao: null
+    };
+    const r = await sb.from("fases").insert(linha);
+    if (r.error) { setErro(r.error.message); setBusy(false); return; }
+    onCriada(linha, copiar);
+  }
+
+  const grupos = cats.map(c => ({
+    ...c, itens: tpls.filter(t => t.categoria_id === c.id)
+  })).filter(g => g.itens.length);
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="ed">
+        <div className="ed-h">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h3>Nova fase</h3>
+          <p>
+            Fase avulsa de <b>{aluno.nome}</b>, fora do planejamento de
+            periodização. Ela aparece aqui e no App do aluno.
+          </p>
+        </div>
+
+        <div className="ed-b">
+          {erro && <div className="err">{erro}</div>}
+
+          <div className="ed-lab">Template <i>opcional</i></div>
+          <Combobox
+            opcoes={grupos.flatMap(g =>
+              g.itens.map(t => ({ value: t.id, label: t.nome, grupo: g.nome })))}
+            value={tpl} onChange={aplicarTpl}
+            placeholder="Buscar template..." />
+
+          <div className="ed-lab">Nome da fase</div>
+          <input value={nome} onChange={e => setNome(e.target.value)}
+            placeholder="Fase de Hipertrofia de Qualidade I" style={{ width: "100%" }} />
+
+          <div className="ed-lab">Duração <i>semanas</i></div>
+          <Chips opcoes={[4, 5, 6, 7, 8]} valor={sem} mini
+            onPick={v => { setSem(+v); recalcular(ini, +v); }} />
+
+          <div className="ed-lab">Início e fim</div>
+          <div style={{ display: "flex", gap: 9 }}>
+            <input type="date" value={ini} style={{ flex: 1 }}
+              onChange={e => { setIni(e.target.value); recalcular(e.target.value, sem); }} />
+            <input type="date" value={fim} style={{ flex: 1 }}
+              onChange={e => setFim(e.target.value)} />
+          </div>
+
+          <div className="ed-lab">Objetivo</div>
+          <textarea className="nf-ta" rows={3} value={obj}
+            onChange={e => setObj(e.target.value)} />
+
+          <div className="ed-lab">Métodos</div>
+          <textarea className="nf-ta" rows={3} value={met}
+            onChange={e => setMet(e.target.value)} />
+
+          <div className="ed-lab">Observações</div>
+          <textarea className="nf-ta" rows={2} value={obs}
+            onChange={e => setObs(e.target.value)} />
+
+          <div className={"ed-tog" + (copiar ? " on" : "")} style={{ marginTop: 15 }}
+            onClick={() => setCopiar(v => !v)}>
+            <div className="sw"><i /></div>
+            <div>
+              <b>Copiar sessões de uma fase</b>
+              <span>abre o seletor logo depois de criar</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="ed-f">
+          <button className="btn-sec" onClick={onFechar}>Cancelar</button>
+          <button onClick={salvar} disabled={busy || !nome.trim()}>
+            {busy ? "Criando..." : "Criar fase"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function PainelMontagem() {
   const { alunoId: sel, alunos } = usarAluno();
   const { toast, confirmar } = usarUI();
@@ -5735,8 +6245,13 @@ function PainelMontagem() {
   const [carregando, setCarr] = useState(false);
   const [editando, setEdit] = useState(null);   // {ex} ou {treinoId, ordem}
   const [relatos, setRelatos] = useState({});
+  const [novaFase, setNovaFase] = useState(false);
+  const [importar, setImportar] = useState(false);
+  const [nomeSessao, setNomeSessao] = useState("");
+  const [criandoS, setCriandoS] = useState(false);
 
   const hoje = dISO(new Date());
+  const alunoObj = alunos.find(a => a.id === sel) || null;
 
   const carregar = useCallback(async (alunoId) => {
     if (!alunoId) { setFases([]); setTreinos([]); setExs({}); setCarr(false); return; }
@@ -5889,6 +6404,64 @@ function PainelMontagem() {
     await abrirFase(faseSel);
   }
 
+  /* fase nova entra na lista sem recarregar tudo e já abre selecionada */
+  async function aposCriarFase(f, querCopiar) {
+    setNovaFase(false);
+    setFases(fs => [f, ...fs]
+      .sort((a, b) => String(b.inicio || "").localeCompare(String(a.inicio || ""))));
+    const st = situacaoFase(f, hoje);
+    setAbaF(st === "ativa" ? "atuais" : st === "futura" ? "futuros" : "anteriores");
+    await abrirFase(f.id);
+    toast("Fase criada.");
+    if (querCopiar) setImportar(true);
+  }
+
+  /* só fase avulsa some por aqui — fase do planejamento se apaga no
+     Planejamento, senão a grade de 4 posições fica com buraco */
+  async function apagarFase(f, ev) {
+    ev.stopPropagation();
+    const c = await sb.from("treinos")
+      .select("id", { count: "exact", head: true }).eq("fase_id", f.id);
+    if (c.error) { toast(c.error.message, "erro"); return; }
+    if (c.count) {
+      toast("Esta fase tem " + c.count + " sessão(ões). Apaga as sessões antes.", "erro");
+      return;
+    }
+    const ok = await confirmar({
+      titulo: "Apagar fase?",
+      texto: '"' + f.nome + '" será removida do App do aluno.',
+      ok: "Apagar", perigo: true
+    });
+    if (!ok) return;
+    const r = await sb.from("fases").delete().eq("id", f.id);
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    setFases(fs => fs.filter(x => x.id !== f.id));
+    if (faseSel === f.id) { setFaseSel(""); setTreinos([]); setExs({}); }
+    toast("Fase apagada.");
+  }
+
+  async function criarSessao() {
+    const n = nomeSessao.trim();
+    if (!n || !faseSel || !sel) return;
+    setCriandoS(true);
+    const ordem = await proximaOrdemTreino(sel);
+    const r = await sb.from("treinos").insert({
+      id: novoUUID(), aluno_id: sel, nome: n, ordem, fase_id: faseSel
+    });
+    setCriandoS(false);
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    setNomeSessao("");
+    await abrirFase(faseSel);
+    toast("Sessão criada.");
+  }
+
+  async function aposImportar(nT, nE, colide) {
+    setImportar(false);
+    await abrirFase(faseSel);
+    toast(nT + " sessão(ões) e " + nE + " exercício(s) copiados." +
+      (colide ? "  " + colide + " com nome que já existia." : ""));
+  }
+
   function Exercicio({ ex, lista, blocos, bl, bi, k, letra }) {
     const n = nSeriesDe(ex);
     const met = fmtMetodo(ex.metodo);
@@ -5979,6 +6552,10 @@ function PainelMontagem() {
           onClick={() => setAbaF("atuais")}>Atuais ({cont.atuais})</button>
         <button className={"fbtn" + (aba === "futuros" ? " on" : "")}
           onClick={() => setAbaF("futuros")}>Futuros ({cont.futuros})</button>
+        {sel && (
+          <button className="fbtn mais" style={{ marginLeft: "auto" }}
+            onClick={() => setNovaFase(true)}>+ Nova fase</button>
+        )}
       </div>
 
       {erro && <div className="err">{erro}</div>}
@@ -6001,6 +6578,10 @@ function PainelMontagem() {
                   <div key={f.id}
                     className={"mt-fase " + st + (faseSel === f.id ? " on" : "")}
                     onClick={() => abrirFase(f.id)}>
+                    {!f.planejamento_id && (
+                      <button className="fx" title="Apagar esta fase avulsa"
+                        onClick={e => apagarFase(f, e)}>×</button>
+                    )}
                     <b>{f.nome}</b>
                     <div className="per">{dBR(f.inicio)} → {dBR(f.fim)}</div>
                     {st === "ativa" && rest !== null && (
@@ -6019,6 +6600,23 @@ function PainelMontagem() {
         </div>
 
         <div>
+          {faseSel && (
+            <div className="mt-sub">
+              <span className="nm">
+                <b>{(fases.find(f => f.id === faseSel) || {}).nome}</b>
+              </span>
+              <button className="btn-sec" onClick={() => setImportar(true)}>
+                ⤵ Importar sessões
+              </button>
+              <input value={nomeSessao} onChange={e => setNomeSessao(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") criarSessao(); }}
+                placeholder="Nome da sessão nova" />
+              <button className="btn-sec" onClick={criarSessao}
+                disabled={criandoS || !nomeSessao.trim()}>
+                {criandoS ? "Criando..." : "+ Sessão"}
+              </button>
+            </div>
+          )}
           {!faseSel
             ? <div className="mt-vazio">Escolhe uma fase à esquerda para ver os treinos.</div>
             : carregando
@@ -6103,7 +6701,28 @@ function PainelMontagem() {
           onSalvo={async () => { setEdit(null); await abrirFase(faseSel); }} />
       )}
 
+      {novaFase && alunoObj && (
+        <DrawerNovaFase aluno={alunoObj}
+          onFechar={() => setNovaFase(false)}
+          onCriada={aposCriarFase} />
+      )}
+
+      {importar && alunoObj && faseSel && (
+        <SeletorSessoes
+          alunoDest={alunoObj}
+          faseDest={fases.find(f => f.id === faseSel) || null}
+          nomesDestino={treinos.map(t => t.nome)}
+          onFechar={() => setImportar(false)}
+          onPronto={aposImportar} />
+      )}
+
       <div className="pl-hint" style={{ marginTop: 18 }}>
+        <b>+ Nova fase</b> cria fase avulsa, fora do planejamento de periodização —
+        ela não entra na grade de 4 colunas de lá. <b>⤵ Importar sessões</b> traz
+        sessões de qualquer fase, deste ou de outro aluno: vêm exercícios, séries,
+        método, cardio e os bi-sets (com id novo); não vêm carga, correções,
+        áudio nem histórico — o aluno de destino abre a sessão já com os dele.
+        <br />
         Passa o mouse sobre o exercício para <b>reordenar, editar ou apagar</b>.
         As setas movem o <b>bloco inteiro</b> — dentro de um grupo elas trocam a ordem
         dos membros. <b>🔗 Agrupar com o próximo</b> junta dois blocos vizinhos em
