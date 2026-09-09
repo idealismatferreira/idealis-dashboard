@@ -863,6 +863,64 @@
     .pl-fase-mob{border-top:2px solid var(--accent);margin-top:6px;
       padding-top:8px;grid-column:1/-1}
   }
+  /* red flags · lista, nunca grafico */
+  .dz-flags{border:1px solid #4a2530;background:#1a1013;border-radius:12px;
+    padding:14px 16px;margin-bottom:16px}
+  .dz-flags>b{display:block;font-size:11px;text-transform:uppercase;
+    letter-spacing:.9px;color:#e08a95;margin-bottom:10px}
+  .dz-flags .fl{display:flex;justify-content:space-between;gap:12px;
+    padding:6px 0;border-top:1px solid #2d1a20;font-size:12.5px;
+    color:var(--txt);line-height:1.5}
+  .dz-flags .fl:first-of-type{border-top:none}
+  .dz-flags .fl em{font-style:normal;color:var(--mut);font-size:11px;
+    flex-shrink:0}
+  .dz-flags p{margin:10px 0 0;font-size:11px;color:var(--mut);line-height:1.55}
+  /* predominio */
+  .dz-pred{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px 16px;margin-bottom:14px;text-align:center}
+  .dz-pred .et{display:block;font-size:10px;text-transform:uppercase;
+    letter-spacing:1.1px;color:var(--mut);margin-bottom:7px}
+  .dz-pred b{font-size:20px;letter-spacing:.5px;font-weight:700}
+  .dz-pred b.vazio{font-size:13px;font-weight:600;color:var(--mut);
+    letter-spacing:0}
+  .dz-pred .nt{display:block;font-size:11px;color:var(--mut);margin-top:6px}
+  /* mecanismos */
+  .dz-mec{padding:16px 16px 12px}
+  .dz-comp{display:flex;height:10px;border-radius:999px;overflow:hidden;
+    background:#1b2427;margin-bottom:16px}
+  .dz-comp i{display:block;height:100%}
+  .dz-eix{margin-bottom:12px}
+  .dz-eix .lb{display:flex;justify-content:space-between;align-items:center;
+    font-size:12.5px;color:var(--txt);font-weight:600}
+  .dz-eix .lb span{display:flex;align-items:center;gap:7px}
+  .dz-eix .lb i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  .dz-eix .nt{font-size:11px;color:var(--mut);margin-top:3px;line-height:1.5}
+  .dz-vz{font-size:11px;color:var(--mut);line-height:1.6}
+  /* perfil de impacto */
+  .dz-imp{margin-bottom:13px;padding:0 8px}
+  .dz-imp .lb{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12.5px;color:var(--txt);margin-bottom:5px}
+  .dz-imp .lb b{font-size:12px;font-weight:700;flex-shrink:0;margin-left:10px}
+  .dz-imp .tr{height:6px;border-radius:999px;background:#1b2427;overflow:hidden}
+  .dz-imp .tr i{display:block;height:100%;border-radius:999px}
+  /* questionario */
+  .dz-q{padding:14px 16px 6px}
+  .dz-q .gr{font-size:10px;text-transform:uppercase;letter-spacing:.9px;
+    font-weight:700;margin:12px 0 6px}
+  .dz-q>div:first-child .gr{margin-top:0}
+  .dz-q .it{display:flex;justify-content:space-between;gap:12px;padding:6px 0;
+    border-top:1px solid var(--line);font-size:12.5px;color:var(--txt);
+    line-height:1.5}
+  .dz-q .it b{flex-shrink:0;font-size:11px;font-weight:700}
+  .dz-q .r-sim{color:#3fa38a}
+  .dz-q .r-nao{color:var(--mut)}
+  .dz-q .r-naosei{color:#e0b93c}
+  .dz-q .r-vazio{color:#5a6b6f;font-style:italic}
+  .dz-tog{width:auto;padding:2px 9px;margin-left:9px;font-size:10px;
+    text-transform:none;letter-spacing:0;background:transparent;
+    border:1px solid var(--line);color:var(--mut);border-radius:999px;
+    font-family:inherit;cursor:pointer}
+  .dz-tog:hover{filter:none;border-color:var(--mut);color:var(--txt)}
   /* ============ DORES (graficos) ============ */
   /* prefixo dz- porque .chip ja existe na dashboard com outro significado
      (componente Chips e .chip.mini do editor de entradas) */
@@ -1726,26 +1784,29 @@ function secaoSegura(txt, rotulo) {
   } catch (e) { return false; }
 }
 
-/* ---------- Dores do aluno · graficos ----------
-   Leitura pura de 4 tabelas: dores, checkins_semanais, treino_semaforo e
-   treino_retrospectiva. Nenhuma escrita, nenhuma mudanca de schema.
-   O treinador enxerga tudo via policy `..._tr` (cmd ALL, qual eh_treinador()).
+/* ---------- Dores do aluno · avaliacao e graficos ----------
+   Leitura pura de 7 tabelas: dores, checkins_semanais, treino_semaforo,
+   treino_retrospectiva, avaliacoes, avaliacao_dores e red_flags.
+   Nenhuma escrita, nenhum DDL. O treinador enxerga tudo via policy `_tr`
+   (cmd ALL, qual eh_treinador()).
 
    NAO confundir com logs.dor / dor_local / dor_lado: aquilo e dor articular
-   por serie, nao tem dor_id, e nao entra aqui.
+   por serie, nao tem dor_id, vocabulario proprio de 10 valores sem lado nem
+   vista. Nao cruzar com o mapa corporal.
 
    Paleta DESSATURADA do avaliacao.js, de proposito: publico com risco de
    hipervigilancia nao precisa de alarme visual. UNICA excecao e o semaforo,
-   onde a cor E o dado ('verde'/'amarelo'/'vermelho' gravados no banco) e
-   precisa continuar reconhecivel. */
+   onde a cor E o dado ('verde'/'amarelo'/'vermelho' gravados no banco). */
 
 const DZ_DOR = "#d1495b";   /* linha dor media   - vermelho dessaturado */
 const DZ_LIM = "#e0b93c";   /* linha limitacao   - amarelo dessaturado */
 /* semaforo e retrospectiva: cor = dado, mantem saturado */
 const DZ_V = "#2ecc71", DZ_A = "#f1d94a", DZ_R = "#ff5c6c";
+/* eixos de mecanismo */
+const DZ_CN = "#3fa38a", DZ_CP = "#e0b93c", DZ_CS = "#9b8fd6";
 
 /* severidade por ponto (avaliacao.js). A linha fica calma; os pontos carregam
-   a gravidade. Assim a leitura e por ponto, nao por bloco de cor. */
+   a gravidade. Leitura por ponto, nao por parede de cor. */
 function corDor(v) {
   if (v == null || v === 0) return null;
   if (v <= 3) return "#3fa38a";
@@ -1754,40 +1815,66 @@ function corDor(v) {
   return "#d1495b";
 }
 
-/* As 5 estruturas abaixo tem id DIFERENTE em cada vista do mapa corporal, mas
-   sao a mesma estrutura fisica. Marcar o braco pela frente numa avaliacao e
-   pelas costas na seguinte cria DUAS linhas em `dores`, com dor_id distintos, e
-   os check-ins se dividem entre elas. NAO fundir as series - sao dados
-   distintos. So rotular a vista, para ficar visivel que aconteceu.
-   ATENCAO: espelho PARCIAL do mapa do App Idealis. Quando o App mandar a lista
-   canonica de regioes, trocar este dicionario por ela. */
-const DZ_REG = {
-  pescoco:  ["Pescoço",         "frente"],
-  cervical: ["Pescoço",         "costas"],
-  braco_d:  ["Braço direito",   "frente"],
-  braco_pd: ["Braço direito",   "costas"],
-  braco_e:  ["Braço esquerdo",  "frente"],
-  braco_pe: ["Braço esquerdo",  "costas"],
-  mao_d:    ["Mão direita",     "frente"],
-  mao_pd:   ["Mão direita",     "costas"],
-  mao_e:    ["Mão esquerda",    "frente"],
-  mao_pe:   ["Mão esquerda",    "costas"]
+/* ---- regioes: lista canonica do avaliacao.js, 39 ids ----
+   Copiada do App. Quando a Dashboard carregar avaliacao.js para o
+   MapaCorporal, trocar por window.AvaliacaoDor.NOME e apagar isto.
+   NAO derivar nome por regra: "mao_d" nao vira "Mao direito", vira
+   "Punho / mao dir.". Id desconhecido aparece cru.
+   A inconsistencia de lado ("direito" vs "D") e proposital - e o que o aluno
+   le na tela do App. Nao normalizar. */
+const DZ_REGIAO_VISTA = {
+  pescoco:'frente', ombro_d:'frente', ombro_e:'frente', peitoral:'frente',
+  abdome:'frente', braco_d:'frente', braco_e:'frente', cotovelo_d:'frente',
+  cotovelo_e:'frente', mao_d:'frente', mao_e:'frente', quadril:'frente',
+  coxa_d:'frente', coxa_e:'frente', joelho_d:'frente', joelho_e:'frente',
+  perna_d:'frente', perna_e:'frente', torn_d:'frente', torn_e:'frente',
+  cervical:'costas', trapezio_d:'costas', trapezio_e:'costas',
+  toracica:'costas', lombar:'costas', braco_pd:'costas', braco_pe:'costas',
+  mao_pd:'costas', mao_pe:'costas', gluteo_d:'costas', gluteo_e:'costas',
+  post_coxa_d:'costas', post_coxa_e:'costas', poplitea_d:'costas',
+  poplitea_e:'costas', panturr_d:'costas', panturr_e:'costas',
+  calc_d:'costas', calc_e:'costas'
 };
 
-/* "lombar_baixa" -> "Lombar baixa" ; sufixo _d/_e vira lado por extenso */
-function dzPretty(id) {
-  let s = String(id || "").trim();
-  if (!s) return "região não informada";
-  s = s.replace(/_pd$/, " direito").replace(/_pe$/, " esquerdo")
-       .replace(/_d$/, " direito").replace(/_e$/, " esquerdo")
-       .replace(/_/g, " ").trim();
-  return s.charAt(0).toUpperCase() + s.slice(1);
+const DZ_REGIAO_NOME = {
+  pescoco:'Pescoço', ombro_d:'Ombro direito', ombro_e:'Ombro esquerdo',
+  peitoral:'Peito', abdome:'Barriga', braco_d:'Braço direito',
+  braco_e:'Braço esquerdo', cotovelo_d:'Cotovelo direito',
+  cotovelo_e:'Cotovelo esquerdo', mao_d:'Punho / mão dir.',
+  mao_e:'Punho / mão esq.', quadril:'Quadril', coxa_d:'Coxa direita',
+  coxa_e:'Coxa esquerda', joelho_d:'Joelho direito',
+  joelho_e:'Joelho esquerdo', perna_d:'Perna direita',
+  perna_e:'Perna esquerda', torn_d:'Tornozelo / pé D',
+  torn_e:'Tornozelo / pé E',
+  cervical:'Nuca / cervical', trapezio_d:'Trapézio direito',
+  trapezio_e:'Trapézio esquerdo', toracica:'Meio das costas',
+  lombar:'Lombar', braco_pd:'Braço direito', braco_pe:'Braço esquerdo',
+  mao_pd:'Punho / mão dir.', mao_pe:'Punho / mão esq.',
+  gluteo_d:'Glúteo direito', gluteo_e:'Glúteo esquerdo',
+  post_coxa_d:'Atrás da coxa D', post_coxa_e:'Atrás da coxa E',
+  poplitea_d:'Atrás do joelho D', poplitea_e:'Atrás do joelho E',
+  panturr_d:'Panturrilha D', panturr_e:'Panturrilha E',
+  calc_d:'Calcanhar D', calc_e:'Calcanhar E'
+};
+
+/* Mesma estrutura fisica com id diferente em cada vista. Marcar o braco pela
+   frente numa avaliacao e pelas costas na seguinte cria DUAS linhas em `dores`,
+   com dor_id distintos, e os check-ins se dividem entre elas. NAO fundir as
+   series. So rotular a vista, para ficar visivel que aconteceu.
+   Os nomes NAO sao unicos (braco_d e braco_pd sao ambos "Braço direito"):
+   sempre chavear por id, nunca por nome. */
+const DZ_AMBIGUOS = new Set(['pescoco','cervical','braco_d','braco_pd',
+  'braco_e','braco_pe','mao_d','mao_pd','mao_e','mao_pe']);
+
+function dzNomeRegiao(id) {
+  const nome = DZ_REGIAO_NOME[id];
+  if (!nome) return String(id || "");         /* id cru, nunca adivinhar */
+  return DZ_AMBIGUOS.has(id) ? nome + " · " + DZ_REGIAO_VISTA[id] : nome;
 }
 
 function dzRotulo(d) {
   if (d.apelido && d.apelido.trim()) return d.apelido.trim();
-  const par = DZ_REG[d.regiao];
-  return par ? par[0] + " · " + par[1] : dzPretty(d.regiao);
+  return dzNomeRegiao(d.regiao) || "região não informada";
 }
 
 /* segunda-feira da semana da data. checkins_semanais.semana_ref ja e segunda;
@@ -1802,18 +1889,124 @@ function dzSegunda(iso) {
 
 const DZ_TEMPO = { aguda: "aguda", cronica: "crônica" };
 
+/* ---- os 14 itens de mecanismo, texto exato do avaliacao.js ---- */
+const DZ_MECANISMO = [
+  { id:"N1", txt:"A dor piora com movimentos ou posições específicas" },
+  { id:"N2", txt:"A dor melhora quando você descansa a região" },
+  { id:"N3", txt:"Você consegue apontar o lugar exato da dor" },
+  { id:"N4", txt:"A dor começou depois de um esforço, pancada ou lesão" },
+  { id:"N5", txt:"A intensidade da dor combina com o quanto você se esforça" },
+  { id:"P1", txt:"A dor queima, formiga ou dá choque" },
+  { id:"P2", txt:"Você sente dormência ou perda de sensibilidade na região" },
+  { id:"P3", txt:"A dor desce pelo braço ou pela perna" },
+  { id:"P4", txt:"Um toque leve na pele já incomoda" },
+  { id:"P5", txt:"A dor piora à noite, sem relação com o que você fez no dia" },
+  { id:"S1", txt:"A dor muda de lugar ou aparece em várias regiões" },
+  { id:"S2", txt:"Dias de estresse ou sono ruim pioram a dor" },
+  { id:"S3", txt:"A dor continua mesmo depois de você parar a atividade" },
+  { id:"S4", txt:"Barulho, luz forte ou cheiros também te incomodam mais que antes" }
+];
+
+const DZ_EIXOS = {
+  N: ["N1","N2","N3","N4","N5"],
+  P: ["P1","P2","P3","P4","P5"],
+  S: ["S1","S2","S3","S4"]
+};
+const DZ_EIXO_NOME = { N:"Nociceptivo", P:"Neuropático", S:"Nociplástico" };
+const DZ_EIXO_COR  = { N:DZ_CN, P:DZ_CP, S:DZ_CS };
+
+const DZ_RESP = { sim:"Sim", nao:"Não", naosei:"Não sei" };
+
+/* Taxa por eixo. Denominador = sim + nao; 'naosei' e chave ausente ficam de
+   fora. Motivo: N e P tem 5 itens e S tem 4 - dividir pelo total do eixo faz
+   S nunca alcancar os outros. E tratar ausente como 'nao' afundaria o eixo
+   por falta de resposta, sem nada na tela indicando isso.
+   Chave ausente, 'naosei' e 'nao' sao TRES estados distintos. */
+function perfilMecanismo(mec) {
+  const out = {};
+  for (const eixo in DZ_EIXOS) {
+    let sim = 0, nao = 0, naosei = 0, ausente = 0;
+    DZ_EIXOS[eixo].forEach(k => {
+      const r = mec ? mec[k] : undefined;
+      if (r === "sim") sim++;
+      else if (r === "nao") nao++;
+      else if (r === "naosei") naosei++;
+      else ausente++;
+    });
+    const base = sim + nao;
+    out[eixo] = { sim, nao, naosei, ausente, n: base,
+                  taxa: base ? sim / base : null };
+  }
+  return out;
+}
+
+/* Composicao didatica: normaliza as TRES taxas para somar 100.
+   Duas etapas de proposito. Normalizar as contagens cruas (sim_N / total de
+   sim) embutiria os dois vieses que a etapa 1 ja corrigiu.
+   Arredondamento por maior resto, senao 3 valores arredondados somam 99 ou
+   101 e a tela que promete 100 quebra a promessa. */
+function composicaoMecanismo(p) {
+  const ks = ["N","P","S"];
+  const validos = ks.filter(k => p[k].taxa != null);
+  if (!validos.length) return { estado: "sem_resposta" };
+  const soma = validos.reduce((a,k) => a + p[k].taxa, 0);
+  if (soma === 0) return { estado: "sem_mecanismo" };
+
+  const bruto = {}, base = {}, resto = [];
+  let total = 0;
+  ks.forEach(k => {
+    /* eixo sem resposta e null explicito, nao undefined: "nao respondido"
+       nunca pode ser confundido com 0% */
+    if (p[k].taxa == null) { bruto[k] = null; base[k] = null; return; }
+    const exato = p[k].taxa / soma * 100;
+    bruto[k] = exato;
+    base[k] = Math.floor(exato);
+    total += base[k];
+    resto.push([k, exato - Math.floor(exato)]);
+  });
+  resto.sort((a,b) => b[1] - a[1]);
+  let sobra = 100 - total;
+  for (let i = 0; i < resto.length && sobra > 0; i++, sobra--) base[resto[i][0]]++;
+
+  const ord = validos.slice().sort((a,b) => base[b] - base[a]);
+  const topo = ord[0], seg = ord[1];
+  /* folga menor que 10 pontos e empate tecnico. Cravar predominio em cima de
+     34 contra 33 seria a tela mentindo com confianca. */
+  const misto = seg != null && (base[topo] - base[seg]) < 10;
+  return { estado: "ok", pct: base, bruto,
+           predominio: misto ? null : topo, misto };
+}
+
+/* red_flags: texto legivel dos 8 sinais. LISTA, nunca grafico, nunca score.
+   Ausencia de linha = nenhuma flag marcada, NAO "nao respondeu". */
+const DZ_RED_FLAGS = {
+  rf_peso:      "Perdi peso sem querer nos últimos meses",
+  rf_febre:     "Tive febre junto com a dor",
+  rf_noturna:   "A dor me acorda toda noite e não passa com posição",
+  rf_trauma:    "A dor começou depois de uma queda ou acidente forte",
+  rf_forca:     "Notei perda de força em um braço ou perna",
+  rf_esfincter: "Tive alteração para controlar xixi ou intestino",
+  rf_cancer:    "Já tive câncer",
+  rf_corticoide:"Uso corticoide há bastante tempo"
+};
+
 function PainelDores({ aluno }) {
   const [dores, setDores] = useState(null);
   const [cks, setCks]     = useState([]);
   const [sems, setSems]   = useState([]);
   const [rets, setRets]   = useState([]);
+  const [avals, setAvals] = useState([]);
+  const [avDor, setAvDor] = useState([]);
+  const [flags, setFlags] = useState([]);
   const [sel, setSel]     = useState("");
+  const [avSel, setAvSel] = useState("");
   const [verFim, setVerFim] = useState(false);
+  const [verQ, setVerQ]   = useState(false);
   const [erro, setErro]   = useState("");
 
   const carregar = useCallback(async () => {
     setErro("");
-    const [d, c, s, r] = await Promise.all([
+    const [d, c, s, r, a, ad, rf] = await Promise.all([
       sb.from("dores")
         .select("id, regiao, vista, apelido, inicio_em, temporalidade, ativa, resolvida_em")
         .eq("aluno_id", aluno.id).order("criado_em"),
@@ -1822,11 +2015,22 @@ function PainelDores({ aluno }) {
       sb.from("treino_semaforo").select("dor_id, treino_em, cor")
         .eq("aluno_id", aluno.id),
       sb.from("treino_retrospectiva").select("dor_id, treino_ref_em, recuperacao")
-        .eq("aluno_id", aluno.id)
+        .eq("aluno_id", aluno.id),
+      /* status tem TRES valores: pendente, em_andamento, respondida.
+         Filtrar por igualdade - "!= pendente" deixaria entrar avaliacao
+         respondida pela metade como se estivesse completa. */
+      sb.from("avaliacoes").select("id, momento, data, respondida_em")
+        .eq("aluno_id", aluno.id).eq("status", "respondida").order("data"),
+      sb.from("avaliacao_dores")
+        .select("avaliacao_id, dor_id, ordem, temporalidade, dor_agora, sofrimento, limitacao, mecanismo")
+        .eq("aluno_id", aluno.id),
+      sb.from("red_flags").select("id, avaliacao_id, sinais, criado_em")
+        .eq("aluno_id", aluno.id).order("criado_em", { ascending: false })
     ]);
-    const e = d.error || c.error || s.error || r.error;
+    const e = d.error || c.error || s.error || r.error || a.error || ad.error || rf.error;
     if (e) { setErro(e.message); setDores([]); return; }
     setCks(c.data || []); setSems(s.data || []); setRets(r.data || []);
+    setAvals(a.data || []); setAvDor(ad.data || []); setFlags(rf.data || []);
     const lista = d.data || [];
     setDores(lista);
     const ativa = lista.find(x => x.ativa);
@@ -1839,30 +2043,54 @@ function PainelDores({ aluno }) {
   if (dores === null) return <div className="msg">Carregando...</div>;
 
   const RC = window.Recharts;
-  if (!RC) return (
-    <div className="dz-nada">
-      <b>Biblioteca de gráficos não carregou</b>
-      O <code>Recharts</code> vem de CDN e não respondeu. Recarrega a página com
-      internet. O resto da ficha continua funcionando.
-    </div>
-  );
   const { ResponsiveContainer, LineChart, BarChart, Line, Bar,
-          CartesianGrid, XAxis, YAxis, Tooltip } = RC;
+          CartesianGrid, XAxis, YAxis, Tooltip } = RC || {};
 
   if (!dores.length) return (
     <div className="dz-nada">
       <b>Nenhuma dor em acompanhamento</b>
-      {aluno.nome} ainda não tem dor cadastrada. Os gráficos aparecem assim que
-      a primeira dor for registrada e houver check-in semanal.
+      {aluno.nome} ainda não tem dor cadastrada. O painel aparece assim que a
+      primeira avaliação for respondida.
     </div>
   );
+
+  const porAval = {};
+  avals.forEach(a => { porAval[a.id] = a; });
+
+  /* ---------- red flags: nivel do aluno, nao da dor ----------
+     red_flags nao tem UNIQUE em avaliacao_id, entao "uma linha por avaliacao"
+     e convencao, nao garantia. Deduplicar por sinal, guardando a data mais
+     recente em que apareceu. */
+  const flagMap = new Map();
+  flags.forEach(f => {
+    const av = porAval[f.avaliacao_id];
+    const quando = av ? av.data : String(f.criado_em).slice(0, 10);
+    (f.sinais || []).forEach(s => {
+      const ant = flagMap.get(s);
+      if (!ant || quando > ant) flagMap.set(s, quando);
+    });
+  });
+  const listaFlags = [...flagMap.entries()].sort((a, b) => b[1] < a[1] ? -1 : 1);
 
   const ativas = dores.filter(d => d.ativa);
   const fins   = dores.filter(d => !d.ativa);
   const visiveis = verFim ? dores : (ativas.length ? ativas : dores);
   const dor = dores.find(d => d.id === sel) || visiveis[0] || dores[0];
 
-  /* ---- serie unica, grade semanal compartilhada pelos 4 graficos ---- */
+  /* ---------- avaliacoes desta dor ----------
+     avaliacao_dores.ordem so aceita 1 ou 2: no maximo DUAS dores indice por
+     avaliacao. Dor fora dessas duas nunca recebeu mecanismo - estado proprio,
+     diferente de "nao respondeu". */
+  const minhasAv = avDor
+    .filter(x => x.dor_id === dor.id && porAval[x.avaliacao_id])
+    .sort((a, b) => porAval[a.avaliacao_id].data < porAval[b.avaliacao_id].data ? -1 : 1);
+  const av = minhasAv.find(x => x.avaliacao_id === avSel) ||
+             minhasAv[minhasAv.length - 1] || null;
+
+  const perfil = av ? perfilMecanismo(av.mecanismo) : null;
+  const comp   = perfil ? composicaoMecanismo(perfil) : null;
+
+  /* ---------- serie semanal, grade compartilhada pelos 4 graficos ---------- */
   const meusCk  = cks.filter(x => x.dor_id === dor.id);
   const meusSem = sems.filter(x => x.dor_id === dor.id);
   const meusRet = rets.filter(x => x.dor_id === dor.id);
@@ -1894,36 +2122,28 @@ function PainelDores({ aluno }) {
   const nSem = dados.filter(l => l.sv + l.sa + l.sr > 0).length;
   const nRet = dados.filter(l => l.rv + l.ra + l.rp > 0).length;
 
-  /* piso de dados: 1 ponto nao e serie temporal, e uma anotacao */
+  /* piso: 1 ponto nao e serie temporal, e uma anotacao */
   const blocos = [];
-  if (nDor >= 2) blocos.push("dor");
-  if (nLim >= 2) blocos.push("lim");
-  if (nSem >= 2) blocos.push("sem");
-  if (nRet >= 2) blocos.push("ret");
+  if (RC && nDor >= 2) blocos.push("dor");
+  if (RC && nLim >= 2) blocos.push("lim");
+  if (RC && nSem >= 2) blocos.push("sem");
+  if (RC && nRet >= 2) blocos.push("ret");
   const ultimo = blocos[blocos.length - 1];
 
-  const grade  = <CartesianGrid stroke="#243036" strokeDasharray="3 3" />;
-  const eixoX  = k => k === ultimo
+  const grade = <CartesianGrid stroke="#243036" strokeDasharray="3 3" />;
+  const eixoX = k => k === ultimo
     ? <XAxis dataKey="rot" tick={{ fill: "#7d9298", fontSize: 11 }} tickMargin={8} />
     : <XAxis dataKey="rot" tick={false} height={6} />;
-  const alt    = k => k === ultimo ? 150 : 118;
-  const dica   = (fmt) => (
+  const alt  = k => k === ultimo ? 150 : 118;
+  const dica = fmt => (
     <Tooltip contentStyle={{ background: "#12181a", border: "1px solid #243036",
       borderRadius: 12, color: "#eaf6f7" }} formatter={fmt} />
   );
-
-  /* ponto colorido pela severidade daquele valor, nao pela metrica */
-  const ponto = (p) => {
+  const ponto = p => {
     const c = corDor(p.value);
-    if (c == null) return null;
-    return <circle key={p.key} cx={p.cx} cy={p.cy} r={3} fill={c} stroke="none" />;
+    return c == null ? null
+      : <circle key={p.key} cx={p.cx} cy={p.cy} r={3} fill={c} stroke="none" />;
   };
-
-  const cartao = (titulo, texto) => (
-    <div className="dz-nada" key={titulo}>
-      <b>{titulo}</b>{texto}
-    </div>
-  );
 
   const linha = (k, chave, cor, titulo) => (
     <div key={k}>
@@ -1931,8 +2151,7 @@ function PainelDores({ aluno }) {
       <div className="dz-wrap">
         <ResponsiveContainer width="100%" height={alt(k)}>
           <LineChart data={dados} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
-            {grade}
-            {eixoX(k)}
+            {grade}{eixoX(k)}
             <YAxis domain={[0, 10]} ticks={[0, 5, 10]} width={40}
               tick={{ fill: "#7d9298", fontSize: 11 }} />
             {dica(v => [Number(v).toFixed(Number(v) % 1 ? 1 : 0), titulo])}
@@ -1950,14 +2169,11 @@ function PainelDores({ aluno }) {
       <div className="dz-wrap">
         <ResponsiveContainer width="100%" height={alt(k)}>
           <BarChart data={dados} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
-            {grade}
-            {eixoX(k)}
+            {grade}{eixoX(k)}
             <YAxis width={40} allowDecimals={false}
               tick={{ fill: "#7d9298", fontSize: 11 }} />
             {dica((v, n) => [v + " treino(s)", rotulos[n] || n])}
-            {chaves.map(c => (
-              <Bar key={c[0]} dataKey={c[0]} stackId="s" fill={c[1]} />
-            ))}
+            {chaves.map(c => <Bar key={c[0]} dataKey={c[0]} stackId="s" fill={c[1]} />)}
           </BarChart>
         </ResponsiveContainer>
         <div className="dz-leg">
@@ -1969,20 +2185,50 @@ function PainelDores({ aluno }) {
     </div>
   );
 
+  const faltando = [];
+  if (nDor < 2) faltando.push("dor média");
+  if (nLim < 2) faltando.push("limitação");
+  if (nSem < 2) faltando.push("semáforo");
+  if (nRet < 2) faltando.push("retrospectiva");
+
   const subt = [];
   if (dor.inicio_em) subt.push("desde " + dBR(dor.inicio_em));
   if (dor.temporalidade) subt.push(DZ_TEMPO[dor.temporalidade] || dor.temporalidade);
   if (!dor.ativa) subt.push("encerrada" + (dor.resolvida_em ? " em " + dBR(dor.resolvida_em) : ""));
 
+  const escala = (rot, v, cor) => (
+    <div className="dz-imp" key={rot}>
+      <div className="lb"><span>{rot}</span>
+        <b style={{ color: v == null ? "var(--mut)" : cor }}>
+          {v == null ? "—" : Number(v) + "/10"}</b></div>
+      <div className="tr"><i style={{ width: (v == null ? 0 : Number(v) * 10) + "%",
+        background: cor }} /></div>
+    </div>
+  );
+
   return (
     <div>
+      {/* ---- red flags: no topo, so se houver sinal. Lista, nunca score ---- */}
+      {listaFlags.length > 0 && (
+        <div className="dz-flags">
+          <b>Sinais de alerta relatados</b>
+          {listaFlags.map(([id, quando]) => (
+            <div className="fl" key={id}>
+              <span>{DZ_RED_FLAGS[id] || id}</span>
+              <em>{dBR(quando)}</em>
+            </div>
+          ))}
+          <p>Relato do aluno na avaliação, não diagnóstico. Vale conversa antes
+            de progredir carga.</p>
+        </div>
+      )}
+
       <div className="dz-chips">
         {visiveis.map(d => (
           <button key={d.id}
             className={"dz-chip" + (d.id === dor.id ? " on" : "") + (d.ativa ? "" : " fim")}
-            onClick={() => setSel(d.id)}
-            style={d.id === dor.id
-              ? { borderColor: DZ_DOR, color: DZ_DOR } : {}}>
+            onClick={() => { setSel(d.id); setAvSel(""); }}
+            style={d.id === dor.id ? { borderColor: DZ_DOR, color: DZ_DOR } : {}}>
             <i className="cdot" style={{ background: d.id === dor.id ? DZ_DOR : "var(--mut)" }} />
             {dzRotulo(d)}
           </button>
@@ -1998,45 +2244,176 @@ function PainelDores({ aluno }) {
         <div className="dz-sub"><b>{dzRotulo(dor)}</b> · {subt.join(" · ")}</div>
       )}
 
-      {nDor >= 2 ? linha("dor", "dor", DZ_DOR, "Dor média semanal")
-        : cartao("Dor média semanal",
-            nDor === 1
-              ? "Só um check-in registrado. Com dois já dá para desenhar a linha."
-              : "Sem check-in registrado ainda.")}
+      {/* ---- seletor de avaliacao: momento REPETE por ciclo, entao a data
+             e que identifica. D0 aparece uma vez por ciclo de 8 semanas. ---- */}
+      {minhasAv.length > 1 && (
+        <div className="dz-chips">
+          {minhasAv.map(x => (
+            <button key={x.avaliacao_id}
+              className={"dz-chip" + (av && x.avaliacao_id === av.avaliacao_id ? " on" : "")}
+              onClick={() => setAvSel(x.avaliacao_id)}>
+              {dBR(porAval[x.avaliacao_id].data)} · {porAval[x.avaliacao_id].momento}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {nLim >= 2 ? linha("lim", "lim", DZ_LIM, "Limitação semanal")
-        : cartao("Limitação semanal",
-            nLim === 1
-              ? "Só um registro de limitação. O campo é opcional no check-in."
-              : "Nenhuma limitação registrada. O campo é opcional no check-in.")}
+      {!av ? (
+        <div className="dz-nada">
+          <b>Esta dor não foi avaliada em profundidade</b>
+          Cada avaliação aprofunda no máximo duas dores. Esta ficou de fora —
+          é diferente de o aluno não ter respondido.
+        </div>
+      ) : (
+        <>
+          {/* ---- 1. predominio ---- */}
+          <div className="dz-pred">
+            <span className="et">Predomínio</span>
+            {comp.estado === "sem_resposta" ? (
+              <b className="vazio">não respondido</b>
+            ) : comp.estado === "sem_mecanismo" ? (
+              <b className="vazio">nenhum mecanismo assinalado</b>
+            ) : comp.misto ? (
+              <b style={{ color: "var(--txt)" }}>MISTO</b>
+            ) : (
+              <b style={{ color: DZ_EIXO_COR[comp.predominio] }}>
+                {DZ_EIXO_NOME[comp.predominio].toUpperCase()}</b>
+            )}
+            {comp.estado === "ok" && comp.misto && (
+              <span className="nt">sem folga entre o primeiro e o segundo</span>
+            )}
+          </div>
 
-      {nSem >= 2
-        ? barras("sem", "Semáforo pós-treino",
+          {/* ---- 2. mecanismos ---- */}
+          <div className="dz-tit">Mecanismos</div>
+          <div className="dz-wrap dz-mec">
+            {comp.estado !== "ok" ? (
+              <div className="dz-vz">As 14 perguntas de mecanismo não foram
+                respondidas nesta avaliação.</div>
+            ) : (
+              <>
+                <div className="dz-comp">
+                  {["N","P","S"].map(k => comp.pct[k] ? (
+                    <i key={k} style={{ width: comp.pct[k] + "%",
+                      background: DZ_EIXO_COR[k] }} title={DZ_EIXO_NOME[k]} />
+                  ) : null)}
+                </div>
+                {["N","P","S"].map(k => (
+                  <div className="dz-eix" key={k}>
+                    <div className="lb">
+                      <span><i style={{ background: DZ_EIXO_COR[k] }} />{DZ_EIXO_NOME[k]}</span>
+                      <b style={{ color: DZ_EIXO_COR[k] }}>
+                        {comp.pct[k] == null ? "—" : comp.pct[k] + "%"}</b>
+                    </div>
+                    <div className="nt">
+                      {perfil[k].n === 0
+                        ? "não respondido"
+                        : Math.round(perfil[k].taxa * 100) + "% de presença · " +
+                          perfil[k].sim + " de " + perfil[k].n + " itens" +
+                          (perfil[k].naosei ? " · " + perfil[k].naosei + " não sei" : "") +
+                          (perfil[k].ausente ? " · " + perfil[k].ausente + " em branco" : "")}
+                    </div>
+                  </div>
+                ))}
+                <div className="dz-vz">
+                  A barra soma 100% para leitura didática, então mostra
+                  proporção, não intensidade: três eixos altos e três eixos
+                  baixos dão a mesma divisão. O número de presença ao lado é
+                  que diz a força de cada um.
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ---- 3. perfil de impacto ---- */}
+          <div className="dz-tit">Perfil de impacto</div>
+          <div className="dz-wrap">
+            {escala("Dor agora", av.dor_agora, DZ_DOR)}
+            {escala("O quanto isso te incomoda", av.sofrimento, "#e0803c")}
+            {escala("O quanto atrapalha o que você faz", av.limitacao, DZ_LIM)}
+            <div className="dz-vz">
+              {av.temporalidade
+                ? "Na avaliação: " + (DZ_TEMPO[av.temporalidade] || av.temporalidade) +
+                  (dor.temporalidade && dor.temporalidade !== av.temporalidade
+                    ? " · no cadastro da dor está " +
+                      (DZ_TEMPO[dor.temporalidade] || dor.temporalidade)
+                    : "")
+                : ""}
+            </div>
+          </div>
+
+          {/* ---- 4. questionario respondido ---- */}
+          <div className="dz-tit">
+            Questionário respondido
+            <button className="dz-tog" onClick={() => setVerQ(v => !v)}>
+              {verQ ? "ocultar" : "ver as 14"}
+            </button>
+          </div>
+          {verQ && (
+            <div className="dz-wrap dz-q">
+              {["N","P","S"].map(k => (
+                <div key={k}>
+                  <div className="gr" style={{ color: DZ_EIXO_COR[k] }}>
+                    {DZ_EIXO_NOME[k]}</div>
+                  {DZ_MECANISMO.filter(m => m.id[0] === k).map(m => {
+                    const r = av.mecanismo ? av.mecanismo[m.id] : undefined;
+                    return (
+                      <div className="it" key={m.id}>
+                        <span>{m.txt}</span>
+                        <b className={"r-" + (r || "vazio")}>
+                          {DZ_RESP[r] || "em branco"}</b>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ---- 5. graficos ---- */}
+      <div className="dz-tit">Acompanhamento semanal</div>
+      {!RC && (
+        <div className="dz-nada">
+          <b>Biblioteca de gráficos não carregou</b>
+          O Recharts vem de CDN e não respondeu. Recarrega a página com internet —
+          o resto do painel continua funcionando.
+        </div>
+      )}
+      {RC && blocos.length === 0 ? (
+        <div className="dz-nada">
+          <b>Sem histórico ainda</b>
+          Os gráficos precisam de duas semanas de registro. Hoje esta dor tem{" "}
+          {nDor} check-in(s), {nSem} semana(s) com semáforo e {nRet} com retrospectiva.
+        </div>
+      ) : RC && (
+        <>
+          {nDor >= 2 && linha("dor", "dor", DZ_DOR, "Dor média semanal")}
+          {nLim >= 2 && linha("lim", "lim", DZ_LIM, "Limitação semanal")}
+          {nSem >= 2 && barras("sem", "Semáforo pós-treino",
             [["sr", DZ_R], ["sa", DZ_A], ["sv", DZ_V]],
-            { sv: "Tranquilo", sa: "Incomodou", sr: "Limitou" },
-            [["Limitou", DZ_R], ["Incomodou", DZ_A], ["Tranquilo", DZ_V]])
-        : cartao("Semáforo pós-treino",
-            nSem === 1
-              ? "Uma semana com registro. Com duas dá para comparar."
-              : "Nenhum semáforo registrado no fim de treino ainda.")}
-
-      {nRet >= 2
-        ? barras("ret", "Retrospectiva da sessão anterior",
+            { sv:"Tranquilo", sa:"Incomodou", sr:"Limitou" },
+            [["Limitou", DZ_R], ["Incomodou", DZ_A], ["Tranquilo", DZ_V]])}
+          {nRet >= 2 && barras("ret", "Retrospectiva da sessão anterior",
             [["rp", DZ_R], ["ra", DZ_A], ["rv", DZ_V]],
-            { rv: "Passou no mesmo dia", ra: "Levou 1-2 dias", rp: "Piorou" },
-            [["Piorou", DZ_R], ["1-2 dias", DZ_A], ["Mesmo dia", DZ_V]])
-        : cartao("Retrospectiva da sessão anterior",
-            nRet === 1
-              ? "Uma semana com registro. Com duas dá para comparar."
-              : "Nenhuma retrospectiva registrada na abertura de treino ainda.")}
+            { rv:"Passou no mesmo dia", ra:"Levou 1-2 dias", rp:"Piorou" },
+            [["Piorou", DZ_R], ["1-2 dias", DZ_A], ["Mesmo dia", DZ_V]])}
+          {faltando.length > 0 && (
+            <div className="dz-vz" style={{ padding: "0 8px 10px" }}>
+              Ainda sem histórico suficiente para: {faltando.join(", ")}.
+            </div>
+          )}
+        </>
+      )}
 
       <div className="pl-hint">
         Uma dor por vez — tudo aqui é por <code>dor_id</code>. As barras contam
         <b> treinos</b>, não porcentagem: semana de 4 treinos e semana de 1 são
         coisas diferentes, e a altura mostra isso. Vermelho fica na base para a
         comparação entre semanas não depender de onde a faixa começa.
-        O tom das linhas é o dessaturado da avaliação; o semáforo mantém a cor
-        saturada porque ali a cor <b>é</b> o dado.
+        O percentual de mecanismo <b>não é gravidade</b> — a intensidade está no
+        perfil de impacto, acima.
       </div>
     </div>
   );
