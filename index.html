@@ -17,6 +17,12 @@
      Nao troque por URL sem versao (@babel/standalone sem numero). -->
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<!-- prop-types e Recharts: o UMD do Recharts 2.x declara `react` e `prop-types`
+     como externals (react-dom NAO aparece no bundle) e expoe window.Recharts.
+     Sem prop-types carregado ANTES, o factory recebe PropTypes undefined e o
+     Recharts nasce quebrado. Versao fixada pelo mesmo motivo das de cima. -->
+<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+<script src="https://unpkg.com/recharts@2.15.4/umd/Recharts.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <style>
@@ -857,6 +863,41 @@
     .pl-fase-mob{border-top:2px solid var(--accent);margin-top:6px;
       padding-top:8px;grid-column:1/-1}
   }
+  /* ============ DORES (graficos) ============ */
+  /* prefixo dz- porque .chip ja existe na dashboard com outro significado
+     (componente Chips e .chip.mini do editor de entradas) */
+  .dz-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .dz-chip{display:inline-flex;align-items:center;gap:6px;width:auto;
+    padding:6px 13px;border-radius:999px;font-size:12px;font-weight:600;
+    background:transparent;border:1px solid var(--line);color:var(--mut);
+    font-family:inherit;cursor:pointer}
+  .dz-chip:hover{filter:none;border-color:var(--mut)}
+  .dz-chip .cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;opacity:.35}
+  .dz-chip.on .cdot{opacity:1}
+  .dz-chip.fim{border-style:dashed}
+  .dz-sub{font-size:11px;color:var(--mut);margin-bottom:12px;line-height:1.6}
+  .dz-sub b{color:var(--txt);font-weight:600}
+  .dz-tit{font-size:10px;text-transform:uppercase;letter-spacing:.9px;
+    color:var(--mut);padding:0 8px 6px}
+  .dz-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 8px 8px;margin-bottom:14px}
+  .dz-nada{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:26px 20px;margin-bottom:14px;text-align:center;color:var(--mut);
+    font-size:12px;line-height:1.65}
+  .dz-nada b{display:block;color:var(--txt);font-size:13px;margin-bottom:4px}
+  .dz-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--mut);
+    padding:2px 8px 0}
+  .dz-leg span{display:flex;align-items:center;gap:5px}
+  .dz-leg i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  /* datas editaveis no card da fase */
+  .mt-fase .per{display:flex;align-items:center;gap:6px}
+  .mt-fase .per input[type=date]{width:auto;flex:1;min-width:0;margin-bottom:0;
+    padding:4px 6px;font-size:11px;background:var(--bg);border:1px solid var(--line);
+    color:var(--mut);border-radius:6px;font-family:inherit}
+  .mt-fase .per input[type=date]:hover{border-color:var(--mut);color:var(--txt)}
+  .mt-fase .per input[type=date]:focus{outline:none;border-color:var(--accent);
+    color:var(--txt)}
+  .mt-fase .per .seta{color:#3d4d50;flex-shrink:0;font-size:11px}
   .futuro{border:1px dashed var(--line);border-radius:12px;padding:18px 22px;
     color:var(--mut);font-size:13px;line-height:1.6}
   .futuro b{color:var(--txt);display:block;margin-bottom:5px;font-size:14px}
@@ -1685,6 +1726,322 @@ function secaoSegura(txt, rotulo) {
   } catch (e) { return false; }
 }
 
+/* ---------- Dores do aluno · graficos ----------
+   Leitura pura de 4 tabelas: dores, checkins_semanais, treino_semaforo e
+   treino_retrospectiva. Nenhuma escrita, nenhuma mudanca de schema.
+   O treinador enxerga tudo via policy `..._tr` (cmd ALL, qual eh_treinador()).
+
+   NAO confundir com logs.dor / dor_local / dor_lado: aquilo e dor articular
+   por serie, nao tem dor_id, e nao entra aqui.
+
+   Paleta DESSATURADA do avaliacao.js, de proposito: publico com risco de
+   hipervigilancia nao precisa de alarme visual. UNICA excecao e o semaforo,
+   onde a cor E o dado ('verde'/'amarelo'/'vermelho' gravados no banco) e
+   precisa continuar reconhecivel. */
+
+const DZ_DOR = "#d1495b";   /* linha dor media   - vermelho dessaturado */
+const DZ_LIM = "#e0b93c";   /* linha limitacao   - amarelo dessaturado */
+/* semaforo e retrospectiva: cor = dado, mantem saturado */
+const DZ_V = "#2ecc71", DZ_A = "#f1d94a", DZ_R = "#ff5c6c";
+
+/* severidade por ponto (avaliacao.js). A linha fica calma; os pontos carregam
+   a gravidade. Assim a leitura e por ponto, nao por bloco de cor. */
+function corDor(v) {
+  if (v == null || v === 0) return null;
+  if (v <= 3) return "#3fa38a";
+  if (v <= 6) return "#e0b93c";
+  if (v <= 8) return "#e0803c";
+  return "#d1495b";
+}
+
+/* As 5 estruturas abaixo tem id DIFERENTE em cada vista do mapa corporal, mas
+   sao a mesma estrutura fisica. Marcar o braco pela frente numa avaliacao e
+   pelas costas na seguinte cria DUAS linhas em `dores`, com dor_id distintos, e
+   os check-ins se dividem entre elas. NAO fundir as series - sao dados
+   distintos. So rotular a vista, para ficar visivel que aconteceu.
+   ATENCAO: espelho PARCIAL do mapa do App Idealis. Quando o App mandar a lista
+   canonica de regioes, trocar este dicionario por ela. */
+const DZ_REG = {
+  pescoco:  ["Pescoço",         "frente"],
+  cervical: ["Pescoço",         "costas"],
+  braco_d:  ["Braço direito",   "frente"],
+  braco_pd: ["Braço direito",   "costas"],
+  braco_e:  ["Braço esquerdo",  "frente"],
+  braco_pe: ["Braço esquerdo",  "costas"],
+  mao_d:    ["Mão direita",     "frente"],
+  mao_pd:   ["Mão direita",     "costas"],
+  mao_e:    ["Mão esquerda",    "frente"],
+  mao_pe:   ["Mão esquerda",    "costas"]
+};
+
+/* "lombar_baixa" -> "Lombar baixa" ; sufixo _d/_e vira lado por extenso */
+function dzPretty(id) {
+  let s = String(id || "").trim();
+  if (!s) return "região não informada";
+  s = s.replace(/_pd$/, " direito").replace(/_pe$/, " esquerdo")
+       .replace(/_d$/, " direito").replace(/_e$/, " esquerdo")
+       .replace(/_/g, " ").trim();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function dzRotulo(d) {
+  if (d.apelido && d.apelido.trim()) return d.apelido.trim();
+  const par = DZ_REG[d.regiao];
+  return par ? par[0] + " · " + par[1] : dzPretty(d.regiao);
+}
+
+/* segunda-feira da semana da data. checkins_semanais.semana_ref ja e segunda;
+   treino_em e treino_ref_em sao datas soltas e precisam cair na mesma grade,
+   senao o eixo X compartilhado dos 4 graficos mente. */
+function dzSegunda(iso) {
+  const d = parseISO(iso);
+  const w = d.getDay();                    /* 0 = domingo */
+  d.setDate(d.getDate() + (w === 0 ? -6 : 1 - w));
+  return dISO(d);
+}
+
+const DZ_TEMPO = { aguda: "aguda", cronica: "crônica" };
+
+function PainelDores({ aluno }) {
+  const [dores, setDores] = useState(null);
+  const [cks, setCks]     = useState([]);
+  const [sems, setSems]   = useState([]);
+  const [rets, setRets]   = useState([]);
+  const [sel, setSel]     = useState("");
+  const [verFim, setVerFim] = useState(false);
+  const [erro, setErro]   = useState("");
+
+  const carregar = useCallback(async () => {
+    setErro("");
+    const [d, c, s, r] = await Promise.all([
+      sb.from("dores")
+        .select("id, regiao, vista, apelido, inicio_em, temporalidade, ativa, resolvida_em")
+        .eq("aluno_id", aluno.id).order("criado_em"),
+      sb.from("checkins_semanais").select("dor_id, semana_ref, dor_media, limitacao")
+        .eq("aluno_id", aluno.id).order("semana_ref"),
+      sb.from("treino_semaforo").select("dor_id, treino_em, cor")
+        .eq("aluno_id", aluno.id),
+      sb.from("treino_retrospectiva").select("dor_id, treino_ref_em, recuperacao")
+        .eq("aluno_id", aluno.id)
+    ]);
+    const e = d.error || c.error || s.error || r.error;
+    if (e) { setErro(e.message); setDores([]); return; }
+    setCks(c.data || []); setSems(s.data || []); setRets(r.data || []);
+    const lista = d.data || [];
+    setDores(lista);
+    const ativa = lista.find(x => x.ativa);
+    setSel(s0 => s0 || (ativa ? ativa.id : (lista[0] ? lista[0].id : "")));
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  if (erro) return <div className="err">{erro}</div>;
+  if (dores === null) return <div className="msg">Carregando...</div>;
+
+  const RC = window.Recharts;
+  if (!RC) return (
+    <div className="dz-nada">
+      <b>Biblioteca de gráficos não carregou</b>
+      O <code>Recharts</code> vem de CDN e não respondeu. Recarrega a página com
+      internet. O resto da ficha continua funcionando.
+    </div>
+  );
+  const { ResponsiveContainer, LineChart, BarChart, Line, Bar,
+          CartesianGrid, XAxis, YAxis, Tooltip } = RC;
+
+  if (!dores.length) return (
+    <div className="dz-nada">
+      <b>Nenhuma dor em acompanhamento</b>
+      {aluno.nome} ainda não tem dor cadastrada. Os gráficos aparecem assim que
+      a primeira dor for registrada e houver check-in semanal.
+    </div>
+  );
+
+  const ativas = dores.filter(d => d.ativa);
+  const fins   = dores.filter(d => !d.ativa);
+  const visiveis = verFim ? dores : (ativas.length ? ativas : dores);
+  const dor = dores.find(d => d.id === sel) || visiveis[0] || dores[0];
+
+  /* ---- serie unica, grade semanal compartilhada pelos 4 graficos ---- */
+  const meusCk  = cks.filter(x => x.dor_id === dor.id);
+  const meusSem = sems.filter(x => x.dor_id === dor.id);
+  const meusRet = rets.filter(x => x.dor_id === dor.id);
+
+  const linhas = new Map();
+  const pegar = k => {
+    if (!linhas.has(k)) linhas.set(k, { sem: k, rot: dBR(k).slice(0, 5),
+      dor: null, lim: null, sv: 0, sa: 0, sr: 0, rv: 0, ra: 0, rp: 0 });
+    return linhas.get(k);
+  };
+  for (const x of meusCk) {
+    const l = pegar(String(x.semana_ref).slice(0, 10));
+    l.dor = x.dor_media == null ? null : Number(x.dor_media);
+    l.lim = x.limitacao == null ? null : Number(x.limitacao);
+  }
+  for (const x of meusSem) {
+    const l = pegar(dzSegunda(x.treino_em));
+    if (x.cor === "verde") l.sv++; else if (x.cor === "amarelo") l.sa++; else l.sr++;
+  }
+  for (const x of meusRet) {
+    const l = pegar(dzSegunda(x.treino_ref_em));
+    if (x.recuperacao === "mesmo_dia") l.rv++;
+    else if (x.recuperacao === "1_2_dias") l.ra++; else l.rp++;
+  }
+  const dados = [...linhas.values()].sort((a, b) => a.sem < b.sem ? -1 : 1);
+
+  const nDor = dados.filter(l => l.dor != null).length;
+  const nLim = dados.filter(l => l.lim != null).length;
+  const nSem = dados.filter(l => l.sv + l.sa + l.sr > 0).length;
+  const nRet = dados.filter(l => l.rv + l.ra + l.rp > 0).length;
+
+  /* piso de dados: 1 ponto nao e serie temporal, e uma anotacao */
+  const blocos = [];
+  if (nDor >= 2) blocos.push("dor");
+  if (nLim >= 2) blocos.push("lim");
+  if (nSem >= 2) blocos.push("sem");
+  if (nRet >= 2) blocos.push("ret");
+  const ultimo = blocos[blocos.length - 1];
+
+  const grade  = <CartesianGrid stroke="#243036" strokeDasharray="3 3" />;
+  const eixoX  = k => k === ultimo
+    ? <XAxis dataKey="rot" tick={{ fill: "#7d9298", fontSize: 11 }} tickMargin={8} />
+    : <XAxis dataKey="rot" tick={false} height={6} />;
+  const alt    = k => k === ultimo ? 150 : 118;
+  const dica   = (fmt) => (
+    <Tooltip contentStyle={{ background: "#12181a", border: "1px solid #243036",
+      borderRadius: 12, color: "#eaf6f7" }} formatter={fmt} />
+  );
+
+  /* ponto colorido pela severidade daquele valor, nao pela metrica */
+  const ponto = (p) => {
+    const c = corDor(p.value);
+    if (c == null) return null;
+    return <circle key={p.key} cx={p.cx} cy={p.cy} r={3} fill={c} stroke="none" />;
+  };
+
+  const cartao = (titulo, texto) => (
+    <div className="dz-nada" key={titulo}>
+      <b>{titulo}</b>{texto}
+    </div>
+  );
+
+  const linha = (k, chave, cor, titulo) => (
+    <div key={k}>
+      <div className="dz-tit">{titulo}</div>
+      <div className="dz-wrap">
+        <ResponsiveContainer width="100%" height={alt(k)}>
+          <LineChart data={dados} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
+            {grade}
+            {eixoX(k)}
+            <YAxis domain={[0, 10]} ticks={[0, 5, 10]} width={40}
+              tick={{ fill: "#7d9298", fontSize: 11 }} />
+            {dica(v => [Number(v).toFixed(Number(v) % 1 ? 1 : 0), titulo])}
+            <Line type="monotone" dataKey={chave} stroke={cor} connectNulls
+              dot={ponto} activeDot={{ r: 6 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+
+  const barras = (k, titulo, chaves, rotulos, legenda) => (
+    <div key={k}>
+      <div className="dz-tit">{titulo}</div>
+      <div className="dz-wrap">
+        <ResponsiveContainer width="100%" height={alt(k)}>
+          <BarChart data={dados} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
+            {grade}
+            {eixoX(k)}
+            <YAxis width={40} allowDecimals={false}
+              tick={{ fill: "#7d9298", fontSize: 11 }} />
+            {dica((v, n) => [v + " treino(s)", rotulos[n] || n])}
+            {chaves.map(c => (
+              <Bar key={c[0]} dataKey={c[0]} stackId="s" fill={c[1]} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+        <div className="dz-leg">
+          {legenda.map(l => (
+            <span key={l[0]}><i style={{ background: l[1] }} />{l[0]}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const subt = [];
+  if (dor.inicio_em) subt.push("desde " + dBR(dor.inicio_em));
+  if (dor.temporalidade) subt.push(DZ_TEMPO[dor.temporalidade] || dor.temporalidade);
+  if (!dor.ativa) subt.push("encerrada" + (dor.resolvida_em ? " em " + dBR(dor.resolvida_em) : ""));
+
+  return (
+    <div>
+      <div className="dz-chips">
+        {visiveis.map(d => (
+          <button key={d.id}
+            className={"dz-chip" + (d.id === dor.id ? " on" : "") + (d.ativa ? "" : " fim")}
+            onClick={() => setSel(d.id)}
+            style={d.id === dor.id
+              ? { borderColor: DZ_DOR, color: DZ_DOR } : {}}>
+            <i className="cdot" style={{ background: d.id === dor.id ? DZ_DOR : "var(--mut)" }} />
+            {dzRotulo(d)}
+          </button>
+        ))}
+        {fins.length > 0 && (
+          <button className="dz-chip" onClick={() => setVerFim(v => !v)}>
+            {verFim ? "ocultar encerradas" : "+ " + fins.length + " encerrada(s)"}
+          </button>
+        )}
+      </div>
+
+      {subt.length > 0 && (
+        <div className="dz-sub"><b>{dzRotulo(dor)}</b> · {subt.join(" · ")}</div>
+      )}
+
+      {nDor >= 2 ? linha("dor", "dor", DZ_DOR, "Dor média semanal")
+        : cartao("Dor média semanal",
+            nDor === 1
+              ? "Só um check-in registrado. Com dois já dá para desenhar a linha."
+              : "Sem check-in registrado ainda.")}
+
+      {nLim >= 2 ? linha("lim", "lim", DZ_LIM, "Limitação semanal")
+        : cartao("Limitação semanal",
+            nLim === 1
+              ? "Só um registro de limitação. O campo é opcional no check-in."
+              : "Nenhuma limitação registrada. O campo é opcional no check-in.")}
+
+      {nSem >= 2
+        ? barras("sem", "Semáforo pós-treino",
+            [["sr", DZ_R], ["sa", DZ_A], ["sv", DZ_V]],
+            { sv: "Tranquilo", sa: "Incomodou", sr: "Limitou" },
+            [["Limitou", DZ_R], ["Incomodou", DZ_A], ["Tranquilo", DZ_V]])
+        : cartao("Semáforo pós-treino",
+            nSem === 1
+              ? "Uma semana com registro. Com duas dá para comparar."
+              : "Nenhum semáforo registrado no fim de treino ainda.")}
+
+      {nRet >= 2
+        ? barras("ret", "Retrospectiva da sessão anterior",
+            [["rp", DZ_R], ["ra", DZ_A], ["rv", DZ_V]],
+            { rv: "Passou no mesmo dia", ra: "Levou 1-2 dias", rp: "Piorou" },
+            [["Piorou", DZ_R], ["1-2 dias", DZ_A], ["Mesmo dia", DZ_V]])
+        : cartao("Retrospectiva da sessão anterior",
+            nRet === 1
+              ? "Uma semana com registro. Com duas dá para comparar."
+              : "Nenhuma retrospectiva registrada na abertura de treino ainda.")}
+
+      <div className="pl-hint">
+        Uma dor por vez — tudo aqui é por <code>dor_id</code>. As barras contam
+        <b> treinos</b>, não porcentagem: semana de 4 treinos e semana de 1 são
+        coisas diferentes, e a altura mostra isso. Vermelho fica na base para a
+        comparação entre semanas não depender de onde a faixa começa.
+        O tom das linhas é o dessaturado da avaliação; o semáforo mantém a cor
+        saturada porque ali a cor <b>é</b> o dado.
+      </div>
+    </div>
+  );
+}
+
 function DrawerAnamnese({ aluno, onFechar }) {
   useEsc(true, onFechar);
   const [atual, setAtual]     = useState(undefined);
@@ -1921,6 +2278,7 @@ function DrawerAnamnese({ aluno, onFechar }) {
           <button className="btn-sec" onClick={() => setModo("correcoes")}>
             Correções{nvCorr ? " (" + nvCorr + ")" : ""}
           </button>
+          <button className="btn-sec" onClick={() => setModo("dores")}>Dores</button>
           <button className="btn-sec" onClick={() => setModo("perguntas")}>
             Perguntas{aluno.perguntas_pendentes ? " (" + aluno.perguntas_pendentes + ")" : ""}
           </button>
@@ -1956,6 +2314,8 @@ function DrawerAnamnese({ aluno, onFechar }) {
             <PainelAcademiasAluno aluno={aluno} />
           ) : modo === "correcoes" ? (
             <PainelCorrecoes aluno={aluno} onContagem={setNvCorr} />
+          ) : modo === "dores" ? (
+            <PainelDores aluno={aluno} />
           ) : modo === "perguntas" ? (
             <PainelPerguntas aluno={aluno} />
           ) : modo === "colar" ? (
@@ -6404,6 +6764,30 @@ function PainelMontagem() {
     await abrirFase(faseSel);
   }
 
+  /* Ajustar prazo e a operacao mais frequente, entao os inputs ficam no proprio
+     card, sem modal. O onClick do card seleciona a fase - por isso o wrapper
+     tem stopPropagation, senao mexer na data recarrega os treinos.
+     Update de campo UNICO: mandar o objeto inteiro sobrescreveria nome,
+     objetivo e metodos com o que estiver em memoria.
+     Otimista com rollback, igual PainelAparelhos.gravar(). */
+  async function mudarDataFase(f, campo, valor) {
+    if (!valor) return;
+    if (campo === "inicio" && f.fim && valor > f.fim) {
+      toast("Início não pode ser depois do fim.", "erro"); return;
+    }
+    if (campo === "fim" && f.inicio && valor < f.inicio) {
+      toast("Fim não pode ser antes do início.", "erro"); return;
+    }
+    const antes = f[campo];
+    setFases(fs => fs.map(x => x.id === f.id ? { ...x, [campo]: valor } : x));
+    const r = await sb.from("fases").update({ [campo]: valor }).eq("id", f.id);
+    if (r.error) {
+      setFases(fs => fs.map(x => x.id === f.id ? { ...x, [campo]: antes } : x));
+      toast(r.error.message, "erro"); return;
+    }
+    toast("Data atualizada ✓");
+  }
+
   /* fase nova entra na lista sem recarregar tudo e já abre selecionada */
   async function aposCriarFase(f, querCopiar) {
     setNovaFase(false);
@@ -6583,7 +6967,15 @@ function PainelMontagem() {
                         onClick={e => apagarFase(f, e)}>×</button>
                     )}
                     <b>{f.nome}</b>
-                    <div className="per">{dBR(f.inicio)} → {dBR(f.fim)}</div>
+                    <div className="per" onClick={e => e.stopPropagation()}>
+                      <input type="date" value={f.inicio || ""}
+                        title="Início da fase"
+                        onChange={e => mudarDataFase(f, "inicio", e.target.value)} />
+                      <span className="seta">→</span>
+                      <input type="date" value={f.fim || ""}
+                        min={f.inicio || undefined} title="Fim da fase"
+                        onChange={e => mudarDataFase(f, "fim", e.target.value)} />
+                    </div>
                     {st === "ativa" && rest !== null && (
                       <div className="rest">
                         {rest >= 0 ? "faltam " + rest + " dias" : "vencida"}
