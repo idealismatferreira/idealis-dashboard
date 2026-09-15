@@ -2078,6 +2078,17 @@ function dzNotasCorpo(dores, cks, regs, avals, hojeISO) {
     });
   }
 
+  /* Regiao cuja dor JA FOI ENCERRADA nao pinta pino, mesmo tendo intensidade
+     na ultima avaliacao - e comum a avaliacao que encerra a dor ser a mesma que
+     ainda registra nota nela. Pintar ali mostraria dor atual onde o proprio
+     aluno disse que acabou.
+     Regiao que nunca virou linha em `dores` (pintada na avaliacao e nunca
+     acompanhada) continua pintando: essa e queixa viva, so nao virou dor
+     acompanhada ainda. */
+  const encerrada = new Set(), viva = new Set();
+  (dores || []).forEach(d => (d.ativa ? viva : encerrada).add(d.regiao));
+  encerrada.forEach(r => { if (!viva.has(r)) { delete notas[r]; delete fonte[r]; } });
+
   /* 1) check-in recente das dores ativas sobrescreve */
   const porDor = new Map();
   (cks || []).forEach(c => {
@@ -2294,16 +2305,24 @@ function DzCorpo({ notas, fonte, acompanhadas, ativa }) {
 /* Encerradas fora dos chips: viram lista de uma linha, "Regiao - data".
    Chip so abre e fecha. Clicar num item abre o questionario daquela dor,
    com todos os graficos e avaliacoes que ela teve. */
-function DzEncerradas({ fins, sel, aberto, onToggle, onPick }) {
+function DzEncerradas({ fins, sel, aberto, onToggle, onPick, fixo }) {
   if (!fins.length) return null;
+  /* `fixo` = o aluno nao tem dor ativa. Nao ha o que ocultar para revelar,
+     entao a lista ja nasce aberta e o chip vira titulo com a contagem. */
   return (
     <>
-      <div className="dz-chips">
-        <button className={"dz-chip" + (aberto ? " on" : "")} onClick={onToggle}>
-          {aberto ? "ocultar encerradas" : "+ " + fins.length + " encerrada(s)"}
-        </button>
-      </div>
-      {aberto && (
+      {fixo ? (
+        <div className="dz-tit">
+          {fins.length} {fins.length === 1 ? "dor encerrada" : "dores encerradas"}
+        </div>
+      ) : (
+        <div className="dz-chips">
+          <button className={"dz-chip" + (aberto ? " on" : "")} onClick={onToggle}>
+            {aberto ? "ocultar encerradas" : "+ " + fins.length + " encerrada(s)"}
+          </button>
+        </div>
+      )}
+      {(aberto || fixo) && (
         <div className="lista dz-fims">
           {fins.map(d => {
             const quando = d.resolvida_em || d.inicio_em;
@@ -2375,8 +2394,13 @@ function PainelDores({ aluno }) {
     setRegs(rg.data || []);
     const lista = d.data || [];
     setDores(lista);
+    /* So dor ATIVA entra por conta propria. O `: lista[0]` que estava aqui era
+       o ultimo pedaco do fallback antigo: com o aluno sem queixa em aberto, ele
+       selecionava a primeira encerrada e o painel inteiro abria nela - chips,
+       boneco, graficos - como se fosse a dor atual. Encerrada so aparece se
+       voce clicar nela na lista. */
     const ativa = lista.find(x => x.ativa);
-    setSel(s0 => s0 || (ativa ? ativa.id : (lista[0] ? lista[0].id : "")));
+    setSel(s0 => s0 || (ativa ? ativa.id : ""));
   }, [aluno.id]);
 
   useEffect(() => { carregar(); }, [carregar]);
@@ -2432,13 +2456,11 @@ function PainelDores({ aluno }) {
     <div>
       <div className="dz-nada">
         <b>Nenhuma dor ativa</b>
-        {aluno.nome} nao tem queixa em aberto. O historico das encerradas
-        continua aqui embaixo.
+        {aluno.nome} não tem queixa em aberto.
       </div>
-      <DzCorpo notas={corpo.notas} fonte={corpo.fonte}
-        acompanhadas={acompanhadas} ativa={null} />
-      <DzEncerradas fins={fins} sel={sel} aberto={verFim}
-        onToggle={() => setVerFim(v => !v)}
+      {/* sem boneco aqui de proposito: corpo sem pino nenhum nao informa nada,
+          e pino de dor encerrada informaria errado */}
+      <DzEncerradas fins={fins} sel={sel} fixo
         onPick={id => { setSel(id); setAvSel(""); }} />
     </div>
   );
