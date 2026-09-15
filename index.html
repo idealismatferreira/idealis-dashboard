@@ -25,6 +25,20 @@
 <script src="https://unpkg.com/recharts@2.15.4/umd/Recharts.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+
+<!-- Mapa corporal de dor. Os dois vem VERBATIM do App Idealis: o 2D e a
+     fonte unica dos 47 slugs e o fallback quando o WebGL falha; o 3D e o
+     manequim que gira. Arquivos que precisam estar na MESMA pasta que este
+     index.html, com os nomes EXATOS (o three.module importa
+     "./three.core.min.js" por caminho literal - underscore no lugar do ponto
+     faz o import falhar em silencio, sem disparar o onErro):
+       mapa-dor-leitura.js  manequim-dor-dashboard.js
+       three.module.min.js  three.core.min.js  manequim.glb
+     O 2D e script classico e depende de window.React, entao vem DEPOIS do
+     react UMD. O 3D e ES module: adiado por natureza, so existe depois que o
+     HTML termina de ser lido - o painel sabe esperar por ele. -->
+<script src="./mapa-dor-leitura.js"></script>
+<script type="module" src="./manequim-dor-dashboard.js"></script>
 <style>
   :root{
     --bg:#0b0f10; --card:#131a1c; --line:#1f2b2d;
@@ -948,6 +962,63 @@
     padding:2px 8px 0}
   .dz-leg span{display:flex;align-items:center;gap:5px}
   .dz-leg i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  /* ---- Mapa corporal de dor ----
+     O CSS abaixo veio VERBATIM do App e usa os tokens DELE, que tem nomes
+     diferentes dos daqui (--surface, --muted, --text...). Em vez de reescrever
+     o CSS (perderia a garantia de ser identico) ou de apelidar no :root global
+     (--accent significa CIANO aqui e LIMA la: a colisao pintaria a Dashboard
+     inteira de amarelo), os tokens do App sao declarados com os valores do App
+     e ESCOPADOS no container do mapa. Nada vaza. */
+  .dz-corpo{
+    --bg:#090b0c; --surface:#131718; --surface-2:#1b2123; --line:#2c3436;
+    --cyan:#00c9cc; --cyan-2:#71fcff;
+    --text:#eef7f8; --muted:#9fb3b8; --muted-2:#78898e;
+    /* --lime NAO existe no :root do App, mas o mapa-dor-leitura.js usa
+       var(--lime) no ponto da regiao selecionada. Sem isto o ponto sai preto
+       (var indefinida invalida o fill). Valor = o --accent do App, que e o
+       mesmo 0xddff00 que o 3D usa na selecao. Reportado ao App. */
+    --lime:#ddff00;
+    display:flex;flex-direction:column;align-items:center;margin-bottom:14px}
+  /* [DASH-3] cobria a ALTURA por prop; a largura continuou travada em 340px
+     no CSS do celular. Em monitor isso vira um selo - solto aqui. */
+  .dz-corpo .m3palco{max-width:none;width:100%}
+  .dz-corpo .m3wrap{max-width:520px}
+  .dz-corpo .m3presets{max-width:520px}
+  .mapasvg{width:100%;max-width:300px;height:auto;display:block}
+  .dz-corpo-cap{font-size:12px;color:var(--mut);text-align:center;
+    margin-top:8px;min-height:16px}
+  .dz-corpo-cap b{color:var(--txt);font-weight:600}
+  .dz-corpo-cap i{font-style:normal;color:var(--accent)}
+  .dz-vistas{display:flex;gap:6px;margin-bottom:9px}
+
+  /* ===== MANEQUIM 3D — verbatim do manequim3d.js do App ===== */
+  .m3wrap{display:flex;flex-direction:column;align-items:center;gap:11px;width:100%}
+  .m3presets{display:flex;gap:6px;width:100%;max-width:300px}
+  .m3presets button{flex:1;padding:9px 4px;border-radius:11px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--muted);font-family:inherit;font-size:12px;
+    font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .m3palco{position:relative;width:100%;max-width:340px;border-radius:16px;
+    background:radial-gradient(120% 90% at 50% 12%,rgba(255,255,255,.05),transparent 62%),
+      var(--surface);border:1px solid var(--line);overflow:hidden}
+  .m3canvas{display:block;width:100%;height:auto;touch-action:none;
+    -webkit-tap-highlight-color:transparent}
+  .m3load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:var(--muted)}
+  .m3rotulo{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;
+    padding:7px 13px;border-radius:999px;background:rgba(0,201,204,.16);
+    border:1px solid var(--cyan);color:var(--cyan-2);font-size:12.5px;font-weight:800;
+    pointer-events:none;white-space:nowrap}
+  .m3zoom{position:absolute;right:9px;top:9px;display:flex;flex-direction:column;gap:6px}
+  .m3zoom button{width:33px;height:33px;border-radius:10px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--text);font-family:inherit;font-size:17px;
+    font-weight:800;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .m3dica{font-size:11.5px;color:var(--muted-2);text-align:center}
+
+  .dz-fims{margin:0 0 14px 0}
+  .dz-fims .item{cursor:pointer;transition:border-color .12s}
+  .dz-fims .item:hover{border-color:var(--accent)}
+  .dz-fims .item.on{border-color:var(--accent)}
+  .dz-fims .item .enm{flex:1}
   /* ---- Evolucao de Carga ---- */
   .ev-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
   .ev-bar>div:first-child{flex:1;min-width:190px}
@@ -1846,9 +1917,18 @@ function corDor(v) {
   return "#d1495b";
 }
 
-/* ---- regioes: lista canonica do avaliacao.js, 39 ids ----
-   Copiada do App. Quando a Dashboard carregar avaliacao.js para o
-   MapaCorporal, trocar por window.AvaliacaoDor.NOME e apagar isto.
+/* ---- regioes: COPIA PARCIAL e DESATUALIZADA do avaliacao.js ----
+   ATENCAO: este bloco NAO e a lista canonica. Sao 39 ids = 35 canonicas
+   + 4 aliases legados (braco_pd, braco_pe, mao_pd, mao_pe). O avaliacao.js
+   tem 47 slugs e o manequim 3D tem 43 hotspots canonicos.
+   Faltam 8 aqui, todas com hotspot 3D pronto e todas queixa comum:
+     antebraco_d, antebraco_e, pe_d, pe_e, virilha_d, virilha_e   (frente)
+     escapula_d, escapula_e                                        (costas)
+   Efeito de faltar: a dor grava certo no banco e simplesmente nao desenha
+   pino nem rotulo. Sem erro, sem log. Ja dessincronizou duas vezes.
+   Correcao definitiva: carregar avaliacao.js e usar window.AvaliacaoDor.REGIOES
+   / .NOME como fonte unica, apagando este bloco. O arquivo ja vai ser
+   carregado de qualquer forma para o fallback 2D do manequim.
    NAO derivar nome por regra: "mao_d" nao vira "Mao direito", vira
    "Punho / mao dir.". Id desconhecido aparece cru.
    A inconsistencia de lado ("direito" vs "D") e proposital - e o que o aluno
@@ -1864,7 +1944,11 @@ const DZ_REGIAO_VISTA = {
   mao_pd:'costas', mao_pe:'costas', gluteo_d:'costas', gluteo_e:'costas',
   post_coxa_d:'costas', post_coxa_e:'costas', poplitea_d:'costas',
   poplitea_e:'costas', panturr_d:'costas', panturr_e:'costas',
-  calc_d:'costas', calc_e:'costas'
+  calc_d:'costas', calc_e:'costas',
+  /* as 8 que faltavam ate 15/09/26 - verbatim do avaliacao.js */
+  antebraco_d:'frente', antebraco_e:'frente', pe_d:'frente', pe_e:'frente',
+  virilha_d:'frente', virilha_e:'frente',
+  escapula_d:'costas', escapula_e:'costas'
 };
 
 const DZ_REGIAO_NOME = {
@@ -1885,7 +1969,15 @@ const DZ_REGIAO_NOME = {
   post_coxa_d:'Atrás da coxa D', post_coxa_e:'Atrás da coxa E',
   poplitea_d:'Atrás do joelho D', poplitea_e:'Atrás do joelho E',
   panturr_d:'Panturrilha D', panturr_e:'Panturrilha E',
-  calc_d:'Calcanhar D', calc_e:'Calcanhar E'
+  calc_d:'Calcanhar D', calc_e:'Calcanhar E',
+  /* verbatim do App. A inconsistencia e PROPOSITAL: "Antebraco direito" por
+     extenso, "Virilha / adutor D" abreviado, "Escapula direita" no feminino.
+     E o que o aluno le na tela. Uniformizar aqui faria treinador e aluno
+     lerem rotulos diferentes da mesma regiao. */
+  antebraco_d:'Antebraço direito', antebraco_e:'Antebraço esquerdo',
+  pe_d:'Pé direito', pe_e:'Pé esquerdo',
+  virilha_d:'Virilha / adutor D', virilha_e:'Virilha / adutor E',
+  escapula_d:'Escápula direita', escapula_e:'Escápula esquerda'
 };
 
 /* Mesma estrutura fisica com id diferente em cada vista. Marcar o braco pela
@@ -1897,10 +1989,40 @@ const DZ_REGIAO_NOME = {
 const DZ_AMBIGUOS = new Set(['pescoco','cervical','braco_d','braco_pd',
   'braco_e','braco_pe','mao_d','mao_pd','mao_e','mao_pe']);
 
+/* O mapa-dor-leitura.js e a FONTE UNICA dos 47 slugs quando carrega. As
+   tabelas acima sao o espelho local, completas, usadas so se o arquivo nao
+   estiver la. Ja dessincronizou duas vezes: o aviso no console existe para a
+   terceira aparecer no mesmo dia, e nao meses depois num pino que nao desenha. */
+function dzTabelaNome() {
+  const M = window.MapaDorIdealis;
+  return (M && M.NOME_REGIAO) || DZ_REGIAO_NOME;
+}
+function dzTabelaVista() {
+  const M = window.MapaDorIdealis;
+  return (M && M.VISTA_DE) || DZ_REGIAO_VISTA;
+}
+let _dzConferido = false;
+function dzConferirRegioes() {
+  if (_dzConferido) return;
+  _dzConferido = true;
+  const M = window.MapaDorIdealis;
+  if (!M || !M.NOME_REGIAO) {
+    console.warn("[dores] mapa-dor-leitura.js nao carregou: usando o espelho " +
+      "local de regioes. O boneco 3D provavelmente tambem nao vai subir.");
+    return;
+  }
+  const fora = Object.keys(M.NOME_REGIAO).filter(k => !DZ_REGIAO_NOME[k]);
+  const sobra = Object.keys(DZ_REGIAO_NOME).filter(k => !M.NOME_REGIAO[k]);
+  if (fora.length || sobra.length) {
+    console.warn("[dores] espelho local de regioes DESSINCRONIZADO.",
+      { faltando_aqui: fora, so_aqui: sobra });
+  }
+}
+
 function dzNomeRegiao(id) {
-  const nome = DZ_REGIAO_NOME[id];
+  const nome = dzTabelaNome()[id];
   if (!nome) return String(id || "");         /* id cru, nunca adivinhar */
-  return DZ_AMBIGUOS.has(id) ? nome + " · " + DZ_REGIAO_VISTA[id] : nome;
+  return DZ_AMBIGUOS.has(id) ? nome + " · " + dzTabelaVista()[id] : nome;
 }
 
 function dzRotulo(d) {
@@ -1919,6 +2041,59 @@ function dzSegunda(iso) {
 }
 
 const DZ_TEMPO = { aguda: "aguda", cronica: "crônica" };
+
+/* ---------- intensidade a pintar no boneco ----------
+   Ordem fechada com o App, e ela importa:
+     1) dor_media do check-in mais recente (ate 14 dias) da dor ATIVA daquela
+        regiao  -> "check-in de DD/MM"
+     2) senao, a intensidade da ultima avaliacao respondida -> "avaliacao D_"
+     3) senao, nao desenha pino
+   treino_semaforo fica de fora de proposito: e ordinal (verde/amarelo/vermelho),
+   nao e 0-10, e converter inventaria numero.
+   avaliacao_dores.dor_agora tambem fica de fora: so cobre as 1-3 dores
+   aprofundadas, entao pintaria umas regioes e outras nao, sem criterio visivel.
+   Quem cobre TUDO que o aluno pintou e avaliacao_regioes.intensidade.
+
+   Check-in com dor_media = 0 SOBRESCREVE a avaliacao e apaga o pino: o aluno
+   esta dizendo que hoje nao doi. Deixar o numero velho seria mentir com dado
+   mais novo na mao. */
+const DZ_JANELA_CK = 14;
+function dzDias(aISO, bISO) {
+  return Math.round((parseISO(bISO) - parseISO(aISO)) / 86400000);
+}
+function dzNotasCorpo(dores, cks, regs, avals, hojeISO) {
+  const notas = {}, fonte = {};
+
+  /* 2) base - ultima avaliacao respondida */
+  const ord = (avals || []).slice()
+    .sort((a, b) => String(a.data) < String(b.data) ? -1 : 1);
+  const ult = ord[ord.length - 1];
+  if (ult) {
+    (regs || []).forEach(r => {
+      if (r.avaliacao_id !== ult.id) return;
+      const v = Number(r.intensidade);
+      if (!(v > 0)) return;
+      notas[r.regiao] = v;
+      fonte[r.regiao] = "avaliação " + (ult.momento || dBR(ult.data));
+    });
+  }
+
+  /* 1) check-in recente das dores ativas sobrescreve */
+  const porDor = new Map();
+  (cks || []).forEach(c => {
+    const a = porDor.get(c.dor_id);
+    if (!a || String(a.semana_ref) < String(c.semana_ref)) porDor.set(c.dor_id, c);
+  });
+  (dores || []).filter(d => d.ativa).forEach(d => {
+    const c = porDor.get(d.id);
+    if (!c) return;
+    if (dzDias(c.semana_ref, hojeISO) > DZ_JANELA_CK) return;
+    notas[d.regiao] = Number(c.dor_media);
+    fonte[d.regiao] = "check-in de " + dBR(c.semana_ref);
+  });
+
+  return { notas, fonte };
+}
 
 /* ---- os 14 itens de mecanismo, texto exato do avaliacao.js ---- */
 const DZ_MECANISMO = [
@@ -2021,6 +2196,134 @@ const DZ_RED_FLAGS = {
   rf_corticoide:"Uso corticoide há bastante tempo"
 };
 
+/* ---------- Boneco de dor ----------
+   O 3D e o manequim do questionario do App: mesma malha, mesmos 43 hotspots,
+   mesmos pinos. Aqui e LEITURA - sem onPick, clicar no corpo nao marca nada.
+   Quem seleciona regiao sao os chips de cima.
+
+   Tres caminhos, nesta ordem:
+     - modulo carregado e WebGL ok        -> 3D
+     - sem WebGL, .glb nao baixou, ou o
+       contexto WebGL morreu (onErro)     -> 2D, o mesmo SVG do App
+     - nem o 2D carregou                  -> aviso honesto, nunca area em branco
+
+   O modulo 3D e ES module: so existe depois que o HTML acaba de ser lido, e
+   isso pode ser DEPOIS do React montar. Por isso a espera com tentativas, e
+   nao um if simples - um if aqui daria fallback 2D em quem tem WebGL. */
+function DzCorpo({ notas, fonte, acompanhadas, ativa }) {
+  const [modo, setModo] = useState("esperando");
+  const [vista, setVista] = useState("frente");
+
+  useEffect(() => {
+    let vivo = true;
+    const tentar = n => {
+      if (!vivo) return;
+      const M = window.ManequimDorDashboard;
+      if (M && M.pronto) {
+        setModo(M.suportado && M.suportado() ? "3d" : "2d");
+        return;
+      }
+      /* 4s: mais que isso e porque o import quebrou (nome de arquivo errado,
+         404). Nesse caso o onErro NUNCA dispara, porque nada chegou a rodar. */
+      if (n > 40) { setModo("2d"); return; }
+      setTimeout(() => tentar(n + 1), 100);
+    };
+    tentar(0);
+    return () => { vivo = false; };
+  }, []);
+
+  /* a vista do 2D acompanha a regiao selecionada, senao o pino fica na
+     silhueta que nao esta na tela */
+  useEffect(() => {
+    if (!ativa) return;
+    const v = dzTabelaVista()[ativa];
+    if (v) setVista(v);
+  }, [ativa]);
+
+  const M3 = window.ManequimDorDashboard;
+  const M2 = window.MapaDorIdealis;
+
+  const legenda = ativa && notas[ativa] != null
+    ? <><b>{dzNomeRegiao(ativa)}</b> · <i>{notas[ativa]}/10</i>
+        {fonte[ativa] ? " · " + fonte[ativa] : ""}</>
+    : ativa ? <><b>{dzNomeRegiao(ativa)}</b> · acompanhada, sem nota recente</>
+    : null;
+
+  let corpo;
+  if (modo === "esperando") {
+    corpo = <div className="dz-nada"><b>Carregando o corpo…</b></div>;
+  } else if (modo === "3d" && M3) {
+    corpo = <M3.Manequim3D
+      notas={notas} acompanhadas={acompanhadas} ativa={ativa || null}
+      nomeDe={dzNomeRegiao} alturaMin={380} alturaMax={620}
+      onErro={() => setModo("2d")} />;
+  } else if (M2 && M2.MapaDorLeitura) {
+    corpo = (
+      <>
+        <div className="dz-vistas">
+          {["frente", "costas"].map(v => (
+            <button key={v} className={"dz-chip" + (vista === v ? " on" : "")}
+              onClick={() => setVista(v)}>{v}</button>
+          ))}
+        </div>
+        <M2.MapaDorLeitura vista={vista} notas={notas}
+          acompanhadas={acompanhadas} ativa={ativa || null} />
+      </>
+    );
+  } else {
+    corpo = (
+      <div className="dz-nada">
+        <b>O mapa corporal não carregou</b>
+        Nem o manequim 3D nem o mapa 2D subiram. Confere se
+        mapa-dor-leitura.js, manequim-dor-dashboard.js, three.module.min.js,
+        three.core.min.js e manequim.glb estão na mesma pasta do index.html,
+        com o ponto no nome e não underscore. Os chips e os gráficos abaixo
+        continuam funcionando.
+      </div>
+    );
+  }
+
+  return (
+    <div className="dz-corpo">
+      {corpo}
+      <div className="dz-corpo-cap">{legenda}</div>
+    </div>
+  );
+}
+
+/* Encerradas fora dos chips: viram lista de uma linha, "Regiao - data".
+   Chip so abre e fecha. Clicar num item abre o questionario daquela dor,
+   com todos os graficos e avaliacoes que ela teve. */
+function DzEncerradas({ fins, sel, aberto, onToggle, onPick }) {
+  if (!fins.length) return null;
+  return (
+    <>
+      <div className="dz-chips">
+        <button className={"dz-chip" + (aberto ? " on" : "")} onClick={onToggle}>
+          {aberto ? "ocultar encerradas" : "+ " + fins.length + " encerrada(s)"}
+        </button>
+      </div>
+      {aberto && (
+        <div className="lista dz-fims">
+          {fins.map(d => {
+            const quando = d.resolvida_em || d.inicio_em;
+            return (
+              <div className={"item" + (d.id === sel ? " on" : "")} key={d.id}
+                onClick={() => onPick(d.id)}>
+                <span className="enm">{dzRotulo(d)}</span>
+                <span className="etg">
+                  {quando ? dBR(quando) : "sem data"}
+                  {d.resolvida_em ? "" : " · inicio"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
 function PainelDores({ aluno }) {
   const [dores, setDores] = useState(null);
   const [cks, setCks]     = useState([]);
@@ -2028,6 +2331,7 @@ function PainelDores({ aluno }) {
   const [rets, setRets]   = useState([]);
   const [avals, setAvals] = useState([]);
   const [avDor, setAvDor] = useState([]);
+  const [regs, setRegs]   = useState([]);
   const [flags, setFlags] = useState([]);
   const [sel, setSel]     = useState("");
   const [avSel, setAvSel] = useState("");
@@ -2037,7 +2341,8 @@ function PainelDores({ aluno }) {
 
   const carregar = useCallback(async () => {
     setErro("");
-    const [d, c, s, r, a, ad, rf] = await Promise.all([
+    dzConferirRegioes();
+    const [d, c, s, r, a, ad, rf, rg] = await Promise.all([
       sb.from("dores")
         .select("id, regiao, vista, apelido, inicio_em, temporalidade, ativa, resolvida_em")
         .eq("aluno_id", aluno.id).order("criado_em"),
@@ -2056,12 +2361,18 @@ function PainelDores({ aluno }) {
         .select("avaliacao_id, dor_id, ordem, temporalidade, dor_agora, sofrimento, limitacao, mecanismo")
         .eq("aluno_id", aluno.id),
       sb.from("red_flags").select("id, avaliacao_id, sinais, criado_em")
-        .eq("aluno_id", aluno.id).order("criado_em", { ascending: false })
+        .eq("aluno_id", aluno.id).order("criado_em", { ascending: false }),
+      /* toda regiao que o aluno pintou, com intensidade. E a unica tabela que
+         cobre regiao SEM dor acompanhada - avaliacao_dores so tem as 1-3. */
+      sb.from("avaliacao_regioes").select("avaliacao_id, regiao, vista, intensidade")
+        .eq("aluno_id", aluno.id)
     ]);
-    const e = d.error || c.error || s.error || r.error || a.error || ad.error || rf.error;
+    const e = d.error || c.error || s.error || r.error || a.error || ad.error ||
+              rf.error || rg.error;
     if (e) { setErro(e.message); setDores([]); return; }
     setCks(c.data || []); setSems(s.data || []); setRets(r.data || []);
     setAvals(a.data || []); setAvDor(ad.data || []); setFlags(rf.data || []);
+    setRegs(rg.data || []);
     const lista = d.data || [];
     setDores(lista);
     const ativa = lista.find(x => x.ativa);
@@ -2105,8 +2416,32 @@ function PainelDores({ aluno }) {
 
   const ativas = dores.filter(d => d.ativa);
   const fins   = dores.filter(d => !d.ativa);
-  const visiveis = verFim ? dores : (ativas.length ? ativas : dores);
-  const dor = dores.find(d => d.id === sel) || visiveis[0] || dores[0];
+  /* Encerrada NUNCA entra por fallback. O codigo antigo era
+       verFim ? dores : (ativas.length ? ativas : dores)
+     e o ultimo `: dores` era o bug: aluno sem dor ativa caia na lista
+     inteira, entao "ocultar encerradas" nao ocultava coisa nenhuma.
+     Agora os chips do topo sao so as ativas; encerrada so aparece se voce
+     abrir a lista e clicar nela. */
+  const visiveis = ativas;
+  const dor = dores.find(d => d.id === sel) || ativas[0] || null;
+
+  const corpo = dzNotasCorpo(dores, cks, regs, avals, dISO(new Date()));
+  const acompanhadas = ativas.map(d => d.regiao);
+
+  if (!dor) return (
+    <div>
+      <div className="dz-nada">
+        <b>Nenhuma dor ativa</b>
+        {aluno.nome} nao tem queixa em aberto. O historico das encerradas
+        continua aqui embaixo.
+      </div>
+      <DzCorpo notas={corpo.notas} fonte={corpo.fonte}
+        acompanhadas={acompanhadas} ativa={null} />
+      <DzEncerradas fins={fins} sel={sel} aberto={verFim}
+        onToggle={() => setVerFim(v => !v)}
+        onPick={id => { setSel(id); setAvSel(""); }} />
+    </div>
+  );
 
   /* ---------- avaliacoes desta dor ----------
      avaliacao_dores.ordem so aceita 1 ou 2: no maximo DUAS dores indice por
@@ -2264,12 +2599,14 @@ function PainelDores({ aluno }) {
             {dzRotulo(d)}
           </button>
         ))}
-        {fins.length > 0 && (
-          <button className="dz-chip" onClick={() => setVerFim(v => !v)}>
-            {verFim ? "ocultar encerradas" : "+ " + fins.length + " encerrada(s)"}
-          </button>
-        )}
       </div>
+
+      <DzCorpo notas={corpo.notas} fonte={corpo.fonte}
+        acompanhadas={acompanhadas} ativa={dor ? dor.regiao : null} />
+
+      <DzEncerradas fins={fins} sel={sel} aberto={verFim}
+        onToggle={() => setVerFim(v => !v)}
+        onPick={id => { setSel(id); setAvSel(""); }} />
 
       {subt.length > 0 && (
         <div className="dz-sub"><b>{dzRotulo(dor)}</b> · {subt.join(" · ")}</div>
@@ -5154,7 +5491,7 @@ function evPontos(sessoes, ehIso) {
       if (v == null) return;
       out.push({
         rot: dBR(ses.data).slice(0, 5) +
-             (ses.series.length > 1 ? " \u00b7 " + l.serieN + "\u00aa" : ""),
+             (ses.series.length > 1 ? " · " + l.serieN + "ª" : ""),
         carga: c, segundos: ehIso ? seg : null,
         volume: (c != null && r != null) ? c * r : null,
         intensidade: l.intensidade, dor: l.dor
@@ -5234,9 +5571,9 @@ function PainelEvolucao({ aluno }) {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  /* logs por exerc\u00edcio, cardio fora. O agrupamento roda sobre TODOS os
-     exerc\u00edcios do aluno, n\u00e3o s\u00f3 os da fase atual: o hist\u00f3rico atravessa fases
-     dentro do aluno (regra do App), ent\u00e3o a fase nova nasce com o passado junto. */
+  /* logs por exercício, cardio fora. O agrupamento roda sobre TODOS os
+     exercícios do aluno, não só os da fase atual: o histórico atravessa fases
+     dentro do aluno (regra do App), então a fase nova nasce com o passado junto. */
   const { grupos, porEx, porGrupo } = useMemo(() => {
     if (!base) return { grupos: [], porEx: new Map(), porGrupo: new Map() };
     const porEx = new Map();
@@ -5264,7 +5601,7 @@ function PainelEvolucao({ aluno }) {
     return out;
   }, [porEx]);
 
-  /* ---- grade: treinos da fase atual, exerc\u00edcios na ordem da prescri\u00e7\u00e3o ---- */
+  /* ---- grade: treinos da fase atual, exercícios na ordem da prescrição ---- */
   const grade = useMemo(() => {
     if (!base) return [];
     return base.treinos
@@ -5339,9 +5676,9 @@ function PainelEvolucao({ aluno }) {
   if (!gruposComLog.length && !grade.length) return (
     <div className="dz-nada">
       <b>Nada para mostrar ainda</b>
-      {aluno.nome} n\u00e3o tem fase em vigor nem log de muscula\u00e7\u00e3o ou isometria.
-      Cardio n\u00e3o entra aqui \u2014 ele tem hist\u00f3rico pr\u00f3prio e misturar os dois inventa
-      progress\u00e3o que n\u00e3o existe.
+      {aluno.nome} não tem fase em vigor nem log de musculação ou isometria.
+      Cardio não entra aqui — ele tem histórico próprio e misturar os dois inventa
+      progressão que não existe.
     </div>
   );
 
@@ -5355,14 +5692,14 @@ function PainelEvolucao({ aluno }) {
           <Combobox
             opcoes={gruposComLog.map(g => ({
               value: g.key,
-              label: g.nome + (g.iso ? " \u00b7 isometria" : "") + (g.ambiguo ? " \u00b7 \u26a0" : ""),
-              grupo: g.iso ? "Isometria" : "Muscula\u00e7\u00e3o"
+              label: g.nome + (g.iso ? " · isometria" : "") + (g.ambiguo ? " · ⚠" : ""),
+              grupo: g.iso ? "Isometria" : "Musculação"
             }))}
             value={sel} onChange={v => setSel(v || "")}
-            placeholder={"Buscar exerc\u00edcio (" + gruposComLog.length + " com registro)"} />
+            placeholder={"Buscar exercício (" + gruposComLog.length + " com registro)"} />
         </div>
         {sel && (
-          <button className="btn-sec" onClick={() => setSel("")}>\u2190 Voltar \u00e0 grade</button>
+          <button className="btn-sec" onClick={() => setSel("")}>← Voltar à grade</button>
         )}
       </div>
 
@@ -5373,15 +5710,15 @@ function PainelEvolucao({ aluno }) {
           {grupo.ambiguo && (
             <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
               color: "#f0a35e" }}>
-              \u26a0\ufe0f Este grupo junta {grupo.ids.size} ids de cat\u00e1logo diferentes com o mesmo
-              nome. A regra do App n\u00e3o \u00e9 transitiva e aqui ela foi fechada, ent\u00e3o o
-              gr\u00e1fico pode estar somando mais hist\u00f3rico do que a tela do aluno mostra.
+              ⚠️ Este grupo junta {grupo.ids.size} ids de catálogo diferentes com o mesmo
+              nome. A regra do App não é transitiva e aqui ela foi fechada, então o
+              gráfico pode estar somando mais histórico do que a tela do aluno mostra.
             </div>
           )}
 
           {variantes.length > 1 && (
             <>
-              <div className="dz-tit">Variante \u00b7 aparelho</div>
+              <div className="dz-tit">Variante · aparelho</div>
               <div className="dz-chips">
                 {variantes.map(v => (
                   <button key={v || "__p"} className={"dz-chip" + ((vari || "") === v ? " on" : "")}
@@ -5393,9 +5730,9 @@ function PainelEvolucao({ aluno }) {
 
           {adesao && (
             <div className="ev-ad">
-              <div><b>{adesao.registradas}/{adesao.prescritas}</b>s\u00e9ries registradas</div>
-              <div><b>{adesao.bateu}</b>atingiram o m\u00ednimo</div>
-              <div><b>{adesao.sessoes}</b>sess\u00f5es</div>
+              <div><b>{adesao.registradas}/{adesao.prescritas}</b>séries registradas</div>
+              <div><b>{adesao.bateu}</b>atingiram o mínimo</div>
+              <div><b>{adesao.sessoes}</b>sessões</div>
             </div>
           )}
 
@@ -5413,26 +5750,26 @@ function PainelEvolucao({ aluno }) {
 
           {!RC ? (
             <div className="dz-nada">
-              <b>Biblioteca de gr\u00e1ficos n\u00e3o carregou</b>
-              O Recharts vem de CDN e n\u00e3o respondeu. A lista de sess\u00f5es abaixo
+              <b>Biblioteca de gráficos não carregou</b>
+              O Recharts vem de CDN e não respondeu. A lista de sessões abaixo
               continua funcionando.
             </div>
           ) : pontos.length < 2 ? (
             <div className="dz-nada">
               <b>Poucos pontos para desenhar</b>
-              Esta variante tem {pontos.length} s\u00e9rie(s) com valor. O gr\u00e1fico precisa de duas.
+              Esta variante tem {pontos.length} série(s) com valor. O gráfico precisa de duas.
             </div>
           ) : (
             <div className="dz-wrap">
               <EvGrafico pontos={pontos} met={met} altura={230} eixos />
               <div className="dz-leg">
-                <span>um ponto por s\u00e9rie \u00b7 variante <b>{evVar(vari)}</b></span>
+                <span>um ponto por série · variante <b>{evVar(vari)}</b></span>
                 <span>cor do ponto = dor articular relatada</span>
               </div>
             </div>
           )}
 
-          <div className="dz-tit">Sess\u00f5es \u00b7 {evVar(vari)}</div>
+          <div className="dz-tit">Sessões · {evVar(vari)}</div>
           {[...sessoes].reverse().slice(0, 20).map(ses => {
             const vals = ses.series.map(l => valorDe(l, ehIso)).filter(v => v != null);
             return (
@@ -5441,7 +5778,7 @@ function PainelEvolucao({ aluno }) {
                   <span>{dBR(ses.data)}</span>
                   <em>
                     {ses.dup && <span style={{ color: "var(--warn)" }}>
-                      \u26a0 contador travado \u00b7 </span>}
+                      ⚠ contador travado · </span>}
                     {vals.length
                       ? "melhor do dia " + Math.max(...vals) + (ehIso ? "s" : "")
                       : "sem valor"}
@@ -5450,14 +5787,14 @@ function PainelEvolucao({ aluno }) {
                 <div className="sr">
                   {ses.series.map(l => (
                     <span key={l.id}>
-                      <i>{l.serieN}\u00aa</i>
+                      <i>{l.serieN}ª</i>
                       {ehIso ? (
                         <b className={l.extra && l.extra.completo ? "" : "no"}>
-                          {l.extra && l.extra.segundos != null ? l.extra.segundos + "s" : "\u2014"}
-                          {l.extra && l.extra.completo ? " \u2713" : ""}
+                          {l.extra && l.extra.segundos != null ? l.extra.segundos + "s" : "—"}
+                          {l.extra && l.extra.completo ? " ✓" : ""}
                         </b>
                       ) : (
-                        <b>{l.carga || "\u2014"}{l.reps ? " \u00d7 " + l.reps : ""}</b>
+                        <b>{l.carga || "—"}{l.reps ? " × " + l.reps : ""}</b>
                       )}
                     </span>
                   ))}
@@ -5466,17 +5803,17 @@ function PainelEvolucao({ aluno }) {
             );
           })}
           {sessoes.length > 20 && (
-            <div className="ed-cnt">+{sessoes.length - 20} sess\u00e3o(\u00f5es) mais antiga(s)</div>
+            <div className="ed-cnt">+{sessoes.length - 20} sessão(ões) mais antiga(s)</div>
           )}
 
           {suspeitas.length > 0 && (
             <div className="box" style={{ marginTop: 14 }}>
-              <h2>Cargas amb\u00edguas ({suspeitas.length})</h2>
+              <h2>Cargas ambíguas ({suspeitas.length})</h2>
               <p>
-                <code>logs.carga</code> \u00e9 texto livre. A leitura num\u00e9rica \u00e9 a mesma do App
-                \u2014 e ela engole coisa em sil\u00eancio: <code>20/20</code> vira 20, e unilateral
-                passa a valer metade do volume sem avisar. O n\u00famero continua o mesmo do
-                App; o que n\u00e3o deu para ler direito fica nomeado.
+                <code>logs.carga</code> é texto livre. A leitura numérica é a mesma do App
+                — e ela engole coisa em silêncio: <code>20/20</code> vira 20, e unilateral
+                passa a valer metade do volume sem avisar. O número continua o mesmo do
+                App; o que não deu para ler direito fica nomeado.
               </p>
               <div className="lista">
                 {suspeitas.map(x => (
@@ -5484,7 +5821,7 @@ function PainelEvolucao({ aluno }) {
                     <span className="eid">{dBR(x.data)}</span>
                     <span className="enm">{x.texto}</span>
                     <span className="etg">
-                      lido como <b>{x.lido == null ? "nada" : x.lido}</b> \u00b7 {x.motivo}
+                      lido como <b>{x.lido == null ? "nada" : x.lido}</b> · {x.motivo}
                     </span>
                   </div>
                 ))}
@@ -5495,8 +5832,8 @@ function PainelEvolucao({ aluno }) {
       ) : !grade.length ? (
         <div className="dz-nada">
           <b>Sem fase em vigor</b>
-          {aluno.nome} tem hist\u00f3rico, mas nenhuma fase ativa hoje \u2014 a grade mostra os
-          treinos da fase atual. Usa a busca acima para abrir qualquer exerc\u00edcio.
+          {aluno.nome} tem histórico, mas nenhuma fase ativa hoje — a grade mostra os
+          treinos da fase atual. Usa a busca acima para abrir qualquer exercício.
         </div>
       ) : (
         <>
@@ -5527,21 +5864,21 @@ function PainelEvolucao({ aluno }) {
       )}
 
       <div className="pl-hint" style={{ marginTop: 16 }}>
-        A grade mostra os treinos da <b>fase em vigor</b>, mas cada gr\u00e1fico traz o
-        hist\u00f3rico inteiro do exerc\u00edcio dentro deste aluno \u2014 sen\u00e3o fase nova nasceria
-        com todos os cart\u00f5es vazios. Cardio fica de fora: ele tem hist\u00f3rico pr\u00f3prio.
+        A grade mostra os treinos da <b>fase em vigor</b>, mas cada gráfico traz o
+        histórico inteiro do exercício dentro deste aluno — senão fase nova nasceria
+        com todos os cartões vazios. Cardio fica de fora: ele tem histórico próprio.
         <br />
-        Cada cart\u00e3o mostra <b>uma variante s\u00f3</b>, a do registro mais recente com valor.
+        Cada cartão mostra <b>uma variante só</b>, a do registro mais recente com valor.
         Comparar carga entre aparelhos diferentes mostraria queda onde houve troca de
-        m\u00e1quina \u2014 quando h\u00e1 mais de uma, o cart\u00e3o avisa e a tela de detalhe deixa
-        voc\u00ea trocar. Um ponto por s\u00e9rie: na pir\u00e2mide a linha sobe e desce dentro da
-        mesma sess\u00e3o, e isso \u00e9 o comportamento certo.
+        máquina — quando há mais de uma, o cartão avisa e a tela de detalhe deixa
+        você trocar. Um ponto por série: na pirâmide a linha sobe e desce dentro da
+        mesma sessão, e isso é o comportamento certo.
       </div>
     </div>
   );
 }
 
-/* cart\u00e3o da grade: uma variante, um gr\u00e1fico pequeno, sem eixo Y carregado */
+/* cartão da grade: uma variante, um gráfico pequeno, sem eixo Y carregado */
 function EvCard({ item, logsDe, onAbrir }) {
   const g = item.grupo;
   const iso = g && g.iso;
@@ -5563,12 +5900,12 @@ function EvCard({ item, logsDe, onAbrir }) {
       </div>
       <div className="mt">
         {iso ? "isometria" : (item.ex.metodo && item.ex.metodo.nome) || item.ex.series || ""}
-        {nVar > 1 && <em> \u00b7 {evVar(vari)} (+{nVar - 1})</em>}
+        {nVar > 1 && <em> · {evVar(vari)} (+{nVar - 1})</em>}
       </div>
       {!RC || pts.length < 2 ? (
         <div className="vazio">
           {pts.length === 0 ? "sem registro ainda"
-            : pts.length + " registro(s) \u2014 falta ponto para a linha"}
+            : pts.length + " registro(s) — falta ponto para a linha"}
         </div>
       ) : (
         <EvGrafico pontos={pts} met={met} altura={104} />
@@ -5577,8 +5914,8 @@ function EvCard({ item, logsDe, onAbrir }) {
   );
 }
 
-/* um s\u00f3 gr\u00e1fico para grade e detalhe: mesma regra nos dois, nunca dois
-   desenhos diferentes do mesmo n\u00famero. `type="linear"` de prop\u00f3sito \u2014 curva
+/* um só gráfico para grade e detalhe: mesma regra nos dois, nunca dois
+   desenhos diferentes do mesmo número. `type="linear"` de propósito — curva
    suave em 3 ou 4 pontos inventa subida onde houve degrau. */
 function EvGrafico({ pontos, met, altura, eixos }) {
   const RC = window.Recharts;
