@@ -537,6 +537,7 @@
   .mt-tag.flm{background:#2d1618;color:#f5a3a3}
   .mt-tag.aud{background:#0f2a2e;color:var(--accent)}
   .mt-tag.avl{background:#241a12;color:var(--warn)}
+  .mt-tag.iso{background:#2b1a24;color:#ff9ecb}
   .mt-det{margin-left:24px;margin-top:5px;padding:7px 9px;background:#0b1416;
     border-left:2px solid #1f3a3d;border-radius:0 5px 5px 0;font-size:11px;
     color:#a8c4c7;line-height:1.65;font-family:ui-monospace,monospace}
@@ -947,6 +948,22 @@
     padding:2px 8px 0}
   .dz-leg span{display:flex;align-items:center;gap:5px}
   .dz-leg i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  /* ---- Evolucao de Carga ---- */
+  .ev-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .ev-bar>div:first-child{flex:1;min-width:190px}
+  .ev-ses{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:9px 12px;margin-bottom:7px;font-size:12px}
+  .ev-ses .dt{color:var(--accent);font-size:11px;font-family:ui-monospace,monospace;
+    display:flex;justify-content:space-between;gap:10px;margin-bottom:4px}
+  .ev-ses .dt em{font-style:normal;color:var(--mut)}
+  .ev-ses .sr{display:flex;gap:12px;flex-wrap:wrap;color:#c8d6d8}
+  .ev-ses .sr span i{font-style:normal;color:#4a5a5d;font-size:10px;margin-right:3px}
+  .ev-ses .sr b{font-weight:600}
+  .ev-ses .sr .no{color:var(--warn)}
+  .ev-ad{display:flex;gap:16px;flex-wrap:wrap;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:12px}
+  .ev-ad div{font-size:12px;color:var(--mut)}
+  .ev-ad div b{display:block;font-size:17px;color:var(--accent);font-weight:700}
   /* datas editaveis no card da fase */
   .mt-fase .per{display:flex;align-items:center;gap:6px}
   .mt-fase .per input[type=date]{width:auto;flex:1;min-width:0;margin-bottom:0;
@@ -965,7 +982,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useEffect, useCallback } = React;
+const { useState, useEffect, useCallback, useMemo } = React;
 
 /* ============ CONFIG ============ */
 const SUPABASE_URL      = "https://lbnemzhwibcarhkaifoy.supabase.co";
@@ -2648,6 +2665,9 @@ function DrawerAnamnese({ aluno, onFechar }) {
 
         <div className="dr-acoes">
           <button className="btn-sec" onClick={() => setModo("entradas")}>Entradas</button>
+          <button className="btn-sec" onClick={() => setModo("evolucao")}>
+            Evolução de Carga
+          </button>
           <button className="btn-sec" onClick={() => setModo("secoes")}>Texto original</button>
           <button className="btn-sec" onClick={() => setModo("editar")}>
             Editar{sujo ? " •" : ""}
@@ -2675,7 +2695,7 @@ function DrawerAnamnese({ aluno, onFechar }) {
           {erro && <div className="err">{erro}</div>}
           {aviso && <div className="ok-msg">{aviso}</div>}
 
-          {temEnt && modo !== "entradas" && modo !== "hist" && (
+          {temEnt && modo !== "entradas" && modo !== "hist" && modo !== "evolucao" && (
             <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
               color: "#f0a35e" }}>
               ⚠️ Este aluno já foi migrado. As <b>Entradas</b> são a fonte de verdade —
@@ -2685,6 +2705,8 @@ function DrawerAnamnese({ aluno, onFechar }) {
 
           {modo === "entradas" ? (
             <PainelEntradas aluno={aluno} />
+          ) : modo === "evolucao" ? (
+            <PainelEvolucao aluno={aluno} />
           ) : modo === "aparelhos" ? (
             <PainelAparelhosAluno aluno={aluno} />
           ) : modo === "academias" ? (
@@ -5026,6 +5048,433 @@ function dHora(iso) {
       .replace(":", "h");
 }
 
+
+/* ---------- Evolução de Carga ----------
+   Espelho da tela `Evolution` do App Idealis, com as regras que ele já usa.
+   O que foi copiado de lá, e por quê:
+
+   1. VARIANTE é filtro obrigatório. O App nunca mistura carga de aparelhos
+      diferentes; sem isso o gráfico mostra queda onde houve troca de máquina.
+      A variante inicial é a do ÚLTIMO log que tem valor, não a do primeiro chip.
+   2. Um ponto POR SÉRIE, em ordem cronológica. Numa pirâmide a linha sobe e
+      desce dentro da mesma sessão: isso é desejado, não é ruído.
+   3. `logs.serie` nunca é exibido cru. Enquanto o contador do App não avança
+      sozinho na isometria, três séries podem chegar com serie = 1. Ordena por
+      (serie, id) e reetiqueta por posição num campo derivado.
+   4. Cardio fica fora (extra.tipo = 'cardio'): ele tem `segundos` e `completo`
+      iguais aos da isometria, e entraria como prancha de 20 minutos.
+   5. Casamento de exercício: se os DOIS lados têm cardapio_id, compara só o id;
+      se qualquer um for null, cai no nome normalizado. É ou-exclusivo, não
+      "id, senão nome". A regra não é transitiva, então agrupar pode juntar
+      mais do que o App juntaria — quando isso acontece o grupo vem marcado.
+
+   O que a Dashboard acrescenta e o App não tem: segundos de isometria no
+   gráfico, os dois números de adesão separados, e a lista de cargas ambíguas. */
+
+const EV_COR = { carga: "#00c9cc", segundos: "#00c9cc", volume: "#9b7cff",
+                 intensidade: "#f1d94a", dor: "#ff5c6c" };
+const EV_MET = {
+  carga:       { rot: "Carga (kg)",      dom: null },
+  segundos:    { rot: "Tempo (s)",       dom: null },
+  volume:      { rot: "Volume (kg×reps)", dom: null },
+  intensidade: { rot: "Esforço",         dom: [0, 10] },
+  dor:         { rot: "Dor articular",   dom: [0, 10] }
+};
+const evCorDor = d => d == null ? EV_COR.carga
+  : d <= 3 ? "#7fd858" : d <= 6 ? "#f0d35e" : d <= 8 ? "#f0855e" : "#e05c5c";
+const evVar = v => (v == null || v === "") ? "padrão" : v;
+
+/* regra `bate` do App, com String() nos dois lados */
+function evCasa(a, b) {
+  if (a.cardapio_id != null && b.cardapio_id != null)
+    return String(a.cardapio_id) === String(b.cardapio_id);
+  return evNorm(a.nome) === evNorm(b.nome);
+}
+
+/* une exercícios que o App consideraria o mesmo histórico */
+function evAgrupar(exs) {
+  const pai = exs.map((_, i) => i);
+  const acha = i => { while (pai[i] !== i) { pai[i] = pai[pai[i]]; i = pai[i]; } return i; };
+  for (let i = 0; i < exs.length; i++) {
+    for (let j = i + 1; j < exs.length; j++) {
+      if (evCasa(exs[i], exs[j])) { const a = acha(i), b = acha(j); if (a !== b) pai[a] = b; }
+    }
+  }
+  const mapa = new Map();
+  exs.forEach((ex, i) => {
+    const r = acha(i);
+    if (!mapa.has(r)) mapa.set(r, { key: "g" + r, exs: [], ids: new Set(), iso: null });
+    const g = mapa.get(r);
+    g.exs.push(ex);
+    if (ex.cardapio_id != null) g.ids.add(String(ex.cardapio_id));
+    if (!g.iso && isoDe(ex)) g.iso = isoDe(ex);
+  });
+  return [...mapa.values()].map(g => ({
+    ...g,
+    nome: g.exs[0].nome,
+    ambiguo: g.ids.size > 1,
+    exIds: new Set(g.exs.map(e => e.id))
+  })).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
+/* logs -> sessões (data + variante), séries ordenadas e reetiquetadas */
+function evSessoes(logs) {
+  const mapa = new Map();
+  logs.forEach(l => {
+    const k = String(l.data).slice(0, 10) + "|" + (l.variante || "");
+    if (!mapa.has(k)) mapa.set(k, { data: String(l.data).slice(0, 10),
+                                    variante: l.variante || "", series: [] });
+    mapa.get(k).series.push(l);
+  });
+  return [...mapa.values()]
+    .map(s => {
+      s.series.sort((a, b) => ((a.serie || 99) - (b.serie || 99)) ||
+                              String(a.id).localeCompare(String(b.id)));
+      s.series = s.series.map((l, i) => ({ ...l, serieN: l.serie != null ? l.serie : i + 1 }));
+      /* a regra acima é a do App, copiada inteira: quando `serie` vem
+         preenchido ele mantém o valor. Enquanto o contador da isometria não
+         avançar sozinho no App, três séries chegam todas como serie = 1 e as
+         três são rotuladas "1ª". Não corrijo o rótulo aqui (criaria um segundo
+         número para a mesma série); marco a sessão para você ver o que é. */
+      s.dup = new Set(s.series.map(l => l.serieN)).size < s.series.length;
+      return s;
+    })
+    .sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : 0);
+}
+
+function PainelEvolucao({ aluno }) {
+  const [base, setBase]   = useState(null);
+  const [erro, setErro]   = useState("");
+  const [sel, setSel]     = useState("");
+  const [vari, setVari]   = useState(null);
+  const [met, setMet]     = useState("carga");
+
+  const carregar = useCallback(async () => {
+    setErro(""); setBase(null); setSel(""); setVari(null);
+    const t = await sb.from("treinos").select("id").eq("aluno_id", aluno.id);
+    if (t.error) { setErro(t.error.message); setBase({ exs: [], logs: [] }); return; }
+    const tids = (t.data || []).map(x => x.id);
+    if (!tids.length) { setBase({ exs: [], logs: [] }); return; }
+
+    const exs = [];
+    for (let i = 0; i < tids.length; i += 60) {
+      const e = await sb.from("exercicios")
+        .select("id, nome, cardapio_id, isometria, series, metodo, cardio")
+        .in("treino_id", tids.slice(i, i + 60));
+      if (e.error) { setErro(e.error.message); setBase({ exs: [], logs: [] }); return; }
+      exs.push(...(e.data || []));
+    }
+    const eids = exs.map(x => x.id);
+    const logs = [];
+    for (let i = 0; i < eids.length; i += 60) {
+      const l = await sb.from("logs").select("*").in("exercicio_id", eids.slice(i, i + 60));
+      if (l.error) { setErro(l.error.message); setBase({ exs, logs: [] }); return; }
+      logs.push(...(l.data || []));
+    }
+    setBase({ exs, logs });
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  /* só exercícios com log entram no seletor: lista de prescrição quem tem
+     é a aba Treinos, aqui interessa o que foi executado */
+  const { grupos, porEx } = useMemo(() => {
+    if (!base) return { grupos: [], porEx: new Map() };
+    const porEx = new Map();
+    base.logs.forEach(l => {
+      if (l.extra && l.extra.tipo === "cardio") return;   // cardio nunca entra
+      if (!porEx.has(l.exercicio_id)) porEx.set(l.exercicio_id, []);
+      porEx.get(l.exercicio_id).push(l);
+    });
+    return { grupos: evAgrupar(base.exs.filter(e => porEx.has(e.id))), porEx };
+  }, [base]);
+
+  const grupo = grupos.find(g => g.key === sel) || null;
+
+  const logsGrupo = useMemo(() => {
+    if (!grupo) return [];
+    const out = [];
+    grupo.exs.forEach(e => out.push(...(porEx.get(e.id) || [])));
+    return out;
+  }, [grupo, porEx]);
+
+  const ehIso = !!(grupo && grupo.iso);
+  const valorDe = l => ehIso
+    ? (l.extra && l.extra.segundos != null ? +l.extra.segundos : null)
+    : evNum(l.carga);
+
+  const variantes = useMemo(() => {
+    const v = new Map();
+    logsGrupo.forEach(l => {
+      const k = l.variante || "";
+      if (!v.has(k)) v.set(k, 0);
+      v.set(k, v.get(k) + 1);
+    });
+    return [...v.keys()];
+  }, [logsGrupo]);
+
+  /* variante inicial = a do último log COM valor, igual ao App */
+  useEffect(() => {
+    if (!grupo) { setVari(null); return; }
+    const comValor = logsGrupo.filter(l => valorDe(l) != null)
+      .sort((a, b) => String(a.data) < String(b.data) ? -1 : 1);
+    const ult = comValor.length ? comValor[comValor.length - 1]
+                                : logsGrupo[logsGrupo.length - 1];
+    setVari(ult ? (ult.variante || "") : "");
+    setMet(grupo.iso ? "segundos" : "carga");
+  }, [sel]);
+
+  const sessoes = useMemo(
+    () => evSessoes(logsGrupo.filter(l => (l.variante || "") === (vari || ""))),
+    [logsGrupo, vari]);
+
+  const pontos = useMemo(() => {
+    const out = [];
+    sessoes.forEach(ses => {
+      ses.series.forEach(l => {
+        const v = valorDe(l);
+        if (v == null) return;                 // ponto sem valor é descartado
+        const c = evNum(l.carga), r = evNum(l.reps);
+        out.push({
+          rot: dBR(ses.data).slice(0, 5) +
+               (ses.series.length > 1 ? " · " + l.serieN + "ª" : ""),
+          carga: c, segundos: ehIso && l.extra ? (+l.extra.segundos || null) : null,
+          volume: (c != null && r != null) ? c * r : null,
+          intensidade: l.intensidade, dor: l.dor
+        });
+      });
+    });
+    return out;
+  }, [sessoes, ehIso]);
+
+  /* adesão: os dois números separados. Denominador vem da PRESCRIÇÃO, nunca
+     dos logs — no App, "descartar" no fim da isometria não grava linha
+     nenhuma, então contar log contra log esconderia justamente quem desistiu. */
+  const adesao = useMemo(() => {
+    if (!ehIso) return null;
+    let prescritas = 0, registradas = 0, bateu = 0;
+    sessoes.forEach(ses => {
+      const ex = grupo.exs.find(e => ses.series.some(l => l.exercicio_id === e.id));
+      prescritas += (ex ? (nSeriesDe(ex) || ses.series.length) : ses.series.length);
+      registradas += ses.series.length;
+      bateu += ses.series.filter(l => l.extra && l.extra.completo === true).length;
+    });
+    return { prescritas, registradas, bateu, sessoes: sessoes.length };
+  }, [sessoes, ehIso, grupo]);
+
+  const suspeitas = useMemo(() => {
+    if (ehIso) return [];
+    const out = [];
+    sessoes.forEach(ses => ses.series.forEach(l => {
+      const m = cargaSuspeita(l.carga);
+      if (m) out.push({ id: l.id, data: ses.data, texto: String(l.carga),
+                        lido: evNum(l.carga), motivo: m });
+    }));
+    return out;
+  }, [sessoes, ehIso]);
+
+  if (erro) return <div className="err">{erro}</div>;
+  if (base === null) return <div className="msg">Carregando...</div>;
+
+  const RC = window.Recharts;
+  const { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } = RC || {};
+
+  if (!grupos.length) return (
+    <div className="dz-nada">
+      <b>Nenhuma carga registrada</b>
+      {aluno.nome} ainda não tem log de musculação ou isometria. Cardio não entra
+      aqui — ele tem histórico próprio e misturar os dois inventa progressão.
+    </div>
+  );
+
+  const opcM = ehIso ? ["segundos", "intensidade", "dor"]
+                     : ["carga", "volume", "intensidade", "dor"];
+  const cfg = EV_MET[met] || EV_MET.carga;
+
+  return (
+    <div>
+      <div className="ev-bar">
+        <div>
+          <Combobox
+            opcoes={grupos.map(g => ({
+              value: g.key,
+              label: g.nome + (g.iso ? " · isometria" : "") + (g.ambiguo ? " · ⚠" : ""),
+              grupo: g.iso ? "Isometria" : "Musculação"
+            }))}
+            value={sel} onChange={v => setSel(v || "")}
+            placeholder={"Escolhe o exercício (" + grupos.length + " com registro)"} />
+        </div>
+      </div>
+
+      {!grupo ? (
+        <div className="dz-nada">
+          <b>Escolhe um exercício</b>
+          São {grupos.length} com pelo menos um registro. O histórico atravessa
+          fases dentro deste aluno, nunca entre alunos.
+        </div>
+      ) : (
+        <>
+          {grupo.ambiguo && (
+            <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
+              color: "#f0a35e" }}>
+              ⚠️ Este grupo junta {grupo.ids.size} ids de catálogo diferentes com o mesmo
+              nome. A regra do App não é transitiva e aqui ela foi fechada, então o
+              gráfico pode estar somando mais histórico do que a tela do aluno mostra.
+              Vale unificar o vínculo de catálogo desses exercícios.
+            </div>
+          )}
+
+          {variantes.length > 1 && (
+            <>
+              <div className="dz-tit">Variante · aparelho</div>
+              <div className="dz-chips">
+                {variantes.map(v => (
+                  <button key={v || "__p"} className={"dz-chip" + ((vari || "") === v ? " on" : "")}
+                    onClick={() => setVari(v)}>{evVar(v)}</button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {adesao && (
+            <div className="ev-ad">
+              <div><b>{adesao.registradas}/{adesao.prescritas}</b>séries registradas</div>
+              <div><b>{adesao.bateu}</b>atingiram o mínimo</div>
+              <div><b>{adesao.sessoes}</b>sessões</div>
+            </div>
+          )}
+
+          <div className="dz-chips">
+            {opcM.map(m => (
+              <button key={m} className={"dz-chip" + (met === m ? " on" : "")}
+                onClick={() => setMet(m)}
+                style={met === m ? { borderColor: EV_COR[m], color: EV_COR[m] } : {}}>
+                <i className="cdot" style={{ background: EV_COR[m] }} />
+                {EV_MET[m].rot}
+              </button>
+            ))}
+          </div>
+
+          {!RC ? (
+            <div className="dz-nada">
+              <b>Biblioteca de gráficos não carregou</b>
+              O Recharts vem de CDN e não respondeu. A lista de sessões abaixo
+              continua funcionando.
+            </div>
+          ) : pontos.length < 2 ? (
+            <div className="dz-nada">
+              <b>Poucos pontos para desenhar</b>
+              Esta variante tem {pontos.length} série(s) com valor. O gráfico precisa
+              de duas.
+            </div>
+          ) : (
+            <div className="dz-wrap">
+              <ResponsiveContainer width="100%" height={230}>
+                <LineChart data={pontos} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
+                  <CartesianGrid stroke="#1b2427" vertical={false} />
+                  <XAxis dataKey="rot" tick={{ fill: "#7d9298", fontSize: 10 }}
+                    interval="preserveStartEnd" />
+                  <YAxis width={40} domain={cfg.dom || ["auto", "auto"]}
+                    ticks={cfg.dom ? [0, 5, 10] : undefined}
+                    tick={{ fill: "#7d9298", fontSize: 11 }} />
+                  <Tooltip contentStyle={{ background: "#0f1719", border: "1px solid #243336",
+                    borderRadius: 8, fontSize: 12 }}
+                    labelStyle={{ color: "#7d9298" }}
+                    formatter={v => [v, cfg.rot]} />
+                  <Line type="monotone" dataKey={met} stroke={EV_COR[met]} connectNulls
+                    dot={({ cx, cy, payload }) => (
+                      <circle cx={cx} cy={cy} r={cy == null ? 0 : 3.5}
+                        fill={payload && payload.dor != null
+                          ? evCorDor(payload.dor) : EV_COR[met]}
+                        stroke="none" />
+                    )}
+                    activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="dz-leg">
+                <span>um ponto por série · variante <b>{evVar(vari)}</b></span>
+                <span>cor do ponto = dor articular relatada</span>
+              </div>
+            </div>
+          )}
+
+          <div className="dz-tit">Sessões · {evVar(vari)}</div>
+          {[...sessoes].reverse().slice(0, 20).map(ses => {
+            const melhor = ses.series.map(valorDe).filter(v => v != null);
+            return (
+              <div className="ev-ses" key={ses.data + ses.variante}>
+                <div className="dt">
+                  <span>{dBR(ses.data)}</span>
+                  <em>
+                    {ses.dup && <span style={{ color: "var(--warn)" }}>
+                      ⚠ contador travado · </span>}
+                    {melhor.length
+                      ? "melhor do dia " + Math.max(...melhor) + (ehIso ? "s" : "")
+                      : "sem valor"}
+                  </em>
+                </div>
+                <div className="sr">
+                  {ses.series.map(l => (
+                    <span key={l.id}>
+                      <i>{l.serieN}ª</i>
+                      {ehIso ? (
+                        <b className={l.extra && l.extra.completo ? "" : "no"}>
+                          {l.extra && l.extra.segundos != null ? l.extra.segundos + "s" : "—"}
+                          {l.extra && l.extra.completo ? " ✓" : ""}
+                        </b>
+                      ) : (
+                        <b>{l.carga || "—"}{l.reps ? " × " + l.reps : ""}</b>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          {sessoes.length > 20 && (
+            <div className="ed-cnt">+{sessoes.length - 20} sessão(ões) mais antiga(s)</div>
+          )}
+
+          {suspeitas.length > 0 && (
+            <div className="box" style={{ marginTop: 14 }}>
+              <h2>Cargas ambíguas ({suspeitas.length})</h2>
+              <p>
+                <code>logs.carga</code> é texto livre. A leitura numérica é a mesma do
+                App — e ela engole coisa em silêncio: <code>20/20</code> vira 20, e
+                unilateral passa a valer metade do volume sem avisar. Aqui o número
+                continua o mesmo do App; o que não deu para ler direito fica nomeado.
+              </p>
+              <div className="lista">
+                {suspeitas.map(x => (
+                  <div className="item" key={x.id}>
+                    <span className="eid">{dBR(x.data)}</span>
+                    <span className="enm">{x.texto}</span>
+                    <span className="etg">
+                      lido como <b>{x.lido == null ? "nada" : x.lido}</b> · {x.motivo}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="pl-hint" style={{ marginTop: 16 }}>
+        A <b>variante</b> é o aparelho: comparar carga entre máquinas diferentes
+        mostraria queda onde houve só troca de equipamento, então o filtro é
+        obrigatório — mesma regra da tela do aluno. Na pirâmide a linha sobe e
+        desce dentro da mesma sessão: é o comportamento certo, um ponto por série.
+        <br />
+        Em isometria a "carga" é o tempo, e os dois números de adesão são separados
+        de propósito: quem <b>descarta</b> no fim da isometria não deixa linha
+        nenhuma no banco, então só a proporção de "atingiu o mínimo" esconderia
+        quem desistiu antes de salvar. O App ainda não mostra nada disso ao aluno.
+      </div>
+    </div>
+  );
+}
+
 function PainelCorrecoes({ aluno, onContagem }) {
   const { toast, confirmar } = usarUI();
   const [lista, setLista]   = useState(null);
@@ -6037,6 +6486,55 @@ function parseSeries(txt) {
   return so ? { n: so[1], reps: "" } : { n: "", reps: String(txt || "").trim() };
 }
 
+/* ---------- Isometria ----------
+   Contrato fechado com o App Idealis em 14/09/2026. Divisao de papeis:
+     - quantos SEGUNDOS segurar  -> 100% do jsonb `isometria` = {min, max}
+     - quantas SERIES            -> 100% do texto `series`, lido pelo App com
+                                    /^\s*(\d+)\s*[x×]/ e exigindo 1..20
+
+   Gravar `isometria` sem `series` nesse formato NAO da erro no App: ele
+   degrada em silencio — some o anel de serie, o card vira botao "Feito", e as
+   tres series viram tres logs com serie = 1. Por isso montaSeriesIso e a UNICA
+   porta de entrada: nunca montar esse texto a mao.
+
+   Formato canonico, byte a byte igual ao App (confirmado em producao nos 6
+   exercicios ja prescritos): digitos + espaco + U+00D7 + espaco + min-max + aspa
+   reta.  Ex: '3 × 20-30"' */
+const ISO_FAIXAS = [[5,10],[10,15],[15,20],[20,25],[20,30],[30,40]];
+const isoRot = i => (i && i.min != null && i.max != null) ? (i.min + "-" + i.max + '"') : "";
+function isoDe(ex) {
+  const i = ex && ex.isometria;
+  return (i && i.min != null && i.max != null) ? { min: +i.min, max: +i.max } : null;
+}
+function montaSeriesIso(n, iso) {
+  const nn = Math.max(1, Math.min(20, parseInt(n, 10) || 1));
+  return nn + " × " + isoRot(iso);
+}
+
+/* ---------- Leitura de carga (espelho do App) ----------
+   numFrom do App, linha 3269. Copiada de proposito, bugs inclusos: "20/20"
+   vira 20 e "40,5,5" vira 40.5. Divergir daqui criaria um segundo numero para
+   a mesma carga. O que a Dashboard acrescenta nao e um parser diferente: e a
+   lista "Cargas ambiguas", que nomeia o que a funcao engoliu. */
+const evNum = c => {
+  const m = String(c == null ? "" : c).replace(",", ".").match(/[\d.]+/);
+  return m ? parseFloat(m[0]) : null;
+};
+/* norm do historico de carga PRESERVA acento. Nao confundir com normAcc,
+   que e das correcoes — sao regras diferentes de proposito. */
+const evNorm = t => (t || "").trim().toLowerCase();
+
+/* o que numFrom pode ter lido errado; null = confiavel */
+function cargaSuspeita(t) {
+  const x = String(t == null ? "" : t).trim();
+  if (!x) return null;
+  if (!/\d/.test(x)) return "sem número";
+  if (/\d\s*[\/+]\s*\d/.test(x)) return "dois valores";
+  if ((x.match(/,/g) || []).length > 1) return "vírgulas demais";
+  if (/\d\s*[-–aà]\s*\d/.test(x)) return "intervalo";
+  return null;
+}
+
 function Chips({ opcoes, valor, onPick, mini }) {
   return (
     <div className="chips">
@@ -6127,7 +6625,13 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
   const [verMet, setVerMet] = useState(false);
   const [erro, setErro]     = useState("");
   const [busy, setBusy]     = useState(false);
-  const [ehCard, setEhCard] = useState(!!(ex && ex.cardio));
+  /* tipo e uma escolha unica: os tres se excluem no banco e na tela do App,
+     que renderiza com precedencia cardio > isometria > metodo > texto. */
+  const [tipo, setTipo]     = useState(
+    (ex && ex.cardio) ? "cardio" : (isoDe(ex) ? "isometria" : "musculacao"));
+  const ehCard = tipo === "cardio";
+  const ehIso  = tipo === "isometria";
+  const [iso, setIso]       = useState(isoDe(ex));
   const [card, setCard]     = useState(
     (ex && ex.cardio) ? ex.cardio : { nome: "", repetir: 1, blocos: [] });
 
@@ -6163,10 +6667,40 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
     if (ehCard && !card.blocos.length) {
       setErro("Adiciona pelo menos um bloco de cardio."); return;
     }
+    if (ehIso && !iso) {
+      setErro("Escolhe a faixa de segundos da isometria."); return;
+    }
+    /* Sem contagem de séries na frente, o texto vira uma armadilha silenciosa:
+       a vw_exercicios_resolvidos lê n_texto com ^[^0-9]*([0-9]+), ou seja, o
+       PRIMEIRO número do campo. "8 a 12" entra no volume como 8 séries e
+       "AMRAP 10" como 10. Melhor barrar aqui do que inflar a tabela de volume. */
+    if (!ehCard && !metodo) {
+      const nn = parseInt(nSer, 10);
+      if (!(nn >= 1 && nn <= 20)) {
+        setErro("Preenche o número de séries (1 a 20). Sem ele, o primeiro número " +
+          "das repetições seria contado como série no Volume.");
+        return;
+      }
+    }
     setBusy(true); setErro("");
     /* cardio e musculação são excludentes: um exercício de cardio
-       não tem séries, método nem descanso */
-    const corpo = ehCard
+       não tem séries, método nem descanso.
+       Isometria exclui método e cardio, mas MANTÉM descanso — é assim que os
+       6 exercícios já prescritos pelo App estão no banco. */
+    const corpo = ehIso
+      ? {
+          nome: nome.trim(),
+          cardapio_id: cardId || null,
+          observacao: obs.trim() || null,
+          filmar: !!filmar,
+          /* montaSeriesIso é a única porta: texto fora do formato faz o App
+             perder o anel de série e gravar as três séries como serie = 1 */
+          series: montaSeriesIso(nSer, iso),
+          isometria: iso,
+          descanso: desc.trim() || null,
+          metodo: null, cardio: null
+        }
+      : ehCard
       ? {
           nome: nome.trim(),
           cardapio_id: cardId || null,
@@ -6181,7 +6715,7 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
               nivel: b.nivel || "leve"
             }))
           },
-          series: null, descanso: null, metodo: null
+          series: null, descanso: null, metodo: null, isometria: null
         }
       : {
           nome: nome.trim(),
@@ -6192,7 +6726,7 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
           observacao: obs.trim() || null,
           filmar: !!filmar,
           metodo: metodo || null,
-          cardio: null
+          cardio: null, isometria: null
         };
     try {
       if (novo) {
@@ -6236,16 +6770,57 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
           </div>
 
           <div className="ed-lab">Tipo</div>
-          <div className={"ed-tog" + (ehCard ? " on" : "")}
-            onClick={() => setEhCard(v => !v)}>
-            <div className="sw"><i /></div>
-            <div>
-              <b>🏃 Cardio</b>
-              <span>Ative se este exercício for cardio</span>
-            </div>
+          <div className="chips">
+            {[["musculacao", "🏋️ Musculação"], ["cardio", "🏃 Cardio"],
+              ["isometria", "🔥 Isometria"]].map(t => (
+              <button key={t[0]} className={"chip" + (tipo === t[0] ? " on" : "")}
+                onClick={() => setTipo(t[0])}>{t[1]}</button>
+            ))}
+          </div>
+          <div className="ed-cnt" style={{ marginTop: 5 }}>
+            {ehCard ? "sem séries, descanso nem método"
+              : ehIso ? "sem método; a carga do aluno passa a ser o tempo"
+              : "carga e repetições registradas pelo aluno"}
           </div>
 
-          {ehCard ? (
+          {ehIso ? (
+            <>
+              <div className="ed-lab">
+                Segurar <i>{iso ? isoRot(iso) : "escolhe a faixa"}</i>
+              </div>
+              <div className="chips">
+                {ISO_FAIXAS.map(f => {
+                  const on = !!iso && iso.min === f[0] && iso.max === f[1];
+                  return (
+                    <button key={f[0] + "-" + f[1]} className={"chip" + (on ? " on" : "")}
+                      onClick={() => setIso({ min: f[0], max: f[1] })}>
+                      {f[0]}-{f[1]}"
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="ed-cnt" style={{ marginTop: 5 }}>
+                Faixas fixas do App. O aluno cumpre a série ao atingir o mínimo —
+                o cronômetro dele encerra sozinho {"15s"} depois do máximo.
+              </div>
+
+              <div className="ed-lab">Séries</div>
+              <Chips opcoes={SERIES_OPC} valor={nSer} onPick={setNSer} />
+              <input value={nSer} onChange={e => setNSer(e.target.value)}
+                placeholder="ou digite" style={{ marginTop: 7, marginBottom: 0 }} />
+
+              <div className="ed-lab">Descanso <i>segundos</i></div>
+              <Chips opcoes={DESC_OPC} valor={desc} onPick={setDesc} mini />
+              <input value={desc} onChange={e => setDesc(e.target.value)}
+                placeholder="ou digite (ex: 75 ou 60~90)"
+                style={{ marginTop: 7, marginBottom: 0 }} />
+
+              <div className="ed-cnt" style={{ marginTop: 9 }}>
+                Vai para o banco como <code>{iso ? montaSeriesIso(nSer, iso) : "—"}</code>.
+                O App lê os segundos do campo próprio e as séries desse texto.
+              </div>
+            </>
+          ) : ehCard ? (
             <>
               <div className="ed-lab">
                 Nome do protocolo <i>{duracaoCardio(card) || "—"}</i>
@@ -6558,6 +7133,11 @@ function montarCopia(origem, alunoDestId, faseDestId, ordemBase, limparObs) {
           filmar: !!ex.filmar,
           metodo: ex.metodo ?? null,
           cardio: ex.cardio ?? null,
+          /* sem esta linha a prancha chega no destino com o texto de series da
+             isometria e isometria = null: o App renderiza como repeticao e nao
+             da erro nenhum. A copia do App ja inclui o campo; esta aqui era a
+             unica das duas que faltava. */
+          isometria: ex.isometria ?? null,
           cardapio_id: ex.cardapio_id ?? null,
           observacao: limparObs ? null : (ex.observacao ?? null),
           grupo,
@@ -7227,6 +7807,7 @@ function PainelMontagem() {
     const n = nSeriesDe(ex);
     const met = fmtMetodo(ex.metodo);
     const car = fmtCardio(ex.cardio);
+    const iso = isoDe(ex);
     const reps = String(ex.series || "").replace(/^\s*\d+\s*[x×]\s*/i, "");
     const emGrupo = !!bl.grupo;
     return (
@@ -7246,7 +7827,9 @@ function PainelMontagem() {
             {letra || ((ex.ordem ?? 0) + 1)}</span>
           <span className="nm">{ex.nome}</span>
           <span className="sr">
-            {car ? "cardio" : (n ? n + "×" + (reps ? " " + reps : "") : "—")}
+            {car ? "cardio"
+              : iso ? (n ? n + "× " : "") + "segurar " + isoRot(iso)
+              : (n ? n + "×" + (reps ? " " + reps : "") : "—")}
           </span>
         </div>
         {(ex.descanso || (ex.metodo && ex.metodo.nome)) && (
@@ -7295,6 +7878,7 @@ function PainelMontagem() {
         <div className="mt-tags">
           {ex.metodo && <span className="mt-tag met">método</span>}
           {ex.cardio && <span className="mt-tag car">cardio</span>}
+          {iso && <span className="mt-tag iso">isometria</span>}
           {ex.filmar && <span className="mt-tag flm">filmar</span>}
           {ex.audio_url && <span className="mt-tag aud">áudio</span>}
           {!ex.cardapio_id && <span className="mt-tag avl">avulso</span>}
