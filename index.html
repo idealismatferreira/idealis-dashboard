@@ -964,6 +964,20 @@
     border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:12px}
   .ev-ad div{font-size:12px;color:var(--mut)}
   .ev-ad div b{display:block;font-size:17px;color:var(--accent);font-weight:700}
+  .ev-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));
+    gap:10px;margin-bottom:16px}
+  .ev-card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:10px 4px 6px 4px;cursor:pointer;transition:border-color .12s}
+  .ev-card:hover{border-color:var(--accent)}
+  .ev-card .hd{display:flex;gap:8px;align-items:baseline;padding:0 9px}
+  .ev-card .hd .nm{flex:1;font-size:12.5px;font-weight:600;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ev-card .hd b{color:var(--accent);font-size:13px;font-weight:700;flex-shrink:0}
+  .ev-card .mt{padding:1px 9px 4px;font-size:10px;color:var(--mut);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ev-card .mt em{font-style:normal;color:var(--warn)}
+  .ev-card .vazio{height:104px;display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:#3d4d50}
   /* datas editaveis no card da fase */
   .mt-fase .per{display:flex;align-items:center;gap:6px}
   .mt-fase .per input[type=date]{width:auto;flex:1;min-width:0;margin-bottom:0;
@@ -5117,6 +5131,39 @@ function evAgrupar(exs) {
   })).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 }
 
+/* variante inicial = a do ULTIMO log que tem valor, igual ao App.
+   Nao e a primeira do chip nem a mais frequente. */
+function evVarPadrao(logs, ehIso) {
+  const val = l => ehIso
+    ? (l.extra && l.extra.segundos != null ? +l.extra.segundos : null)
+    : evNum(l.carga);
+  const com = logs.filter(l => val(l) != null)
+    .sort((a, b) => String(a.data) < String(b.data) ? -1 : 1);
+  const ult = com.length ? com[com.length - 1] : logs[logs.length - 1];
+  return ult ? (ult.variante || "") : "";
+}
+
+/* sessões -> um ponto POR SÉRIE. Ponto sem valor é descartado, como no App. */
+function evPontos(sessoes, ehIso) {
+  const out = [];
+  sessoes.forEach(ses => {
+    ses.series.forEach(l => {
+      const seg = (l.extra && l.extra.segundos != null) ? +l.extra.segundos : null;
+      const c = evNum(l.carga), r = evNum(l.reps);
+      const v = ehIso ? seg : c;
+      if (v == null) return;
+      out.push({
+        rot: dBR(ses.data).slice(0, 5) +
+             (ses.series.length > 1 ? " \u00b7 " + l.serieN + "\u00aa" : ""),
+        carga: c, segundos: ehIso ? seg : null,
+        volume: (c != null && r != null) ? c * r : null,
+        intensidade: l.intensidade, dor: l.dor
+      });
+    });
+  });
+  return out;
+}
+
 /* logs -> sessões (data + variante), séries ordenadas e reetiquetadas */
 function evSessoes(logs) {
   const mapa = new Map();
@@ -5148,79 +5195,110 @@ function PainelEvolucao({ aluno }) {
   const [sel, setSel]     = useState("");
   const [vari, setVari]   = useState(null);
   const [met, setMet]     = useState("carga");
+  const [trSel, setTrSel] = useState("todas");
 
   const carregar = useCallback(async () => {
-    setErro(""); setBase(null); setSel(""); setVari(null);
-    const t = await sb.from("treinos").select("id").eq("aluno_id", aluno.id);
-    if (t.error) { setErro(t.error.message); setBase({ exs: [], logs: [] }); return; }
-    const tids = (t.data || []).map(x => x.id);
-    if (!tids.length) { setBase({ exs: [], logs: [] }); return; }
+    setErro(""); setBase(null); setSel(""); setVari(null); setTrSel("todas");
+    const hoje = dISO(new Date());
+
+    const [fr, tr] = await Promise.all([
+      sb.from("fases").select("id, nome, inicio, fim").eq("aluno_id", aluno.id),
+      sb.from("treinos").select("id, nome, ordem, fase_id").eq("aluno_id", aluno.id)
+    ]);
+    if (fr.error) { setErro(fr.error.message); setBase({ exs: [], logs: [], treinos: [] }); return; }
+    if (tr.error) { setErro(tr.error.message); setBase({ exs: [], logs: [], treinos: [] }); return; }
+
+    const fases = fr.data || [];
+    const ativas = new Set(fases.filter(f => situacaoFase(f, hoje) === "ativa").map(f => f.id));
+    const treinos = (tr.data || []).map(t => ({ ...t, atual: ativas.has(t.fase_id) }));
+    const tids = treinos.map(t => t.id);
+    if (!tids.length) { setBase({ exs: [], logs: [], treinos: [], fases }); return; }
 
     const exs = [];
     for (let i = 0; i < tids.length; i += 60) {
       const e = await sb.from("exercicios")
-        .select("id, nome, cardapio_id, isometria, series, metodo, cardio")
+        .select("id, nome, cardapio_id, isometria, series, metodo, cardio, ordem, treino_id")
         .in("treino_id", tids.slice(i, i + 60));
-      if (e.error) { setErro(e.error.message); setBase({ exs: [], logs: [] }); return; }
+      if (e.error) { setErro(e.error.message); setBase({ exs: [], logs: [], treinos, fases }); return; }
       exs.push(...(e.data || []));
     }
     const eids = exs.map(x => x.id);
     const logs = [];
     for (let i = 0; i < eids.length; i += 60) {
       const l = await sb.from("logs").select("*").in("exercicio_id", eids.slice(i, i + 60));
-      if (l.error) { setErro(l.error.message); setBase({ exs, logs: [] }); return; }
+      if (l.error) { setErro(l.error.message); setBase({ exs, logs: [], treinos, fases }); return; }
       logs.push(...(l.data || []));
     }
-    setBase({ exs, logs });
+    setBase({ exs, logs, treinos, fases });
   }, [aluno.id]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  /* só exercícios com log entram no seletor: lista de prescrição quem tem
-     é a aba Treinos, aqui interessa o que foi executado */
-  const { grupos, porEx } = useMemo(() => {
-    if (!base) return { grupos: [], porEx: new Map() };
+  /* logs por exerc\u00edcio, cardio fora. O agrupamento roda sobre TODOS os
+     exerc\u00edcios do aluno, n\u00e3o s\u00f3 os da fase atual: o hist\u00f3rico atravessa fases
+     dentro do aluno (regra do App), ent\u00e3o a fase nova nasce com o passado junto. */
+  const { grupos, porEx, porGrupo } = useMemo(() => {
+    if (!base) return { grupos: [], porEx: new Map(), porGrupo: new Map() };
     const porEx = new Map();
     base.logs.forEach(l => {
-      if (l.extra && l.extra.tipo === "cardio") return;   // cardio nunca entra
+      if (l.extra && l.extra.tipo === "cardio") return;
       if (!porEx.has(l.exercicio_id)) porEx.set(l.exercicio_id, []);
       porEx.get(l.exercicio_id).push(l);
     });
-    return { grupos: evAgrupar(base.exs.filter(e => porEx.has(e.id))), porEx };
+    const grupos = evAgrupar(base.exs);
+    const porGrupo = new Map();
+    grupos.forEach(g => porGrupo.set(g.key, g));
+    return { grupos, porEx, porGrupo };
   }, [base]);
 
-  const grupo = grupos.find(g => g.key === sel) || null;
+  const doEx = useMemo(() => {
+    const m = new Map();
+    grupos.forEach(g => g.exs.forEach(e => m.set(e.id, g)));
+    return m;
+  }, [grupos]);
 
-  const logsGrupo = useMemo(() => {
-    if (!grupo) return [];
+  const logsDe = useCallback(g => {
+    if (!g) return [];
     const out = [];
-    grupo.exs.forEach(e => out.push(...(porEx.get(e.id) || [])));
+    g.exs.forEach(e => out.push(...(porEx.get(e.id) || [])));
     return out;
-  }, [grupo, porEx]);
+  }, [porEx]);
 
+  /* ---- grade: treinos da fase atual, exerc\u00edcios na ordem da prescri\u00e7\u00e3o ---- */
+  const grade = useMemo(() => {
+    if (!base) return [];
+    return base.treinos
+      .filter(t => t.atual)
+      .sort((a, b) => (a.ordem ?? 999) - (b.ordem ?? 999))
+      .map(t => ({
+        treino: t,
+        itens: base.exs.filter(e => e.treino_id === t.id && !e.cardio)
+          .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+          .map(e => ({ ex: e, grupo: doEx.get(e.id) || null }))
+      }))
+      .filter(b => b.itens.length);
+  }, [base, doEx]);
+
+  const gruposComLog = useMemo(
+    () => grupos.filter(g => logsDe(g).length), [grupos, logsDe]);
+
+  const grupo = porGrupo.get(sel) || null;
+  const logsGrupo = useMemo(() => logsDe(grupo), [grupo, logsDe]);
   const ehIso = !!(grupo && grupo.iso);
-  const valorDe = l => ehIso
+
+  const valorDe = (l, iso) => iso
     ? (l.extra && l.extra.segundos != null ? +l.extra.segundos : null)
     : evNum(l.carga);
 
   const variantes = useMemo(() => {
-    const v = new Map();
-    logsGrupo.forEach(l => {
-      const k = l.variante || "";
-      if (!v.has(k)) v.set(k, 0);
-      v.set(k, v.get(k) + 1);
-    });
-    return [...v.keys()];
+    const v = new Set();
+    logsGrupo.forEach(l => v.add(l.variante || ""));
+    return [...v];
   }, [logsGrupo]);
 
-  /* variante inicial = a do último log COM valor, igual ao App */
   useEffect(() => {
     if (!grupo) { setVari(null); return; }
-    const comValor = logsGrupo.filter(l => valorDe(l) != null)
-      .sort((a, b) => String(a.data) < String(b.data) ? -1 : 1);
-    const ult = comValor.length ? comValor[comValor.length - 1]
-                                : logsGrupo[logsGrupo.length - 1];
-    setVari(ult ? (ult.variante || "") : "");
+    setVari(evVarPadrao(logsGrupo, !!grupo.iso));
     setMet(grupo.iso ? "segundos" : "carga");
   }, [sel]);
 
@@ -5228,30 +5306,10 @@ function PainelEvolucao({ aluno }) {
     () => evSessoes(logsGrupo.filter(l => (l.variante || "") === (vari || ""))),
     [logsGrupo, vari]);
 
-  const pontos = useMemo(() => {
-    const out = [];
-    sessoes.forEach(ses => {
-      ses.series.forEach(l => {
-        const v = valorDe(l);
-        if (v == null) return;                 // ponto sem valor é descartado
-        const c = evNum(l.carga), r = evNum(l.reps);
-        out.push({
-          rot: dBR(ses.data).slice(0, 5) +
-               (ses.series.length > 1 ? " · " + l.serieN + "ª" : ""),
-          carga: c, segundos: ehIso && l.extra ? (+l.extra.segundos || null) : null,
-          volume: (c != null && r != null) ? c * r : null,
-          intensidade: l.intensidade, dor: l.dor
-        });
-      });
-    });
-    return out;
-  }, [sessoes, ehIso]);
+  const pontos = useMemo(() => evPontos(sessoes, ehIso), [sessoes, ehIso]);
 
-  /* adesão: os dois números separados. Denominador vem da PRESCRIÇÃO, nunca
-     dos logs — no App, "descartar" no fim da isometria não grava linha
-     nenhuma, então contar log contra log esconderia justamente quem desistiu. */
   const adesao = useMemo(() => {
-    if (!ehIso) return null;
+    if (!ehIso || !grupo) return null;
     let prescritas = 0, registradas = 0, bateu = 0;
     sessoes.forEach(ses => {
       const ex = grupo.exs.find(e => ses.series.some(l => l.exercicio_id === e.id));
@@ -5277,56 +5335,53 @@ function PainelEvolucao({ aluno }) {
   if (base === null) return <div className="msg">Carregando...</div>;
 
   const RC = window.Recharts;
-  const { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } = RC || {};
 
-  if (!grupos.length) return (
+  if (!gruposComLog.length && !grade.length) return (
     <div className="dz-nada">
-      <b>Nenhuma carga registrada</b>
-      {aluno.nome} ainda não tem log de musculação ou isometria. Cardio não entra
-      aqui — ele tem histórico próprio e misturar os dois inventa progressão.
+      <b>Nada para mostrar ainda</b>
+      {aluno.nome} n\u00e3o tem fase em vigor nem log de muscula\u00e7\u00e3o ou isometria.
+      Cardio n\u00e3o entra aqui \u2014 ele tem hist\u00f3rico pr\u00f3prio e misturar os dois inventa
+      progress\u00e3o que n\u00e3o existe.
     </div>
   );
 
-  const opcM = ehIso ? ["segundos", "intensidade", "dor"]
-                     : ["carga", "volume", "intensidade", "dor"];
-  const cfg = EV_MET[met] || EV_MET.carga;
+  const visiveis = trSel === "todas" ? grade : grade.filter(b => b.treino.id === trSel);
+  const total = grade.reduce((a, b) => a + b.itens.length, 0);
 
   return (
     <div>
       <div className="ev-bar">
         <div>
           <Combobox
-            opcoes={grupos.map(g => ({
+            opcoes={gruposComLog.map(g => ({
               value: g.key,
-              label: g.nome + (g.iso ? " · isometria" : "") + (g.ambiguo ? " · ⚠" : ""),
-              grupo: g.iso ? "Isometria" : "Musculação"
+              label: g.nome + (g.iso ? " \u00b7 isometria" : "") + (g.ambiguo ? " \u00b7 \u26a0" : ""),
+              grupo: g.iso ? "Isometria" : "Muscula\u00e7\u00e3o"
             }))}
             value={sel} onChange={v => setSel(v || "")}
-            placeholder={"Escolhe o exercício (" + grupos.length + " com registro)"} />
+            placeholder={"Buscar exerc\u00edcio (" + gruposComLog.length + " com registro)"} />
         </div>
+        {sel && (
+          <button className="btn-sec" onClick={() => setSel("")}>\u2190 Voltar \u00e0 grade</button>
+        )}
       </div>
 
-      {!grupo ? (
-        <div className="dz-nada">
-          <b>Escolhe um exercício</b>
-          São {grupos.length} com pelo menos um registro. O histórico atravessa
-          fases dentro deste aluno, nunca entre alunos.
-        </div>
-      ) : (
+      {sel && grupo ? (
         <>
+          <div className="dz-tit">{grupo.nome}</div>
+
           {grupo.ambiguo && (
             <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
               color: "#f0a35e" }}>
-              ⚠️ Este grupo junta {grupo.ids.size} ids de catálogo diferentes com o mesmo
-              nome. A regra do App não é transitiva e aqui ela foi fechada, então o
-              gráfico pode estar somando mais histórico do que a tela do aluno mostra.
-              Vale unificar o vínculo de catálogo desses exercícios.
+              \u26a0\ufe0f Este grupo junta {grupo.ids.size} ids de cat\u00e1logo diferentes com o mesmo
+              nome. A regra do App n\u00e3o \u00e9 transitiva e aqui ela foi fechada, ent\u00e3o o
+              gr\u00e1fico pode estar somando mais hist\u00f3rico do que a tela do aluno mostra.
             </div>
           )}
 
           {variantes.length > 1 && (
             <>
-              <div className="dz-tit">Variante · aparelho</div>
+              <div className="dz-tit">Variante \u00b7 aparelho</div>
               <div className="dz-chips">
                 {variantes.map(v => (
                   <button key={v || "__p"} className={"dz-chip" + ((vari || "") === v ? " on" : "")}
@@ -5338,14 +5393,15 @@ function PainelEvolucao({ aluno }) {
 
           {adesao && (
             <div className="ev-ad">
-              <div><b>{adesao.registradas}/{adesao.prescritas}</b>séries registradas</div>
-              <div><b>{adesao.bateu}</b>atingiram o mínimo</div>
-              <div><b>{adesao.sessoes}</b>sessões</div>
+              <div><b>{adesao.registradas}/{adesao.prescritas}</b>s\u00e9ries registradas</div>
+              <div><b>{adesao.bateu}</b>atingiram o m\u00ednimo</div>
+              <div><b>{adesao.sessoes}</b>sess\u00f5es</div>
             </div>
           )}
 
           <div className="dz-chips">
-            {opcM.map(m => (
+            {(ehIso ? ["segundos", "intensidade", "dor"]
+                    : ["carga", "volume", "intensidade", "dor"]).map(m => (
               <button key={m} className={"dz-chip" + (met === m ? " on" : "")}
                 onClick={() => setMet(m)}
                 style={met === m ? { borderColor: EV_COR[m], color: EV_COR[m] } : {}}>
@@ -5357,73 +5413,51 @@ function PainelEvolucao({ aluno }) {
 
           {!RC ? (
             <div className="dz-nada">
-              <b>Biblioteca de gráficos não carregou</b>
-              O Recharts vem de CDN e não respondeu. A lista de sessões abaixo
+              <b>Biblioteca de gr\u00e1ficos n\u00e3o carregou</b>
+              O Recharts vem de CDN e n\u00e3o respondeu. A lista de sess\u00f5es abaixo
               continua funcionando.
             </div>
           ) : pontos.length < 2 ? (
             <div className="dz-nada">
               <b>Poucos pontos para desenhar</b>
-              Esta variante tem {pontos.length} série(s) com valor. O gráfico precisa
-              de duas.
+              Esta variante tem {pontos.length} s\u00e9rie(s) com valor. O gr\u00e1fico precisa de duas.
             </div>
           ) : (
             <div className="dz-wrap">
-              <ResponsiveContainer width="100%" height={230}>
-                <LineChart data={pontos} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
-                  <CartesianGrid stroke="#1b2427" vertical={false} />
-                  <XAxis dataKey="rot" tick={{ fill: "#7d9298", fontSize: 10 }}
-                    interval="preserveStartEnd" />
-                  <YAxis width={40} domain={cfg.dom || ["auto", "auto"]}
-                    ticks={cfg.dom ? [0, 5, 10] : undefined}
-                    tick={{ fill: "#7d9298", fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: "#0f1719", border: "1px solid #243336",
-                    borderRadius: 8, fontSize: 12 }}
-                    labelStyle={{ color: "#7d9298" }}
-                    formatter={v => [v, cfg.rot]} />
-                  <Line type="monotone" dataKey={met} stroke={EV_COR[met]} connectNulls
-                    dot={({ cx, cy, payload }) => (
-                      <circle cx={cx} cy={cy} r={cy == null ? 0 : 3.5}
-                        fill={payload && payload.dor != null
-                          ? evCorDor(payload.dor) : EV_COR[met]}
-                        stroke="none" />
-                    )}
-                    activeDot={{ r: 6 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              <EvGrafico pontos={pontos} met={met} altura={230} eixos />
               <div className="dz-leg">
-                <span>um ponto por série · variante <b>{evVar(vari)}</b></span>
+                <span>um ponto por s\u00e9rie \u00b7 variante <b>{evVar(vari)}</b></span>
                 <span>cor do ponto = dor articular relatada</span>
               </div>
             </div>
           )}
 
-          <div className="dz-tit">Sessões · {evVar(vari)}</div>
+          <div className="dz-tit">Sess\u00f5es \u00b7 {evVar(vari)}</div>
           {[...sessoes].reverse().slice(0, 20).map(ses => {
-            const melhor = ses.series.map(valorDe).filter(v => v != null);
+            const vals = ses.series.map(l => valorDe(l, ehIso)).filter(v => v != null);
             return (
               <div className="ev-ses" key={ses.data + ses.variante}>
                 <div className="dt">
                   <span>{dBR(ses.data)}</span>
                   <em>
                     {ses.dup && <span style={{ color: "var(--warn)" }}>
-                      ⚠ contador travado · </span>}
-                    {melhor.length
-                      ? "melhor do dia " + Math.max(...melhor) + (ehIso ? "s" : "")
+                      \u26a0 contador travado \u00b7 </span>}
+                    {vals.length
+                      ? "melhor do dia " + Math.max(...vals) + (ehIso ? "s" : "")
                       : "sem valor"}
                   </em>
                 </div>
                 <div className="sr">
                   {ses.series.map(l => (
                     <span key={l.id}>
-                      <i>{l.serieN}ª</i>
+                      <i>{l.serieN}\u00aa</i>
                       {ehIso ? (
                         <b className={l.extra && l.extra.completo ? "" : "no"}>
-                          {l.extra && l.extra.segundos != null ? l.extra.segundos + "s" : "—"}
-                          {l.extra && l.extra.completo ? " ✓" : ""}
+                          {l.extra && l.extra.segundos != null ? l.extra.segundos + "s" : "\u2014"}
+                          {l.extra && l.extra.completo ? " \u2713" : ""}
                         </b>
                       ) : (
-                        <b>{l.carga || "—"}{l.reps ? " × " + l.reps : ""}</b>
+                        <b>{l.carga || "\u2014"}{l.reps ? " \u00d7 " + l.reps : ""}</b>
                       )}
                     </span>
                   ))}
@@ -5432,17 +5466,17 @@ function PainelEvolucao({ aluno }) {
             );
           })}
           {sessoes.length > 20 && (
-            <div className="ed-cnt">+{sessoes.length - 20} sessão(ões) mais antiga(s)</div>
+            <div className="ed-cnt">+{sessoes.length - 20} sess\u00e3o(\u00f5es) mais antiga(s)</div>
           )}
 
           {suspeitas.length > 0 && (
             <div className="box" style={{ marginTop: 14 }}>
-              <h2>Cargas ambíguas ({suspeitas.length})</h2>
+              <h2>Cargas amb\u00edguas ({suspeitas.length})</h2>
               <p>
-                <code>logs.carga</code> é texto livre. A leitura numérica é a mesma do
-                App — e ela engole coisa em silêncio: <code>20/20</code> vira 20, e
-                unilateral passa a valer metade do volume sem avisar. Aqui o número
-                continua o mesmo do App; o que não deu para ler direito fica nomeado.
+                <code>logs.carga</code> \u00e9 texto livre. A leitura num\u00e9rica \u00e9 a mesma do App
+                \u2014 e ela engole coisa em sil\u00eancio: <code>20/20</code> vira 20, e unilateral
+                passa a valer metade do volume sem avisar. O n\u00famero continua o mesmo do
+                App; o que n\u00e3o deu para ler direito fica nomeado.
               </p>
               <div className="lista">
                 {suspeitas.map(x => (
@@ -5450,7 +5484,7 @@ function PainelEvolucao({ aluno }) {
                     <span className="eid">{dBR(x.data)}</span>
                     <span className="enm">{x.texto}</span>
                     <span className="etg">
-                      lido como <b>{x.lido == null ? "nada" : x.lido}</b> · {x.motivo}
+                      lido como <b>{x.lido == null ? "nada" : x.lido}</b> \u00b7 {x.motivo}
                     </span>
                   </div>
                 ))}
@@ -5458,20 +5492,122 @@ function PainelEvolucao({ aluno }) {
             </div>
           )}
         </>
+      ) : !grade.length ? (
+        <div className="dz-nada">
+          <b>Sem fase em vigor</b>
+          {aluno.nome} tem hist\u00f3rico, mas nenhuma fase ativa hoje \u2014 a grade mostra os
+          treinos da fase atual. Usa a busca acima para abrir qualquer exerc\u00edcio.
+        </div>
+      ) : (
+        <>
+          <div className="dz-chips">
+            <button className={"dz-chip" + (trSel === "todas" ? " on" : "")}
+              onClick={() => setTrSel("todas")}>Todas ({total})</button>
+            {grade.map(b => (
+              <button key={b.treino.id}
+                className={"dz-chip" + (trSel === b.treino.id ? " on" : "")}
+                onClick={() => setTrSel(b.treino.id)}>
+                {b.treino.nome} ({b.itens.length})
+              </button>
+            ))}
+          </div>
+
+          {visiveis.map(b => (
+            <div key={b.treino.id}>
+              {trSel === "todas" && <div className="dz-tit">{b.treino.nome}</div>}
+              <div className="ev-grade">
+                {b.itens.map(it => (
+                  <EvCard key={it.ex.id} item={it} logsDe={logsDe}
+                    onAbrir={() => it.grupo && setSel(it.grupo.key)} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </>
       )}
 
       <div className="pl-hint" style={{ marginTop: 16 }}>
-        A <b>variante</b> é o aparelho: comparar carga entre máquinas diferentes
-        mostraria queda onde houve só troca de equipamento, então o filtro é
-        obrigatório — mesma regra da tela do aluno. Na pirâmide a linha sobe e
-        desce dentro da mesma sessão: é o comportamento certo, um ponto por série.
+        A grade mostra os treinos da <b>fase em vigor</b>, mas cada gr\u00e1fico traz o
+        hist\u00f3rico inteiro do exerc\u00edcio dentro deste aluno \u2014 sen\u00e3o fase nova nasceria
+        com todos os cart\u00f5es vazios. Cardio fica de fora: ele tem hist\u00f3rico pr\u00f3prio.
         <br />
-        Em isometria a "carga" é o tempo, e os dois números de adesão são separados
-        de propósito: quem <b>descarta</b> no fim da isometria não deixa linha
-        nenhuma no banco, então só a proporção de "atingiu o mínimo" esconderia
-        quem desistiu antes de salvar. O App ainda não mostra nada disso ao aluno.
+        Cada cart\u00e3o mostra <b>uma variante s\u00f3</b>, a do registro mais recente com valor.
+        Comparar carga entre aparelhos diferentes mostraria queda onde houve troca de
+        m\u00e1quina \u2014 quando h\u00e1 mais de uma, o cart\u00e3o avisa e a tela de detalhe deixa
+        voc\u00ea trocar. Um ponto por s\u00e9rie: na pir\u00e2mide a linha sobe e desce dentro da
+        mesma sess\u00e3o, e isso \u00e9 o comportamento certo.
       </div>
     </div>
+  );
+}
+
+/* cart\u00e3o da grade: uma variante, um gr\u00e1fico pequeno, sem eixo Y carregado */
+function EvCard({ item, logsDe, onAbrir }) {
+  const g = item.grupo;
+  const iso = g && g.iso;
+  const logs = logsDe(g);
+  const vari = evVarPadrao(logs, !!iso);
+  const nVar = new Set(logs.map(l => l.variante || "")).size;
+  const ses = evSessoes(logs.filter(l => (l.variante || "") === (vari || "")));
+  const pts = evPontos(ses, !!iso);
+  const met = iso ? "segundos" : "carga";
+  const vals = pts.map(p => p[met]).filter(v => v != null);
+  const ult = vals.length ? vals[vals.length - 1] : null;
+  const RC = window.Recharts;
+
+  return (
+    <div className="ev-card" onClick={onAbrir}>
+      <div className="hd">
+        <span className="nm">{item.ex.nome}</span>
+        {ult != null && <b>{ult}{iso ? "s" : ""}</b>}
+      </div>
+      <div className="mt">
+        {iso ? "isometria" : (item.ex.metodo && item.ex.metodo.nome) || item.ex.series || ""}
+        {nVar > 1 && <em> \u00b7 {evVar(vari)} (+{nVar - 1})</em>}
+      </div>
+      {!RC || pts.length < 2 ? (
+        <div className="vazio">
+          {pts.length === 0 ? "sem registro ainda"
+            : pts.length + " registro(s) \u2014 falta ponto para a linha"}
+        </div>
+      ) : (
+        <EvGrafico pontos={pts} met={met} altura={104} />
+      )}
+    </div>
+  );
+}
+
+/* um s\u00f3 gr\u00e1fico para grade e detalhe: mesma regra nos dois, nunca dois
+   desenhos diferentes do mesmo n\u00famero. `type="linear"` de prop\u00f3sito \u2014 curva
+   suave em 3 ou 4 pontos inventa subida onde houve degrau. */
+function EvGrafico({ pontos, met, altura, eixos }) {
+  const RC = window.Recharts;
+  if (!RC) return null;
+  const { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } = RC;
+  const cfg = EV_MET[met] || EV_MET.carga;
+  return (
+    <ResponsiveContainer width="100%" height={altura}>
+      <LineChart data={pontos}
+        margin={{ top: 6, right: 10, left: eixos ? 0 : -22, bottom: 0 }}>
+        <CartesianGrid stroke="#1b2427" vertical={false} />
+        <XAxis dataKey="rot" tick={{ fill: "#7d9298", fontSize: eixos ? 10 : 9 }}
+          interval="preserveStartEnd" minTickGap={eixos ? 8 : 24} />
+        <YAxis width={40} domain={cfg.dom || ["auto", "auto"]}
+          ticks={cfg.dom ? [0, 5, 10] : undefined} allowDecimals={false}
+          tick={{ fill: "#7d9298", fontSize: eixos ? 11 : 9 }} />
+        <Tooltip contentStyle={{ background: "#0f1719", border: "1px solid #243336",
+          borderRadius: 8, fontSize: 12 }}
+          labelStyle={{ color: "#7d9298" }} formatter={v => [v, cfg.rot]} />
+        <Line type="linear" dataKey={met} stroke={EV_COR[met]} connectNulls
+          strokeWidth={eixos ? 2 : 1.6}
+          dot={({ cx, cy, payload }) => (
+            <circle cx={cx} cy={cy} r={cy == null ? 0 : (eixos ? 3.5 : 2.6)}
+              fill={payload && payload.dor != null ? evCorDor(payload.dor) : EV_COR[met]}
+              stroke="none" />
+          )}
+          activeDot={{ r: 6 }} />
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
 
