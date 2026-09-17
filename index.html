@@ -1343,6 +1343,25 @@
     .tc-col.vazia{display:none}
     .tc-leg{margin-left:0}
   }
+  /* arrastar e soltar */
+  .tc-grip{flex-shrink:0;width:12px;margin-left:-3px;color:#3a4a4d;font-size:13px;
+    line-height:1;cursor:grab;user-select:none;text-align:center;opacity:0;transition:opacity .12s}
+  .tc-lin:hover .tc-grip{opacity:1}
+  .tc-grip:hover{color:var(--accent)}
+  .tc-grip:active{cursor:grabbing}
+  .tc-grip.off{cursor:default}
+  .tc-grip.off:hover{color:#3a4a4d}
+  .tc-lin.arrastando{opacity:.35}
+  .tc-lin.alvo-antes{box-shadow:inset 0 2px 0 var(--accent)}
+  .tc-lin.alvo-depois{box-shadow:inset 0 -2px 0 var(--accent)}
+  .tc-soltar{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:6px 8px;
+    border-top:1px dashed var(--accent);background:#0c2024}
+  .tc-soltar span{font-size:9.5px;color:var(--mut);width:100%;text-transform:uppercase;
+    letter-spacing:.5px}
+  .tc-soltar b{font-size:11px;padding:4px 7px;border-radius:6px;border:1px dashed #2c4046;
+    color:#b9d4d8;cursor:copy}
+  .tc-soltar b.on{border:1px solid var(--accent);background:#0f3a40;color:var(--accent)}
+  @media (hover: none){ .tc-grip{display:none} }
 </style>
 </head>
 <body>
@@ -10852,9 +10871,13 @@ function tcSegundasDoMes(ano, mes) {
   return out;
 }
 
-/* Sugestão de dia. `itens` já na ordem da coluna; cada um:
-   { key, venceDia (1..7), fixo (1..7|null), fora (true = não conta: montado/oculto) }
-   Devolve { key: { dia, fixo, vermelho } }. */
+/* Sugestão de dia. `itens` na ordem de vencimento (empate: quem entrou antes);
+   cada um: { key, venceDia (1..7), fixo (1..7|null), fora (montado/oculto) }
+   Devolve { key: { dia, fixo, vermelho } }.
+   Guloso e ESTÁVEL: cada troca vai para o dia menos cheio entre 3ª/4ª/5ª
+   (empate = mais cedo, teto 3) que não passe do vencimento; depois 6ª (teto 3),
+   depois Sáb. Assim quem entra por último pega a vaga que sobrou e ninguém que
+   já estava na coluna muda de dia. 3 trocas -> 3ª, 4ª, 5ª; 7 -> 3/2/2. */
 function tcSugerirDias(itens) {
   const res = {}, uso = {};
   const somar = d => { uso[d] = (uso[d] || 0) + 1; };
@@ -10862,35 +10885,27 @@ function tcSugerirDias(itens) {
   for (const it of itens) {
     if (it.fora) continue;
     if (it.fixo) {
-      res[it.key] = { dia: it.fixo, fixo: true, vermelho: it.fixo > it.venceDia };
+      res[it.key] = { dia: it.fixo, fixo: true,
+                      vermelho: it.fixo > it.venceDia || it.venceDia < 2 };
       somar(it.fixo);
     } else if (it.venceDia < 2) {
       res[it.key] = { dia: it.venceDia, fixo: false, vermelho: true };
       somar(it.venceDia);
     } else livres.push(it);
   }
-  /* enche 3ª/4ª/5ª pelo dia menos ocupado (empate = mais cedo), teto 3 */
-  const tam = { 2: 0, 3: 0, 4: 0 };
-  let sobra = livres.length;
-  while (sobra > 0) {
-    let alvo = null;
+  for (const it of livres) {
+    let dia = null;
     for (const d of [2, 3, 4]) {
-      const ocup = (uso[d] || 0) + tam[d];
-      if (ocup >= 3) continue;
-      if (alvo === null || ocup < (uso[alvo] || 0) + tam[alvo]) alvo = d;
+      if (d > it.venceDia || (uso[d] || 0) >= 3) continue;
+      if (dia === null || (uso[d] || 0) < (uso[dia] || 0)) dia = d;
     }
-    if (alvo === null) break;
-    tam[alvo]++; sobra--;
-  }
-  const fila = [];
-  for (const d of [2, 3, 4]) for (let i = 0; i < tam[d]; i++) fila.push(d);
-  let vagas6 = Math.max(0, 3 - (uso[5] || 0));
-  livres.forEach((it, i) => {
-    let dia = fila[i];
-    if (dia == null) { if (vagas6 > 0) { dia = 5; vagas6--; } else dia = 6; }
-    if (dia > it.venceDia) dia = it.venceDia;      /* nunca depois do vencimento */
+    if (dia === null && 5 <= it.venceDia && (uso[5] || 0) < 3) dia = 5;
+    if (dia === null && 6 <= it.venceDia) dia = 6;
+    /* sem vaga até o vencimento: fica no próprio dia do vencimento */
+    if (dia === null) dia = it.venceDia;
     res[it.key] = { dia, fixo: false, vermelho: false };
-  });
+    somar(dia);
+  }
   return res;
 }
 
@@ -10913,7 +10928,7 @@ function tcMontar(raw) {
       vence: m.vence_em || dISO(addDias(parseISO(m.semana), -1)),
       fixo: m.dia_montagem || null, cor: m.cor || null, incerto: !!m.incerto,
       nota: m.nota || "", oculto: !!m.oculto, criado: m.criado_em || "",
-      montado: false
+      ordem: m.ordem == null ? null : m.ordem, montado: false
     });
   }
 
@@ -10937,6 +10952,7 @@ function tcMontar(raw) {
       fixo: aj && aj.semana === semana ? (aj.dia_montagem || null) : null,
       cor: aj ? aj.cor || null : null, incerto: !!(aj && aj.incerto),
       nota: aj ? aj.nota || "" : "", oculto: !!(aj && aj.oculto),
+      ordem: aj && aj.semana === semana && aj.ordem != null ? aj.ordem : null,
       criado: "", montado
     });
   }
@@ -10949,18 +10965,31 @@ function tcMontar(raw) {
     const dias = tcSugerirDias(lista.map(i => ({
       key: i.key, venceDia: tcDiaDe(i.vence, s), fixo: i.fixo,
       fora: i.oculto || i.montado })));
-    for (const i of lista) {
+    lista.forEach((i, n) => {
       const d = dias[i.key];
       i.dia = d ? d.dia : null;
       i.diaFixo = !!(d && d.fixo);
       i.vermelho = !!(d && d.vermelho);
       i.antes = i.vence < dISO(addDias(parseISO(s), -1));
-    }
+      i.pos = n;
+    });
+    /* exibição: 2ª..Dom; dentro do dia, a ordem arrastada (sem ordem = fim do
+       dia, na ordem de vencimento). Montado/oculto vão para o pé da coluna. */
+    lista.sort((x, y) =>
+      (x.dia || 8) - (y.dia || 8) ||
+      (x.ordem == null ? 1 : 0) - (y.ordem == null ? 1 : 0) ||
+      (x.ordem || 0) - (y.ordem || 0) ||
+      x.pos - y.pos);
   }
   return col;
 }
 
 /* ---------- tela ---------- */
+function tcMsgErro(msg) {
+  if (/ordem/.test(msg || "") && /column|coluna|schema cache|PGRST204/i.test(msg || ""))
+    return "Falta a coluna ordem: rode o trocas_ordem.sql no Supabase.";
+  return msg;
+}
 function tcErroSemTabela(msg) {
   return /trocas_calendario/.test(msg || "") &&
     /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(msg || "");
@@ -11063,7 +11092,7 @@ function TcBusca({ semana, jaTem, alunos, onAdd, desabilitado }) {
   );
 }
 
-function TcLinha({ it, semana, onSalvar, onRemover, onMover, onAbrirTreino, bloqueado }) {
+function TcLinha({ it, semana, onSalvar, onRemover, onMover, onAbrirTreino, bloqueado, arraste }) {
   const [menu, setMenu] = useState("");         /* "dia" | "cor" | "" */
   const [aberto, setAberto] = useState(false);
   const [nota, setNota] = useState(it.nota);
@@ -11077,8 +11106,18 @@ function TcLinha({ it, semana, onSalvar, onRemover, onMover, onAbrirTreino, bloq
   };
 
   return (
-    <div className={"tc-lin" + (it.oculto ? " oc" : "") + (aberto ? " ab" : "")}>
+    <div className={"tc-lin" + (it.oculto ? " oc" : "") + (aberto ? " ab" : "") +
+        (arraste.eu ? " arrastando" : "") +
+        (arraste.alvo ? " alvo-" + arraste.alvo : "")}
+      data-key={it.key}
+      onDragOver={arraste.onOver} onDrop={arraste.onDrop}>
       <div className="tc-l1">
+        {/* alça: só ela é arrastável, senão o campo de nota não deixa
+           selecionar texto em alguns navegadores */}
+        <span className={"tc-grip" + (arraste.pode ? "" : " off")}
+          draggable={arraste.pode}
+          title={arraste.pode ? "Arraste para reordenar ou mudar de dia" : arraste.porque}
+          onDragStart={arraste.onStart} onDragEnd={arraste.onEnd}>⠿</span>
         <div className="tc-ancora">
           <button className={"tc-dia" + (it.montado ? " ok" : "") +
               (it.vermelho ? " verm" : "") + (it.diaFixo ? " fixo" : "")}
@@ -11195,6 +11234,10 @@ function PainelTrocas() {
   const [erro, setErro] = useState("");
   const [carr, setCarr] = useState(true);
   const [verOcultos, setVerOcultos] = useState(false);
+  const [arr, setArr]   = useState(null);   /* linha sendo arrastada */
+  /* a coluna `ordem` existe? true/false pelo que veio do banco; null = não sei */
+  const [temOrdem, setTemOrdem] = useState(null);
+  const [alvo, setAlvo] = useState(null);   /* { key, lado } | { semana, dia } */
 
   const meses = [0, 1].map(k => {
     const d = new Date(base.a, base.m + k, 1, 12);
@@ -11219,7 +11262,10 @@ function PainelTrocas() {
       if (tcErroSemTabela(m.error.message)) setSemTabela(true);
       else setErro("trocas: " + m.error.message);
       setManuais([]);
-    } else { setSemTabela(false); setManuais(m.data || []); }
+    } else {
+      setSemTabela(false); setManuais(m.data || []);
+      if ((m.data || []).length) setTemOrdem((m.data || []).some(x => "ordem" in x));
+    }
 
     let fases = [], proximas = [], comTreino = new Set();
     if (f.error) setErro(e => (e ? e + " | " : "") + "fases: " + f.error.message);
@@ -11268,20 +11314,26 @@ function PainelTrocas() {
     const r = await sb.from("trocas_calendario").insert(linha);
     if (r.error) {
       setManuais(l => l.filter(x => x.id !== linha.id));
-      toast(r.error.message, "erro");
+      avisarErro(r.error.message);
     }
+  }
+
+  function avisarErro(msg) {
+    const txt = tcMsgErro(msg);
+    if (txt !== msg) setTemOrdem(false);
+    toast(txt, "erro");
   }
 
   async function salvar(it, campos) {
     const extra = { ...campos, atualizado_em: agora() };
     if (it.tipo === "manual" || it.id) {
       const antes = manuais.find(x => x.id === it.id);
-      if (it.tipo === "auto" && "dia_montagem" in campos) extra.semana = it.semana;
+      if (it.tipo === "auto" && ("dia_montagem" in campos || "ordem" in campos)) extra.semana = it.semana;
       setManuais(l => l.map(x => (x.id === it.id ? { ...x, ...extra } : x)));
       const r = await sb.from("trocas_calendario").update(extra).eq("id", it.id);
       if (r.error) {
         setManuais(l => l.map(x => (x.id === it.id ? antes : x)));
-        toast(r.error.message, "erro");
+        avisarErro(r.error.message);
       }
       return;
     }
@@ -11292,8 +11344,105 @@ function PainelTrocas() {
     const r = await sb.from("trocas_calendario").insert(linha);
     if (r.error) {
       setManuais(l => l.filter(x => x.id !== linha.id));
-      toast(r.error.message, "erro");
+      avisarErro(r.error.message);
     }
+  }
+
+  /* ---------- arrastar e soltar ----------
+     Soltar na metade de cima de uma linha = entra antes dela, no dia dela;
+     metade de baixo = entra depois. Soltar num chip do rodapé = fim daquele dia
+     (serve para dia vazio e para outra semana). A linha arrastada fica com o
+     dia fixado; o grupo do dia é renumerado de 10 em 10 em `ordem`. */
+
+  function podeSoltar(semana) {
+    if (!arr) return false;
+    return arr.tipo === "manual" || semana === arr.semana;
+  }
+
+  /* Arrastar congela a coluna: todo mundo fica com o dia que está mostrando
+     agora (vira dia fixo) e ganha ordem. Sem isso, fixar um aluno num dia
+     mudava a sugestão dos outros e eles "pulavam" de dia na sua frente.
+     Quem entrar depois continua recebendo sugestão (dia menos cheio). */
+  function planoColuna(semana, it, dia, refKey, depois, incluir) {
+    const grupos = {};
+    for (const x of col[semana] || []) {
+      if (x.oculto || x.montado || x.key === it.key || !x.dia) continue;
+      (grupos[x.dia] = grupos[x.dia] || []).push(x);
+    }
+    if (incluir) {
+      const g = grupos[dia] = grupos[dia] || [];
+      let pos = g.length;
+      if (refKey) {
+        const i = g.findIndex(x => x.key === refKey);
+        if (i >= 0) pos = depois ? i + 1 : i;
+      }
+      g.splice(pos, 0, it);
+    }
+    const ops = [];
+    for (const d of Object.keys(grupos)) {
+      grupos[d].forEach((x, i) => {
+        const dd = Number(d), ordem = (i + 1) * 10, campos = {};
+        if (x.key === it.key) {
+          campos.dia_montagem = dd;
+          campos.ordem = ordem;
+          if (semana !== it.semana) {
+            campos.semana = semana;
+            campos.vence_em = dISO(addDias(parseISO(semana), -1));
+          }
+        } else {
+          if (!x.diaFixo) campos.dia_montagem = dd;
+          if (x.ordem !== ordem) campos.ordem = ordem;
+        }
+        if (Object.keys(campos).length) ops.push([x, campos]);
+      });
+    }
+    return ops;
+  }
+
+  async function reordenar(it, semAlvo, dia, refKey, depois) {
+    if (temOrdem === false) { avisarErro("column ordem"); return; }
+    if (it.tipo === "auto" && semAlvo !== it.semana) {
+      toast("Linha do app: a semana vem do fim da fase. Mude a data na aba Treinos.", "erro");
+      return;
+    }
+    const ops = planoColuna(semAlvo, it, dia, refKey, depois, true);
+    if (semAlvo !== it.semana) ops.push(...planoColuna(it.semana, it, null, null, false, false));
+    await Promise.all(ops.map(([x, c]) => salvar(x, c)));
+  }
+
+  function propsArraste(it, semana) {
+    const pode = !semTabela && temOrdem !== false && !it.montado && !it.oculto;
+    return {
+      pode,
+      porque: semTabela ? "rode o SQL para editar"
+        : temOrdem === false ? "rode o trocas_ordem.sql para arrastar"
+        : "linha sem dia (montada ou oculta)",
+      eu: !!arr && arr.key === it.key,
+      alvo: alvo && alvo.key === it.key ? alvo.lado : "",
+      onStart: e => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", it.key);
+        const lin = e.currentTarget.closest(".tc-lin");
+        if (lin && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(lin, 12, 14);
+        setArr(it);
+      },
+      onEnd: () => { setArr(null); setAlvo(null); },
+      onOver: e => {
+        if (!arr || arr.key === it.key || it.montado || it.oculto || !podeSoltar(semana)) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const r = e.currentTarget.getBoundingClientRect();
+        const lado = e.clientY < r.top + r.height / 2 ? "antes" : "depois";
+        if (!alvo || alvo.key !== it.key || alvo.lado !== lado) setAlvo({ key: it.key, lado });
+      },
+      onDrop: e => {
+        e.preventDefault();
+        const quem = arr, onde = alvo;
+        setArr(null); setAlvo(null);
+        if (!quem || !onde || onde.key !== it.key) return;
+        reordenar(quem, semana, it.dia, it.key, onde.lado === "depois");
+      }
+    };
   }
 
   async function remover(it) {
@@ -11381,10 +11530,33 @@ function PainelTrocas() {
                       ? <div className="tc-vz">{carr ? "..." : "sem trocas"}</div>
                       : lista.map(it => (
                           <TcLinha key={it.key} it={it} semana={s} bloqueado={semTabela}
+                            arraste={propsArraste(it, s)}
                             onSalvar={salvar} onRemover={remover} onMover={mover}
                             onAbrirTreino={abrirTreino} />
                         ))}
                   </div>
+                  {arr && podeSoltar(s) && (
+                    <div className="tc-soltar">
+                      <span>soltar no fim de:</span>
+                      {[1, 2, 3, 4, 5, 6, 7].map(d => {
+                        const on = alvo && alvo.semana === s && alvo.dia === d;
+                        return (
+                          <b key={d} className={on ? "on" : ""}
+                            onDragOver={e => {
+                              e.preventDefault(); e.dataTransfer.dropEffect = "move";
+                              if (!on) setAlvo({ semana: s, dia: d });
+                            }}
+                            onDragLeave={() => setAlvo(a => (a && a.semana === s && a.dia === d ? null : a))}
+                            onDrop={e => {
+                              e.preventDefault();
+                              const quem = arr;
+                              setArr(null); setAlvo(null);
+                              if (quem) reordenar(quem, s, d, null, false);
+                            }}>{TC_DIA[d]}</b>
+                        );
+                      })}
+                    </div>
+                  )}
                   <div className="tc-ft">
                     <span>{n} {n === 1 ? "troca" : "trocas"}</span>
                     {["2", "3", "4", "5", "6"].map(d => {
