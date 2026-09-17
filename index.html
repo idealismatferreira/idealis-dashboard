@@ -1051,16 +1051,134 @@
     font-size:11px;color:#3d4d50}
   /* datas editaveis no card da fase */
   .mt-fase .per{display:flex;align-items:center;gap:6px}
-  .mt-fase .per input[type=date]{width:auto;flex:1;min-width:0;margin-bottom:0;
-    padding:4px 6px;font-size:11px;background:var(--bg);border:1px solid var(--line);
-    color:var(--mut);border-radius:6px;font-family:inherit}
-  .mt-fase .per input[type=date]:hover{border-color:var(--mut);color:var(--txt)}
-  .mt-fase .per input[type=date]:focus{outline:none;border-color:var(--accent);
-    color:var(--txt)}
   .mt-fase .per .seta{color:#3d4d50;flex-shrink:0;font-size:11px}
   .futuro{border:1px dashed var(--line);border-radius:12px;padding:18px 22px;
     color:var(--mut);font-size:13px;line-height:1.6}
   .futuro b{color:var(--txt);display:block;margin-bottom:5px;font-size:14px}
+  /* ============ SELETOR DE DATA (calendário do mês) ============ */
+  .sd-btn{width:auto;display:inline-flex;align-items:center;justify-content:center;
+    gap:6px;padding:4px 8px;font-size:11px;font-weight:400;background:var(--bg);
+    border:1px solid var(--line);color:var(--mut);border-radius:6px;white-space:nowrap}
+  .sd-btn:hover{border-color:var(--mut);color:var(--txt);filter:none}
+  .sd-btn.on,.sd-btn:focus-visible{outline:none;border-color:var(--accent);color:var(--txt)}
+  .sd-btn.vazio{color:#4a5a5d;border-style:dashed}
+  .sd-btn svg{flex-shrink:0;opacity:.75}
+  .sd-btn.sd-lg{padding:11px 13px;font-size:14px;justify-content:flex-start;
+    border-radius:8px;color:var(--txt)}
+  .sd-btn.sd-pl{width:100%;padding:7px 8px;font-size:13px;color:var(--txt)}
+  .mt-fase .per .sd-btn{flex:1;min-width:0}
+  .sd-pop{position:fixed;z-index:150;width:262px;background:var(--card);
+    border:1px solid var(--accent);border-radius:11px;padding:10px 10px 8px;
+    box-shadow:0 14px 40px rgba(0,0,0,.65);outline:none}
+  .sd-hd{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .sd-hd b{flex:1;text-align:center;font-size:13px;font-weight:600;
+    text-transform:capitalize}
+  .sd-nv{width:28px;height:28px;padding:0;background:var(--bg);color:var(--txt);
+    border:1px solid var(--line);border-radius:7px;font-size:16px;line-height:1}
+  .sd-nv:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .sd-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .sd-sem{font-size:9px;text-align:center;color:var(--mut);padding:2px 0 4px;
+    letter-spacing:.5px}
+  .sd-sem.seg{color:var(--accent);font-weight:700}
+  .sd-d{width:100%;height:31px;padding:0;background:transparent;color:var(--txt);
+    border:1px solid transparent;border-radius:7px;font-size:12px;font-weight:400}
+  .sd-d:hover{border-color:var(--accent);filter:none}
+  .sd-d.seg{box-shadow:inset 0 -2px 0 #0e4b4d}
+  .sd-d.fora{color:#3d4d50}
+  .sd-d.fx{background:#0d1c1f}
+  .sd-d.mk{border-color:var(--mut)}
+  .sd-d.hj{font-weight:700;color:var(--marca)}
+  .sd-d.fc{border-color:var(--accent)}
+  .sd-d.sel{background:var(--accent);color:#04191c;font-weight:700;box-shadow:none}
+  .sd-d:disabled{opacity:.22;cursor:not-allowed;border-color:transparent}
+  .sd-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;
+    margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+  .sd-ft span{font-size:9.5px;color:var(--mut);line-height:1.35}
+  .sd-ft button{width:auto;padding:4px 11px;font-size:11px;flex-shrink:0}
+  /* ============ OBSERVAÇÕES · SINO + FEED ============ */
+  .top-dir{display:flex;align-items:center;gap:8px}
+  .sn{position:relative}
+  .sn-bt{position:relative;width:34px;height:32px;padding:0;display:flex;
+    align-items:center;justify-content:center;background:transparent;
+    border:1px solid var(--line);color:var(--mut);border-radius:8px}
+  .sn-bt:hover{border-color:var(--mut);color:var(--txt);filter:none}
+  .sn-bt.on{border-color:var(--accent);color:var(--txt)}
+  .sn-bt.aceso{color:var(--marca);border-color:#4d5a10;
+    box-shadow:0 0 0 3px rgba(221,255,0,.07)}
+  .sn-bd{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;
+    padding:0 5px;border-radius:9px;background:var(--marca);color:#0b0f10;
+    font-size:10px;font-weight:700;line-height:18px;text-align:center;
+    box-shadow:0 0 0 2px var(--bg)}
+  .sn-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:80;
+    width:min(390px,92vw);background:var(--card);border:1px solid var(--line);
+    border-radius:13px;box-shadow:0 16px 46px rgba(0,0,0,.65);overflow:hidden}
+  .sn-hd{display:flex;align-items:baseline;justify-content:space-between;
+    padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+  .sn-hd b{font-size:13px;letter-spacing:.3px}
+  .sn-hd span{font-size:11px;color:var(--mut)}
+  .sn-lista{max-height:min(62vh,470px);overflow-y:auto}
+  .sn-it{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+    background:transparent;border:none;border-left:3px solid transparent;
+    border-bottom:1px solid #182224;border-radius:0;padding:10px 13px 10px 11px;
+    color:var(--txt);font-weight:400;font-size:12.5px}
+  .sn-it:hover{background:#0f1a1c;filter:none}
+  .sn-it.nv{background:#12180a}
+  .sn-it .av,.sn-it .ph{margin-top:1px}
+  .sn-tx{flex:1;min-width:0;line-height:1.45;color:var(--mut)}
+  .sn-tx b{color:var(--txt);font-weight:600}
+  .sn-tx i{display:block;font-style:normal;font-size:10.5px;color:#5b6f73;margin-top:2px}
+  .sn-it.nv .sn-tx i{color:var(--marca)}
+  .fd-box{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 14px 6px;margin-bottom:16px}
+  .fd-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:2px 4px 10px}
+  .fd-hd > b{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:#b9c7c9}
+  .fd-hd .fbtn{padding:5px 10px;font-size:11px}
+  .fd-hd .cr-mini{margin-top:0}
+  .fd-ic{color:var(--soft-orange);display:flex}
+  .fd-cnt{font-size:10px;padding:2px 8px;border-radius:9px;background:#2b2f10;
+    color:var(--marca);font-weight:600}
+  .fd-n{font-style:normal;opacity:.6;margin-left:2px}
+  .fd-lista.tudo{max-height:560px;overflow-y:auto}
+  .fd-it{display:flex;gap:13px;align-items:flex-start;padding:11px 10px 11px 9px;
+    border-left:3px solid transparent;border-top:1px solid #182224;cursor:pointer;
+    border-radius:0 8px 8px 0;transition:background .15s}
+  .fd-lista .fd-it:first-child{border-top-color:transparent}
+  .fd-it:hover{background:#0f1a1c}
+  .fd-it.ab{background:#0d1719}
+  .fd-it.pisca{animation:fdpisca 1.2s ease-in-out 2}
+  @keyframes fdpisca{50%{background:#1d2205}}
+  .fd-tx{flex:1;min-width:0}
+  .fd-nm{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .fd-nm b{font-size:14.5px;font-weight:600}
+  .fd-nova{font-size:9px;padding:2px 7px;border-radius:4px;background:#2b2f10;
+    color:var(--marca);font-weight:700;letter-spacing:.3px}
+  .fd-tag{font-size:9px;padding:2px 7px;border-radius:4px;background:#2e1a1a;
+    color:#ff9c9c;letter-spacing:.3px}
+  .fd-fr{font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.45}
+  .fd-fr b{color:var(--txt);font-weight:600}
+  .fd-orf{font-style:normal;color:var(--warn);font-size:11px}
+  .fd-qd{color:#5b6f73}
+  .fd-ct{font-size:12px;color:#8fa2a5;margin-top:4px;line-height:1.5;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fd-ct.obs{color:#c3d6d8}
+  .fd-it.ab .fd-ct{white-space:pre-wrap;overflow:visible}
+  .fd-sb{font-size:10.5px;color:#4a5a5d;margin-top:3px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fd-ac{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px}
+  .fd-ac .cr-mini{margin-top:0}
+  .fd-dt{font-size:10px;color:#4a5a5d;margin-left:auto}
+  .fd-ch{color:#5b6f73;font-size:18px;line-height:1;align-self:center;flex-shrink:0}
+  .fd-vz{padding:18px 10px;text-align:center;font-size:12px;color:var(--mut)}
+  .fd-mais{display:flex;align-items:center;justify-content:center;gap:6px;
+    width:100%;background:transparent;border:none;border-top:1px solid #182224;
+    border-radius:0;color:var(--soft-orange);font-size:13px;font-weight:600;
+    padding:11px 0 9px}
+  .fd-mais:hover{filter:none;color:#ffd6ad}
+  .fd-mais span{font-size:16px;line-height:1}
+  @media (max-width: 720px){
+    .fd-hd > b{flex-basis:calc(100% - 30px)}
+    .fd-dt{display:none}
+  }
 </style>
 </head>
 <body>
@@ -2809,11 +2927,11 @@ function PainelDores({ aluno }) {
   );
 }
 
-function DrawerAnamnese({ aluno, onFechar }) {
+function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
   useEsc(true, onFechar);
   const [atual, setAtual]     = useState(undefined);
   const [hist, setHist]       = useState([]);
-  const [modo, setModo]       = useState("secoes");
+  const [modo, setModo]       = useState(modoInicial || "secoes");
   const [rascunho, setRasc]   = useState("");
   const [erro, setErro]       = useState("");
   const [aviso, setAviso]     = useState("");
@@ -6898,8 +7016,9 @@ function PainelPlanejamento() {
         <div className="pl-lab">Início</div>
         {fases.map((f, i) => (
           <div className={"pl-cel " + (i % 2 ? "cb2" : "ca")} key={"d" + i}>
-            <input type="date" className="fdata" value={f.inicio}
-              onChange={e => mudarFase(i, "inicio", e.target.value)} />
+            <SeletorData value={f.inicio} className="sd-pl"
+              faixa={[f.inicio, f.fim]} title={"Início da fase " + (i + 1)}
+              onChange={v => mudarFase(i, "inicio", v)} />
             {f.inicio && f.fim && (
               <div style={{ textAlign: "center", marginTop: 4 }}>
                 <span className={"pl-sit " + (
@@ -7487,6 +7606,191 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
   );
 }
 
+/* ---------- Seletor de data (calendário do mês) ----------
+   Data de fase só se escolhe clicando no calendário — não dá para digitar.
+   Motivo: o input type=date deixa digitar dia/mês/ano por segmento, e um
+   dígito errado (2062 no lugar de 2026) grava sem aviso nenhum.
+   O popover vai para document.body (portal) para o card não cortar;
+   evento sintético continua subindo pela árvore React, então o
+   stopPropagation do wrapper .per do card segue valendo.
+   Segunda-feira tem destaque: fase sempre começa na segunda.
+   Grava o mesmo ISO "AAAA-MM-DD" de antes — o App não percebe diferença. */
+const SD_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
+                  "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const SD_SEM = ["D", "S", "T", "Q", "Q", "S", "S"];   /* domingo à esquerda, igual ao heatmap */
+
+/* dias visíveis do mês: começa no domingo antes do dia 1 e fecha semanas inteiras */
+function sdGrade(ano, mes) {
+  const d1 = new Date(ano, mes, 1, 12);
+  const ini = addDias(d1, -d1.getDay());
+  const nDias = new Date(ano, mes + 1, 0, 12).getDate();
+  const semanas = Math.ceil((d1.getDay() + nDias) / 7);
+  return Array.from({ length: semanas * 7 }, (_, i) => addDias(ini, i));
+}
+
+function IconeCalendario() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: "block" }}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  );
+}
+
+function SeletorData({ value, onChange, min, max, faixa, title, placeholder,
+                       className, style }) {
+  const [aberto, setAberto] = useState(false);
+  const [vista, setVista]   = useState({ a: 2026, m: 0 });
+  const [foco, setFoco]     = useState("");
+  const [pos, setPos]       = useState({ left: 0, top: 0 });
+  const btn = React.useRef(null);
+  const pop = React.useRef(null);
+  const hoje = dISO(new Date());
+  const [fa, fb] = faixa || [];
+
+  const bloqueado = iso => !!((min && iso < min) || (max && iso > max));
+
+  function irPara(iso) {
+    const p = parseISO(iso);
+    setFoco(iso);
+    setVista({ a: p.getFullYear(), m: p.getMonth() });
+  }
+
+  function abrir() {
+    let base = value || hoje;
+    if (!value && min && base < min) base = min;
+    if (!value && max && base > max) base = max;
+    irPara(base);
+    const r = btn.current.getBoundingClientRect();
+    const W = 262, H = 318;
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - W - 8));
+    const cabeEmbaixo = r.bottom + H + 8 <= window.innerHeight;
+    const top = (!cabeEmbaixo && r.top - H - 6 > 0) ? r.top - H - 6 : r.bottom + 6;
+    setPos({ left, top });
+    setAberto(true);
+  }
+
+  function fechar(devolverFoco) {
+    setAberto(false);
+    if (devolverFoco && btn.current) btn.current.focus();
+  }
+
+  function escolher(iso) {
+    if (bloqueado(iso)) return;
+    fechar(true);
+    if (iso !== value) onChange(iso);
+  }
+
+  function mudarMes(delta) {
+    const alvo = new Date(vista.a, vista.m + delta, 1, 12);
+    const dia = foco ? parseISO(foco).getDate() : 1;
+    const ult = new Date(alvo.getFullYear(), alvo.getMonth() + 1, 0, 12).getDate();
+    alvo.setDate(Math.min(dia, ult));
+    irPara(dISO(alvo));
+  }
+
+  /* fecha com clique fora, rolagem ou resize — posição é fixed e ficaria solta */
+  useEffect(() => {
+    if (!aberto) return;
+    const fora = e => {
+      if (pop.current && pop.current.contains(e.target)) return;
+      if (btn.current && btn.current.contains(e.target)) return;
+      setAberto(false);
+    };
+    const mexeu = e => {
+      /* resize tem window como alvo — contains(window) lança erro */
+      if (e.target instanceof Node && pop.current && pop.current.contains(e.target)) return;
+      setAberto(false);
+    };
+    document.addEventListener("mousedown", fora);
+    window.addEventListener("scroll", mexeu, true);
+    window.addEventListener("resize", mexeu);
+    return () => {
+      document.removeEventListener("mousedown", fora);
+      window.removeEventListener("scroll", mexeu, true);
+      window.removeEventListener("resize", mexeu);
+    };
+  }, [aberto]);
+
+  useEffect(() => { if (aberto && pop.current) pop.current.focus(); }, [aberto]);
+
+  /* stopPropagation no Esc: senão o useEsc do drawer fecha o drawer junto */
+  function tecla(e) {
+    const passos = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    let ok = true;
+    if (passos[e.key] != null) irPara(dISO(addDias(parseISO(foco), passos[e.key])));
+    else if (e.key === "PageUp") mudarMes(-1);
+    else if (e.key === "PageDown") mudarMes(1);
+    else if (e.key === "Enter" || e.key === " ") escolher(foco);
+    else if (e.key === "Escape") fechar(true);
+    else if (e.key === "Tab") { fechar(false); ok = false; }
+    else ok = false;
+    if (ok) { e.preventDefault(); e.stopPropagation(); }
+  }
+
+  const dias = aberto ? sdGrade(vista.a, vista.m) : [];
+
+  const popover = aberto && (
+    <div className="sd-pop" ref={pop} tabIndex={-1} role="dialog"
+      aria-label={title || "Escolher data"}
+      style={{ left: pos.left, top: pos.top }}
+      onKeyDown={tecla} onClick={e => e.stopPropagation()}>
+      <div className="sd-hd">
+        <button type="button" className="sd-nv" aria-label="Mês anterior"
+          onClick={() => mudarMes(-1)}>‹</button>
+        <b>{SD_MESES[vista.m]} {vista.a}</b>
+        <button type="button" className="sd-nv" aria-label="Próximo mês"
+          onClick={() => mudarMes(1)}>›</button>
+      </div>
+      <div className="sd-g">
+        {SD_SEM.map((s, i) => (
+          <span key={"s" + i} className={"sd-sem" + (i === 1 ? " seg" : "")}>{s}</span>
+        ))}
+        {dias.map(d => {
+          const iso = dISO(d);
+          const cls = "sd-d" +
+            (d.getMonth() !== vista.m ? " fora" : "") +
+            (d.getDay() === 1 ? " seg" : "") +
+            (fa && fb && iso >= fa && iso <= fb ? " fx" : "") +
+            ((iso === fa || iso === fb) && iso !== value ? " mk" : "") +
+            (iso === hoje ? " hj" : "") +
+            (iso === foco ? " fc" : "") +
+            (iso === value ? " sel" : "");
+          return (
+            <button type="button" key={iso} className={cls} data-iso={iso}
+              disabled={bloqueado(iso)} tabIndex={-1}
+              title={dBR(iso) + (iso === hoje ? " · hoje" : "")}
+              onClick={() => escolher(iso)}>
+              {d.getDate()}
+            </button>
+          );
+        })}
+      </div>
+      <div className="sd-ft">
+        <span>seg. em destaque · fase começa na segunda</span>
+        <button type="button" className="btn-sec" disabled={bloqueado(hoje)}
+          onClick={() => escolher(hoje)}>Hoje</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <button type="button" ref={btn} title={title} style={style}
+        aria-haspopup="dialog" aria-expanded={aberto}
+        className={"sd-btn" + (value ? "" : " vazio") + (aberto ? " on" : "") +
+          (className ? " " + className : "")}
+        onClick={() => (aberto ? fechar(false) : abrir())}>
+        <IconeCalendario />
+        <span>{value ? dBR(value) : (placeholder || "escolher data")}</span>
+      </button>
+      {popover && ReactDOM.createPortal(popover, document.body)}
+    </>
+  );
+}
+
 /* ---------- Montagem de treino (leitura) ---------- */
 /* Fase A: só lê. Nada aqui escreve no banco — o App Idealis
    continua sendo o único que grava treino/exercício por enquanto. */
@@ -8006,10 +8310,12 @@ function DrawerNovaFase({ aluno, onFechar, onCriada }) {
 
           <div className="ed-lab">Início e fim</div>
           <div style={{ display: "flex", gap: 9 }}>
-            <input type="date" value={ini} style={{ flex: 1 }}
-              onChange={e => { setIni(e.target.value); recalcular(e.target.value, sem); }} />
-            <input type="date" value={fim} style={{ flex: 1 }}
-              onChange={e => setFim(e.target.value)} />
+            <SeletorData value={ini} className="sd-lg" style={{ flex: 1 }}
+              faixa={[ini, fim]} title="Início da fase"
+              onChange={v => { setIni(v); recalcular(v, sem); }} />
+            <SeletorData value={fim} min={ini || undefined} className="sd-lg"
+              style={{ flex: 1 }} faixa={[ini, fim]} title="Fim da fase"
+              onChange={setFim} />
           </div>
 
           <div className="ed-lab">Objetivo</div>
@@ -8424,13 +8730,13 @@ function PainelMontagem() {
                     )}
                     <b>{f.nome}</b>
                     <div className="per" onClick={e => e.stopPropagation()}>
-                      <input type="date" value={f.inicio || ""}
-                        title="Início da fase"
-                        onChange={e => mudarDataFase(f, "inicio", e.target.value)} />
+                      <SeletorData value={f.inicio || ""} max={f.fim || undefined}
+                        faixa={[f.inicio, f.fim]} title="Início da fase"
+                        onChange={v => mudarDataFase(f, "inicio", v)} />
                       <span className="seta">→</span>
-                      <input type="date" value={f.fim || ""}
-                        min={f.inicio || undefined} title="Fim da fase"
-                        onChange={e => mudarDataFase(f, "fim", e.target.value)} />
+                      <SeletorData value={f.fim || ""} min={f.inicio || undefined}
+                        faixa={[f.inicio, f.fim]} title="Fim da fase"
+                        onChange={v => mudarDataFase(f, "fim", v)} />
                     </div>
                     {st === "ativa" && rest !== null && (
                       <div className="rest">
@@ -8851,6 +9157,578 @@ function PainelAcademiasAluno({ aluno }) {
 }
 
 
+/* ---------- Observações dos alunos · sino + feed ----------
+   LEITURA PURA, ZERO DDL. Mapeamento fechado com o App em 16/09/2026:
+   - relatos com exercicio_id      -> observação no exercício (✍️)
+   - relatos com exercicio_id null -> observação geral: fim de treino OU
+     retrospectiva de fim de FASE. No banco as duas são idênticas, então
+     a tela diz "sobre o treino X" sem prometer qual das duas foi.
+   - relatos com exercicio_id null + exercicio_nome -> exercício apagado
+     depois do relato (snapshot do nome sobreviveu)
+   - logs.dor >= FEED_DOR_MIN      -> dor na série, AGRUPADA por exercício+dia
+     (3 séries com dor = 1 item, não 3). 0 = "sem dor", null = não respondeu.
+   - treino_semaforo  != verde, treino_retrospectiva != mesmo_dia,
+     checkins_semanais, avaliacoes respondidas, red_flags.
+
+   Duas datas por item, de propósito:
+   - `data` (dia no aparelho do aluno) ORDENA e aparece na tela.
+   - `reg` (chegada no servidor) decide "não lida". Com fila offline um
+     relato de ontem pode chegar hoje — ordenado por data ele cairia abaixo
+     do que já foi visto e passaria batido se a marca-d'água fosse a data.
+   Nenhuma dessas tabelas guarda hora do relato, só dia: por isso "hoje",
+   "ontem", e não "há 2 horas".
+
+   "Lida" mora no localStorage (marca-d'água em ms). Sem DDL, mas vale por
+   navegador: outro computador começa do zero.
+   Relato EDITADO não acende o sino: relatos não tem atualizado_em. */
+const FEED_DIAS     = 30;
+const FEED_DOR_MIN  = 1;
+const FEED_POLL_MS  = 60000;
+const FEED_LS       = "idealis_feed_visto_v1";
+const FEED_INICIAL  = 5;
+
+const FEED_LOCAL = { cervical: "cervical", ombro: "ombro", cotovelo: "cotovelo",
+  punho: "punho", toracica: "torácica", lombar: "lombar", quadril: "quadril",
+  joelho: "joelho", tornozelo: "tornozelo", outro: "outro local" };
+const FEED_LADO = { e: "esq.", d: "dir.", ambos: "dos dois lados" };
+const FEED_TIPO_DOR = ["dor", "semaforo", "retro", "checkin", "avaliacao", "redflag"];
+
+/* timestamp do Postgres -> ms. Corta a fração em 3 dígitos: Safari antigo
+   devolve NaN para microssegundos. */
+function feedMs(ts) {
+  if (!ts) return 0;
+  const s = String(ts).replace(" ", "T").replace(/(\.\d{3})\d+/, "$1")
+    .replace(/([+-]\d{2})$/, "$1:00");
+  const n = Date.parse(s);
+  return isNaN(n) ? 0 : n;
+}
+/* data sem hora vira meio-dia local — mesmo critério do parseISO */
+const feedMsDia = d => (d ? parseISO(d).getTime() : 0);
+const feedDiaDe = ts => (ts ? dISO(new Date(feedMs(ts))) : "");
+
+function feedQuando(data, hojeISO) {
+  if (!data) return "";
+  const n = Math.round((parseISO(hojeISO) - parseISO(data)) / 864e5);
+  if (n <= 0) return "hoje";
+  if (n === 1) return "ontem";
+  if (n < 7) return "há " + n + " dias";
+  return dBR(data);
+}
+
+function feedNivelDor(v) {
+  const c = corDor(v);
+  return c ? { cor: c } : null;
+}
+
+/* Recebe as linhas cruas de cada fonte e devolve a lista pronta.
+   Função pura: é ela que os testes cobrem. */
+function montarFeed(raw) {
+  const al  = new Map((raw.alunos || []).map(a => [a.id, a]));
+  const tr  = new Map((raw.treinos || []).map(t => [t.id, t]));
+  const ex  = new Map((raw.exercicios || []).map(e => [e.id, e]));
+  const dr  = new Map((raw.dores || []).map(d => [d.id, d]));
+  const out = [];
+  const nomeTreino = id => (tr.get(id) || {}).nome || "";
+  const rotDor = id => (dr.get(id) ? dzRotulo(dr.get(id)) : "");
+  const push = (it) => {
+    const a = al.get(it.aluno_id);
+    if (!it.aluno_id) return;
+    out.push({ ...it, aluno: a ? a.nome : "(aluno não encontrado)",
+               foto: a ? a.foto_url || null : null });
+  };
+
+  for (const r of (raw.relatos || [])) {
+    const texto = String(r.texto || "").trim();
+    if (!texto) continue;
+    const geral = !r.exercicio_id && !r.exercicio_nome;
+    push({
+      key: "rel:" + r.id, tipo: geral ? "relato_geral" : "relato_ex",
+      aluno_id: r.aluno_id, treino_id: r.treino_id || null,
+      data: r.data || feedDiaDe(r.created_at),
+      reg: feedMs(r.created_at) || feedMsDia(r.data),
+      alvo: geral ? (nomeTreino(r.treino_id) || "treino") : r.exercicio_nome,
+      sub: geral ? "" : nomeTreino(r.treino_id),
+      orfao: !geral && !r.exercicio_id,
+      texto, cor: null
+    });
+  }
+
+  /* dor: um item por exercício + dia */
+  const grp = new Map();
+  for (const l of (raw.logs || [])) {
+    if (l.dor == null || l.dor < FEED_DOR_MIN) continue;
+    const k = l.exercicio_id + "|" + l.data;
+    const g = grp.get(k) || { ids: [], exercicio_id: l.exercicio_id, data: l.data,
+      max: 0, series: new Set(), locais: new Set(), reg: 0 };
+    g.ids.push(l.id);
+    g.max = Math.max(g.max, l.dor);
+    g.series.add(l.serie == null ? "l" + l.id : l.serie);
+    if (l.dor_local) {
+      g.locais.add((FEED_LOCAL[l.dor_local] || l.dor_local) +
+        (l.dor_lado ? " " + (FEED_LADO[l.dor_lado] || l.dor_lado) : ""));
+    }
+    g.reg = Math.max(g.reg, feedMs(l.criado_em) || feedMsDia(l.data));
+    grp.set(k, g);
+  }
+  for (const g of grp.values()) {
+    const e = ex.get(g.exercicio_id);
+    const t = e ? tr.get(e.treino_id) : null;
+    if (!t) continue;                  /* sem treino não há aluno: não inventa */
+    const n = g.series.size;
+    push({
+      key: "dor:" + g.exercicio_id + ":" + g.data, tipo: "dor",
+      aluno_id: t.aluno_id, treino_id: t.id, data: g.data, reg: g.reg,
+      alvo: e.nome, sub: t.nome, valor: g.max,
+      texto: [...g.locais].join(" · ") +
+        (g.locais.size ? " · " : "") + n + (n === 1 ? " série" : " séries") + " com dor",
+      cor: (feedNivelDor(g.max) || {}).cor || null
+    });
+  }
+
+  for (const s of (raw.semaforo || [])) {
+    if (s.cor === "verde") continue;
+    const verm = s.cor === "vermelho";
+    push({
+      key: "sem:" + s.id, tipo: "semaforo", aluno_id: s.aluno_id,
+      treino_id: s.treino_id || null, data: s.treino_em,
+      reg: feedMs(s.criado_em || s.created_at) || feedMsDia(s.treino_em),
+      alvo: verm ? "Limitou" : "Incomodou",
+      sub: nomeTreino(s.treino_id), texto: rotDor(s.dor_id),
+      cor: verm ? DZ_R : DZ_A
+    });
+  }
+
+  for (const r of (raw.retro || [])) {
+    if (r.recuperacao === "mesmo_dia") continue;
+    const um = r.recuperacao === "1_2_dias";
+    const dia = feedDiaDe(r.criado_em || r.created_at) || r.treino_ref_em;
+    push({
+      key: "ret:" + r.id, tipo: "retro", aluno_id: r.aluno_id, treino_id: null,
+      data: dia, reg: feedMs(r.criado_em || r.created_at) || feedMsDia(r.treino_ref_em),
+      alvo: um ? "levou 1 a 2 dias para passar" : "piorou",
+      sub: "treino de " + dBR(r.treino_ref_em), texto: rotDor(r.dor_id),
+      cor: um ? DZ_A : DZ_R
+    });
+  }
+
+  for (const c of (raw.checkins || [])) {
+    const dm = c.dor_media == null ? null : Number(c.dor_media);
+    push({
+      key: "ck:" + c.id, tipo: "checkin", aluno_id: c.aluno_id, treino_id: null,
+      data: feedDiaDe(c.criado_em) || c.semana_ref,
+      reg: feedMs(c.criado_em) || feedMsDia(c.semana_ref),
+      alvo: "semana de " + dBR(c.semana_ref), sub: rotDor(c.dor_id),
+      valor: dm,
+      texto: "dor média " + (dm == null ? "—" : String(dm).replace(".", ",")) +
+        (c.limitacao != null ? " · limitação " + String(Number(c.limitacao)).replace(".", ",") : ""),
+      cor: (feedNivelDor(dm) || {}).cor || null
+    });
+  }
+
+  for (const a of (raw.avaliacoes || [])) {
+    push({
+      key: "av:" + a.id, tipo: "avaliacao", aluno_id: a.aluno_id, treino_id: null,
+      data: feedDiaDe(a.respondida_em) || a.data, reg: feedMs(a.respondida_em),
+      alvo: String(a.momento || "").replace(/_/g, " "), sub: "", texto: "", cor: null
+    });
+  }
+
+  for (const f of (raw.redflags || [])) {
+    const sinais = (f.sinais || []).map(s => DZ_RED_FLAGS[s] || s);
+    if (!sinais.length) continue;
+    push({
+      key: "rf:" + f.id, tipo: "redflag", aluno_id: f.aluno_id, treino_id: null,
+      data: feedDiaDe(f.criado_em), reg: feedMs(f.criado_em),
+      alvo: sinais.length + (sinais.length === 1 ? " sinal" : " sinais"),
+      sub: "", texto: sinais.join(" · "), cor: DZ_R
+    });
+  }
+
+  out.sort((x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : y.reg - x.reg));
+  return out;
+}
+
+/* frase do item: "fez observação no Supino" */
+function feedFrase(it) {
+  switch (it.tipo) {
+    case "relato_ex":    return ["fez observação no ", it.alvo];
+    case "relato_geral": return ["fez observação sobre o ", it.alvo];
+    case "dor":          return ["relatou dor " + it.valor + "/10 no ", it.alvo];
+    case "semaforo":     return ["sinalizou o treino como ", it.alvo];
+    case "retro":        return ["disse que a dor ", it.alvo];
+    case "checkin":      return ["respondeu o check-in da ", it.alvo];
+    case "avaliacao":    return ["respondeu o questionário de dor", it.alvo ? " · " + it.alvo : ""];
+    case "redflag":      return ["marcou red flag: ", it.alvo];
+    default:             return ["enviou ", "algo"];
+  }
+}
+
+/* busca em lotes: .in() com centenas de uuid estoura o tamanho da URL */
+async function feedPorIds(tabela, colunas, ids) {
+  const uniq = [...new Set(ids.filter(Boolean))];
+  const out = [];
+  for (let i = 0; i < uniq.length; i += LOTE) {
+    const r = await sb.from(tabela).select(colunas).in("id", uniq.slice(i, i + LOTE));
+    if (r.error) throw new Error(tabela + ": " + r.error.message);
+    out.push(...(r.data || []));
+  }
+  return out;
+}
+
+/* cada fonte falha sozinha: uma tabela fora do ar não apaga o feed */
+async function carregarFeed() {
+  const corte = dISO(addDias(new Date(), -FEED_DIAS));
+  const corteTs = parseISO(corte).toISOString();
+  const falhas = [];
+  const pega = async (nome, q) => {
+    try {
+      const r = await q;
+      if (r.error) { falhas.push(nome + ": " + r.error.message); return []; }
+      return r.data || [];
+    } catch (e) { falhas.push(nome + ": " + e.message); return []; }
+  };
+  const [relatos, logs, semaforo, retro, checkins, avaliacoes, redflags, alunos] =
+    await Promise.all([
+      pega("relatos", sb.from("relatos")
+        .select("id, aluno_id, treino_id, exercicio_id, exercicio_nome, data, texto, created_at")
+        .gte("data", corte).order("data", { ascending: false }).limit(1000)),
+      pega("logs", sb.from("logs")
+        .select("id, exercicio_id, data, serie, dor, dor_local, dor_lado, criado_em")
+        .gte("data", corte).gte("dor", FEED_DOR_MIN).limit(2000)),
+      pega("treino_semaforo", sb.from("treino_semaforo").select("*")
+        .gte("treino_em", corte).neq("cor", "verde")),
+      pega("treino_retrospectiva", sb.from("treino_retrospectiva").select("*")
+        .gte("treino_ref_em", dISO(addDias(parseISO(corte), -7)))
+        .neq("recuperacao", "mesmo_dia")),
+      pega("checkins_semanais", sb.from("checkins_semanais").select("*")
+        .gte("criado_em", corteTs)),
+      pega("avaliacoes", sb.from("avaliacoes")
+        .select("id, aluno_id, momento, data, respondida_em")
+        .eq("status", "respondida").gte("respondida_em", corteTs)),
+      pega("red_flags", sb.from("red_flags")
+        .select("id, aluno_id, sinais, criado_em").gte("criado_em", corteTs)),
+      pega("alunos", sb.from("alunos").select("id, nome, foto_url"))
+    ]);
+
+  let exercicios = [], treinos = [], dores = [];
+  try {
+    exercicios = await feedPorIds("exercicios", "id, nome, treino_id",
+      logs.map(l => l.exercicio_id));
+    treinos = await feedPorIds("treinos", "id, nome, aluno_id", [
+      ...relatos.map(r => r.treino_id),
+      ...exercicios.map(e => e.treino_id),
+      ...semaforo.map(s => s.treino_id)
+    ]);
+    dores = await feedPorIds("dores", "id, regiao, vista, apelido",
+      [...semaforo, ...retro, ...checkins].map(x => x.dor_id));
+  } catch (e) { falhas.push(e.message); }
+
+  const itens = montarFeed({ relatos, logs, semaforo, retro, checkins,
+    avaliacoes, redflags, alunos, exercicios, treinos, dores });
+  /* retrospectiva buscou 7 dias a mais (a data do filtro é a do treino
+     avaliado, não a da resposta); corta aqui pela data exibida */
+  return { itens: itens.filter(i => !i.data || i.data >= corte), falhas };
+}
+
+function feedLerVisto() {
+  try {
+    const v = localStorage.getItem(FEED_LS);
+    return v == null ? null : (Number(v) || 0);
+  } catch (e) { return null; }
+}
+function feedGravarVisto(ms) {
+  try { localStorage.setItem(FEED_LS, String(ms)); } catch (e) {}
+}
+
+const CtxFeed = React.createContext({ itens: null, falhas: [], visto: 0,
+  naoLidas: 0, marcarLidas: () => {}, recarregar: () => {},
+  foco: null, focar: () => {}, irAba: () => {} });
+const usarFeed = () => React.useContext(CtxFeed);
+
+function ProvedorFeed({ irAba, children }) {
+  const [itens, setItens]   = useState(null);
+  const [falhas, setFalhas] = useState([]);
+  const [visto, setVisto]   = useState(() => feedLerVisto());
+  const [foco, setFoco]     = useState(null);
+
+  const recarregar = useCallback(async () => {
+    const r = await carregarFeed();
+    setItens(r.itens);
+    setFalhas(r.falhas);
+    /* primeira vez neste navegador: começa zerado em vez de acender com
+       30 dias de histórico. Usa o maior `reg` (relógio do servidor),
+       não Date.now(), para não depender do relógio do computador. */
+    setVisto(v => {
+      if (v != null) return v;
+      const m = r.itens.reduce((acc, i) => Math.max(acc, i.reg || 0), 0);
+      feedGravarVisto(m);
+      return m;
+    });
+  }, []);
+
+  useEffect(() => {
+    recarregar();
+    const t = setInterval(() => { if (!document.hidden) recarregar(); }, FEED_POLL_MS);
+    const vis = () => { if (!document.hidden) recarregar(); };
+    document.addEventListener("visibilitychange", vis);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", vis); };
+  }, [recarregar]);
+
+  const v = visto || 0;
+  const naoLidas = itens ? itens.filter(i => i.reg > v).length : 0;
+
+  /* contador na aba do navegador */
+  useEffect(() => {
+    const base = document.title.replace(/^\(\d+\+?\)\s*/, "");
+    document.title = naoLidas ? "(" + (naoLidas > 99 ? "99+" : naoLidas) + ") " + base : base;
+  }, [naoLidas]);
+
+  const marcarLidas = useCallback(() => {
+    setVisto(atual => {
+      const m = (itens || []).reduce((acc, i) => Math.max(acc, i.reg || 0), atual || 0);
+      feedGravarVisto(m);
+      return m;
+    });
+  }, [itens]);
+
+  const focar = useCallback(key => {
+    setFoco(key);
+    if (irAba) irAba("acompanhamento");
+  }, [irAba]);
+
+  const valor = { itens, falhas, visto: v, naoLidas, marcarLidas, recarregar,
+                  foco, focar, limparFoco: () => setFoco(null), irAba };
+  return <CtxFeed.Provider value={valor}>{children}</CtxFeed.Provider>;
+}
+
+function IconeSino() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: "block" }}>
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+    </svg>
+  );
+}
+
+function IconeBalao() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: "block" }}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function FeedAvatar({ it, px }) {
+  const s = { width: px, height: px, fontSize: Math.round(px / 3) };
+  return it.foto
+    ? <img className="av" style={s} src={it.foto} alt=""
+        onError={e => { e.target.style.visibility = "hidden"; }} />
+    : <div className="ph" style={s}>{iniciais(it.aluno)}</div>;
+}
+
+function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar }) {
+  const [a, b] = feedFrase(it);
+  const ehObs = it.tipo === "relato_ex" || it.tipo === "relato_geral";
+  return (
+    <div className={"fd-it" + (aberto ? " ab" : "") + (piscar ? " pisca" : "")}
+      data-key={it.key} onClick={onClick}
+      style={it.cor ? { borderLeftColor: it.cor } : undefined}>
+      <FeedAvatar it={it} px={40} />
+      <div className="fd-tx">
+        <div className="fd-nm">
+          <b>{it.aluno}</b>
+          {nova && <span className="fd-nova">nova</span>}
+          {!ehObs && <span className="fd-tag">dor</span>}
+        </div>
+        <div className="fd-fr">
+          {a}<b>{b}</b>
+          {it.orfao && <i className="fd-orf"> (exercício removido)</i>}
+          <span className="fd-qd"> · {feedQuando(it.data, hoje)}</span>
+        </div>
+        {(it.sub || it.texto) && (
+          <div className={"fd-ct" + (ehObs ? " obs" : "")}>
+            {ehObs
+              ? (aberto ? it.texto : it.texto.replace(/\s*\n+\s*/g, " "))
+              : [it.sub, it.texto].filter(Boolean).join(" · ")}
+          </div>
+        )}
+        {ehObs && it.sub && <div className="fd-sb">{it.sub}</div>}
+        {aberto && (
+          <div className="fd-ac" onClick={e => e.stopPropagation()}>
+            <button className="btn-sec cr-mini" onClick={onFicha}>
+              {FEED_TIPO_DOR.includes(it.tipo) ? "Abrir Dores da ficha" : "Abrir ficha"}
+            </button>
+            {it.treino_id && (
+              <button className="btn-sec cr-mini" onClick={onTreino}>Ver treinos</button>
+            )}
+            <span className="fd-dt">{dBR(it.data)}</span>
+          </div>
+        )}
+      </div>
+      <span className="fd-ch">{aberto ? "⌃" : "›"}</span>
+    </div>
+  );
+}
+
+/* bloco da aba Acompanhamento — entre a semana do ciclo e a lista */
+function FeedObservacoes({ onAbrirAluno }) {
+  const { itens, falhas, visto, naoLidas, marcarLidas, foco, limparFoco, irAba } = usarFeed();
+  const { setAlunoId } = usarAluno();
+  const [filtro, setFiltro] = useState("todas");
+  const [todas, setTodas]   = useState(false);
+  const [aberto, setAberto] = useState(null);
+  const [pisca, setPisca]   = useState(null);
+  const hoje = dISO(new Date());
+
+  const lista = (itens || []).filter(i =>
+    filtro === "todas" ? true
+    : filtro === "dor" ? FEED_TIPO_DOR.includes(i.tipo)
+    : !FEED_TIPO_DOR.includes(i.tipo));
+  const vis = todas ? lista : lista.slice(0, FEED_INICIAL);
+
+  /* veio do sino: garante que o item está visível, abre e rola até ele */
+  useEffect(() => {
+    if (!foco || !itens) return;
+    const alvo = itens.find(i => i.key === foco);
+    if (!alvo) { limparFoco(); return; }
+    setFiltro("todas"); setTodas(true); setAberto(foco); setPisca(foco);
+    const t1 = setTimeout(() => {
+      const el = document.querySelector('.fd-it[data-key="' + foco + '"]');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+    const t2 = setTimeout(() => { setPisca(null); limparFoco(); }, 2400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [foco, itens]);
+
+  const n = { todas: (itens || []).length,
+              obs: (itens || []).filter(i => !FEED_TIPO_DOR.includes(i.tipo)).length,
+              dor: (itens || []).filter(i => FEED_TIPO_DOR.includes(i.tipo)).length };
+
+  return (
+    <div className="fd-box">
+      <div className="fd-hd">
+        <span className="fd-ic"><IconeBalao /></span>
+        <b>Observações dos alunos</b>
+        {naoLidas > 0 && <span className="fd-cnt">{naoLidas} nova(s)</span>}
+        <span style={{ flex: 1 }} />
+        {[["todas", "Todas"], ["obs", "Observações"], ["dor", "Dor"]].map(([k, r]) => (
+          <button key={k} className={"fbtn" + (filtro === k ? " on" : "")}
+            onClick={() => { setFiltro(k); setAberto(null); }}>
+            {r} <i className="fd-n">{n[k]}</i>
+          </button>
+        ))}
+        {naoLidas > 0 && (
+          <button className="btn-sec cr-mini" onClick={marcarLidas}>marcar lidas</button>
+        )}
+      </div>
+
+      {falhas.length > 0 && (
+        <div className="ac-diag" style={{ margin: "0 0 10px" }}>
+          Parte do feed não carregou — {falhas.join(" | ")}
+        </div>
+      )}
+
+      {itens === null ? <div className="fd-vz">Carregando observações...</div>
+       : lista.length === 0 ? (
+          <div className="fd-vz">Nada nos últimos {FEED_DIAS} dias.</div>
+       ) : (
+        <div className={"fd-lista" + (todas ? " tudo" : "")}>
+          {vis.map(it => (
+            <FeedLinha key={it.key} it={it} hoje={hoje}
+              nova={it.reg > visto} aberto={aberto === it.key}
+              piscar={pisca === it.key}
+              onClick={() => setAberto(aberto === it.key ? null : it.key)}
+              onFicha={() => onAbrirAluno({ id: it.aluno_id, nome: it.aluno },
+                FEED_TIPO_DOR.includes(it.tipo) ? "dores" : null)}
+              onTreino={() => { setAlunoId(it.aluno_id); if (irAba) irAba("montagem"); }} />
+          ))}
+        </div>
+      )}
+
+      {lista.length > FEED_INICIAL && (
+        <button className="fd-mais" onClick={() => setTodas(v => !v)}>
+          {todas ? "Mostrar só as recentes" : "Ver todas (" + lista.length + ")"}
+          <span>{todas ? "⌃" : "›"}</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* sino do topo, à esquerda do Sair. Abrir o painel conta como ler:
+   o número zera, mas os itens continuam marcados "nova" enquanto ele
+   estiver aberto (marca-d'água anterior guardada no momento da abertura). */
+function SinoFeed() {
+  const { itens, visto, naoLidas, marcarLidas, focar } = usarFeed();
+  const [aberto, setAberto] = useState(false);
+  const [antes, setAntes]   = useState(0);
+  const ref = React.useRef(null);
+  const hoje = dISO(new Date());
+  const fechar = useCallback(() => setAberto(false), []);
+  useEsc(aberto, fechar);
+
+  useEffect(() => {
+    if (!aberto) return;
+    const fora = e => { if (ref.current && !ref.current.contains(e.target)) setAberto(false); };
+    document.addEventListener("mousedown", fora);
+    return () => document.removeEventListener("mousedown", fora);
+  }, [aberto]);
+
+  function alternar() {
+    if (aberto) { setAberto(false); return; }
+    setAntes(visto);
+    setAberto(true);
+    if (naoLidas) marcarLidas();
+  }
+
+  const lista = (itens || []).slice(0, 20);
+  const novas = lista.filter(i => i.reg > antes).length;
+
+  return (
+    <div className="sn" ref={ref}>
+      <button className={"sn-bt" + (naoLidas ? " aceso" : "") + (aberto ? " on" : "")}
+        title={naoLidas ? naoLidas + " observação(ões) nova(s)" : "Observações dos alunos"}
+        aria-label="Observações dos alunos" onClick={alternar}>
+        <IconeSino />
+        {naoLidas > 0 && <span className="sn-bd">{naoLidas > 99 ? "99+" : naoLidas}</span>}
+      </button>
+      {aberto && (
+        <div className="sn-pop">
+          <div className="sn-hd">
+            <b>Observações</b>
+            <span>{novas ? novas + " nova(s)" : "nada novo"}</span>
+          </div>
+          <div className="sn-lista">
+            {itens === null ? <div className="fd-vz">Carregando...</div>
+             : lista.length === 0 ? <div className="fd-vz">Nada nos últimos {FEED_DIAS} dias.</div>
+             : lista.map(it => {
+                const [a, b] = feedFrase(it);
+                return (
+                  <button key={it.key} className={"sn-it" + (it.reg > antes ? " nv" : "")}
+                    style={it.cor ? { borderLeftColor: it.cor } : undefined}
+                    onClick={() => { setAberto(false); focar(it.key); }}>
+                    <FeedAvatar it={it} px={30} />
+                    <span className="sn-tx">
+                      <b>{it.aluno}</b> {a}<b>{b}</b>
+                      <i>{feedQuando(it.data, hoje)}</i>
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+          <button className="fd-mais" onClick={() => { setAberto(false); focar(null); }}>
+            Ver todas no Acompanhamento <span>›</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ---------- Modo Acompanhamento ---------- */
 /* pega o primeiro campo que existir — os nomes das views podem variar */
 const campo = (o, ...nomes) => {
@@ -9127,6 +10005,10 @@ function PainelAcompanhamento() {
         </div>
       )}
 
+      <FeedObservacoes onAbrirAluno={(al, modo) => {
+        setAlunoId(al.id); setAberto({ id: al.id, nome: al.nome, modo });
+      }} />
+
       {erro && <div className="err">{erro}</div>}
       {diag && <div className="ac-diag">{diag}</div>}
 
@@ -9229,6 +10111,7 @@ function PainelAcompanhamento() {
 
       {aberto && (
         <DrawerAnamnese aluno={{ id: aberto.id, nome: aberto.nome }}
+          modoInicial={aberto.modo || null}
           onFechar={() => setAberto(null)} />
       )}
 
@@ -9764,10 +10647,14 @@ function App() {
   return (
     <ProvedorUI>
     <ProvedorAluno>
+    <ProvedorFeed irAba={setAba}>
     <div>
       <div className="top">
         <Logo size={36} />
-        <button className="sair" onClick={() => sb.auth.signOut()}>Sair</button>
+        <div className="top-dir">
+          <SinoFeed />
+          <button className="sair" onClick={() => sb.auth.signOut()}>Sair</button>
+        </div>
       </div>
       <div className="tabs">
         <button className={"tab" + (aba === "alunos" ? " on" : "")}
@@ -9802,6 +10689,7 @@ function App() {
         : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
     </div>
+    </ProvedorFeed>
     </ProvedorAluno>
     </ProvedorUI>
   );
