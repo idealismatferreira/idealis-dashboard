@@ -1176,8 +1176,172 @@
   .fd-mais:hover{filter:none;color:#ffd6ad}
   .fd-mais span{font-size:16px;line-height:1}
   @media (max-width: 720px){
+    /* no celular o painel ancora na barra do topo inteira, não no sino:
+       ancorado no sino ele vazava pela esquerda */
+    .top{position:relative}
+    .sn{position:static}
+    .sn-pop{left:0;right:0;width:auto;top:calc(100% + 6px)}
+    .sn-lista{max-height:64vh}
+    .sn-it{padding:10px 12px 10px 10px}
+    .fd-box{padding:12px 10px 4px}
+    .fd-it{gap:10px;padding:10px 6px 10px 6px}
     .fd-hd > b{flex-basis:calc(100% - 30px)}
     .fd-dt{display:none}
+  }
+  /* ============ MONTAGEM · layout largo ============
+     Antes: #root de 1100px menos 270px de fases sobrava ~770px para colunas
+     fixas de 340px -> cabiam 2 sessões. Com 4, o resto ficava fora e a
+     barra de rolagem lateral só aparecia no pé da coluna mais comprida.
+     Agora: a página inteira sai dos 1100px (só nesta aba, via body.larga,
+     para o topo continuar alinhado com o conteúdo), as colunas
+     dividem a largura, cada coluna rola por dentro com cabeçalho e
+     "+ Exercício" sempre à vista, e a lista de fases pode ser recolhida. */
+  .mt-treinos{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(225px,1fr);
+    gap:14px;overflow-x:auto;padding-bottom:10px;align-items:start;
+    scrollbar-width:thin;scrollbar-color:#2a3a3d transparent}
+  /* 110px = barra "Importar sessões" + barra de rolagem lateral: com a barra
+     no topo da tela, coluna inteira e rolagem lateral ficam à vista */
+  .mt-tr{display:flex;flex-direction:column;max-height:calc(100vh - 110px)}
+  .mt-tr-h b{overflow-wrap:anywhere}
+  .mt-tr-h,.mt-acao{flex:0 0 auto}
+  .mt-tr-c{flex:1 1 auto;min-height:0;overflow-y:auto;
+    scrollbar-width:thin;scrollbar-color:#2a3a3d transparent}
+  .mt-fases-cab{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:8px;gap:8px}
+  .mt-fases-cab span{font-size:10px;color:var(--mut);text-transform:uppercase;
+    letter-spacing:.8px}
+  .mt-rec-bt{width:auto;padding:4px 9px;font-size:11px;font-weight:500;
+    background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:6px}
+  .mt-rec-bt:hover{border-color:var(--accent);color:var(--txt);filter:none}
+  .mt-rec{position:sticky;top:14px;width:44px;min-height:190px;padding:12px 0;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:9px;color:var(--mut);font-weight:500}
+  .mt-rec:hover{border-color:var(--accent);color:var(--txt);filter:none}
+  .mt-rec b{font-size:17px;line-height:1;color:var(--accent)}
+  .mt-rec i{font-style:normal;font-size:12px;writing-mode:vertical-rl;
+    transform:rotate(180deg);max-height:60vh;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  @media (min-width: 901px){
+    body.larga #root{max-width:1760px}
+    .mt-cols.rec{grid-template-columns:44px minmax(0,1fr)}
+    body.larga .mt-cols:not(.rec){grid-template-columns:240px minmax(0,1fr)}
+    .mt-cols.rec .mt-fases{display:none}
+    .mt-fases{position:sticky;top:14px;max-height:calc(100vh - 28px);
+      overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3a3d transparent}
+  }
+  @media (max-width: 900px){
+    /* 1fr puro deixava a coluna crescer até a soma das sessões (4 x 84vw)
+       e empurrava o card da fase e a barra de sessões para fora da tela */
+    .mt-cols{grid-template-columns:minmax(0,1fr)}
+    .mt-treinos{grid-auto-columns:84vw}
+    .mt-tr{max-height:none}
+    .mt-tr-c{overflow:visible}
+    .mt-rec,.mt-rec-bt{display:none}
+  }
+  /* ============ CALENDÁRIO DE TROCA DE TREINO ============ */
+  .tc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .tc-bar > .btn-sec{padding:7px 13px}
+  .tc-leg{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;
+    color:var(--mut);margin-left:10px}
+  .tc-leg > i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .tc-leg > span{margin-right:8px}
+  .tc-mes{margin-bottom:26px}
+  .tc-mes h2{text-align:center;font-size:20px;font-weight:700;color:var(--accent);
+    background:#0e1416;border:1px solid var(--line);border-bottom:none;
+    border-radius:12px 12px 0 0;padding:10px 12px;letter-spacing:.2px}
+  .tc-mes h2 span{color:var(--txt);font-weight:600}
+  .tc-grade{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+    border:1px solid var(--line);border-radius:0 0 12px 12px;background:var(--card)}
+  .tc-col{border-left:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+  .tc-col:first-child{border-left:none}
+  .tc-col.vazia{background:repeating-linear-gradient(135deg,transparent 0 10px,#0f1517 10px 11px)}
+  .tc-col.agora{box-shadow:inset 0 0 0 2px var(--accent);border-radius:2px}
+  .tc-col.passada .tc-lista,.tc-col.passada .tc-hd{opacity:.55}
+  .tc-busca{position:relative;padding:8px 8px 6px;border-bottom:1px solid var(--line)}
+  .tc-busca input{margin:0;padding:7px 10px;font-size:12px;border-radius:7px}
+  .tc-ops{position:absolute;left:8px;right:8px;top:calc(100% - 3px);z-index:60;
+    background:var(--card);border:1px solid var(--accent);border-radius:8px;
+    max-height:280px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+  .tc-op{padding:8px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid #182224}
+  .tc-op:last-child{border-bottom:none}
+  .tc-op.on{background:#0f2a2e;color:var(--accent)}
+  .tc-op.off{opacity:.45;cursor:default}
+  .tc-op small{display:block;color:var(--mut);font-size:10px;margin-top:1px}
+  .tc-hd{background:#1a2427;padding:7px 10px;text-align:center;
+    border-bottom:1px solid var(--line)}
+  .tc-hd b{display:block;font-size:13px;font-weight:700;letter-spacing:.3px}
+  .tc-hd span{font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+  .tc-col.agora .tc-hd{background:#0c2a2e}
+  .tc-col.agora .tc-hd span{color:var(--accent)}
+  .tc-lista{flex:1;min-height:120px}
+  .tc-vz{padding:18px 8px;text-align:center;font-size:11px;color:#4a5a5d}
+  .tc-lin{border-bottom:1px solid #182224}
+  .tc-lin.oc{opacity:.4}
+  .tc-lin.ab{background:#0f191b}
+  .tc-l1{display:flex;align-items:center;gap:6px;padding:5px 8px 5px 6px;min-height:31px}
+  .tc-ancora{position:relative;flex-shrink:0}
+  .tc-dia{width:auto;min-width:34px;height:22px;padding:0 5px;font-size:11px;font-weight:700;
+    background:#16232a;color:#b9d4d8;border:1px dashed #2c4046;border-radius:6px}
+  .tc-dia.fixo{border-style:solid;border-color:var(--accent);color:var(--accent)}
+  .tc-dia.verm{background:#3a1616;border:1px solid var(--alert);color:#ff8f8f}
+  .tc-dia.ok{background:#123024;border:1px solid #2f7a52;color:#6fe0a0}
+  .tc-dia:hover:not(:disabled){filter:brightness(1.25)}
+  .tc-dia:disabled{opacity:1;cursor:default}
+  .tc-dia.mini{display:inline-flex;align-items:center;height:18px;min-width:0;
+    padding:0 5px;font-size:10px;border-radius:5px}
+  .tc-bola{width:14px;height:14px;padding:0;border-radius:50%;
+    border:1.5px solid #3a4a4d;background:transparent}
+  .tc-bola.vazia:hover{border-color:var(--mut);filter:none}
+  .tc-nome{flex:1;min-width:0;font-size:12.5px;line-height:1.4;cursor:pointer;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tc-lin.ab .tc-nome{white-space:normal}
+  .tc-nome .livre{font-style:italic;color:#b9c7c9}
+  .tc-vc{color:#f0a35e;font-weight:600}
+  .tc-nota{color:var(--mut);font-size:11.5px}
+  .tc-cuid{display:inline-flex;vertical-align:-2px;margin-right:4px;color:#ff9f43}
+  .tc-app{font-size:8.5px;margin-left:6px;padding:1px 5px;border-radius:4px;
+    background:#0f2a2e;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;
+    vertical-align:1px}
+  .tc-menu{position:absolute;left:0;top:calc(100% + 4px);z-index:70;background:var(--card);
+    border:1px solid var(--accent);border-radius:9px;padding:5px;
+    box-shadow:0 10px 30px rgba(0,0,0,.6)}
+  .tc-menu.dias{display:grid;grid-template-columns:repeat(4,52px);gap:4px}
+  .tc-menu.dias button{width:52px;height:42px;padding:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:1px;background:var(--bg);color:var(--txt);
+    border:1px solid var(--line);border-radius:7px;font-weight:400}
+  .tc-menu.dias button b{font-size:12px}
+  .tc-menu.dias button span{font-size:9px;color:var(--mut)}
+  .tc-menu.dias button:hover{border-color:var(--accent);filter:none}
+  .tc-menu.dias button.on{border-color:var(--accent);background:#0c2a2e}
+  .tc-menu.dias button.tarde b{color:#ff8f8f}
+  .tc-menu.dias button.auto{grid-column:span 4;height:26px;width:100%;font-size:11px;
+    color:var(--mut)}
+  .tc-menu.cores{display:flex;gap:6px;padding:7px}
+  .tc-menu.cores button{width:24px;height:24px;padding:0;border-radius:50%;
+    background:transparent;border:2px solid transparent;display:flex;
+    align-items:center;justify-content:center}
+  .tc-menu.cores button i{width:16px;height:16px;border-radius:50%;display:block}
+  .tc-menu.cores button.on{border-color:var(--txt)}
+  .tc-menu.cores button.nada i{border:1.5px dashed var(--mut)}
+  .tc-menu.cores button:hover{filter:none;border-color:var(--mut)}
+  .tc-ed{padding:2px 8px 9px 8px}
+  .tc-ed input{margin:0 0 6px;padding:6px 9px;font-size:12px}
+  .tc-ed-l{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .tc-ed-l label{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--mut)}
+  .tc-ed-l .cr-mini{margin-top:0;display:inline-flex;align-items:center;gap:4px}
+  .tc-ed-l .tc-on{border-color:#ff9f43;color:#ff9f43}
+  .tc-ed-l .tc-rm:hover{border-color:var(--alert);color:var(--alert)}
+  .tc-fase{font-size:10px;color:var(--mut);flex-basis:100%}
+  .tc-ft{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 10px;
+    background:#10181a;border-top:1px solid var(--line);font-size:11px;color:var(--mut)}
+  .tc-ft span{color:var(--txt);font-weight:600;margin-right:auto}
+  .tc-ft i{font-style:normal;font-size:10px;padding:1px 6px;border-radius:4px;background:#16232a}
+  @media (max-width: 900px){
+    .tc-grade{grid-template-columns:none;grid-auto-flow:column;
+      grid-auto-columns:82vw;overflow-x:auto}
+    .tc-col.vazia{display:none}
+    .tc-leg{margin-left:0}
   }
 </style>
 </head>
@@ -8353,6 +8517,16 @@ function DrawerNovaFase({ aluno, onFechar, onCriada }) {
 
 function PainelMontagem() {
   const { alunoId: sel, alunos } = usarAluno();
+  /* lista de fases recolhível (só desktop): com 4+ sessões a largura vai
+     toda para os treinos. Lembra a escolha neste navegador. */
+  const [recFases, setRecFases] = useState(() => {
+    try { return localStorage.getItem("idealis_mt_fases_rec_v1") === "1"; }
+    catch (e) { return false; }
+  });
+  const mudarRec = v => {
+    setRecFases(v);
+    try { localStorage.setItem("idealis_mt_fases_rec_v1", v ? "1" : "0"); } catch (e) {}
+  };
   const { toast, confirmar } = usarUI();
   const [fases, setFases]   = useState([]);
   const [faseSel, setFaseSel] = useState("");
@@ -8712,8 +8886,20 @@ function PainelMontagem() {
           As fases e os treinos dele aparecem aqui.
         </div>
       ) : (
-      <div className="mt-cols">
-        <div>
+      <div className={"mt-cols" + (recFases ? " rec" : "")}>
+        {recFases && (
+          <button className="mt-rec" title="Mostrar a lista de fases"
+            onClick={() => mudarRec(false)}>
+            <b>›</b>
+            <i>{(fases.find(f => f.id === faseSel) || {}).nome || "Fases"}</i>
+          </button>
+        )}
+        <div className="mt-fases">
+          <div className="mt-fases-cab">
+            <span>{porAba.length} fase(s)</span>
+            <button className="mt-rec-bt" title="Recolher a lista e dar espaço aos treinos"
+              onClick={() => mudarRec(true)}>‹ recolher</button>
+          </div>
           {porAba.length === 0
             ? <div className="mt-vazio">Nenhuma fase nesta aba.</div>
             : porAba.map(f => {
@@ -8784,9 +8970,14 @@ function PainelMontagem() {
                       return (
                         <div className="mt-tr" key={t.id}>
                           <div className="mt-tr-h">
-                            <b>{t.nome}</b>
+                            {/* nome do aluno sai do cabeçalho: já está na barra
+                               lá em cima e roubava metade da largura */}
+                            <b title={t.nome}>
+                              {feedSemAluno(t.nome, (alunos.find(a => a.id === sel) || {}).nome)}
+                            </b>
                             <span className="cnt">{lista.length} exerc.</span>
                           </div>
+                          <div className="mt-tr-c">
                           {lista.length === 0
                             ? <div className="mt-vazio">Sem exercícios.</div>
                             : (() => {
@@ -8830,6 +9021,7 @@ function PainelMontagem() {
                                   </React.Fragment>
                                 ));
                               })()}
+                          </div>
                           <div className="mt-acao">
                             <button className="btn-sec"
                               onClick={() => setEdit({ treinoId: t.id,
@@ -9215,6 +9407,16 @@ function feedQuando(data, hojeISO) {
   return dBR(data);
 }
 
+/* "Pedro Maimoni - Treino D" -> "Treino D": o nome do aluno já está na linha.
+   Só corta se vier separador depois, para não mutilar "Ana" em "Anatomia". */
+function feedSemAluno(treino, aluno) {
+  const t = String(treino || ""), n = String(aluno || "").trim();
+  if (!n || t.length <= n.length) return t;
+  if (cbNorm(t.slice(0, n.length)) !== cbNorm(n)) return t;
+  const m = t.slice(n.length).match(/^\s*[-–—:·|]\s*/);
+  return m ? t.slice(n.length + m[0].length) : t;
+}
+
 function feedNivelDor(v) {
   const c = corDor(v);
   return c ? { cor: c } : null;
@@ -9228,7 +9430,8 @@ function montarFeed(raw) {
   const ex  = new Map((raw.exercicios || []).map(e => [e.id, e]));
   const dr  = new Map((raw.dores || []).map(d => [d.id, d]));
   const out = [];
-  const nomeTreino = id => (tr.get(id) || {}).nome || "";
+  const nomeTreino = (id, alunoId) =>
+    feedSemAluno((tr.get(id) || {}).nome || "", (al.get(alunoId) || {}).nome);
   const rotDor = id => (dr.get(id) ? dzRotulo(dr.get(id)) : "");
   const push = (it) => {
     const a = al.get(it.aluno_id);
@@ -9246,8 +9449,8 @@ function montarFeed(raw) {
       aluno_id: r.aluno_id, treino_id: r.treino_id || null,
       data: r.data || feedDiaDe(r.created_at),
       reg: feedMs(r.created_at) || feedMsDia(r.data),
-      alvo: geral ? (nomeTreino(r.treino_id) || "treino") : r.exercicio_nome,
-      sub: geral ? "" : nomeTreino(r.treino_id),
+      alvo: geral ? (nomeTreino(r.treino_id, r.aluno_id) || "treino") : r.exercicio_nome,
+      sub: geral ? "" : nomeTreino(r.treino_id, r.aluno_id),
       orfao: !geral && !r.exercicio_id,
       texto, cor: null
     });
@@ -9278,7 +9481,7 @@ function montarFeed(raw) {
     push({
       key: "dor:" + g.exercicio_id + ":" + g.data, tipo: "dor",
       aluno_id: t.aluno_id, treino_id: t.id, data: g.data, reg: g.reg,
-      alvo: e.nome, sub: t.nome, valor: g.max,
+      alvo: e.nome, sub: nomeTreino(t.id, t.aluno_id), valor: g.max,
       texto: [...g.locais].join(" · ") +
         (g.locais.size ? " · " : "") + n + (n === 1 ? " série" : " séries") + " com dor",
       cor: (feedNivelDor(g.max) || {}).cor || null
@@ -9293,7 +9496,7 @@ function montarFeed(raw) {
       treino_id: s.treino_id || null, data: s.treino_em,
       reg: feedMs(s.criado_em || s.created_at) || feedMsDia(s.treino_em),
       alvo: verm ? "Limitou" : "Incomodou",
-      sub: nomeTreino(s.treino_id), texto: rotDor(s.dor_id),
+      sub: nomeTreino(s.treino_id, s.aluno_id), texto: rotDor(s.dor_id),
       cor: verm ? DZ_R : DZ_A
     });
   }
@@ -10607,8 +10810,600 @@ function PainelBackup() {
 }
 
 /* ---------- App ---------- */
-const ABAS_VALIDAS = ["alunos","acompanhamento","volume","montagem","planejamento",
+const ABAS_VALIDAS = ["alunos","acompanhamento","volume","montagem","planejamento","trocas",
                       "catalogo","aparelhos","acessos","backup"];
+
+/* ---------- Calendário de Troca de Treino ----------
+   Substitui a planilha de trocas. Regras fechadas com o Matheus (16/09/2026):
+   - Coluna = SEGUNDA em que o treino novo começa. Os dias de montagem (2ª..Dom)
+     são da semana ANTERIOR à coluna: coluna 24/08 -> 3ª = 18/08.
+   - Treino que vence no domingo anterior entra sem data; vence antes -> "(dd/mm) - ".
+   - Coluna ordenada por vencimento, mais próximo primeiro.
+   - Dia sugerido: 3ª, 4ª e 5ª, até 3 por dia, equilibrado e na ordem da coluna.
+     Passou de 9: 6ª (até 3), depois Sáb. Sem aviso de sobrecarga.
+   - Nunca sugere dia depois do vencimento. Vence na 2ª -> sugere 2ª em vermelho.
+   - Bolinha amarela/laranja/verde: significado a definir pelo Matheus.
+   - ⚠ = aluno que talvez não troque nesta semana.
+   - Migração: 99% dos alunos não têm treino no app. As linhas manuais moram em
+     trocas_calendario; as automáticas nascem de fases.fim e só guardam ajustes
+     (dia, cor, ⚠, nota, oculto) numa linha com fase_id. */
+const TC_DIA = { 1: "2ª", 2: "3ª", 3: "4ª", 4: "5ª", 5: "6ª", 6: "Sáb", 7: "Dom" };
+const TC_CORES = [["amarelo", "#f2d23c"], ["laranja", "#f08a3c"], ["verde", "#3fbf6f"]];
+const TC_COR = Object.fromEntries(TC_CORES);
+const TC_MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho",
+                  "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+/* próxima segunda ESTRITAMENTE depois da data: dom -> +1, seg -> +7, sáb -> +2 */
+function tcSegundaApos(iso) {
+  const d = parseISO(iso);
+  return dISO(addDias(d, ((8 - d.getDay()) % 7) || 7));
+}
+/* dia (1=2ª..7=Dom) da semana de montagem de `semana` em que cai `iso` */
+function tcDiaDe(iso, semana) {
+  return Math.round((parseISO(iso) - addDias(parseISO(semana), -7)) / 864e5) + 1;
+}
+const tcDataDoDia = (semana, dia) => dISO(addDias(parseISO(semana), -8 + dia));
+
+function tcSegundasDoMes(ano, mes) {
+  const d = new Date(ano, mes, 1, 12);
+  d.setDate(1 + ((8 - d.getDay()) % 7));
+  const out = [];
+  while (d.getMonth() === mes) { out.push(dISO(d)); d.setDate(d.getDate() + 7); }
+  return out;
+}
+
+/* Sugestão de dia. `itens` já na ordem da coluna; cada um:
+   { key, venceDia (1..7), fixo (1..7|null), fora (true = não conta: montado/oculto) }
+   Devolve { key: { dia, fixo, vermelho } }. */
+function tcSugerirDias(itens) {
+  const res = {}, uso = {};
+  const somar = d => { uso[d] = (uso[d] || 0) + 1; };
+  const livres = [];
+  for (const it of itens) {
+    if (it.fora) continue;
+    if (it.fixo) {
+      res[it.key] = { dia: it.fixo, fixo: true, vermelho: it.fixo > it.venceDia };
+      somar(it.fixo);
+    } else if (it.venceDia < 2) {
+      res[it.key] = { dia: it.venceDia, fixo: false, vermelho: true };
+      somar(it.venceDia);
+    } else livres.push(it);
+  }
+  /* enche 3ª/4ª/5ª pelo dia menos ocupado (empate = mais cedo), teto 3 */
+  const tam = { 2: 0, 3: 0, 4: 0 };
+  let sobra = livres.length;
+  while (sobra > 0) {
+    let alvo = null;
+    for (const d of [2, 3, 4]) {
+      const ocup = (uso[d] || 0) + tam[d];
+      if (ocup >= 3) continue;
+      if (alvo === null || ocup < (uso[alvo] || 0) + tam[alvo]) alvo = d;
+    }
+    if (alvo === null) break;
+    tam[alvo]++; sobra--;
+  }
+  const fila = [];
+  for (const d of [2, 3, 4]) for (let i = 0; i < tam[d]; i++) fila.push(d);
+  let vagas6 = Math.max(0, 3 - (uso[5] || 0));
+  livres.forEach((it, i) => {
+    let dia = fila[i];
+    if (dia == null) { if (vagas6 > 0) { dia = 5; vagas6--; } else dia = 6; }
+    if (dia > it.venceDia) dia = it.venceDia;      /* nunca depois do vencimento */
+    res[it.key] = { dia, fixo: false, vermelho: false };
+  });
+  return res;
+}
+
+/* Junta manuais + automáticas numa coluna por segunda.
+   raw: { semanas[], manuais[], fases[], proximas[], comTreino:Set, alunos[] } */
+function tcMontar(raw) {
+  const al = new Map((raw.alunos || []).map(a => [a.id, a]));
+  const semanas = new Set(raw.semanas);
+  const col = Object.fromEntries(raw.semanas.map(s => [s, []]));
+  const ajuste = new Map();
+  for (const m of (raw.manuais || [])) if (m.fase_id) ajuste.set(m.fase_id, m);
+
+  for (const m of (raw.manuais || [])) {
+    if (m.fase_id || !semanas.has(m.semana)) continue;
+    const a = m.aluno_id ? al.get(m.aluno_id) : null;
+    col[m.semana].push({
+      key: "m:" + m.id, id: m.id, tipo: "manual", semana: m.semana,
+      aluno_id: m.aluno_id || null, livre: !m.aluno_id,
+      nome: m.aluno_id ? (a ? a.nome : "(aluno removido)") : String(m.nome_livre || "").trim(),
+      vence: m.vence_em || dISO(addDias(parseISO(m.semana), -1)),
+      fixo: m.dia_montagem || null, cor: m.cor || null, incerto: !!m.incerto,
+      nota: m.nota || "", oculto: !!m.oculto, criado: m.criado_em || "",
+      montado: false
+    });
+  }
+
+  for (const f of (raw.fases || [])) {
+    if (!f.fim) continue;
+    const semana = tcSegundaApos(f.fim);
+    if (!semanas.has(semana)) continue;
+    const a = al.get(f.aluno_id);
+    if (!a || a.status !== "ativo") continue;
+    /* aluno já anotado à mão na mesma semana: a linha manual vale */
+    if (col[semana].some(x => x.tipo === "manual" && x.aluno_id === f.aluno_id)) continue;
+    const aj = ajuste.get(f.id) || null;
+    const montado = (raw.proximas || []).some(g => g.aluno_id === f.aluno_id &&
+      g.id !== f.id && g.inicio && f.inicio && g.inicio > f.inicio &&
+      raw.comTreino && raw.comTreino.has(g.id));
+    col[semana].push({
+      key: "f:" + f.id, id: aj ? aj.id : null, tipo: "auto", fase_id: f.id, semana,
+      aluno_id: f.aluno_id, livre: false, nome: a.nome, fase: f.nome || "",
+      vence: f.fim,
+      /* dia escolhido para outra semana não vale se o fim da fase mudou */
+      fixo: aj && aj.semana === semana ? (aj.dia_montagem || null) : null,
+      cor: aj ? aj.cor || null : null, incerto: !!(aj && aj.incerto),
+      nota: aj ? aj.nota || "" : "", oculto: !!(aj && aj.oculto),
+      criado: "", montado
+    });
+  }
+
+  for (const s of raw.semanas) {
+    const lista = col[s].sort((x, y) =>
+      x.vence < y.vence ? -1 : x.vence > y.vence ? 1
+      : x.criado < y.criado ? -1 : x.criado > y.criado ? 1
+      : x.nome.localeCompare(y.nome, "pt-BR"));
+    const dias = tcSugerirDias(lista.map(i => ({
+      key: i.key, venceDia: tcDiaDe(i.vence, s), fixo: i.fixo,
+      fora: i.oculto || i.montado })));
+    for (const i of lista) {
+      const d = dias[i.key];
+      i.dia = d ? d.dia : null;
+      i.diaFixo = !!(d && d.fixo);
+      i.vermelho = !!(d && d.vermelho);
+      i.antes = i.vence < dISO(addDias(parseISO(s), -1));
+    }
+  }
+  return col;
+}
+
+/* ---------- tela ---------- */
+function tcErroSemTabela(msg) {
+  return /trocas_calendario/.test(msg || "") &&
+    /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(msg || "");
+}
+
+function IconeCuidado({ size }) {
+  return (
+    <svg width={size || 13} height={size || 13} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: "block" }}>
+      <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+      <path d="M12 9v4M12 17h.01" />
+    </svg>
+  );
+}
+
+/* menu pequeno ancorado no botão; fecha com clique fora e Esc */
+function TcMenu({ aberto, onFechar, children, className }) {
+  const ref = React.useRef(null);
+  useEffect(() => {
+    if (!aberto) return;
+    const fora = e => { if (ref.current && !ref.current.contains(e.target)) onFechar(); };
+    const esc = e => { if (e.key === "Escape") { e.stopPropagation(); onFechar(); } };
+    document.addEventListener("mousedown", fora);
+    document.addEventListener("keydown", esc, true);
+    return () => {
+      document.removeEventListener("mousedown", fora);
+      document.removeEventListener("keydown", esc, true);
+    };
+  }, [aberto, onFechar]);
+  if (!aberto) return null;
+  return <div ref={ref} className={"tc-menu " + (className || "")}
+    onClick={e => e.stopPropagation()}>{children}</div>;
+}
+
+function TcBusca({ semana, jaTem, alunos, onAdd, desabilitado }) {
+  const [q, setQ] = useState("");
+  const [aberto, setAberto] = useState(false);
+  const [idx, setIdx] = useState(0);
+  const ref = React.useRef(null);
+
+  useEffect(() => {
+    if (!aberto) return;
+    const fora = e => { if (ref.current && !ref.current.contains(e.target)) setAberto(false); };
+    document.addEventListener("mousedown", fora);
+    return () => document.removeEventListener("mousedown", fora);
+  }, [aberto]);
+
+  const termo = q.trim();
+  const achados = termo
+    ? alunos.filter(a => cbCasa(a.nome, termo))
+        .sort((a, b) => (a.status === "ativo" ? 0 : 1) - (b.status === "ativo" ? 0 : 1) ||
+          a.nome.localeCompare(b.nome, "pt-BR"))
+        .slice(0, 8)
+    : [];
+  const ops = [
+    ...achados.map(a => ({ tipo: "aluno", a, ja: jaTem.has(a.id) })),
+    ...(termo ? [{ tipo: "livre", txt: termo }] : [])
+  ];
+
+  function escolher(op) {
+    if (!op || op.ja) return;
+    onAdd(op.tipo === "aluno" ? { aluno_id: op.a.id } : { nome_livre: op.txt });
+    setQ(""); setIdx(0); setAberto(false);
+  }
+
+  return (
+    <div className="tc-busca" ref={ref}>
+      <input value={q} disabled={desabilitado}
+        placeholder={desabilitado ? "rode o SQL para anotar" : "+ aluno ou anotação"}
+        onFocus={() => setAberto(true)}
+        onChange={e => { setQ(e.target.value); setAberto(true); setIdx(0); }}
+        onKeyDown={e => {
+          if (e.key === "ArrowDown") { e.preventDefault(); setIdx(i => Math.min(i + 1, ops.length - 1)); }
+          else if (e.key === "ArrowUp") { e.preventDefault(); setIdx(i => Math.max(i - 1, 0)); }
+          else if (e.key === "Enter") { e.preventDefault(); escolher(ops[idx]); }
+          else if (e.key === "Escape") { setAberto(false); }
+        }} />
+      {aberto && ops.length > 0 && (
+        <div className="tc-ops">
+          {ops.map((op, i) => (
+            <div key={op.tipo === "aluno" ? op.a.id : "livre"}
+              className={"tc-op" + (i === idx ? " on" : "") + (op.ja ? " off" : "")}
+              onMouseEnter={() => setIdx(i)}
+              onMouseDown={e => { e.preventDefault(); escolher(op); }}>
+              {op.tipo === "aluno" ? (
+                <>
+                  {op.a.nome}
+                  <small>{op.ja ? "já está nesta semana"
+                    : op.a.status !== "ativo" ? op.a.status : ""}</small>
+                </>
+              ) : (
+                <>+ anotar “{op.txt}”<small>texto livre, sem ficha</small></>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TcLinha({ it, semana, onSalvar, onRemover, onMover, onAbrirTreino, bloqueado }) {
+  const [menu, setMenu] = useState("");         /* "dia" | "cor" | "" */
+  const [aberto, setAberto] = useState(false);
+  const [nota, setNota] = useState(it.nota);
+  useEffect(() => { setNota(it.nota); }, [it.nota]);
+  const fechar = useCallback(() => setMenu(""), []);
+  const venceDia = tcDiaDe(it.vence, semana);
+
+  const salvarNota = () => {
+    const v = nota.trim();
+    if (v !== (it.nota || "")) onSalvar(it, { nota: v || null });
+  };
+
+  return (
+    <div className={"tc-lin" + (it.oculto ? " oc" : "") + (aberto ? " ab" : "")}>
+      <div className="tc-l1">
+        <div className="tc-ancora">
+          <button className={"tc-dia" + (it.montado ? " ok" : "") +
+              (it.vermelho ? " verm" : "") + (it.diaFixo ? " fixo" : "")}
+            disabled={bloqueado || it.montado || it.oculto}
+            title={it.montado ? "Fase seguinte já montada no app"
+              : it.dia ? "Montar " + TC_DIA[it.dia] + " " + dBR(tcDataDoDia(semana, it.dia)).slice(0, 5) +
+                (it.diaFixo ? " (escolhido por você)" : " (sugestão)") : ""}
+            onClick={() => setMenu(menu === "dia" ? "" : "dia")}>
+            {it.montado ? "✓" : it.oculto ? "—" : TC_DIA[it.dia] || "?"}
+          </button>
+          <TcMenu aberto={menu === "dia"} onFechar={fechar} className="dias">
+            {[1, 2, 3, 4, 5, 6, 7].map(d => (
+              <button key={d}
+                className={(it.dia === d ? "on" : "") + (d > venceDia ? " tarde" : "")}
+                onClick={() => { setMenu(""); onSalvar(it, { dia_montagem: d }); }}>
+                <b>{TC_DIA[d]}</b>
+                <span>{dBR(tcDataDoDia(semana, d)).slice(0, 5)}</span>
+              </button>
+            ))}
+            <button className="auto" disabled={!it.diaFixo}
+              onClick={() => { setMenu(""); onSalvar(it, { dia_montagem: null }); }}>
+              automático
+            </button>
+          </TcMenu>
+        </div>
+
+        <div className="tc-ancora">
+          <button className={"tc-bola" + (it.cor ? "" : " vazia")}
+            disabled={bloqueado}
+            style={it.cor ? { background: TC_COR[it.cor], borderColor: TC_COR[it.cor] } : undefined}
+            title={it.cor ? "Marcação: " + it.cor : "Marcar com cor"}
+            onClick={() => setMenu(menu === "cor" ? "" : "cor")} />
+          <TcMenu aberto={menu === "cor"} onFechar={fechar} className="cores">
+            {TC_CORES.map(([c, hex]) => (
+              <button key={c} className={it.cor === c ? "on" : ""} title={c}
+                onClick={() => { setMenu(""); onSalvar(it, { cor: c }); }}>
+                <i style={{ background: hex }} />
+              </button>
+            ))}
+            <button className="nada" title="sem cor"
+              onClick={() => { setMenu(""); onSalvar(it, { cor: null }); }}>
+              <i />
+            </button>
+          </TcMenu>
+        </div>
+
+        <div className="tc-nome" onClick={() => setAberto(v => !v)}>
+          {it.incerto && (
+            <span className="tc-cuid" title="Talvez não troque nesta semana">
+              <IconeCuidado />
+            </span>
+          )}
+          {it.antes && <span className="tc-vc">({dBR(it.vence).slice(0, 5)}) - </span>}
+          <span className={it.livre ? "livre" : ""}>{it.nome}</span>
+          {it.nota && <span className="tc-nota"> ({it.nota})</span>}
+          {it.tipo === "auto" && <span className="tc-app" title={it.fase}>app</span>}
+        </div>
+      </div>
+
+      {aberto && (
+        <div className="tc-ed">
+          <input value={nota} placeholder="nota (ex: trocar serrote por remada uni polia)"
+            disabled={bloqueado}
+            onChange={e => setNota(e.target.value)} onBlur={salvarNota}
+            onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }} />
+          <div className="tc-ed-l">
+            {it.tipo === "manual" ? (
+              <label>vence
+                <SeletorData value={it.vence}
+                  min={dISO(addDias(parseISO(semana), -7))}
+                  max={dISO(addDias(parseISO(semana), -1))}
+                  title="Último dia do treino atual"
+                  onChange={v => onSalvar(it, { vence_em: v })} />
+              </label>
+            ) : (
+              <span className="tc-fase">{it.fase} · vence {dBR(it.vence)}</span>
+            )}
+            <button className={"btn-sec cr-mini" + (it.incerto ? " tc-on" : "")}
+              disabled={bloqueado}
+              onClick={() => onSalvar(it, { incerto: !it.incerto })}>
+              <IconeCuidado size={11} /> {it.incerto ? "tirar aviso" : "talvez não troque"}
+            </button>
+            {it.tipo === "manual" && (
+              <>
+                <button className="btn-sec cr-mini" disabled={bloqueado}
+                  title="Mover para a semana anterior" onClick={() => onMover(it, -7)}>‹ sem.</button>
+                <button className="btn-sec cr-mini" disabled={bloqueado}
+                  title="Mover para a próxima semana" onClick={() => onMover(it, 7)}>sem. ›</button>
+              </>
+            )}
+            {it.aluno_id && (
+              <button className="btn-sec cr-mini" onClick={() => onAbrirTreino(it)}>treinos</button>
+            )}
+            <button className="btn-sec cr-mini tc-rm" disabled={bloqueado}
+              onClick={() => onRemover(it)}>
+              {it.tipo === "auto" ? (it.oculto ? "mostrar" : "ocultar") : "remover"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PainelTrocas() {
+  const { alunos, setAlunoId } = usarAluno();
+  const { toast, confirmar } = usarUI();
+  const { irAba } = usarFeed();
+  const hoje = dISO(new Date());
+  const [base, setBase] = useState(() => { const d = new Date(); return { a: d.getFullYear(), m: d.getMonth() }; });
+  const [manuais, setManuais] = useState([]);
+  const [auto, setAuto] = useState({ fases: [], proximas: [], comTreino: new Set() });
+  const [semTabela, setSemTabela] = useState(false);
+  const [erro, setErro] = useState("");
+  const [carr, setCarr] = useState(true);
+  const [verOcultos, setVerOcultos] = useState(false);
+
+  const meses = [0, 1].map(k => {
+    const d = new Date(base.a, base.m + k, 1, 12);
+    return { a: d.getFullYear(), m: d.getMonth(), semanas: tcSegundasDoMes(d.getFullYear(), d.getMonth()) };
+  });
+  const semanas = meses.flatMap(x => x.semanas);
+  const s0 = semanas[0], s1 = semanas[semanas.length - 1];
+
+  const carregar = useCallback(async () => {
+    setCarr(true); setErro("");
+    const fimMin = dISO(addDias(parseISO(s0), -7));
+    const fimMax = dISO(addDias(parseISO(s1), -1));
+    const [m, f] = await Promise.all([
+      sb.from("trocas_calendario").select("*")
+        /* manuais do período + todos os ajustes de fase (poucos; o fim da
+           fase pode ter mudado de semana depois do ajuste) */
+        .or("and(semana.gte." + s0 + ",semana.lte." + s1 + "),fase_id.not.is.null"),
+      sb.from("fases").select("id, aluno_id, nome, inicio, fim")
+        .gte("fim", fimMin).lte("fim", fimMax)
+    ]);
+    if (m.error) {
+      if (tcErroSemTabela(m.error.message)) setSemTabela(true);
+      else setErro("trocas: " + m.error.message);
+      setManuais([]);
+    } else { setSemTabela(false); setManuais(m.data || []); }
+
+    let fases = [], proximas = [], comTreino = new Set();
+    if (f.error) setErro(e => (e ? e + " | " : "") + "fases: " + f.error.message);
+    else {
+      fases = f.data || [];
+      const ids = [...new Set(fases.map(x => x.aluno_id))];
+      try {
+        for (let i = 0; i < ids.length; i += LOTE) {
+          const p = await sb.from("fases").select("id, aluno_id, inicio")
+            .in("aluno_id", ids.slice(i, i + LOTE)).gt("inicio", fimMin);
+          if (p.error) throw new Error("fases seguintes: " + p.error.message);
+          proximas.push(...(p.data || []));
+        }
+        const pids = [...new Set(proximas.map(x => x.id))];
+        for (let i = 0; i < pids.length; i += LOTE) {
+          const t = await sb.from("treinos").select("fase_id").in("fase_id", pids.slice(i, i + LOTE));
+          if (t.error) throw new Error("treinos: " + t.error.message);
+          for (const x of (t.data || [])) comTreino.add(x.fase_id);
+        }
+      } catch (e) { setErro(x => (x ? x + " | " : "") + e.message); }
+    }
+    setAuto({ fases, proximas, comTreino });
+    setCarr(false);
+  }, [s0, s1]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  /* celular: abre rolado na semana que está sendo montada, não na passada */
+  const gradeRef = React.useRef(null);
+  useEffect(() => {
+    if (carr || window.innerWidth > 900 || !gradeRef.current) return;
+    const el = gradeRef.current.querySelector(".tc-col.agora");
+    if (el) gradeRef.current.scrollLeft = el.offsetLeft - gradeRef.current.offsetLeft - 8;
+  }, [carr]);
+
+  const col = tcMontar({ semanas, manuais, alunos, ...auto });
+
+  /* ---------- escrita ---------- */
+  const agora = () => new Date().toISOString();
+
+  async function adicionar(semana, alvo) {
+    const linha = { id: novoUUID(), semana, aluno_id: alvo.aluno_id || null,
+      nome_livre: alvo.nome_livre || null, vence_em: dISO(addDias(parseISO(semana), -1)),
+      criado_em: agora() };
+    setManuais(l => [...l, linha]);
+    const r = await sb.from("trocas_calendario").insert(linha);
+    if (r.error) {
+      setManuais(l => l.filter(x => x.id !== linha.id));
+      toast(r.error.message, "erro");
+    }
+  }
+
+  async function salvar(it, campos) {
+    const extra = { ...campos, atualizado_em: agora() };
+    if (it.tipo === "manual" || it.id) {
+      const antes = manuais.find(x => x.id === it.id);
+      if (it.tipo === "auto" && "dia_montagem" in campos) extra.semana = it.semana;
+      setManuais(l => l.map(x => (x.id === it.id ? { ...x, ...extra } : x)));
+      const r = await sb.from("trocas_calendario").update(extra).eq("id", it.id);
+      if (r.error) {
+        setManuais(l => l.map(x => (x.id === it.id ? antes : x)));
+        toast(r.error.message, "erro");
+      }
+      return;
+    }
+    /* linha automática ainda sem ajuste: cria o registro de ajuste */
+    const linha = { id: novoUUID(), semana: it.semana, aluno_id: it.aluno_id,
+      fase_id: it.fase_id, criado_em: agora(), ...campos };
+    setManuais(l => [...l, linha]);
+    const r = await sb.from("trocas_calendario").insert(linha);
+    if (r.error) {
+      setManuais(l => l.filter(x => x.id !== linha.id));
+      toast(r.error.message, "erro");
+    }
+  }
+
+  async function remover(it) {
+    if (it.tipo === "auto") { salvar(it, { oculto: !it.oculto }); return; }
+    const ok = await confirmar({ titulo: "Remover " + (it.nome || "anotação") + "?",
+      texto: "Sai da semana de " + dBR(it.semana) + ".", ok: "Remover" });
+    if (!ok) return;
+    const antes = manuais;
+    setManuais(l => l.filter(x => x.id !== it.id));
+    const r = await sb.from("trocas_calendario").delete().eq("id", it.id);
+    if (r.error) { setManuais(antes); toast(r.error.message, "erro"); }
+  }
+
+  function mover(it, dias) {
+    const nova = dISO(addDias(parseISO(it.semana), dias));
+    salvar(it, { semana: nova, vence_em: dISO(addDias(parseISO(nova), -1)), dia_montagem: null });
+    toast(it.nome + " → semana de " + dBR(nova));
+  }
+
+  function abrirTreino(it) {
+    setAlunoId(it.aluno_id);
+    if (irAba) irAba("montagem");
+  }
+
+  const nav = k => setBase(b => { const d = new Date(b.a, b.m + k, 1, 12); return { a: d.getFullYear(), m: d.getMonth() }; });
+  /* coluna "em montagem": a semana de montagem dela contém hoje */
+  const emMontagem = semanas.find(s => hoje >= dISO(addDias(parseISO(s), -7)) && hoje < s);
+  const ocultos = semanas.reduce((n, s) => n + col[s].filter(i => i.oculto).length, 0);
+
+  return (
+    <div>
+      <div className="tc-bar">
+        <button className="btn-sec" onClick={() => nav(-1)}>‹</button>
+        <button className="btn-sec" onClick={() => {
+          const d = new Date(); setBase({ a: d.getFullYear(), m: d.getMonth() }); }}>hoje</button>
+        <button className="btn-sec" onClick={() => nav(1)}>›</button>
+        <div className="tc-leg">
+          {TC_CORES.map(([c, hex]) => <i key={c} style={{ background: hex }} title={c} />)}
+          <span>cores livres</span>
+          <span className="tc-cuid"><IconeCuidado /></span><span>talvez não troque</span>
+          <b className="tc-vc">(dd/mm)</b><span>vence antes do domingo</span>
+          <b className="tc-dia verm mini">2ª</b><span>apertado</span>
+          <b className="tc-dia ok mini">✓</b><span>fase seguinte já montada no app</span>
+        </div>
+        {ocultos > 0 && (
+          <button className="fbtn" style={{ marginLeft: "auto" }}
+            onClick={() => setVerOcultos(v => !v)}>
+            {verOcultos ? "esconder" : "ver"} ocultos ({ocultos})
+          </button>
+        )}
+      </div>
+
+      {semTabela && (
+        <div className="ac-diag" style={{ marginBottom: 14 }}>
+          A tabela <code>trocas_calendario</code> ainda não existe. Rode o
+          {" "}<code>trocas_calendario.sql</code> no Supabase. Até lá o calendário
+          mostra só as trocas que vêm das fases do app, sem edição.
+        </div>
+      )}
+      {erro && <div className="err">{erro}</div>}
+
+      {meses.map(mes => (
+        <div className="tc-mes" key={mes.a + "-" + mes.m}>
+          <h2>Calendário Troca de Treino <span>· {TC_MESES[mes.m]} {mes.a}</span></h2>
+          <div className="tc-grade"
+            ref={mes.semanas.includes(emMontagem) ? gradeRef : undefined}>
+            {mes.semanas.map(s => {
+              const lista = col[s].filter(i => verOcultos || !i.oculto);
+              const n = col[s].filter(i => !i.oculto).length;
+              const passada = s <= hoje;
+              return (
+                <div key={s} className={"tc-col" + (s === emMontagem ? " agora" : "") +
+                    (passada ? " passada" : "")}>
+                  <TcBusca semana={s} alunos={alunos} desabilitado={semTabela}
+                    jaTem={new Set(col[s].map(i => i.aluno_id).filter(Boolean))}
+                    onAdd={alvo => adicionar(s, alvo)} />
+                  <div className="tc-hd">
+                    <b>{dBR(s).slice(0, 6) + s.slice(0, 4)}</b>
+                    <span>{s === emMontagem ? "montando esta semana"
+                      : "monta " + dBR(tcDataDoDia(s, 2)).slice(0, 5) + " a " +
+                        dBR(tcDataDoDia(s, 4)).slice(0, 5)}</span>
+                  </div>
+                  <div className="tc-lista">
+                    {lista.length === 0
+                      ? <div className="tc-vz">{carr ? "..." : "sem trocas"}</div>
+                      : lista.map(it => (
+                          <TcLinha key={it.key} it={it} semana={s} bloqueado={semTabela}
+                            onSalvar={salvar} onRemover={remover} onMover={mover}
+                            onAbrirTreino={abrirTreino} />
+                        ))}
+                  </div>
+                  <div className="tc-ft">
+                    <span>{n} {n === 1 ? "troca" : "trocas"}</span>
+                    {["2", "3", "4", "5", "6"].map(d => {
+                      const q = col[s].filter(i => !i.oculto && !i.montado && String(i.dia) === d).length;
+                      return q ? <i key={d}>{TC_DIA[d]} {q}</i> : null;
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            {Array.from({ length: 5 - mes.semanas.length }, (_, k) => (
+              <div key={"v" + k} className="tc-col vazia" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function App() {
   const [sessao, setSessao] = useState(undefined);
@@ -10622,6 +11417,8 @@ function App() {
   useEffect(() => {
     const novo = "#/" + aba;
     if (!location.hash.startsWith(novo)) history.replaceState(null, "", novo);
+    /* Treinos e Trocas usam a tela larga: colunas lado a lado */
+    document.body.classList.toggle("larga", aba === "montagem" || aba === "trocas");
   }, [aba]);
 
   useEffect(() => {
@@ -10669,6 +11466,8 @@ function App() {
           onClick={() => setAba("montagem")}>Treinos</button>
         <button className={"tab" + (aba === "planejamento" ? " on" : "")}
           onClick={() => setAba("planejamento")}>Planejamento</button>
+        <button className={"tab" + (aba === "trocas" ? " on" : "")}
+          onClick={() => setAba("trocas")}>Trocas</button>
         <button className={"tab" + (aba === "aparelhos" ? " on" : "")}
           onClick={() => setAba("aparelhos")}>Aparelhos Geral</button>
         <button className={"tab" + (aba === "acessos" ? " on" : "")}
@@ -10684,6 +11483,7 @@ function App() {
         : aba === "volume" ? <PainelVolume />
         : aba === "montagem" ? <PainelMontagem />
         : aba === "planejamento" ? <PainelPlanejamento />
+        : aba === "trocas" ? <PainelTrocas />
         : aba === "aparelhos" ? <PainelAparelhos />
         : aba === "acessos" ? <PainelAcessos />
         : aba === "backup" ? <PainelBackup />
