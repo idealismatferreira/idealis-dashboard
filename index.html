@@ -552,6 +552,7 @@
   .mt-tag.aud{background:#0f2a2e;color:var(--accent)}
   .mt-tag.avl{background:#241a12;color:var(--warn)}
   .mt-tag.iso{background:#2b1a24;color:#ff9ecb}
+  .mt-tag.alo{background:#16261f;color:#8fe3b0}
   .mt-det{margin-left:24px;margin-top:5px;padding:7px 9px;background:#0b1416;
     border-left:2px solid #1f3a3d;border-radius:0 5px 5px 0;font-size:11px;
     color:#a8c4c7;line-height:1.65;font-family:ui-monospace,monospace}
@@ -3927,6 +3928,9 @@ function montarTabela(dados) {
   const musc = [...mapa.values()].filter(r => r.tipo === "muscular").sort(ordenar);
   const comp = [...mapa.values()].filter(r => r.tipo === "complementar").sort(ordenar);
   const indef = [...mapa.values()].filter(r => r.tipo === "indefinido").sort(ordenar);
+  /* alongamento: a view já tira dos grupos musculares (exercicio_modalidade).
+     Aqui só ganha seção própria, fora de qualquer total. */
+  const along = [...mapa.values()].filter(r => r.tipo === "alongamento").sort(ordenar);
 
   const somar = arr => {
     const t = { cels: {}, sec: {}, total: 0, totalSec: 0 };
@@ -3949,7 +3953,7 @@ function montarTabela(dados) {
     rot[t] = r;
   }
 
-  return { treinos, rot, musc, comp, indef, totMusc: somar(musc),
+  return { treinos, rot, musc, comp, indef, along, totMusc: somar(musc),
            totComp: somar(comp), totIndef: somar(indef) };
 }
 
@@ -3968,9 +3972,11 @@ function desenharCanvas(tb, nomeAluno) {
   const W = padX * 2 + colL + colW * nCols;
   const nRows = tb.musc.length
     + (tb.comp.length ? tb.comp.length + 2 : 0)
+    + (tb.along.length ? tb.along.length + 1 : 0)
     + (tb.indef.length ? tb.indef.length + 1 : 0);
   const H = padY * 2 + tituloH + headH + rowH * nRows +
             (tb.musc.length ? rowH + 8 : 0) + (tb.comp.length ? 8 : 0) +
+            (tb.along.length ? 8 : 0) +
             (tb.indef.length ? rowH + 16 : 0) + 26;
 
   const cv = document.createElement("canvas");
@@ -4046,6 +4052,14 @@ function desenharCanvas(tb, nomeAluno) {
     tb.comp.forEach(r => linha(r, false));
     linha({ linha: "TOTAL COMPLEMENTAR", ...tb.totComp }, true);
   }
+  if (tb.along.length) {
+    y += 8;
+    x.textAlign = "left"; x.fillStyle = "#89a0a3";
+    x.font = "600 10px Sora, system-ui, sans-serif";
+    x.fillText("ALONGAMENTOS · FORA DO TOTAL", padX, y + 14);
+    y += rowH;
+    tb.along.forEach(r => linha(r, false));
+  }
   const temSec = [...tb.musc, ...tb.comp].some(r => r.totalSec > 0);
   if (temSec) {
     y += 6;
@@ -4107,6 +4121,11 @@ function htmlEspelho(tb, nome) {
         "'>Complementar · fora do total</td></tr>" +
         tb.comp.map(r => tr(r)).join("") +
         tr({ linha: "Total complementar", ...tb.totComp }, "tot")
+      : "") +
+    (tb.along.length
+      ? "<tr class='sec'><td colspan='" + (tb.treinos.length + 2) +
+        "'>Alongamentos · fora do total</td></tr>" +
+        tb.along.map(r => tr(r)).join("")
       : "") +
     (tb.indef.length
       ? "<tr class='sec al'><td colspan='" + (tb.treinos.length + 2) +
@@ -4254,6 +4273,12 @@ function PainelVolume() {
                   )}
                   {tb.comp.map((r, i) => tr(r, "c" + i))}
                   {tb.comp.length > 0 && tr({ linha: "Total complementar", ...tb.totComp }, "tc", "tot")}
+                  {tb.along.length > 0 && (
+                    <tr className="sec" key="seca">
+                      <td colSpan={tb.treinos.length + 2}>Alongamentos · fora do total</td>
+                    </tr>
+                  )}
+                  {tb.along.map((r, i) => tr(r, "a" + i))}
                   {tb.indef.length > 0 && (
                     <tr className="sec al" key="seci">
                       <td colSpan={tb.treinos.length + 2}>Sem atribuição · ajustar catálogo</td>
@@ -5737,6 +5762,8 @@ function dHora(iso) {
       (serie, id) e reetiqueta por posição num campo derivado.
    4. Cardio fica fora (extra.tipo = 'cardio'): ele tem `segundos` e `completo`
       iguais aos da isometria, e entraria como prancha de 20 minutos.
+      Alongamento (extra.tipo = 'alongamento') entra, com a mesma métrica de
+      segundos da isometria e rótulo próprio no combobox.
    5. Casamento de exercício: se os DOIS lados têm cardapio_id, compara só o id;
       se qualquer um for null, cai no nome normalizado. É ou-exclusivo, não
       "id, senão nome". A regra não é transitiva, então agrupar pode juntar
@@ -5782,6 +5809,10 @@ function evAgrupar(exs) {
     g.exs.push(ex);
     if (ex.cardapio_id != null) g.ids.add(String(ex.cardapio_id));
     if (!g.iso && isoDe(ex)) g.iso = isoDe(ex);
+    /* g.iso = "por tempo" (métrica em segundos, vale para os dois);
+       g.tipo = rótulo. Isometria e alongamento nunca dividem o mesmo
+       exercício (decisão de 01/10), então não há grupo misto a separar. */
+    if (modoDe(ex) === "alongamento") g.tipo = "alongamento";
   });
   return [...mapa.values()].map(g => ({
     ...g,
@@ -5906,6 +5937,13 @@ function PainelEvolucao({ aluno }) {
       porEx.get(l.exercicio_id).push(l);
     });
     const grupos = evAgrupar(base.exs);
+    /* rótulo também pelo log (extra.tipo): vale para exercício já editado */
+    grupos.forEach(g => {
+      if (g.tipo) return;
+      const alo = g.exs.some(e => (porEx.get(e.id) || [])
+        .some(l => l.extra && l.extra.tipo === "alongamento"));
+      g.tipo = alo ? "alongamento" : (g.iso ? "isometria" : "musculacao");
+    });
     const porGrupo = new Map();
     grupos.forEach(g => porGrupo.set(g.key, g));
     return { grupos, porEx, porGrupo };
@@ -5999,7 +6037,7 @@ function PainelEvolucao({ aluno }) {
   if (!gruposComLog.length && !grade.length) return (
     <div className="dz-nada">
       <b>Nada para mostrar ainda</b>
-      {aluno.nome} não tem fase em vigor nem log de musculação ou isometria.
+      {aluno.nome} não tem fase em vigor nem log de musculação, isometria ou alongamento.
       Cardio não entra aqui — ele tem histórico próprio e misturar os dois inventa
       progressão que não existe.
     </div>
@@ -6015,8 +6053,10 @@ function PainelEvolucao({ aluno }) {
           <Combobox
             opcoes={gruposComLog.map(g => ({
               value: g.key,
-              label: g.nome + (g.iso ? " · isometria" : "") + (g.ambiguo ? " · ⚠" : ""),
-              grupo: g.iso ? "Isometria" : "Musculação"
+              label: g.nome + (g.tipo === "alongamento" ? " · alongamento"
+                : g.iso ? " · isometria" : "") + (g.ambiguo ? " · ⚠" : ""),
+              grupo: g.tipo === "alongamento" ? "Alongamento"
+                : g.iso ? "Isometria" : "Musculação"
             }))}
             value={sel} onChange={v => setSel(v || "")}
             placeholder={"Buscar exercício (" + gruposComLog.length + " com registro)"} />
@@ -6222,7 +6262,8 @@ function EvCard({ item, logsDe, onAbrir }) {
         {ult != null && <b>{ult}{iso ? "s" : ""}</b>}
       </div>
       <div className="mt">
-        {iso ? "isometria" : (item.ex.metodo && item.ex.metodo.nome) || item.ex.series || ""}
+        {iso ? (g.tipo === "alongamento" ? "alongamento" : "isometria")
+             : (item.ex.metodo && item.ex.metodo.nome) || item.ex.series || ""}
         {nVar > 1 && <em> · {evVar(vari)} (+{nVar - 1})</em>}
       </div>
       {!RC || pts.length < 2 ? (
@@ -7296,12 +7337,45 @@ function parseSeries(txt) {
 
    Formato canonico, byte a byte igual ao App (confirmado em producao nos 6
    exercicios ja prescritos): digitos + espaco + U+00D7 + espaco + min-max + aspa
-   reta.  Ex: '3 × 20-30"' */
+   reta.  Ex: '3 × 20-30"'
+
+   ALONGAMENTO (contrato com o App em 01/10/2026, SEM DDL): mora no mesmo
+   jsonb. {min,max} = isometria; {min,max,modo:'alongamento'} = alongamento.
+   Mesmas faixas, mesmo texto via montaSeriesIso, mesmos campos de log
+   (extra.tipo = 'alongamento' em vez de 'isometria').
+     - `modo` AUSENTE = isometria, PARA SEMPRE: os registros antigos dependem
+       disso. Por isso isometria grava SEM a chave, nunca modo:'isometria'.
+     - `modo` desconhecido aparece como isometria, mas é PRESERVADO ao salvar
+       enquanto o tipo não mudar (montaIsoJson). A Dashboard não apaga em
+       silêncio um modo que outro app criou.
+     - No banco a mesma regra mora em public.exercicio_modalidade(); a
+       vw_exercicios_resolvidos tira alongamento dos grupos musculares e
+       manda para a linha "Alongamentos", fora do total.
+   isoDe continua devolvendo só {min,max} (é o estado das faixas). Quem
+   precisa do modo lê modoDe; quem grava usa montaIsoJson. Nunca ler
+   ex.isometria.modo direto. */
 const ISO_FAIXAS = [[5,10],[10,15],[15,20],[20,25],[20,30],[30,40]];
 const isoRot = i => (i && i.min != null && i.max != null) ? (i.min + "-" + i.max + '"') : "";
 function isoDe(ex) {
   const i = ex && ex.isometria;
   return (i && i.min != null && i.max != null) ? { min: +i.min, max: +i.max } : null;
+}
+/* "isometria" | "alongamento" | null (não é exercício de tempo) */
+function modoDe(ex) {
+  if (!isoDe(ex)) return null;
+  return ex.isometria.modo === "alongamento" ? "alongamento" : "isometria";
+}
+/* jsonb final: faixa escolhida + tipo da tela, preservando o resto do
+   objeto original (chaves que outro app tenha posto) */
+function montaIsoJson(iso, tipo, original) {
+  const o = (original && typeof original === "object" && !Array.isArray(original))
+    ? original : {};
+  const { modo, min, max, ...resto } = o;
+  const base = { min: iso.min, max: iso.max, ...resto };
+  if (tipo === "alongamento") return { ...base, modo: "alongamento" };
+  /* isometria: some 'alongamento'; modo desconhecido fica */
+  if (modo && modo !== "alongamento") return { ...base, modo };
+  return base;
 }
 function montaSeriesIso(n, iso) {
   const nn = Math.max(1, Math.min(20, parseInt(n, 10) || 1));
@@ -7423,11 +7497,14 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
   const [erro, setErro]     = useState("");
   const [busy, setBusy]     = useState(false);
   /* tipo e uma escolha unica: os tres se excluem no banco e na tela do App,
-     que renderiza com precedencia cardio > isometria > metodo > texto. */
+     que renderiza com precedencia cardio > isometria > metodo > texto.
+     Alongamento e isometria com modo: compartilham o formulario inteiro, entao
+     `ehIso` aqui quer dizer "exercicio por tempo" (os dois). */
   const [tipo, setTipo]     = useState(
-    (ex && ex.cardio) ? "cardio" : (isoDe(ex) ? "isometria" : "musculacao"));
-  const ehCard = tipo === "cardio";
-  const ehIso  = tipo === "isometria";
+    (ex && ex.cardio) ? "cardio" : (modoDe(ex) || "musculacao"));
+  const ehCard  = tipo === "cardio";
+  const ehAlong = tipo === "alongamento";
+  const ehIso   = tipo === "isometria" || ehAlong;
   const [iso, setIso]       = useState(isoDe(ex));
   const [card, setCard]     = useState(
     (ex && ex.cardio) ? ex.cardio : { nome: "", repetir: 1, blocos: [] });
@@ -7465,7 +7542,8 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
       setErro("Adiciona pelo menos um bloco de cardio."); return;
     }
     if (ehIso && !iso) {
-      setErro("Escolhe a faixa de segundos da isometria."); return;
+      setErro("Escolhe a faixa de segundos " + (ehAlong ? "do alongamento." : "da isometria."));
+      return;
     }
     /* Sem contagem de séries na frente, o texto vira uma armadilha silenciosa:
        a vw_exercicios_resolvidos lê n_texto com ^[^0-9]*([0-9]+), ou seja, o
@@ -7493,7 +7571,9 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
           /* montaSeriesIso é a única porta: texto fora do formato faz o App
              perder o anel de série e gravar as três séries como serie = 1 */
           series: montaSeriesIso(nSer, iso),
-          isometria: iso,
+          /* nunca `iso` cru: ele nao tem o modo, e salvar assim transformaria
+             um alongamento em isometria sem aviso */
+          isometria: montaIsoJson(iso, tipo, ex && ex.isometria),
           descanso: desc.trim() || null,
           metodo: null, cardio: null
         }
@@ -7569,13 +7649,14 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
           <div className="ed-lab">Tipo</div>
           <div className="chips">
             {[["musculacao", "🏋️ Musculação"], ["cardio", "🏃 Cardio"],
-              ["isometria", "🔥 Isometria"]].map(t => (
+              ["isometria", "🔥 Isometria"], ["alongamento", "🧘 Alongamento"]].map(t => (
               <button key={t[0]} className={"chip" + (tipo === t[0] ? " on" : "")}
                 onClick={() => setTipo(t[0])}>{t[1]}</button>
             ))}
           </div>
           <div className="ed-cnt" style={{ marginTop: 5 }}>
             {ehCard ? "sem séries, descanso nem método"
+              : ehAlong ? "sem método; o tempo é a carga · fora do volume dos grupos musculares"
               : ehIso ? "sem método; a carga do aluno passa a ser o tempo"
               : "carga e repetições registradas pelo aluno"}
           </div>
@@ -8067,8 +8148,9 @@ function situacaoFase(f, hojeISO) {
    coisa; mudar aqui sem mudar lá cria fase que abre diferente em cada tela.
 
    Vem junto: nome do treino; por exercício nome, series, descanso, filmar,
-   metodo, cardio, cardapio_id, observacao; o grupo (bi-set/tri-set) COM ID
-   NOVO; e a ordem reindexada a partir de 0.
+   metodo, cardio, isometria (o jsonb INTEIRO, com o `modo` do alongamento),
+   cardapio_id, observacao; o grupo (bi-set/tri-set) COM ID NOVO; e a ordem
+   reindexada a partir de 0.
 
    Não vem: done_date e logs (a fase nova começaria "já feita"), audio_url
    (dois exercícios apontando para o mesmo arquivo fazem "remover" em um
@@ -8872,7 +8954,9 @@ function PainelMontagem() {
         <div className="mt-tags">
           {ex.metodo && <span className="mt-tag met">método</span>}
           {ex.cardio && <span className="mt-tag car">cardio</span>}
-          {iso && <span className="mt-tag iso">isometria</span>}
+          {iso && (modoDe(ex) === "alongamento"
+            ? <span className="mt-tag alo">alongamento</span>
+            : <span className="mt-tag iso">isometria</span>)}
           {ex.filmar && <span className="mt-tag flm">filmar</span>}
           {ex.audio_url && <span className="mt-tag aud">áudio</span>}
           {!ex.cardapio_id && <span className="mt-tag avl">avulso</span>}
@@ -9085,7 +9169,7 @@ function PainelMontagem() {
         <b>+ Nova fase</b> cria fase avulsa, fora do planejamento de periodização —
         ela não entra na grade de 4 colunas de lá. <b>⤵ Importar sessões</b> traz
         sessões de qualquer fase, deste ou de outro aluno: vêm exercícios, séries,
-        método, cardio e os bi-sets (com id novo); não vêm carga, correções,
+        método, cardio, isometria/alongamento e os bi-sets (com id novo); não vêm carga, correções,
         áudio nem histórico — o aluno de destino abre a sessão já com os dele.
         <br />
         Passa o mouse sobre o exercício para <b>reordenar, editar ou apagar</b>.
