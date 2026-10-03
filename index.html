@@ -891,6 +891,35 @@
   .dz-flags .fl em{font-style:normal;color:var(--mut);font-size:11px;
     flex-shrink:0}
   .dz-flags p{margin:10px 0 0;font-size:11px;color:var(--mut);line-height:1.55}
+  /* PSFS · nivel do aluno. Nota alta = bom: cor propria, nunca corDor */
+  .dz-psfs{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px 12px;margin-bottom:16px}
+  .dz-psfs>b{display:block;font-size:11px;text-transform:uppercase;
+    letter-spacing:.9px;color:var(--mut);margin-bottom:4px}
+  .dz-psfs .ref{font-size:11px;color:var(--mut);margin-bottom:8px;line-height:1.5}
+  .dz-psfs .at{padding:9px 0}
+  .dz-psfs .at+.at{border-top:1px solid var(--line)}
+  .dz-psfs .lb{display:flex;justify-content:space-between;align-items:baseline;
+    gap:12px;font-size:12.5px;color:var(--txt);line-height:1.45;margin-bottom:5px}
+  .dz-psfs .lb b{flex-shrink:0;font-size:12px;font-weight:700}
+  .dz-psfs .tr{height:6px;border-radius:999px;background:#1b2427;overflow:hidden}
+  .dz-psfs .tr i{display:block;height:100%;border-radius:999px}
+  .dz-psfs .ev{font-size:11px;color:var(--mut);margin-top:5px;line-height:1.5}
+  .dz-psfs .ev b{font-weight:700}
+  .dz-psfs .md{font-size:12px;color:var(--txt);padding-top:10px;margin-top:2px;
+    border-top:1px solid var(--line)}
+  .dz-psfs .old{display:flex;justify-content:space-between;gap:12px;padding:6px 0;
+    border-top:1px solid var(--line);font-size:12px;color:var(--mut);margin-top:6px}
+  .dz-psfs .old em{font-style:normal;font-size:11px;flex-shrink:0}
+  /* selo "ha quanto tempo" da dor selecionada */
+  .dz-tempo{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;margin-bottom:14px}
+  .dz-tempo .et{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;
+    color:var(--mut);width:100%}
+  .dz-tempo b{font-size:15px;letter-spacing:.6px;font-weight:700;color:var(--txt)}
+  .dz-tempo span{font-size:12.5px;color:var(--txt)}
+  .dz-tempo em{font-style:normal;font-size:11px;color:var(--mut)}
   /* predominio */
   .dz-pred{background:var(--card);border:1px solid var(--line);border-radius:12px;
     padding:18px 16px;margin-bottom:14px;text-align:center}
@@ -2645,6 +2674,258 @@ function DzEncerradas({ fins, sel, aberto, onToggle, onPick, fixo }) {
   );
 }
 
+/* ---------- PSFS · "O que você quer voltar a fazer?" ----------
+   Leitura pura de psfs_atividades + psfs_medicoes. Nenhuma escrita, nenhum DDL.
+   Treinador enxerga via policies psfsa_tr / psfsm_tr (eh_treinador()).
+
+   NIVEL DO ALUNO, nao da dor: psfs_atividades.dores chega sempre '{}' do App,
+   entao nao existe vinculo atividade -> dor para usar.
+
+   Nota ALTA e BOA (10 = "como antes"). E o inverso da escala de dor, por isso
+   NUNCA usar corDor() aqui - pintaria de vermelho quem esta otimo.
+
+   psfs_atividades.ativa NAO serve para saber o que e atual: a RPC
+   salvar_avaliacao so liga (true), nunca desliga. O que e "atual" sai daqui:
+   atividade com medicao na avaliacao respondida mais recente que tem PSFS.
+
+   A RPC casa atividade por lower(btrim(nome)). "subir escada" e "subir escadas"
+   viram DUAS atividades. Enquanto o App nao pre-carregar as atividades
+   anteriores, isso vai acontecer - a lista "de avaliacoes anteriores" existe
+   para isso ficar visivel em vez de sumir.
+
+   Limiares (Stratford 1995; Horn 2012, JOSPT): mudanca minima ~2 pts na
+   media das atividades e ~3 pts numa atividade isolada. */
+const DZ_PSFS_COR      = "#5d9cc4";   /* azul dessaturado: nao e dor, nao e mecanismo */
+const DZ_PSFS_MELHORA  = "#3fa38a";
+const DZ_PSFS_PIORA    = "#e0803c";
+const DZ_PSFS_MIN_ATIV = 3;
+const DZ_PSFS_MIN_MEDIA = 2;
+
+function psfsFmt(v) {
+  return String(Math.round(Number(v) * 10) / 10).replace(".", ",");
+}
+function psfsSinal(d) {
+  return (d > 0 ? "+" : "") + psfsFmt(d);
+}
+function psfsNivel(d, limiar) {
+  if (d == null) return "sem";
+  if (d >= limiar) return "melhora";
+  if (d <= -limiar) return "piora";
+  return "estavel";
+}
+function psfsCorNivel(n) {
+  return n === "melhora" ? DZ_PSFS_MELHORA : n === "piora" ? DZ_PSFS_PIORA : "var(--mut)";
+}
+
+/* Funcao pura - e ela que os testes cobrem. */
+function montarPsfs(atividades, medicoes, avals) {
+  const porAv = new Map((avals || []).map(a => [a.id, a]));
+  const chaveAv = a => String(a.data || "") + "|" + String(a.respondida_em || "");
+  const rotAv = a => (a.momento ? a.momento + " · " : "") + dBR(a.data).slice(0, 5);
+  const rotMed = m => {
+    if (m.origem === "avaliacao") {
+      const av = m.avaliacao_id ? porAv.get(m.avaliacao_id) : null;
+      return (av && av.momento ? av.momento + " · " : "") + dBR(m.data).slice(0, 5);
+    }
+    return "semanal · " + dBR(m.data).slice(0, 5);
+  };
+
+  /* serie por atividade, em ordem de data */
+  const porAt = new Map();
+  (medicoes || []).forEach(m => {
+    const n = Number(m.nota);
+    if (m.nota == null || !isFinite(n)) return;
+    if (!porAt.has(m.atividade_id)) porAt.set(m.atividade_id, []);
+    porAt.get(m.atividade_id).push(Object.assign({}, m, { nota: n }));
+  });
+  porAt.forEach(l => l.sort((x, y) => {
+    const a = String(x.data), b = String(y.data);
+    if (a !== b) return a < b ? -1 : 1;
+    return String(x.criado_em || "") < String(y.criado_em || "") ? -1 : 1;
+  }));
+
+  /* avaliacao de referencia: a mais recente que tem PSFS. Duas no mesmo dia
+     desempatam por respondida_em. */
+  let ref = null;
+  (medicoes || []).forEach(m => {
+    if (m.origem !== "avaliacao" || !m.avaliacao_id) return;
+    const av = porAv.get(m.avaliacao_id) ||
+      { id: m.avaliacao_id, data: m.data, momento: null, respondida_em: null };
+    if (!ref || chaveAv(av) > chaveAv(ref)) ref = av;
+  });
+
+  const nomes = new Map((atividades || []).map(a => [a.id, a]));
+  const linhas = [];
+  porAt.forEach((serie, id) => {
+    const at = nomes.get(id);
+    const pri = serie[0], ult = serie[serie.length - 1];
+    const delta = serie.length >= 2 ? ult.nota - pri.nota : null;
+    linhas.push({
+      id, nome: at && at.nome ? at.nome : "atividade sem nome",
+      serie, pri, ult, n: serie.length, delta,
+      nivel: psfsNivel(delta, DZ_PSFS_MIN_ATIV),
+      rotPri: rotMed(pri), rotUlt: rotMed(ult),
+      naRef: ref ? serie.some(m => m.avaliacao_id === ref.id) : true
+    });
+  });
+
+  /* mais limitada primeiro: e a conversa que importa */
+  const atual = linhas.filter(l => l.naRef)
+    .sort((a, b) => (a.ult.nota - b.ult.nota) || a.nome.localeCompare(b.nome));
+  const antigas = linhas.filter(l => !l.naRef)
+    .sort((a, b) => String(b.ult.data).localeCompare(String(a.ult.data)));
+
+  /* media da VARIACAO de cada atividade contra a propria primeira medicao.
+     Comparar medias de conjuntos diferentes de atividades seria comparar
+     coisas diferentes. */
+  const comHist = atual.filter(l => l.n >= 2);
+  let media = null;
+  if (comHist.length) {
+    const soma = comHist.reduce((s, l) => s + l.delta, 0);
+    const d = soma / comHist.length;
+    media = { n: comHist.length, delta: d, nivel: psfsNivel(d, DZ_PSFS_MIN_MEDIA) };
+  }
+
+  return { ref, rotRef: ref ? rotAv(ref) : "", atual, antigas, media };
+}
+
+function DzPsfs({ aluno, avals }) {
+  const [dados, setDados]   = useState(null);
+  const [erro, setErro]     = useState("");
+  const [verAnt, setVerAnt] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    setDados(null); setErro("");
+    (async () => {
+      const [a, m] = await Promise.all([
+        sb.from("psfs_atividades").select("id, nome, ativa, criado_em")
+          .eq("aluno_id", aluno.id),
+        sb.from("psfs_medicoes")
+          .select("atividade_id, nota, origem, avaliacao_id, data, criado_em")
+          .eq("aluno_id", aluno.id).order("data")
+      ]);
+      if (!vivo) return;
+      const e = a.error || m.error;
+      if (e) { setErro(e.message); return; }
+      setDados({ atividades: a.data || [], medicoes: m.data || [] });
+    })();
+    return () => { vivo = false; };
+  }, [aluno.id]);
+
+  /* erro do PSFS fica no bloco dele - o resto da aba Dores segue */
+  if (erro) return (
+    <div className="dz-psfs">
+      <b>O que quer voltar a fazer</b>
+      <div className="err">Não consegui carregar as atividades: {erro}</div>
+    </div>
+  );
+  if (!dados) return null;
+
+  const p = montarPsfs(dados.atividades, dados.medicoes, avals);
+  if (!p.atual.length) return null;
+
+  return (
+    <div className="dz-psfs">
+      <b>O que quer voltar a fazer</b>
+      <div className="ref">
+        {p.ref ? "Avaliação " + p.rotRef : "Medições registradas"} · 0 = não consigo · 10 = como antes
+      </div>
+
+      {p.atual.map(l => (
+        <div className="at" key={l.id}>
+          <div className="lb">
+            <span>{l.nome}</span>
+            <b style={{ color: DZ_PSFS_COR }}>{psfsFmt(l.ult.nota)}/10</b>
+          </div>
+          <div className="tr">
+            <i style={{ width: Math.max(0, Math.min(10, l.ult.nota)) * 10 + "%",
+              background: DZ_PSFS_COR }} />
+          </div>
+          <div className="ev">
+            {l.n >= 2 ? (
+              <>
+                {l.rotPri}: {psfsFmt(l.pri.nota)} → {l.rotUlt}: {psfsFmt(l.ult.nota)}
+                {" · "}
+                <b style={{ color: psfsCorNivel(l.nivel) }}>{psfsSinal(l.delta)}</b>
+              </>
+            ) : (
+              "primeira medição · " + l.rotUlt
+            )}
+          </div>
+        </div>
+      ))}
+
+      {p.media && (
+        <div className="md">
+          Variação média ({p.media.n} {p.media.n === 1 ? "atividade" : "atividades"} com histórico):{" "}
+          <b style={{ color: psfsCorNivel(p.media.nivel) }}>{psfsSinal(p.media.delta)}</b>
+        </div>
+      )}
+
+      {p.antigas.length > 0 && (
+        <>
+          <button className="dz-tog" style={{ marginLeft: 0, marginTop: 10 }}
+            onClick={() => setVerAnt(v => !v)}>
+            {verAnt ? "ocultar anteriores"
+              : "+ " + p.antigas.length + " de avaliações anteriores"}
+          </button>
+          {verAnt && p.antigas.map(l => (
+            <div className="old" key={l.id}>
+              <span>{l.nome}</span>
+              <em>{psfsFmt(l.ult.nota)}/10 · {l.rotUlt}</em>
+            </div>
+          ))}
+        </>
+      )}
+
+      <div className="dz-vz" style={{ marginTop: 10 }}>
+        Quem escolhe as atividades é o aluno. Nota alta é bom. Verde marca melhora
+        a partir de {DZ_PSFS_MIN_ATIV} pontos numa atividade ou {DZ_PSFS_MIN_MEDIA} na
+        média, a mudança mínima do PSFS. Nome escrito diferente vira atividade nova.
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Ha quanto tempo · selo da dor selecionada ----------
+   Fica ACIMA do predominio porque muda como ele se le: predominio nociplastico
+   em dor de anos e esperado; em dor de semanas, pede mais atencao.
+   3 meses = corte de dor cronica da IASP / CID-11 (Treede et al., 2019).
+
+   dores.temporalidade e sobrescrita pela RPC a cada avaliacao (coalesce),
+   entao e o valor MAIS RECENTE. Olhando uma avaliacao antiga, a diferenca
+   entre os dois nao e erro - e a dor que virou cronica no caminho. */
+const DZ_TEMPO_LONGO = { aguda: "menos de 3 meses", cronica: "3 meses ou mais" };
+
+function textoTempo(dorT, avT) {
+  const t = avT || dorT;
+  if (!t) return null;
+  return {
+    t,
+    curto: DZ_TEMPO[t] || t,
+    longo: DZ_TEMPO_LONGO[t] || "",
+    fonte: avT ? "avaliacao" : "cadastro",
+    mudou: (avT && dorT && dorT !== avT) ? (DZ_TEMPO[dorT] || dorT) : null
+  };
+}
+
+function DzTempo({ dor, av, avData }) {
+  const x = textoTempo(dor ? dor.temporalidade : null, av ? av.temporalidade : null);
+  if (!x) return null;
+  return (
+    <div className="dz-tempo">
+      <span className="et">Há quanto tempo</span>
+      <b>{x.curto.toUpperCase()}</b>
+      {x.longo && <span>{x.longo}</span>}
+      <em>
+        {x.fonte === "avaliacao" && avData ? "na avaliação de " + dBR(avData) : "no cadastro da dor"}
+        {x.mudou ? " · no cadastro atual: " + x.mudou : ""}
+      </em>
+    </div>
+  );
+}
+
 function PainelDores({ aluno }) {
   const [dores, setDores] = useState(null);
   const [cks, setCks]     = useState([]);
@@ -2714,11 +2995,16 @@ function PainelDores({ aluno }) {
   const { ResponsiveContainer, LineChart, BarChart, Line, Bar,
           CartesianGrid, XAxis, YAxis, Tooltip } = RC || {};
 
+  /* PSFS e do aluno, nao da dor: aparece mesmo sem dor nenhuma */
   if (!dores.length) return (
-    <div className="dz-nada">
-      <b>Nenhuma dor em acompanhamento</b>
-      {aluno.nome} ainda não tem dor cadastrada. O painel aparece assim que a
-      primeira avaliação for respondida.
+    <div>
+      <DzPsfs aluno={aluno} avals={avals} />
+      <div className="dz-nada">
+        <b>Nenhuma dor em acompanhamento</b>
+        {avals.length
+          ? aluno.nome + " respondeu avaliação, mas não marcou nenhuma dor para acompanhar."
+          : aluno.nome + " ainda não tem dor cadastrada. O painel aparece assim que a primeira avaliação for respondida."}
+      </div>
     </div>
   );
 
@@ -2756,6 +3042,8 @@ function PainelDores({ aluno }) {
 
   if (!dor) return (
     <div>
+      {/* dor resolvida e justamente quando o funcional mais importa */}
+      <DzPsfs aluno={aluno} avals={avals} />
       <div className="dz-nada">
         <b>Nenhuma dor ativa</b>
         {aluno.nome} não tem queixa em aberto.
@@ -2882,8 +3170,10 @@ function PainelDores({ aluno }) {
   if (nRet < 2) faltando.push("retrospectiva");
 
   const subt = [];
-  if (dor.inicio_em) subt.push("desde " + dBR(dor.inicio_em));
-  if (dor.temporalidade) subt.push(DZ_TEMPO[dor.temporalidade] || dor.temporalidade);
+  /* inicio_em = data da avaliacao que criou a dor (RPC salvar_avaliacao),
+     NAO o inicio da dor. "desde" sozinho dava a entender o contrario.
+     Temporalidade saiu daqui: virou o selo DzTempo. */
+  if (dor.inicio_em) subt.push("acompanhada desde " + dBR(dor.inicio_em));
   if (!dor.ativa) subt.push("encerrada" + (dor.resolvida_em ? " em " + dBR(dor.resolvida_em) : ""));
 
   const escala = (rot, v, cor) => (
@@ -2912,6 +3202,8 @@ function PainelDores({ aluno }) {
             de progredir carga.</p>
         </div>
       )}
+
+      <DzPsfs aluno={aluno} avals={avals} />
 
       <div className="dz-chips">
         {visiveis.map(d => (
@@ -2949,6 +3241,9 @@ function PainelDores({ aluno }) {
           ))}
         </div>
       )}
+
+      <DzTempo dor={dor} av={av}
+        avData={av && porAval[av.avaliacao_id] ? porAval[av.avaliacao_id].data : null} />
 
       {!av ? (
         <div className="dz-nada">
@@ -3023,15 +3318,6 @@ function PainelDores({ aluno }) {
             {escala("Dor agora", av.dor_agora, DZ_DOR)}
             {escala("O quanto isso te incomoda", av.sofrimento, "#e0803c")}
             {escala("O quanto atrapalha o que você faz", av.limitacao, DZ_LIM)}
-            <div className="dz-vz">
-              {av.temporalidade
-                ? "Na avaliação: " + (DZ_TEMPO[av.temporalidade] || av.temporalidade) +
-                  (dor.temporalidade && dor.temporalidade !== av.temporalidade
-                    ? " · no cadastro da dor está " +
-                      (DZ_TEMPO[dor.temporalidade] || dor.temporalidade)
-                    : "")
-                : ""}
-            </div>
           </div>
 
           {/* ---- 4. questionario respondido ---- */}
