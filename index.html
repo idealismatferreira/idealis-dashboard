@@ -1406,9 +1406,12 @@ const SUPABASE_ANON_KEY = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
 const CATALOGO_URL      = "https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec";
 const LOTE = 150;
 /* Sync Sheets -> Supabase da tabela `cardapio`.
-   Desligado: o Catálogo de Exercícios passou a escrever direto no Supabase,
-   e este sync reverteria as edições feitas por lá. */
-const SYNC_CARDAPIO_ATIVO = false;
+   LIGADO TEMPORARIAMENTE para o IMPORT ÚNICO da migração do Catálogo.
+   Traz a planilha (ids até 841) para o Supabase (805 linhas) e resolve as
+   30 prescrições órfãs. DEPOIS DE RODAR UMA VEZ, VOLTAR PARA false.
+   A partir daí o Catálogo escreve direto no Supabase e este sync reverteria
+   as edições feitas por lá. */
+const SYNC_CARDAPIO_ATIVO = true;
 /* Escrita de volta no Sheets (opcional). Deixe WTAN_URL vazio para desligar. */
 const WTAN_URL   = "";
 const WTAN_TOKEN = "MUDE-ISTO-123";
@@ -1440,11 +1443,16 @@ function transformar(l) {
     a_filmar: bool(l.a_filmar),
     isometrico: bool(l.isometrico),
     unilateral: bool(l.unilateral),
-    bi_set: bool(l.bi_set),
+    /* bi_set NAO entra no payload: e coluna de uso exclusivo da Dashboard/App.
+       Fora do objeto, o upsert preserva o valor atual no UPDATE e usa o
+       default false nas linhas novas. Se entrasse, o import reverteria todo
+       bi_set marcado na Dashboard desde 03/09, em silencio. */
     observacao: txt(l.observacao),
     video_url: txt(l.video_url),
-    bruto: l,
-    sincronizado_em: new Date().toISOString()
+    bruto: l
+    /* sincronizado_em NAO entra: as linhas existentes mantem a data real e as
+       novas pegam o default now(). Se fosse junto, as 841 linhas ficariam com
+       a data de hoje e o historico se perderia. */
   };
 }
 
@@ -1766,6 +1774,20 @@ function PainelCatalogo() {
     const { validos, ignorados: ign } = preparar(brutos);
     setIgnor(ign);
     if (!validos.length) { setErro("Nenhum exercício válido no retorno."); setFase("idle"); return; }
+
+    /* ===== TRAVA DE SANIDADE DO IMPORT ÚNICO =====
+       transformar() le l.grupo e l.contexto (singular). Se as chaves do JSON
+       do Apps Script mudarem, tags() devolve array vazio sem reclamar e o
+       import gravaria 841 exercicios sem grupo — jogando o Volume de TODOS os
+       alunos para "Nao classificado" de uma vez. Hoje ~55 de 805 (7%) nao tem
+       grupo, entao o limite de 10% passa no caso normal e barra o desastre. */
+    const semGrupo = validos.filter(v => !v.grupos.length).length;
+    if (semGrupo > validos.length * 0.1) {
+      setErro("Abortado: " + semGrupo + " de " + validos.length +
+        " exercícios vieram sem grupo. Provável mudança nas chaves do JSON " +
+        "(l.grupo / l.contexto). Nada foi gravado.");
+      setFase("idle"); return;
+    }
 
     setFase("gravando"); setProg(0);
     for (let i = 0; i < validos.length; i += LOTE) {
