@@ -1507,6 +1507,71 @@
     .bf-ed{padding:15px 14px}
     .pa-h{flex-direction:column}
   }
+  /* ============ INÍCIO ============ */
+  .in-sec{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;
+    text-transform:uppercase;letter-spacing:1.1px;color:#b9c7c9;font-weight:600;
+    margin:0 2px 10px}
+  .in-sec i{font-style:normal;text-transform:none;letter-spacing:0;font-weight:400;
+    font-size:11px;color:var(--mut)}
+  .in-sec .cr-mini{margin-top:0;text-transform:none;letter-spacing:0;font-weight:500}
+  .in-pend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+    margin-bottom:24px}
+  .in-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;
+    text-align:left;background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--line);border-radius:11px;padding:13px 15px 12px;
+    color:var(--txt);font-weight:400;cursor:pointer}
+  .in-card:hover{border-color:var(--accent);filter:none}
+  .in-card b{font-size:24px;font-weight:700;line-height:1.1}
+  .in-card span{font-size:12.5px;color:var(--txt);line-height:1.35}
+  .in-card em{font-style:normal;font-size:10.5px;color:var(--mut);line-height:1.4}
+  .in-card.on{border-left-color:var(--marca)}
+  .in-card.on b{color:var(--marca)}
+  .in-card.dor.on{border-left-color:#e0803c}
+  .in-card.dor.on b{color:#e0a06c}
+  .in-card.zero b{color:#3d4d50}
+  .in-card.zero span{color:var(--mut)}
+  /* card de tonelagem: CSS VERBATIM do App (tema escuro). Os tokens do App
+     ficam escopados em .tn-app pelo mesmo motivo do .dz-corpo: --line tem
+     outro valor na Dashboard, e vazar para o :root mudaria a tela inteira. */
+  .tn-app{--surface:#131718;--surface-2:#1b2123;--line:#2c3436;--cyan:#00c9cc;
+    --cyan-2:#71fcff;--text:#eef7f8;--muted:#9fb3b8;--muted-2:#78898e;margin-bottom:18px}
+  .pgtopo{display:flex;gap:10px;margin:0 4px 14px;align-items:stretch}
+  .pgcard{flex:1;padding:16px 12px;border-radius:14px;background:var(--surface);
+    border:1px solid var(--line);text-align:center;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;min-width:0}
+  .pgcard.destaque{border-color:var(--cyan);background:rgba(0,201,204,.07)}
+  .pgcard.clicavel{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pgcard.clicavel:active{background:var(--surface-2)}
+  .pgnum{font-size:30px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-.02em}
+  .pglab{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.35}
+  .pgformula{font-size:9.5px;color:var(--muted-2);margin-top:5px;line-height:1.3;letter-spacing:.01em}
+  .pgequiv{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+  .pgequiv .peico{display:block;font-size:22px;line-height:1.25;margin-bottom:5px;word-break:break-all}
+  .pgequiv .peico.multi{font-size:17px}
+  .pgequiv .peico em{font-style:normal;font-size:13px;font-weight:800;color:var(--muted);margin-left:2px}
+  .pgequiv .petxt{display:block;font-size:12px;font-weight:700;color:var(--cyan-2);line-height:1.3}
+  .pgequiv .pemais{display:block;font-size:9.5px;color:var(--muted-2);margin-top:5px}
+  /* fora do verbatim: só a largura na Dashboard (o card do App ganha mais espaço) */
+  .tn-app .pgtopo{margin:0}
+  .tn-app .pgcard.destaque{flex:1.7}
+  .fd-tag.pc{background:#2a2418;color:var(--warn)}
+  /* ============ ALUNOS · modo Acompanhamento ============ */
+  .al-modo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 16px}
+  .fbtn.acomp{border-color:#4d5a10;color:var(--marca)}
+  .fbtn.acomp:hover{border-color:var(--marca);color:var(--marca)}
+  .fbtn.acomp.on{background:var(--marca);border-color:var(--marca);color:#0b0f10;
+    font-weight:600}
+  .nv-al{display:inline-block;font-size:9px;padding:2px 7px;border-radius:4px;
+    background:#2b2f10;color:var(--marca);font-weight:700;letter-spacing:.3px;
+    margin-left:8px;white-space:nowrap;vertical-align:1px}
+  @media (max-width: 900px){
+    .in-pend{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width: 720px){
+    .tn-app .pgtopo{flex-wrap:wrap}
+    .tn-app .pgcard.destaque{flex:1 1 100%}
+    .in-card b{font-size:21px}
+  }
 </style>
 </head>
 <body>
@@ -1636,7 +1701,7 @@ function iniciais(nome) {
   return String(nome || "?").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase();
 }
 
-function LinhaAluno({ a, onAbrir, onStatus, onModalidade, modalidades }) {
+function LinhaAluno({ a, onAbrir, onStatus, onModalidade, modalidades, novas }) {
   const d = a.dias_sem_treinar;
   const cls = (d === null ? "a" : d >= 10 ? "a" : d >= 5 ? "w" : "ok") +
     (a.status !== "ativo" ? " inativo" : "");
@@ -1653,6 +1718,9 @@ function LinhaAluno({ a, onAbrir, onStatus, onModalidade, modalidades }) {
           {a.tem_anamnese ? "anamnese" : "sem anamnese"}
         </span>
         {a.status !== "ativo" && <span className="st-tag">{a.status}</span>}
+        {novas > 0 && (
+          <span className="nv-al" title="itens novos no feed do Início">{novas} nova(s)</span>
+        )}
         {a.perguntas_pendentes > 0 &&
           <span className="pq-badge">{a.perguntas_pendentes} pergunta(s)</span>}
         <span className={"dias-chip " + cls.trim().split(" ")[0]}>
@@ -1698,6 +1766,26 @@ function PainelAlunos() {
   const [novo, setNovo] = useState(false);
   const [mods, setMods] = useState([]);
   const [busca, setBusca] = useState("");
+  /* modo Acompanhamento: mesmo filtro e mesma busca, outra visão da lista.
+     Lembra a última escolha neste navegador. Atalho do Início chega por
+     pedidoAlunos (lido uma vez e apagado). */
+  const [ped] = useState(() => { const x = pedidoAlunos; pedidoAlunos = null; return x; });
+  const [modo, setModo] = useState(() => {
+    if (ped && ped.modo) return ped.modo;
+    try { return localStorage.getItem(AL_MODO_LS) === "acomp" ? "acomp" : "lista"; }
+    catch (e) { return "lista"; }
+  });
+  function mudarModo(v) {
+    setModo(v);
+    try { localStorage.setItem(AL_MODO_LS, v); } catch (e) {}
+  }
+  /* "N nova(s)" por aluno: itens do feed que chegaram depois da última leitura */
+  const { itens: fdItens, visto: fdVisto } = usarFeed();
+  const novas = useMemo(() => {
+    const m = {};
+    for (const i of (fdItens || [])) if (i.reg > fdVisto) m[i.aluno_id] = (m[i.aluno_id] || 0) + 1;
+    return m;
+  }, [fdItens, fdVisto]);
 
   const carregar = useCallback(async () => {
     const m = await sb.from("modalidades").select("*")
@@ -1792,6 +1880,21 @@ function PainelAlunos() {
         <button className="fbtn" onClick={() => setMigrar(true)}>Migrar anamneses</button>
         <button className="fbtn" onClick={() => setImportar(true)}>Importar do Sheets</button>
       </div>
+      <div className="al-modo">
+        <button className={"fbtn acomp" + (modo === "acomp" ? " on" : "")}
+          onClick={() => mudarModo(modo === "acomp" ? "lista" : "acomp")}>
+          {modo === "acomp" ? "■ Encerrar acompanhamento" : "▶ Iniciar Acompanhamento"}
+        </button>
+        {modo === "acomp" && (
+          <span className="ed-cnt">
+            heatmap de 6 semanas, treinos dos últimos 7 dias e tarefas do ciclo
+          </span>
+        )}
+      </div>
+      {modo === "acomp" ? (
+        <PainelAcompanhamento filtro={filtro} busca={busca}
+          ordemInicial={ped && ped.ordem} novasPorAluno={novas} />
+      ) : (<>
       <div className="sub">
         {alunos === null ? "Carregando..."
           : visiveis.length + " aluno(s)" +
@@ -1819,7 +1922,7 @@ function PainelAlunos() {
                       <i>{M.alunos.length}</i>
                     </div>
                     {M.alunos.map(a => (
-                      <LinhaAluno key={a.id} a={a}
+                      <LinhaAluno key={a.id} a={a} novas={novas[a.id] || 0}
                         onAbrir={x => { setAlunoId(x.id); setAberto(x); }}
                         onStatus={mudarStatus} onModalidade={mudarModalidade}
                         modalidades={mods} />
@@ -1828,6 +1931,7 @@ function PainelAlunos() {
                 ))}
               </div>
             ))}
+      </>)}
       {aberto && (
         <DrawerAnamnese
           aluno={aberto}
@@ -7165,7 +7269,7 @@ function ProvedorAluno({ children }) {
 
   /* o aluno também vai para a URL: #/treinos/<id> sobrevive ao F5 */
   useEffect(() => {
-    const base = (location.hash || "#/alunos").split("/")[1] || "alunos";
+    const base = (location.hash || "#/inicio").split("/")[1] || "inicio";
     const novo = "#/" + base + (alunoId ? "/" + alunoId : "");
     if (location.hash !== novo) history.replaceState(null, "", novo);
   }, [alunoId]);
@@ -11020,6 +11124,17 @@ function feedMs(ts) {
 const feedMsDia = d => (d ? parseISO(d).getTime() : 0);
 const feedDiaDe = ts => (ts ? dISO(new Date(feedMs(ts))) : "");
 
+/* "há cerca de 3 horas" quando existe hora de verdade (sessoes.concluido_em);
+   passou de 24 h, volta para hoje/ontem/data */
+function feedRelativo(ms, data, hojeISO) {
+  const min = Math.floor((Date.now() - ms) / 60000);
+  if (!(min >= 0) || min >= 24 * 60) return feedQuando(data, hojeISO);
+  if (min < 1) return "agora";
+  if (min < 60) return "há " + min + " min";
+  const h = Math.round(min / 60);
+  return "há cerca de " + h + (h === 1 ? " hora" : " horas");
+}
+
 function feedQuando(data, hojeISO) {
   if (!data) return "";
   const n = Math.round((parseISO(hojeISO) - parseISO(data)) / 864e5);
@@ -11184,6 +11299,9 @@ function feedFrase(it) {
     case "checkin":      return ["respondeu o check-in da ", it.alvo];
     case "avaliacao":    return ["respondeu o questionário de dor", it.alvo ? " · " + it.alvo : ""];
     case "redflag":      return ["marcou red flag: ", it.alvo];
+    case "treino":       return it.minutos != null ? ["treinou por ", fmtMin(it.minutos)]
+                              : it.sessao ? ["concluiu o ", it.alvo]
+                              : ["registrou séries no ", it.alvo];
     default:             return ["enviou ", "algo"];
   }
 }
@@ -11318,7 +11436,7 @@ function ProvedorFeed({ irAba, children }) {
 
   const focar = useCallback(key => {
     setFoco(key);
-    if (irAba) irAba("acompanhamento");
+    if (irAba) irAba("inicio");
   }, [irAba]);
 
   const valor = { itens, falhas, visto: v, naoLidas, marcarLidas, recarregar,
@@ -11367,12 +11485,14 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
         <div className="fd-nm">
           <b>{it.aluno}</b>
           {nova && <span className="fd-nova">nova</span>}
-          {!ehObs && <span className="fd-tag">dor</span>}
+          {FEED_TIPO_DOR.includes(it.tipo) && <span className="fd-tag">dor</span>}
+          {it.tag && <span className="fd-tag pc">{it.tag}</span>}
         </div>
         <div className="fd-fr">
           {a}<b>{b}</b>
           {it.orfao && <i className="fd-orf"> (exercício removido)</i>}
-          <span className="fd-qd"> · {feedQuando(it.data, hoje)}</span>
+          <span className="fd-qd"> · {it.quandoMs
+            ? feedRelativo(it.quandoMs, it.data, hoje) : feedQuando(it.data, hoje)}</span>
         </div>
         {(it.sub || it.texto) && (
           <div className={"fd-ct" + (ehObs ? " obs" : "")}>
@@ -11385,7 +11505,8 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
         {aberto && (
           <div className="fd-ac" onClick={e => e.stopPropagation()}>
             <button className="btn-sec cr-mini" onClick={onFicha}>
-              {FEED_TIPO_DOR.includes(it.tipo) ? "Abrir Dores da ficha" : "Abrir ficha"}
+              {FEED_TIPO_DOR.includes(it.tipo) ? "Abrir Dores da ficha"
+                : it.tipo === "treino" ? "Abrir Evolução de Carga" : "Abrir ficha"}
             </button>
             {it.treino_id && (
               <button className="btn-sec cr-mini" onClick={onTreino}>Ver treinos</button>
@@ -11395,91 +11516,6 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
         )}
       </div>
       <span className="fd-ch">{aberto ? "⌃" : "›"}</span>
-    </div>
-  );
-}
-
-/* bloco da aba Acompanhamento — entre a semana do ciclo e a lista */
-function FeedObservacoes({ onAbrirAluno }) {
-  const { itens, falhas, visto, naoLidas, marcarLidas, foco, limparFoco, irAba } = usarFeed();
-  const { setAlunoId } = usarAluno();
-  const [filtro, setFiltro] = useState("todas");
-  const [todas, setTodas]   = useState(false);
-  const [aberto, setAberto] = useState(null);
-  const [pisca, setPisca]   = useState(null);
-  const hoje = dISO(new Date());
-
-  const lista = (itens || []).filter(i =>
-    filtro === "todas" ? true
-    : filtro === "dor" ? FEED_TIPO_DOR.includes(i.tipo)
-    : !FEED_TIPO_DOR.includes(i.tipo));
-  const vis = todas ? lista : lista.slice(0, FEED_INICIAL);
-
-  /* veio do sino: garante que o item está visível, abre e rola até ele */
-  useEffect(() => {
-    if (!foco || !itens) return;
-    const alvo = itens.find(i => i.key === foco);
-    if (!alvo) { limparFoco(); return; }
-    setFiltro("todas"); setTodas(true); setAberto(foco); setPisca(foco);
-    const t1 = setTimeout(() => {
-      const el = document.querySelector('.fd-it[data-key="' + foco + '"]');
-      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 60);
-    const t2 = setTimeout(() => { setPisca(null); limparFoco(); }, 2400);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [foco, itens]);
-
-  const n = { todas: (itens || []).length,
-              obs: (itens || []).filter(i => !FEED_TIPO_DOR.includes(i.tipo)).length,
-              dor: (itens || []).filter(i => FEED_TIPO_DOR.includes(i.tipo)).length };
-
-  return (
-    <div className="fd-box">
-      <div className="fd-hd">
-        <span className="fd-ic"><IconeBalao /></span>
-        <b>Observações dos alunos</b>
-        {naoLidas > 0 && <span className="fd-cnt">{naoLidas} nova(s)</span>}
-        <span style={{ flex: 1 }} />
-        {[["todas", "Todas"], ["obs", "Observações"], ["dor", "Dor"]].map(([k, r]) => (
-          <button key={k} className={"fbtn" + (filtro === k ? " on" : "")}
-            onClick={() => { setFiltro(k); setAberto(null); }}>
-            {r} <i className="fd-n">{n[k]}</i>
-          </button>
-        ))}
-        {naoLidas > 0 && (
-          <button className="btn-sec cr-mini" onClick={marcarLidas}>marcar lidas</button>
-        )}
-      </div>
-
-      {falhas.length > 0 && (
-        <div className="ac-diag" style={{ margin: "0 0 10px" }}>
-          Parte do feed não carregou — {falhas.join(" | ")}
-        </div>
-      )}
-
-      {itens === null ? <div className="fd-vz">Carregando observações...</div>
-       : lista.length === 0 ? (
-          <div className="fd-vz">Nada nos últimos {FEED_DIAS} dias.</div>
-       ) : (
-        <div className={"fd-lista" + (todas ? " tudo" : "")}>
-          {vis.map(it => (
-            <FeedLinha key={it.key} it={it} hoje={hoje}
-              nova={it.reg > visto} aberto={aberto === it.key}
-              piscar={pisca === it.key}
-              onClick={() => setAberto(aberto === it.key ? null : it.key)}
-              onFicha={() => onAbrirAluno({ id: it.aluno_id, nome: it.aluno },
-                FEED_TIPO_DOR.includes(it.tipo) ? "dores" : null)}
-              onTreino={() => { setAlunoId(it.aluno_id); if (irAba) irAba("montagem"); }} />
-          ))}
-        </div>
-      )}
-
-      {lista.length > FEED_INICIAL && (
-        <button className="fd-mais" onClick={() => setTodas(v => !v)}>
-          {todas ? "Mostrar só as recentes" : "Ver todas (" + lista.length + ")"}
-          <span>{todas ? "⌃" : "›"}</span>
-        </button>
-      )}
     </div>
   );
 }
@@ -11546,10 +11582,601 @@ function SinoFeed() {
               })}
           </div>
           <button className="fd-mais" onClick={() => { setAberto(false); focar(null); }}>
-            Ver todas no Acompanhamento <span>›</span>
+            Ver tudo no Início <span>›</span>
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ============ INÍCIO ============
+   Tela de entrada da Dashboard. Ordem de propósito: primeiro a triagem
+   ("precisa de você", só CONTAGENS, nunca lista de nomes, que polui e
+   estressa), depois a semana da consultoria e por fim o feed de atividade.
+   LEITURA PURA, zero DDL. */
+const IN_DIAS_TREINO  = 7;        /* treinos no feed: 7 dias cobrem a semana inteira */
+const IN_POLL_MS      = 300000;   /* 5 min: os logs da semana são milhares de linhas */
+const IN_PARADO_MIN   = 7;
+const IN_PARADO_MAX   = 60;       /* acima disso já não é evasão recente, é quem não usa o App */
+const FEED_INICIAL_IN = 8;
+/* atalho Início -> Alunos já aberto em modo Acompanhamento (lido uma vez) */
+let pedidoAlunos = null;
+const AL_MODO_LS = "idealis_alunos_modo_v1";
+
+/* ---------- Tonelagem · espelho do App Idealis ----------
+   Regra por série, lista de equivalências, sorteio do dia, formatação e o
+   card: COPIADOS do App em 07/10/2026 (resposta do App ao brief). O App não
+   tem recorte semanal e não vai ganhar um: a semana (segunda até hoje, por
+   logs.data, que já é a data LOCAL do aparelho) e a soma da consultoria
+   existem só aqui. Nada no App muda.
+
+   NÃO "corrigir" nada deste bloco. "2x20kg" vira 2, reps "até a falha" fica
+   fora, peso corporal fica fora, unilateral não dobra, série duplicada antiga
+   conta duas vezes. É assim no App, e o número tem que bater com o que o
+   aluno vê lá. Se o App mudar a regra ou a lista, este bloco muda junto.
+
+   Carga usa evNum, que já é o numFrom do App copiado byte a byte.
+   Reps usa parseInt(…, 10), NÃO evNum: "8-10" vira 8 no App.
+   Caso de teste fixo (rodar dos dois lados se um dia mexerem):
+     40kg×10 + 12,5kg×8 + 2x20kg×10  ->  520 kg */
+function tonelagemDe(logs) {
+  let volume = 0;
+  for (const l of (logs || [])) {
+    const c = evNum(l.carga), r = parseInt(l.reps, 10);
+    if (c && r) volume += c * r;
+  }
+  return Math.round(volume);
+}
+
+/* lista VERBATIM do App. A ORDEM importa: desempate do sort estável */
+const EQUIVALENTES=[
+  // ---- leves: cotidiano ----
+  {kg:2,     sing:'um coelho',              plur:'coelhos',              ico:'🐇'},
+  {kg:2,     sing:'um notebook',            plur:'notebooks',            ico:'💻'},
+  {kg:2.5,   sing:'uma galinha',            plur:'galinhas',             ico:'🐓'},
+  {kg:3,     sing:'um tijolo',              plur:'tijolos',              ico:'🧱'},
+  {kg:4,     sing:'um gato',                plur:'gatos',                ico:'🐈'},
+  {kg:5,     sing:'um saco de arroz de 5kg',plur:'sacos de arroz de 5kg',ico:'🍚'},
+  {kg:5,     sing:'um ganso',               plur:'gansos',               ico:'🦆'},
+  {kg:5,     sing:'uma abóbora',            plur:'abóboras',             ico:'🎃'},
+  {kg:6,     sing:'uma bola de treino 6kg', plur:'bolas de treino 6kg',  ico:'⚫'},
+  {kg:8,     sing:'uma melancia',           plur:'melancias',            ico:'🍉'},
+  {kg:10,    sing:'uma mochila cheia',      plur:'mochilas cheias',      ico:'🎒'},
+  {kg:10,    sing:'uma anilha de 10kg',     plur:'anilhas de 10kg',      ico:'🥏'},
+  {kg:10,    sing:'um pneu de carro',       plur:'pneus de carro',       ico:'🛞'},
+  {kg:12,    sing:'uma bicicleta',          plur:'bicicletas',           ico:'🚲'},
+  {kg:12,    sing:'uma tábua de madeira',   plur:'tábuas de madeira',    ico:'🪵'},
+  {kg:15,    sing:'um cachorro de porte médio', plur:'cachorros de porte médio', ico:'🐕'},
+  {kg:15,    sing:'uma cadeira de escritório',  plur:'cadeiras de escritório',  ico:'🪑'},
+  {kg:15,    sing:'um patinete elétrico',   plur:'patinetes elétricos',  ico:'🛴'},
+  {kg:16,    sing:'um kettlebell de 16kg',  plur:'kettlebells de 16kg',  ico:'🎽'},
+  {kg:18,    sing:'uma criança de 5 anos',  plur:'crianças de 5 anos',   ico:'🧒'},
+  {kg:20,    sing:'um galão de água de 20L',plur:'galões de água de 20L',ico:'🧴'},
+  {kg:20,    sing:'uma anilha de 20kg',     plur:'anilhas de 20kg',      ico:'🏋️'},
+  {kg:20,    sing:'uma barra olímpica',     plur:'barras olímpicas',     ico:'🏋️‍♂️'},
+  {kg:25,    sing:'um saco de batata',      plur:'sacos de batata',      ico:'🥔'},
+  {kg:35,    sing:'uma porta de madeira',   plur:'portas de madeira',    ico:'🚪'},
+  {kg:40,    sing:'um carrinho de mercado cheio', plur:'carrinhos de mercado cheios', ico:'🛒'},
+  {kg:50,    sing:'um saco de cimento',     plur:'sacos de cimento',     ico:'🧱'},
+  {kg:50,    sing:'uma cabra',              plur:'cabras',               ico:'🐐'},
+  {kg:60,    sing:'uma pessoa adulta',      plur:'pessoas adultas',      ico:'🧍'},
+  {kg:60,    sing:'um barril de chope',     plur:'barris de chope',      ico:'🍺'},
+  {kg:60,    sing:'uma saca de café',       plur:'sacas de café',        ico:'☕'},
+  {kg:70,    sing:'uma máquina de lavar',   plur:'máquinas de lavar',    ico:'🧺'},
+  {kg:80,    sing:'um sofá de 3 lugares',   plur:'sofás de 3 lugares',   ico:'🛋️'},
+  {kg:80,    sing:'um cervo',               plur:'cervos',               ico:'🦌'},
+  {kg:100,   sing:'uma geladeira',          plur:'geladeiras',           ico:'🧊'},
+  {kg:110,   sing:'um porco adulto',        plur:'porcos adultos',       ico:'🐖'},
+  {kg:120,   sing:'uma scooter',            plur:'scooters',             ico:'🛵'},
+  // ---- médios ----
+  {kg:180,   sing:'um gorila',              plur:'gorilas',              ico:'🦍'},
+  {kg:200,   sing:'um golfinho',            plur:'golfinhos',            ico:'🐬'},
+  {kg:200,   sing:'um tambor de 200L cheio',plur:'tambores de 200L cheios', ico:'🛢️'},
+  {kg:250,   sing:'uma moto grande',        plur:'motos grandes',        ico:'🏍️'},
+  {kg:250,   sing:'uma âncora de barco',    plur:'âncoras de barco',     ico:'⚓'},
+  {kg:250,   sing:'um piano de parede',     plur:'pianos de parede',     ico:'🎸'},
+  {kg:300,   sing:'um jacaré-açu',          plur:'jacarés-açu',          ico:'🐊'},
+  {kg:300,   sing:'uma foca',               plur:'focas',                ico:'🦭'},
+  {kg:300,   sing:'uma estátua de bronze',  plur:'estátuas de bronze',   ico:'🏺'},
+  {kg:400,   sing:'um urso pardo',          plur:'ursos pardos',         ico:'🐻'},
+  {kg:450,   sing:'um crocodilo',           plur:'crocodilos',           ico:'🐊'},
+  {kg:500,   sing:'um piano de cauda',      plur:'pianos de cauda',      ico:'🎹'},
+  {kg:600,   sing:'um cavalo',              plur:'cavalos',              ico:'🐎'},
+  {kg:600,   sing:'um camelo',              plur:'camelos',              ico:'🐫'},
+  {kg:700,   sing:'um boi',                 plur:'bois',                 ico:'🐂'},
+  {kg:800,   sing:'um sino de igreja',      plur:'sinos de igreja',      ico:'🔔'},
+  {kg:900,   sing:'um bisão',               plur:'bisões',               ico:'🦬'},
+  {kg:950,   sing:'um carro popular',       plur:'carros populares',     ico:'🚗'},
+  // ---- pesados ----
+  {kg:1200,  sing:'uma girafa',             plur:'girafas',              ico:'🦒'},
+  {kg:1200,  sing:'um avião pequeno',       plur:'aviões pequenos',      ico:'✈️'},
+  {kg:1400,  sing:'uma vaca leiteira',      plur:'vacas leiteiras',      ico:'🐄'},
+  {kg:1500,  sing:'um helicóptero leve',    plur:'helicópteros leves',   ico:'🚁'},
+  {kg:1800,  sing:'um SUV',                 plur:'SUVs',                 ico:'🚙'},
+  {kg:2300,  sing:'um rinoceronte',         plur:'rinocerontes',         ico:'🦏'},
+  {kg:2500,  sing:'um hipopótamo',          plur:'hipopótamos',          ico:'🦛'},
+  {kg:2800,  sing:'uma van de carga',       plur:'vans de carga',        ico:'🚐'},
+  {kg:3500,  sing:'um trator pequeno',      plur:'tratores pequenos',    ico:'🚜'},
+  {kg:5000,  sing:'um elefante africano',   plur:'elefantes africanos',  ico:'🐘'},
+  {kg:5500,  sing:'uma orca',               plur:'orcas',                ico:'🐳'},
+  {kg:5500,  sing:'uma cápsula espacial',   plur:'cápsulas espaciais',   ico:'🚀'},
+  {kg:8000,  sing:'um tiranossauro',        plur:'tiranossauros',        ico:'🦕'},
+  {kg:12000, sing:'um ônibus urbano',       plur:'ônibus urbanos',       ico:'🚌'},
+  {kg:30000, sing:'uma carreta carregada',  plur:'carretas carregadas',  ico:'🚛'},
+  {kg:150000,sing:'uma baleia-azul',        plur:'baleias-azuis',        ico:'🐋'},
+];
+
+function embaralharCom(lista, semente){
+  const a=lista.slice(); let x=semente||1;
+  for(let i=a.length-1;i>0;i--){
+    x=(x*1103515245+12345)&0x7fffffff;      // LCG
+    const j=x%(i+1);
+    const t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+function equivalencias(kg){
+  if(!kg || kg<2) return [];
+  // n entre 1 e 300 (n NÃO arredondado no filtro)
+  const bons=EQUIVALENTES.filter(e=>{ const n=kg/e.kg; return n>=1 && n<=300; });
+  const base=(bons.length?bons:[EQUIVALENTES[0]]).map(e=>{
+    const n=Math.round(kg/e.kg);                         // arredondamento: Math.round
+    return {n, texto:(n===1?e.sing:(n+' '+e.plur)), ico:e.ico};
+  });
+  // menor n primeiro (= maior objeto que cabe). Sort estável: empate mantém a ordem da lista.
+  const ordenada=base.slice().sort((a,b)=>a.n-b.n);
+  // dia = dias desde 1970 da data LOCAL (YYYY-MM-DD) tratada como UTC
+  // (no App é todayISO(); aqui dISO(new Date()) dá a mesma data local)
+  const dia=Math.floor(Date.parse(dISO(new Date())+'T00:00:00Z')/86400000);
+  const resto=embaralharCom(ordenada.slice(1), dia*7919 + Math.round(kg));
+  return [ordenada[0]].concat(resto).filter(Boolean);
+}
+
+const fmtVol=(kg)=> kg>=1000 ? (kg/1000).toFixed(1).replace('.',',')+' toneladas' : kg+' kg';
+
+function CardVolume({kg, destaque}){
+  const eqs=equivalencias(kg);
+  const [i,setI]=useState(0);
+  const v=fmtVol(kg).split(' ');
+  const eq=eqs[i];
+  // repetir o emoji só até 8: acima disso vira parede ilegível
+  const icones = eq ? (eq.n<=8 ? eq.ico.repeat(eq.n) : eq.ico) : '';
+  return (<div className={'pgcard'+(destaque?' destaque':'')+(eqs.length>1?' clicavel':'')}
+      onClick={()=>{ if(eqs.length>1) setI(x=>(x+1)%eqs.length); }}>
+    <div className="pgnum">{v[0]}</div>
+    <div className="pglab">{v.slice(1).join(' ')||'kg'} levantadas</div>
+    <div className="pgformula">carga × repetições × séries</div>
+    {eq && <div className="pgequiv">
+      <span className={'peico'+(eq.n<=8&&eq.n>1?' multi':'')}>
+        {icones}{eq.n>8 && <em> ×{eq.n}</em>}
+      </span>
+      <span className="petxt">{eq.texto}</span>
+      {eqs.length>1 && <span className="pemais">toque para outra comparação</span>}
+    </div>}
+  </div>);
+}
+/* ---------- fim do bloco espelho do App ---------- */
+
+/* sessoes.duracao: o App ainda não confirmou a unidade (pergunta no brief de
+   07/10). "auto" decide pela mediana da janela: treino real dura de 20 a
+   120 min, então mediana acima de 240 só pode ser segundos (e acima de
+   60000, milissegundos). Quando o App responder, troque para "min", "s" ou
+   "ms" e a detecção some. */
+const SES_DURACAO_UNIDADE = "auto";
+const IN_TREINO_CURTO_MIN = 10;   /* o "treinou por 2 minutos" do print */
+
+/* lê tudo de 1000 em 1000 (teto do PostgREST). `q(de, ate)` precisa vir JÁ
+   ordenada por uma chave estável, senão as páginas se sobrepõem */
+async function lerPaginado(q, nome, falhas) {
+  const out = [];
+  for (let de = 0; de <= 60000; de += 1000) {
+    const r = await q(de, de + 999);
+    if (r.error) { falhas.push(nome + ": " + r.error.message); break; }
+    out.push(...(r.data || []));
+    if (!r.data || r.data.length < 1000) break;
+  }
+  return out;
+}
+
+/* fator para converter sessoes.duracao em minutos */
+function sesFatorMin(sessoes) {
+  if (SES_DURACAO_UNIDADE === "min") return 1;
+  if (SES_DURACAO_UNIDADE === "s") return 1 / 60;
+  if (SES_DURACAO_UNIDADE === "ms") return 1 / 60000;
+  const v = (sessoes || []).map(s => Number(s.duracao)).filter(x => x > 0)
+    .sort((a, b) => a - b);
+  if (!v.length) return 1;
+  const med = v[Math.floor(v.length / 2)];
+  return med > 60000 ? 1 / 60000 : med > 240 ? 1 / 60 : 1;
+}
+const fmtMin = m => m + (m === 1 ? " minuto" : " minutos");
+
+/* Leitura do Início. Cada fonte falha sozinha: logs fora do ar não apagam
+   as trocas, e vice-versa. Tudo passa pelo RLS: nenhum filtro de treinador
+   aqui no JS, então no multitenant a soma vira "do tenant" sem mudar código. */
+async function carregarInicio() {
+  const hoje = dISO(new Date());
+  const seg = dzSegunda(hoje);
+  /* hoje-6 é sempre <= segunda desta semana: uma leitura cobre o feed de
+     7 dias E a tonelagem semanal */
+  const desde = dISO(addDias(parseISO(hoje), -(IN_DIAS_TREINO - 1)));
+  const falhas = [];
+
+  const [logs, sessoes] = await Promise.all([
+    /* séries registradas: tonelagem e contagem de séries */
+    lerPaginado((a, b) => sb.from("logs")
+      .select("id, exercicio_id, data, carga, reps, extra, criado_em")
+      .gte("data", desde).lte("data", hoje).order("id").range(a, b), "logs", falhas),
+    /* treino concluído: 1 linha por treino + dia (UNIQUE treino_id, data),
+       com a hora em que terminou e a duração */
+    lerPaginado((a, b) => sb.from("sessoes")
+      .select("id, aluno_id, treino_id, data, concluido_em, origem, duracao")
+      .gte("data", desde).lte("data", hoje).order("id").range(a, b), "sessoes", falhas)
+  ]);
+
+  const [al, pn] = await Promise.all([
+    sb.from("alunos").select("id, nome, foto_url, status"),
+    sb.from("vw_alunos_painel").select("id, status, dias_sem_treinar")
+  ]);
+  if (al.error) falhas.push("alunos: " + al.error.message);
+  if (pn.error) falhas.push("vw_alunos_painel: " + pn.error.message);
+  const alunos = al.error ? [] : (al.data || []);
+
+  let exercicios = [], treinos = [];
+  try {
+    exercicios = await feedPorIds("exercicios", "id, nome, treino_id",
+      logs.map(l => l.exercicio_id));
+    treinos = await feedPorIds("treinos", "id, nome, aluno_id",
+      [...exercicios.map(e => e.treino_id), ...sessoes.map(s => s.treino_id)]);
+  } catch (e) { falhas.push(e.message); }
+
+  /* trocas: MESMA leitura e MESMA regra da aba Trocas (tcCarregarDados +
+     tcMontar), só a coluna que está sendo montada agora */
+  let trocas = null;
+  try {
+    const s = tcSegundaApos(hoje);
+    const d = await tcCarregarDados(s, s);
+    falhas.push(...d.erros);
+    const lista = tcMontar({ semanas: [s], manuais: d.manuais, alunos,
+      fases: d.fases, proximas: d.proximas, comTreino: d.comTreino })[s] || [];
+    trocas = { semana: s,
+      para: lista.filter(i => !i.oculto && !i.montado).length,
+      montadas: lista.filter(i => !i.oculto && i.montado).length };
+  } catch (e) { falhas.push("trocas: " + e.message); }
+
+  return { hoje, seg, logs, sessoes, alunos, painel: pn.error ? null : (pn.data || []),
+           exercicios, treinos, trocas, falhas };
+}
+
+/* Função pura: é ela que os testes cobrem.
+   Um item de feed por treino + dia, juntando as duas fontes:
+     sessão  -> "treinou por 72 minutos", hora exata (concluido_em)
+     logs    -> séries e tonelagem daquele treino naquele dia
+     só logs -> registrou séries mas não finalizou no App */
+function montarInicio(raw) {
+  const ex = new Map((raw.exercicios || []).map(e => [e.id, e]));
+  const tr = new Map((raw.treinos || []).map(t => [t.id, t]));
+  const al = new Map((raw.alunos || []).map(a => [a.id, a]));
+  const ativos = new Set((raw.alunos || [])
+    .filter(a => a.status === "ativo").map(a => a.id));
+
+  /* tonelagem: todo log da semana que o RLS deixa ver */
+  const kg = tonelagemDe((raw.logs || []).filter(l => l.data >= raw.seg));
+  const fator = sesFatorMin(raw.sessoes);
+
+  const treinaram = new Set();
+  const grupos = new Map();
+  const pegar = (t, data) => {
+    const k = t.id + "|" + data;
+    if (!grupos.has(k)) grupos.set(k, { t, data, logs: [], ses: null, reg: 0 });
+    return grupos.get(k);
+  };
+
+  for (const l of (raw.logs || [])) {
+    const e = ex.get(l.exercicio_id);
+    const t = e ? tr.get(e.treino_id) : null;
+    if (!t) continue;                 /* sem treino não há aluno: não inventa */
+    const g = pegar(t, l.data);
+    g.logs.push(l);
+    g.reg = Math.max(g.reg, feedMs(l.criado_em) || feedMsDia(l.data));
+    if (l.data >= raw.seg && ativos.has(t.aluno_id)) treinaram.add(t.aluno_id);
+  }
+
+  let concluidos = 0;
+  for (const s of (raw.sessoes || [])) {
+    if (!s.treino_id || !s.data) continue;
+    /* sessão de treino que não existe mais: o aluno vem da própria sessão */
+    const t = tr.get(s.treino_id) || { id: s.treino_id, nome: "", aluno_id: s.aluno_id };
+    pegar(t, s.data).ses = s;
+    if (s.data >= raw.seg) {
+      concluidos++;
+      if (ativos.has(s.aluno_id)) treinaram.add(s.aluno_id);
+    }
+  }
+
+  const feedTreinos = [...grupos.values()].map(g => {
+    const alunoId = g.ses ? g.ses.aluno_id : g.t.aluno_id;
+    const a = al.get(alunoId);
+    const cardio = g.logs.filter(l => l.extra && l.extra.tipo === "cardio").length;
+    const series = g.logs.length - cardio;
+    const kgS = tonelagemDe(g.logs);
+    const partes = [];
+    if (series) partes.push(series + (series === 1 ? " série" : " séries"));
+    if (cardio) partes.push("cardio");
+    if (kgS) partes.push(fmtVol(kgS));
+    const nome = feedSemAluno(g.t.nome, a && a.nome) || "treino";
+    const dur = g.ses && Number(g.ses.duracao) > 0
+      ? Math.max(1, Math.round(Number(g.ses.duracao) * fator)) : null;
+    const quandoMs = g.ses ? (feedMs(g.ses.concluido_em) || null) : null;
+    let tag = null;
+    if (dur != null && dur < IN_TREINO_CURTO_MIN) tag = "treino curto";
+    /* sem sessão o treino pode estar em andamento: "poucas séries" só depois de finalizado */
+    else if (g.ses && dur == null && !cardio && series > 0 && series < 4) tag = "poucas séries";
+    /* hoje ainda pode estar treinando: só marca a partir de ontem */
+    if (!g.ses && g.data < raw.hoje) tag = "não finalizou no App";
+    return {
+      key: "trn:" + g.t.id + ":" + g.data, tipo: "treino",
+      aluno_id: alunoId, aluno: a ? a.nome : "(aluno não encontrado)",
+      foto: a ? a.foto_url || null : null, treino_id: g.t.id,
+      data: g.data, reg: quandoMs || g.reg || feedMsDia(g.data), quandoMs,
+      sessao: !!g.ses, minutos: dur, alvo: nome,
+      /* com duração, o nome do treino desce para a linha de conteúdo */
+      sub: dur != null ? nome : "", texto: partes.join(" · "), tag, cor: null
+    };
+  });
+
+  const parados = raw.painel == null ? null : raw.painel.filter(p =>
+    p.status === "ativo" && p.dias_sem_treinar != null &&
+    p.dias_sem_treinar >= IN_PARADO_MIN && p.dias_sem_treinar <= IN_PARADO_MAX).length;
+
+  return { kg, treinaram: treinaram.size, ativos: ativos.size, concluidos,
+           feedTreinos, parados, trocas: raw.trocas || null };
+}
+
+/* Feed do Início: observações e sinais de dor (ProvedorFeed, 30 dias) +
+   treinos dos últimos 7 dias (sessoes + logs, vêm do Início). Treino NUNCA conta
+   como "nova" nem acende o sino: são dezenas por dia e afogariam o que pede
+   ação. No filtro Tudo, as não lidas sobem para o topo. */
+function FeedInicio({ treinos, filtro, setFiltro, onAbrirAluno }) {
+  const { itens, falhas, visto, naoLidas, marcarLidas, foco, limparFoco, irAba } = usarFeed();
+  const { setAlunoId } = usarAluno();
+  const [todas, setTodas]   = useState(false);
+  const [aberto, setAberto] = useState(null);
+  const [pisca, setPisca]   = useState(null);
+  const hoje = dISO(new Date());
+
+  const ehTr  = i => i.tipo === "treino";
+  const ehDor = i => FEED_TIPO_DOR.includes(i.tipo);
+  const nova  = i => !ehTr(i) && i.reg > visto;
+  const porData = (x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : y.reg - x.reg);
+
+  const todosItens = [...(itens || []), ...(treinos || [])];
+  const lista = todosItens
+    .filter(i => filtro === "todas" ? true
+      : filtro === "treinos" ? ehTr(i)
+      : filtro === "dor" ? ehDor(i)
+      : (!ehTr(i) && !ehDor(i)))
+    .sort((x, y) => (filtro === "todas" ? (nova(y) - nova(x)) : 0) || porData(x, y));
+  const vis = todas ? lista : lista.slice(0, FEED_INICIAL_IN);
+  const n = {
+    todas: todosItens.length,
+    treinos: todosItens.filter(ehTr).length,
+    obs: todosItens.filter(i => !ehTr(i) && !ehDor(i)).length,
+    dor: todosItens.filter(ehDor).length
+  };
+
+  /* veio do sino: garante que o item está visível, abre e rola até ele */
+  useEffect(() => {
+    if (!foco || !itens) return;
+    const alvo = itens.find(i => i.key === foco);
+    if (!alvo) { limparFoco(); return; }
+    setFiltro("todas"); setTodas(true); setAberto(foco); setPisca(foco);
+    const t1 = setTimeout(() => {
+      const el = document.querySelector('.fd-it[data-key="' + foco + '"]');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+    const t2 = setTimeout(() => { setPisca(null); limparFoco(); }, 2400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [foco, itens]);
+
+  const carregando = itens === null || treinos === null;
+
+  return (
+    <div className="fd-box">
+      <div className="fd-hd">
+        <span className="fd-ic"><IconeBalao /></span>
+        <b>Atividade dos alunos</b>
+        {naoLidas > 0 && <span className="fd-cnt">{naoLidas} nova(s)</span>}
+        <span style={{ flex: 1 }} />
+        {[["todas", "Tudo"], ["treinos", "Treinos"], ["obs", "Observações"], ["dor", "Dor"]]
+          .map(([k, r]) => (
+            <button key={k} className={"fbtn" + (filtro === k ? " on" : "")}
+              onClick={() => { setFiltro(k); setAberto(null); }}>
+              {r} <i className="fd-n">{n[k]}</i>
+            </button>
+          ))}
+        {naoLidas > 0 && (
+          <button className="btn-sec cr-mini" onClick={marcarLidas}>marcar lidas</button>
+        )}
+      </div>
+
+      {falhas.length > 0 && (
+        <div className="ac-diag" style={{ margin: "0 0 10px" }}>
+          Parte do feed não carregou — {falhas.join(" | ")}
+        </div>
+      )}
+
+      {carregando && lista.length === 0 ? <div className="fd-vz">Carregando atividade...</div>
+       : lista.length === 0 ? (
+          <div className="fd-vz">
+            {filtro === "treinos"
+              ? "Nenhum treino registrado nos últimos " + IN_DIAS_TREINO + " dias."
+              : "Nada nos últimos " + FEED_DIAS + " dias."}
+          </div>
+       ) : (
+        <div className={"fd-lista" + (todas ? " tudo" : "")}>
+          {vis.map(it => (
+            <FeedLinha key={it.key} it={it} hoje={hoje}
+              nova={nova(it)} aberto={aberto === it.key}
+              piscar={pisca === it.key}
+              onClick={() => setAberto(aberto === it.key ? null : it.key)}
+              onFicha={() => onAbrirAluno({ id: it.aluno_id, nome: it.aluno },
+                ehDor(it) ? "dores" : ehTr(it) ? "evolucao" : null)}
+              onTreino={() => { setAlunoId(it.aluno_id); if (irAba) irAba("montagem"); }} />
+          ))}
+        </div>
+      )}
+
+      {lista.length > FEED_INICIAL_IN && (
+        <button className="fd-mais" onClick={() => setTodas(v => !v)}>
+          {todas ? "Mostrar só as recentes" : "Ver tudo (" + lista.length + ")"}
+          <span>{todas ? "⌃" : "›"}</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function PainelInicio() {
+  const { itens, naoLidas, irAba } = usarFeed();
+  const { setAlunoId } = usarAluno();
+  const { toast } = usarUI();
+  const [raw, setRaw]       = useState(null);
+  const [erro, setErro]     = useState("");
+  const [filtro, setFiltro] = useState("todas");
+  const [aberto, setAberto] = useState(null);
+  const feedRef = React.useRef(null);
+
+  const carregar = useCallback(async () => {
+    try { setRaw(await carregarInicio()); setErro(""); }
+    catch (e) { setErro(e.message); }
+  }, []);
+
+  useEffect(() => {
+    carregar();
+    const t = setInterval(() => { if (!document.hidden) carregar(); }, IN_POLL_MS);
+    return () => clearInterval(t);
+  }, [carregar]);
+
+  const m = useMemo(() => (raw ? montarInicio(raw) : null), [raw]);
+
+  /* sinal de dor = ALUNOS (não itens) com algo sério nos últimos 7 dias:
+     red flag, dor 7+ na série ou no check-in, semáforo vermelho ou
+     retrospectiva "piorou". Contar alunos é o que pede ação. */
+  const lim7 = dISO(addDias(new Date(), -6));
+  const dorAlunos = itens === null ? null : new Set(itens.filter(i => i.data >= lim7 && (
+    i.tipo === "redflag" ||
+    ((i.tipo === "dor" || i.tipo === "checkin") && Number(i.valor) >= 7) ||
+    ((i.tipo === "semaforo" || i.tipo === "retro") && i.cor === DZ_R)
+  )).map(i => i.aluno_id)).size;
+
+  function irFeed(f) {
+    setFiltro(f);
+    setTimeout(() => {
+      if (feedRef.current) feedRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 40);
+  }
+
+  function abrirAluno(al, modo) {
+    setAlunoId(al.id);
+    setAberto({ id: al.id, nome: al.nome, modo });
+  }
+
+  function copiarFrase() {
+    if (!m) return;
+    const eq = equivalencias(m.kg)[0];
+    navigator.clipboard.writeText("Nesta semana, os alunos da consultoria Idealis já levantaram " +
+      fmtVol(m.kg) + (eq ? " — o equivalente a " + eq.texto + " " + eq.ico : "") + " 💪");
+    toast("Frase copiada.");
+  }
+
+  const tr = m && m.trocas;
+  const cards = [
+    { k: "obs", n: itens === null ? null : naoLidas,
+      rot: naoLidas === 1 ? "observação nova" : "observações novas",
+      det: "chegaram depois da última leitura",
+      ir: () => irFeed("todas") },
+    { k: "dor", n: dorAlunos, cls: "dor",
+      rot: dorAlunos === 1 ? "aluno com sinal de dor" : "alunos com sinal de dor",
+      det: "7 dias · dor 7+, red flag, treino que limitou ou piorou",
+      ir: () => irFeed("dor") },
+    { k: "par", n: m ? m.parados : null,
+      rot: m && m.parados === 1 ? "aluno parou de registrar" : "alunos pararam de registrar",
+      det: "ativos sem treino há " + IN_PARADO_MIN + " a " + IN_PARADO_MAX + " dias",
+      ir: () => { pedidoAlunos = { modo: "acomp", ordem: "treinos" }; if (irAba) irAba("alunos"); } },
+    { k: "trc", n: tr ? tr.para : null, rot: "para montar",
+      det: tr ? "treinos que começam " + dBR(tr.semana).slice(0, 5) +
+                (tr.montadas ? " · " + tr.montadas + " já no App" : "")
+              : "trocas da semana",
+      ir: () => { if (irAba) irAba("trocas"); } }
+  ];
+
+  return (
+    <div>
+      {erro && <div className="err">{erro}</div>}
+      {raw && raw.falhas.length > 0 && (
+        <div className="ac-diag">Parte do Início não carregou — {raw.falhas.join(" | ")}</div>
+      )}
+
+      <div className="in-sec">Precisa de você</div>
+      <div className="in-pend">
+        {cards.map(c => (
+          <button key={c.k} onClick={c.ir}
+            className={"in-card" + (c.cls ? " " + c.cls : "") + (c.n ? " on" : "") +
+              (c.n === 0 ? " zero" : "")}>
+            <b>{c.n == null ? (raw ? "—" : "…") : c.n}</b>
+            <span>{c.rot}</span>
+            <em>{c.det}</em>
+          </button>
+        ))}
+      </div>
+
+      <div className="in-sec">
+        Semana da consultoria
+        <i>{raw ? "de " + dBR(raw.seg).slice(0, 5) + " até hoje · zera segunda 00:00" : ""}</i>
+        <span style={{ flex: 1 }} />
+        {m && m.kg > 0 && (
+          <button className="btn-sec cr-mini" onClick={copiarFrase}>
+            Copiar para compartilhar
+          </button>
+        )}
+      </div>
+      {!m ? <div className="fd-vz">Somando a semana...</div> : (
+        <div className="tn-app">
+          <div className="pgtopo">
+            <CardVolume key={m.kg} kg={m.kg} destaque />
+            <div className="pgcard">
+              <div className="pgnum">{m.concluidos}</div>
+              <div className="pglab">treinos concluídos</div>
+            </div>
+            <div className="pgcard">
+              <div className="pgnum">{m.treinaram}</div>
+              <div className="pglab">de {m.ativos} alunos ativos treinaram</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div ref={feedRef} style={{ scrollMarginTop: 12 }}>
+        <FeedInicio treinos={m ? m.feedTreinos : null} filtro={filtro}
+          setFiltro={setFiltro} onAbrirAluno={abrirAluno} />
+      </div>
+
+      {aberto && (
+        <DrawerAnamnese aluno={{ id: aberto.id, nome: aberto.nome }}
+          modoInicial={aberto.modo || null} onFechar={() => setAberto(null)} />
+      )}
+
+      <div className="pl-hint" style={{ marginTop: 12 }}>
+        Treino concluído e duração vêm de quando o aluno finaliza o treino no App;
+        séries e tonelagem vêm das séries salvas. A semana vai de segunda até hoje,
+        pela data do aparelho do aluno, e a conta da tonelagem é a mesma do card de
+        Progresso do App: carga × repetições de cada série; peso corporal, isometria
+        e cardio ficam fora. Toca no card para trocar a comparação.
+        Observações e sinais de dor cobrem {FEED_DIAS} dias; <b>nova</b> = chegou
+        depois da última vez que você abriu o sino ou marcou como lidas.
+      </div>
     </div>
   );
 }
@@ -11650,8 +12277,12 @@ function Heatmap({ dias, nome }) {
   return <canvas ref={ref} className="ac-hm" title={titulo} />;
 }
 
-function PainelAcompanhamento() {
-  const { setAlunoId } = usarAluno();
+/* Acompanhamento é um MODO da aba Alunos (chip lima "Iniciar Acompanhamento").
+   Filtro Ativos/Inativos/Todos e a busca vêm da aba Alunos; aqui só a ordem.
+   Padrão: ordem alfabética. */
+function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
+  const { setAlunoId, alunos: alunosCtx } = usarAluno();
+  const q = busca || "";
   const [linhas, setLinhas] = useState(null);
   const [cal, setCal]       = useState({});
   const [resumo, setResumo] = useState({});
@@ -11659,9 +12290,8 @@ function PainelAcompanhamento() {
   const [semana, setSemana] = useState(undefined);
   const [erro, setErro]     = useState("");
   const [diag, setDiag]     = useState("");
-  const [busca, setBusca]   = useState("");
   const [aberto, setAberto] = useState(null);
-  const [ordem, setOrdem]   = useState("risco");
+  const [ordem, setOrdem]   = useState(ordemInicial || "nome");
   const [fasesAl, setFasesAl] = useState(null);   // aluno_id -> fases recentes
 
   const carregar = useCallback(async () => {
@@ -11703,16 +12333,24 @@ function PainelAcompanhamento() {
       setResumo(m);
     }
 
-    /* calendário em UMA consulta, agrupado no cliente */
-    const cl = await sb.from("v_calendario_treinos").select("*");
-    if (!cl.error) {
+    /* calendário: só as semanas que o heatmap desenha, paginado. Antes lia a
+       view inteira e o PostgREST cortava em 1000 linhas sem avisar: com o
+       histórico crescendo, dias sumiam do heatmap em silêncio. */
+    const flCal = [];
+    const linhasCal = await lerPaginado((a, b) => sb.from("v_calendario_treinos")
+      .select("aluno_id, data, vezes")
+      .gte("data", dISO(addDias(new Date(), -7 * HM_SEMANAS)))
+      .order("data").order("aluno_id").order("treino_id").range(a, b),
+      "v_calendario_treinos", flCal);
+    if (!flCal.length) {
       const m = {};
-      for (const r of (cl.data || [])) {
+      for (const r of linhasCal) {
         const aid = campo(r, "aluno_id", "aluno");
         const dt = String(campo(r, "data", "dia") || "").slice(0, 10);
         const nv = campo(r, "vezes", "nivel") || 1;   /* `vezes` = nível 1..4 */
         if (!aid || !dt) continue;
-        (m[aid] = m[aid] || {})[dt] = nv;
+        /* dois treinos no mesmo dia: vale o nível maior, não o último lido */
+        (m[aid] = m[aid] || {})[dt] = Math.max(nv, (m[aid] && m[aid][dt]) || 0);
       }
       setCal(m);
     }
@@ -11761,8 +12399,17 @@ function PainelAcompanhamento() {
     return { n: "v", txt: (dias || 0) + " dia(s) com treino concluído em 7 dias" };
   }
 
+  /* status vem da lista global de alunos (alunos.status), não da view */
+  const stDe = new Map((alunosCtx || []).map(a => [a.id, a.status]));
+  const passaFiltro = l => {
+    if (!filtro || filtro === "todos") return true;
+    const st = stDe.get(campo(l, "aluno_id", "id"));
+    if (!st) return filtro === "ativo";
+    return filtro === "ativo" ? st === "ativo" : st !== "ativo";
+  };
   const visiveis = (linhas || [])
-    .filter(l => !busca.trim() || cbCasa(String(campo(l, "aluno", "nome") || ""), busca))
+    .filter(passaFiltro)
+    .filter(l => !q.trim() || cbCasa(String(campo(l, "aluno", "nome") || ""), q))
     .map(l => ({ l, r: risco(l) }))
     .sort((a, b) => {
       if (ordem === "risco") {
@@ -11846,25 +12493,17 @@ function PainelAcompanhamento() {
         </div>
       )}
 
-      <FeedObservacoes onAbrirAluno={(al, modo) => {
-        setAlunoId(al.id); setAberto({ id: al.id, nome: al.nome, modo });
-      }} />
-
       {erro && <div className="err">{erro}</div>}
       {diag && <div className="ac-diag">{diag}</div>}
 
       <div className="ap-bar">
-        <div style={{ position: "relative", flex: "0 1 230px" }}>
-          <input value={busca} onChange={e => setBusca(e.target.value)}
-            placeholder="Buscar aluno..." />
-          {busca && <button className="cb-lim" onClick={() => setBusca("")}>×</button>}
-        </div>
+        <span className="ed-cnt">ordenar:</span>
+        <button className={"fbtn" + (ordem === "nome" ? " on" : "")}
+          onClick={() => setOrdem("nome")}>Por nome</button>
         <button className={"fbtn" + (ordem === "risco" ? " on" : "")}
           onClick={() => setOrdem("risco")}>Por atenção</button>
         <button className={"fbtn" + (ordem === "treinos" ? " on" : "")}
           onClick={() => setOrdem("treinos")}>Por treinos</button>
-        <button className={"fbtn" + (ordem === "nome" ? " on" : "")}
-          onClick={() => setOrdem("nome")}>Por nome</button>
         <span style={{ flex: 1 }} />
         <span className="ed-cnt">{visiveis.length} aluno(s)</span>
       </div>
@@ -11917,6 +12556,10 @@ function PainelAcompanhamento() {
                     </div>}
                 <div className="ac-nome">
                   {nome}
+                  {novasPorAluno && novasPorAluno[aid] > 0 && (
+                    <span className="nv-al" title="itens novos no feed do Início">
+                      {novasPorAluno[aid]} nova(s)</span>
+                  )}
                   {minhaSem && <i>entrou na semana {entrou} · {minhaSem}ª dele</i>}
                   {fasesAl && aid && (() => {
                     const fm = rotuloFaseMomento(faseDoMomento(fasesAl[aid] || [], hojeAc));
@@ -12455,7 +13098,7 @@ function PainelBackup() {
 }
 
 /* ---------- App ---------- */
-const ABAS_VALIDAS = ["alunos","acompanhamento","volume","montagem","planejamento","trocas",
+const ABAS_VALIDAS = ["inicio","alunos","volume","montagem","planejamento","trocas",
                       "catalogo","aparelhos","acessos","backup"];
 
 /* ---------- Calendário de Troca de Treino ----------
@@ -12848,6 +13491,51 @@ function TcLinha({ it, semana, onSalvar, onRemover, onMover, onAbrirTreino, bloq
   );
 }
 
+/* Leitura do calendário de trocas, fora da tela: o Início conta "X para
+   montar" com a MESMA consulta e a MESMA regra (tcMontar) da aba Trocas.
+   Duas cópias desta lógica já seriam dois números diferentes na primeira
+   mudança. */
+async function tcCarregarDados(s0, s1) {
+  const out = { manuais: [], semTabela: false, temOrdem: null, erros: [],
+                fases: [], proximas: [], comTreino: new Set() };
+  const fimMin = dISO(addDias(parseISO(s0), -7));
+  const fimMax = dISO(addDias(parseISO(s1), -1));
+  const [m, f] = await Promise.all([
+    sb.from("trocas_calendario").select("*")
+      /* manuais do período + todos os ajustes de fase (poucos; o fim da
+         fase pode ter mudado de semana depois do ajuste) */
+      .or("and(semana.gte." + s0 + ",semana.lte." + s1 + "),fase_id.not.is.null"),
+    sb.from("fases").select("id, aluno_id, nome, inicio, fim")
+      .gte("fim", fimMin).lte("fim", fimMax)
+  ]);
+  if (m.error) {
+    if (tcErroSemTabela(m.error.message)) out.semTabela = true;
+    else out.erros.push("trocas: " + m.error.message);
+  } else {
+    out.manuais = m.data || [];
+    if (out.manuais.length) out.temOrdem = out.manuais.some(x => "ordem" in x);
+  }
+
+  if (f.error) { out.erros.push("fases: " + f.error.message); return out; }
+  out.fases = f.data || [];
+  const ids = [...new Set(out.fases.map(x => x.aluno_id))];
+  try {
+    for (let i = 0; i < ids.length; i += LOTE) {
+      const p = await sb.from("fases").select("id, aluno_id, inicio")
+        .in("aluno_id", ids.slice(i, i + LOTE)).gt("inicio", fimMin);
+      if (p.error) throw new Error("fases seguintes: " + p.error.message);
+      out.proximas.push(...(p.data || []));
+    }
+    const pids = [...new Set(out.proximas.map(x => x.id))];
+    for (let i = 0; i < pids.length; i += LOTE) {
+      const t = await sb.from("treinos").select("fase_id").in("fase_id", pids.slice(i, i + LOTE));
+      if (t.error) throw new Error("treinos: " + t.error.message);
+      for (const x of (t.data || [])) out.comTreino.add(x.fase_id);
+    }
+  } catch (e) { out.erros.push(e.message); }
+  return out;
+}
+
 function PainelTrocas() {
   const { alunos, setAlunoId } = usarAluno();
   const { toast, confirmar } = usarUI();
@@ -12874,46 +13562,12 @@ function PainelTrocas() {
 
   const carregar = useCallback(async () => {
     setCarr(true); setErro("");
-    const fimMin = dISO(addDias(parseISO(s0), -7));
-    const fimMax = dISO(addDias(parseISO(s1), -1));
-    const [m, f] = await Promise.all([
-      sb.from("trocas_calendario").select("*")
-        /* manuais do período + todos os ajustes de fase (poucos; o fim da
-           fase pode ter mudado de semana depois do ajuste) */
-        .or("and(semana.gte." + s0 + ",semana.lte." + s1 + "),fase_id.not.is.null"),
-      sb.from("fases").select("id, aluno_id, nome, inicio, fim")
-        .gte("fim", fimMin).lte("fim", fimMax)
-    ]);
-    if (m.error) {
-      if (tcErroSemTabela(m.error.message)) setSemTabela(true);
-      else setErro("trocas: " + m.error.message);
-      setManuais([]);
-    } else {
-      setSemTabela(false); setManuais(m.data || []);
-      if ((m.data || []).length) setTemOrdem((m.data || []).some(x => "ordem" in x));
-    }
-
-    let fases = [], proximas = [], comTreino = new Set();
-    if (f.error) setErro(e => (e ? e + " | " : "") + "fases: " + f.error.message);
-    else {
-      fases = f.data || [];
-      const ids = [...new Set(fases.map(x => x.aluno_id))];
-      try {
-        for (let i = 0; i < ids.length; i += LOTE) {
-          const p = await sb.from("fases").select("id, aluno_id, inicio")
-            .in("aluno_id", ids.slice(i, i + LOTE)).gt("inicio", fimMin);
-          if (p.error) throw new Error("fases seguintes: " + p.error.message);
-          proximas.push(...(p.data || []));
-        }
-        const pids = [...new Set(proximas.map(x => x.id))];
-        for (let i = 0; i < pids.length; i += LOTE) {
-          const t = await sb.from("treinos").select("fase_id").in("fase_id", pids.slice(i, i + LOTE));
-          if (t.error) throw new Error("treinos: " + t.error.message);
-          for (const x of (t.data || [])) comTreino.add(x.fase_id);
-        }
-      } catch (e) { setErro(x => (x ? x + " | " : "") + e.message); }
-    }
-    setAuto({ fases, proximas, comTreino });
+    const d = await tcCarregarDados(s0, s1);
+    setSemTabela(d.semTabela);
+    setManuais(d.manuais);
+    if (d.temOrdem !== null) setTemOrdem(d.temOrdem);
+    setErro(d.erros.join(" | "));
+    setAuto({ fases: d.fases, proximas: d.proximas, comTreino: d.comTreino });
     setCarr(false);
   }, [s0, s1]);
 
@@ -13209,7 +13863,9 @@ function App() {
      comparando alunos diferentes */
   const [aba, setAba] = useState(() => {
     const h = (location.hash || "").replace(/^#\/?/, "").split("/")[0];
-    return ABAS_VALIDAS.includes(h) ? h : "alunos";
+    /* link antigo #/acompanhamento abre Alunos já no modo Acompanhamento */
+    if (h === "acompanhamento") { pedidoAlunos = { modo: "acomp" }; return "alunos"; }
+    return ABAS_VALIDAS.includes(h) ? h : "inicio";
   });
 
   useEffect(() => {
@@ -13225,6 +13881,7 @@ function App() {
   useEffect(() => {
     const t = () => {
       const h = (location.hash || "").replace(/^#\/?/, "").split("/")[0];
+      if (h === "acompanhamento") { pedidoAlunos = { modo: "acomp" }; setAba("alunos"); return; }
       if (ABAS_VALIDAS.includes(h)) setAba(h);
     };
     window.addEventListener("hashchange", t);
@@ -13257,10 +13914,10 @@ function App() {
         </div>
       </div>
       <div className="tabs">
+        <button className={"tab" + (aba === "inicio" ? " on" : "")}
+          onClick={() => setAba("inicio")}>Início</button>
         <button className={"tab" + (aba === "alunos" ? " on" : "")}
           onClick={() => setAba("alunos")}>Alunos</button>
-        <button className={"tab" + (aba === "acompanhamento" ? " on" : "")}
-          onClick={() => setAba("acompanhamento")}>Acompanhamento</button>
         <button className={"tab" + (aba === "volume" ? " on" : "")}
           onClick={() => setAba("volume")}>Volume</button>
         <button className={"tab" + (aba === "catalogo" ? " on" : "")}
@@ -13281,8 +13938,8 @@ function App() {
       </div>
       {abasComAluno.includes(aba) && <BarraAluno />}
 
-      {aba === "alunos" ? <PainelAlunos />
-        : aba === "acompanhamento" ? <PainelAcompanhamento />
+      {aba === "inicio" ? <PainelInicio />
+        : aba === "alunos" ? <PainelAlunos />
         : aba === "volume" ? <PainelVolume />
         : aba === "montagem" ? <PainelMontagem />
         : aba === "planejamento" ? <PainelPlanejamento />
