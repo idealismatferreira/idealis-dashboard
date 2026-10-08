@@ -1392,6 +1392,121 @@
     color:#b9d4d8;cursor:copy}
   .tc-soltar b.on{border:1px solid var(--accent);background:#0f3a40;color:var(--accent)}
   @media (hover: none){ .tc-grip{display:none} }
+  /* ============ TÉCNICAS · BIBLIOTECA DE FASES ============ */
+  .pl-vistas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .tq{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;
+    background:#0d1c1f;border:1px solid #1d3a3e;color:#9fe8ef;font-size:11px;
+    line-height:1.4;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .tq i{font-style:normal;color:var(--warn);font-size:10px}
+  .tq.clik{cursor:pointer}
+  .tq.clik:hover{border-color:var(--accent);color:var(--accent)}
+  .tq.arq{opacity:.5;text-decoration:line-through}
+  .tq button{width:auto;padding:0 0 0 3px;background:none;border:none;color:var(--mut);
+    font-size:13px;line-height:1;cursor:pointer;font-weight:400}
+  .tq button:hover{color:var(--alert);filter:none}
+  .tqs{display:flex;flex-wrap:wrap;gap:5px}
+  .pl-tsel{display:flex;gap:4px;align-items:center}
+  .pl-tsel .cb{flex:1;min-width:0}
+  .pl-ed{width:auto;padding:4px 7px;background:transparent;border:1px solid var(--line);
+    color:var(--mut);font-size:11px;border-radius:6px;flex-shrink:0;font-weight:400}
+  .pl-ed:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .pl-tecs{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:0 0 7px}
+  .pl-tecs .tq{font-size:10px;padding:2px 7px}
+  .mt-tecs{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:-2px 0 12px;
+    padding:8px 11px;background:#0a1517;border:1px dashed #1d3a3e;border-radius:9px}
+  .mt-tecs .lb{font-size:10px;text-transform:uppercase;letter-spacing:.7px;
+    color:var(--mut);margin-right:4px}
+  .bf-cols{display:grid;grid-template-columns:290px minmax(0,1fr);gap:16px;align-items:start}
+  .bf-lista{background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:12px;max-height:calc(100vh - 190px);overflow-y:auto;position:sticky;top:12px}
+  .bf-top{display:flex;gap:6px;margin-bottom:8px}
+  .bf-top input{margin-bottom:0;padding:8px 10px;font-size:12px}
+  .bf-top button{flex-shrink:0}
+  .bf-cat{display:flex;align-items:center;gap:7px;margin:14px 2px 6px;font-size:10px;
+    text-transform:uppercase;letter-spacing:.9px;color:var(--mut)}
+  .bf-cat i{font-style:normal;margin-left:auto}
+  .bf-it{padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent;
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .bf-it:hover{background:#0f1a1c}
+  .bf-it.on{border-color:var(--accent);background:#0d1c1f}
+  .bf-it b{font-size:13px;font-weight:500;min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .bf-it>span{font-size:10px;color:var(--mut);flex-shrink:0}
+  .bf-it.arq b{color:var(--mut);text-decoration:line-through}
+  .bf-it .rs{color:var(--warn)}
+  .bf-vazio{font-size:11px;color:#4a5a5d;font-style:italic;padding:2px 10px 4px}
+  .bf-arq{display:block;width:100%;margin-top:14px;background:none;
+    border:1px dashed var(--line);color:var(--mut);font-size:11px;padding:7px;font-weight:500}
+  .bf-arq:hover{border-color:var(--accent);color:var(--txt);filter:none}
+  .bf-ed{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:18px 20px}
+  .bf-ed-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .bf-ed-h h3{font-size:17px;margin:0}
+  .bf-ed-h>span{font-size:11px;color:var(--mut)}
+  .bf-ed-h .st-tag{margin-left:0}
+  .bf-ed input{margin-bottom:0}
+  .bf-ed select{width:100%;min-width:0}
+  .bf-prev{font-size:11px;color:var(--mut);margin-top:6px}
+  .bf-prev b{color:#eeff7f;font-weight:600}
+  .bf-rest{margin-top:9px;font-size:11px;color:var(--warn);line-height:1.6;
+    background:#1c1710;border:1px solid #3b2c18;border-radius:8px;padding:8px 11px}
+  .bf-rest b{color:#f5c48e;font-weight:600}
+  .bf-novacat{margin-top:9px;padding:11px;border:1px dashed var(--accent);border-radius:9px;
+    display:flex;flex-direction:column;gap:9px}
+  .bf-cor{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid transparent}
+  .bf-cor.on{border-color:#fff}
+  .bf-acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:20px;
+    padding-top:14px;border-top:1px solid var(--line)}
+  .bf-acoes>button{width:auto;padding:9px 16px;font-size:13px}
+  .bf-acoes .ord{display:flex;gap:3px;margin-left:auto}
+  .bf-acoes .ord button{padding:6px 10px;font-size:11px}
+  .bf-info{font-size:11px;color:var(--mut);line-height:1.6}
+  .bf-ligados{display:flex;flex-direction:column;gap:5px}
+  .bf-ligados a{font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none}
+  .bf-ligados a:hover{text-decoration:underline}
+  .bf-aviso{background:#2a2418;border:1px solid #5c4a24;color:#f0a35e;padding:11px 14px;
+    border-radius:9px;font-size:12px;line-height:1.6}
+  /* ficha do aluno: atalhos e linha do tempo do planejamento */
+  .dr-ir{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .dr-ir span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px;
+    margin-right:2px}
+  .dr-ir button{width:auto;padding:4px 11px;font-size:11px;background:transparent;
+    border:1px solid var(--line);color:var(--txt);border-radius:20px;font-weight:500}
+  .dr-ir button:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .pa-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+    margin-bottom:16px}
+  .pa-h b{display:block;font-size:14px;color:#6bdbdc;margin-bottom:2px}
+  .pa-h span{font-size:11px;color:var(--mut)}
+  .pa-h button{flex-shrink:0;padding:7px 12px;font-size:12px}
+  .pa-f{position:relative;padding:0 0 16px 20px;border-left:2px solid #1f2b2d;margin-left:6px}
+  .pa-f:last-of-type{padding-bottom:4px}
+  .pa-f::before{content:"";position:absolute;left:-7px;top:2px;width:8px;height:8px;
+    border-radius:50%;background:var(--bg);border:2px solid #2d3f42}
+  .pa-f.ativa::before{border-color:var(--accent);background:var(--accent)}
+  .pa-f.encerrada::before{border-color:#4a3a28}
+  .pa-f .n{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut)}
+  .pa-f .nm{font-size:14px;font-weight:600;margin:1px 0 3px}
+  .pa-f.ativa .nm{color:var(--accent)}
+  .pa-f.encerrada .nm{color:#a9b6b8}
+  .pa-f .dt{font-size:12px;color:var(--mut);display:flex;gap:8px;align-items:center;
+    flex-wrap:wrap}
+  .pa-f .dt .pl-sit{margin-top:0}
+  .pa-f .ob{font-size:12px;color:#b9c7c9;line-height:1.55;margin-top:6px;white-space:pre-wrap}
+  .pa-f .tqs{margin-top:7px}
+  .pa-f.vaga .nm{color:#4a5a5d;font-weight:400;font-style:italic}
+  .pa-sec{font-size:10px;text-transform:uppercase;letter-spacing:.9px;color:var(--mut);
+    margin:22px 0 12px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+  /* acompanhamento: fase do momento embaixo do nome */
+  .ac-nome .ac-fase{display:block;font-style:normal;font-size:11px;font-weight:400;
+    margin-top:2px;color:var(--mut);overflow:hidden;text-overflow:ellipsis}
+  .ac-nome .ac-fase.perto{color:var(--warn)}
+  .ac-nome .ac-fase.vencida{color:var(--alert)}
+  .ac-nome .ac-fase.nenhuma{color:#4a5a5d}
+  @media (max-width: 900px){
+    .bf-cols{grid-template-columns:1fr}
+    .bf-lista{position:static;max-height:none}
+    .bf-ed{padding:15px 14px}
+    .pa-h{flex-direction:column}
+  }
 </style>
 </head>
 <body>
@@ -1571,6 +1686,9 @@ function LinhaAluno({ a, onAbrir, onStatus, onModalidade, modalidades }) {
 }
 
 function PainelAlunos() {
+  /* abrir a ficha também escolhe o aluno global: indo para Treinos,
+     Planejamento ou Volume ele já está selecionado */
+  const { setAlunoId } = usarAluno();
   const [alunos, setAlunos] = useState(null);
   const [erro, setErro] = useState("");
   const [aberto, setAberto] = useState(null);
@@ -1701,7 +1819,8 @@ function PainelAlunos() {
                       <i>{M.alunos.length}</i>
                     </div>
                     {M.alunos.map(a => (
-                      <LinhaAluno key={a.id} a={a} onAbrir={setAberto}
+                      <LinhaAluno key={a.id} a={a}
+                        onAbrir={x => { setAlunoId(x.id); setAberto(x); }}
                         onStatus={mudarStatus} onModalidade={mudarModalidade}
                         modalidades={mods} />
                     ))}
@@ -3421,6 +3540,10 @@ function PainelDores({ aluno }) {
 
 function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
   useEsc(true, onFechar);
+  const { setAlunoId } = usarAluno();
+  const { irAba } = usarFeed();
+  /* atalho da ficha para outra aba já com este aluno escolhido */
+  function irPara(aba) { setAlunoId(aluno.id); if (irAba) irAba(aba); }
   const [atual, setAtual]     = useState(undefined);
   const [hist, setHist]       = useState([]);
   const [modo, setModo]       = useState(modoInicial || "secoes");
@@ -3644,12 +3767,21 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
               : "atualizada em " + new Date(atual.criado_em).toLocaleDateString("pt-BR") +
                 (hist.length > 1 ? " · " + hist.length + " versões" : "")}
           </div>
+          <div className="dr-ir">
+            <span>abrir em</span>
+            <button onClick={() => irPara("montagem")}>Treinos ↗</button>
+            <button onClick={() => irPara("planejamento")}>Planejamento ↗</button>
+            <button onClick={() => irPara("volume")}>Volume ↗</button>
+          </div>
         </div>
 
         <div className="dr-acoes">
           <button className="btn-sec" onClick={() => setModo("entradas")}>Entradas</button>
           <button className="btn-sec" onClick={() => setModo("evolucao")}>
             Evolução de Carga
+          </button>
+          <button className="btn-sec" onClick={() => setModo("planejamento")}>
+            Planejamento
           </button>
           <button className="btn-sec" onClick={() => setModo("secoes")}>Texto original</button>
           <button className="btn-sec" onClick={() => setModo("editar")}>
@@ -3678,7 +3810,8 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
           {erro && <div className="err">{erro}</div>}
           {aviso && <div className="ok-msg">{aviso}</div>}
 
-          {temEnt && modo !== "entradas" && modo !== "hist" && modo !== "evolucao" && (
+          {temEnt && modo !== "entradas" && modo !== "hist" && modo !== "evolucao" &&
+            modo !== "planejamento" && (
             <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
               color: "#f0a35e" }}>
               ⚠️ Este aluno já foi migrado. As <b>Entradas</b> são a fonte de verdade —
@@ -3690,6 +3823,8 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
             <PainelEntradas aluno={aluno} />
           ) : modo === "evolucao" ? (
             <PainelEvolucao aluno={aluno} />
+          ) : modo === "planejamento" ? (
+            <PainelPlanejamentoAluno aluno={aluno} onIr={irPara} />
           ) : modo === "aparelhos" ? (
             <PainelAparelhosAluno aluno={aluno} />
           ) : modo === "academias" ? (
@@ -7320,27 +7455,19 @@ function desenharPlanejamento(plan, fases, aluno) {
   return cv;
 }
 
-function PainelPlanejamento() {
+function PlanejamentoAluno({ onEditarTemplate }) {
   const { alunoId: sel, alunos } = usarAluno();
-  const [tpls, setTpls]       = useState([]);
-  const [cats, setCats]       = useState([]);
+  const { toast } = usarUI();
+  /* templates, categorias e técnicas vêm do catálogo compartilhado: o que
+     você muda na Biblioteca aparece aqui sem recarregar a página */
+  const catF = usarCatalogoFases();
+  const tpls = catF.tpls, cats = catF.cats;
   const [plan, setPlan]       = useState(null);
   const [fases, setFases]     = useState([1, 2, 3, 4].map(faseVazia));
   const [erro, setErro]       = useState("");
   const [aviso, setAviso]     = useState("");
   const [busy, setBusy]       = useState(false);
   const [sujo, setSujo]       = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const [t, c] = await Promise.all([
-        sb.from("fase_templates").select("*").eq("ativo", true).order("ordem"),
-        sb.from("fase_categorias").select("*").order("ordem")
-      ]);
-      if (!t.error) setTpls(t.data || []);
-      if (!c.error) setCats(c.data || []);
-    })();
-  }, []);
 
   const carregar = useCallback(async (alunoId) => {
     if (!alunoId) return;
@@ -7388,6 +7515,13 @@ function PainelPlanejamento() {
         objetivo: t.objetivo, metodos: t.metodos };
     }));
     setSujo(true);
+  }
+
+  /* chip de técnica sugerida -> linha nova no texto de Métodos da fase */
+  function inserirTecnica(i, t) {
+    const novo = acrescentarLinha(fases[i].metodos, t.nome);
+    if (novo === null) { toast('"' + t.nome + '" já está nos Métodos desta fase.'); return; }
+    mudarFase(i, "metodos", novo);
   }
 
   /* recalcula as 4 datas a partir do início da fase 1 */
@@ -7478,9 +7612,16 @@ function PainelPlanejamento() {
   const temX = fases.some(f =>
     (f.objetivo + " " + f.metodos + " " + f.nome).includes("«x»"));
 
-  const grupos = cats.map(c => ({
-    ...c, itens: tpls.filter(t => t.categoria_id === c.id)
-  })).filter(g => g.itens.length);
+  /* só templates ativos na escolha; o arquivado que a fase já usa entra no
+     fim, senão o campo apareceria vazio */
+  const opcoesBase = agruparTemplates(tpls, cats, { soComItens: true })
+    .flatMap(g => g.itens.map(t => ({ value: t.id, label: t.nome, grupo: g.nome })));
+  function opcoesPara(tid) {
+    if (!tid || opcoesBase.some(o => o.value === tid)) return opcoesBase;
+    const t = tpls.find(x => x.id === tid);
+    return t ? [...opcoesBase, { value: t.id, label: t.nome + " (arquivado)", grupo: "Arquivados" }]
+             : opcoesBase;
+  }
 
   const cel = (f, i, campo, cls, rows) => (
     <textarea className={cls} rows={rows || 3} value={f[campo]}
@@ -7531,14 +7672,30 @@ function PainelPlanejamento() {
         {fases.map((f, i) => (
           <div className={"pl-cel " + (i % 2 ? "cb2" : "ca")} key={"h" + i}>
             <div className="fnum">Fase {i + 1}</div>
-            <div style={{ marginBottom: 6 }}>
+            <div className="pl-tsel" style={{ marginBottom: 6 }}>
               <Combobox className="tsel"
-                opcoes={grupos.flatMap(g =>
-                  g.itens.map(t => ({ value: t.id, label: t.nome, grupo: g.nome })))}
+                opcoes={opcoesPara(f.template_id)}
                 value={f.template_id}
                 onChange={v => aplicarTemplate(i, v)}
                 placeholder="Buscar template..." />
+              {f.template_id && onEditarTemplate && (
+                <button className="pl-ed" title="Editar este template na Biblioteca de fases"
+                  onClick={() => onEditarTemplate(f.template_id)}>✎</button>
+              )}
             </div>
+            {(() => {
+              const tt = tecnicasDoTemplate(templateDaFase(f, tpls), catF.tecs);
+              return tt.length ? (
+                <div className="pl-tecs">
+                  {tt.map(t => (
+                    <ChipTecnica key={t.id} t={t} onClick={() => inserirTecnica(i, t)}
+                      titulo={t.nome + (t.mecanica ? "\n" + t.mecanica : "") +
+                        (t.restricao ? "\n⚠ " + t.restricao : "") +
+                        "\n\nclica para pôr no texto de Métodos"} />
+                  ))}
+                </div>
+              ) : null;
+            })()}
             <textarea className="fnome" rows={2} value={f.nome}
               onChange={e => mudarFase(i, "nome", e.target.value)}
               placeholder="Nome da fase" />
@@ -7580,11 +7737,1053 @@ function PainelPlanejamento() {
         observações da "Fase II" saem sozinhas, sempre em segunda-feira. Tudo continua editável.
         <br />
         Salvar cria as fases direto na tabela do App: o aluno passa a ver o planejamento por lá.
+        <br />
+        Os chips embaixo do template são as <b>técnicas sugeridas</b> da Biblioteca de fases —
+        clica num chip para pôr a técnica no texto de Métodos. Eles não saem no PNG nem no App.
+        O <b>✎</b> abre o template na Biblioteca.
       </div>
     </div>
   );
 }
 
+
+
+/* ---------- Catálogo de fases e técnicas ----------
+   Templates (fase_templates), categorias (fase_categorias) e técnicas
+   (tecnicas) são lidos por 4 telas: Planejamento, Biblioteca, Treinos e a
+   ficha do aluno. Cache único aqui no módulo: quem grava chama
+   recarregarCatalogo() e todas as telas abertas recebem a versão nova.
+
+   Lê TODOS os templates (inclusive arquivados) e filtra na tela: fase antiga
+   que aponta para template arquivado continua mostrando o nome dele.
+
+   Antes de rodar o idealis_tecnicas.sql a tabela `tecnicas` e a coluna
+   fase_templates.tecnicas_ids não existem. Nada quebra: semTecnicas fica
+   true, as telas avisam e o resto (editar template) continua funcionando. */
+const catFases = { dados: null, prom: null, subs: new Set() };
+
+async function buscarCatalogoFases() {
+  const [t, c, k] = await Promise.all([
+    sb.from("fase_templates").select("*").order("ordem"),
+    sb.from("fase_categorias").select("*").order("ordem"),
+    sb.from("tecnicas").select("*").order("ordem").order("nome")
+  ]);
+  const tpls = t.error ? [] : (t.data || []);
+  return {
+    tpls,
+    cats: c.error ? [] : (c.data || []),
+    tecs: k.error ? [] : (k.data || []),
+    semTecnicas: !!k.error,
+    erroTecnicas: k.error ? k.error.message : "",
+    /* com 0 templates não dá para saber pela linha; assume que veio junto */
+    temColunaTec: tpls.length ? tpls.some(x => "tecnicas_ids" in x) : !k.error,
+    erro: t.error ? t.error.message : c.error ? c.error.message : "",
+    carregando: false
+  };
+}
+
+function recarregarCatalogo() {
+  catFases.prom = buscarCatalogoFases()
+    .then(d => {
+      catFases.dados = d; catFases.prom = null;
+      catFases.subs.forEach(f => f(d));
+      return d;
+    })
+    .catch(e => {
+      catFases.prom = null;
+      const d = { ...(catFases.dados || { tpls: [], cats: [], tecs: [] }),
+                  erro: String(e && e.message || e), carregando: false };
+      catFases.subs.forEach(f => f(d));
+      return d;
+    });
+  return catFases.prom;
+}
+
+const CAT_VAZIO = { tpls: [], cats: [], tecs: [], semTecnicas: false, erroTecnicas: "",
+                    temColunaTec: false, erro: "", carregando: true };
+
+function usarCatalogoFases() {
+  const [d, setD] = useState(catFases.dados);
+  useEffect(() => {
+    catFases.subs.add(setD);
+    if (catFases.dados) setD(catFases.dados);
+    else if (!catFases.prom) recarregarCatalogo();
+    return () => { catFases.subs.delete(setD); };
+  }, []);
+  return d || CAT_VAZIO;
+}
+
+/* ---- funções puras (cobertas pelos testes) ---- */
+
+/* ids do template -> técnicas, na ordem gravada. Arquivada e id órfão
+   (técnica que não existe mais) ficam de fora. */
+function tecnicasDoTemplate(tpl, tecs, incluirArquivadas) {
+  if (!tpl || !Array.isArray(tpl.tecnicas_ids) || !tpl.tecnicas_ids.length) return [];
+  const m = new Map((tecs || []).map(t => [t.id, t]));
+  return tpl.tecnicas_ids.map(id => m.get(id))
+    .filter(t => t && (incluirArquivadas || t.ativo !== false));
+}
+
+/* template da fase: pelo template_id; se não tiver (fase criada no App ou
+   antes dos templates), pelo nome — "Fase de Força Pura II" -> "Força Pura" */
+function templateDaFase(f, tpls) {
+  if (!f || !tpls || !tpls.length) return null;
+  if (f.template_id) {
+    const t = tpls.find(x => x.id === f.template_id);
+    if (t) return t;
+  }
+  const n = normAcc(String(f.nome || "")
+    .replace(/^\s*Fase\s+(de\s+|d[ao]\s+)?/i, "")
+    .replace(/\s+(I{1,3}|IV|[1-4])\s*$/i, ""));
+  if (!n) return null;
+  return tpls.find(t => t.ativo !== false && normAcc(t.nome) === n) || null;
+}
+
+/* "Fase de Força Pura I" -> "Força Pura I" */
+function nomeCurtoFase(nome) {
+  return String(nome || "").trim().replace(/^Fase\s+(de\s+|d[ao]\s+)?/i, "");
+}
+
+/* põe a técnica numa linha nova do texto de Métodos, no formato "- item"
+   dos templates. Devolve null se ela já estiver no texto. */
+function acrescentarLinha(txt, item) {
+  const atual = String(txt || "");
+  if (normAcc(atual).includes(normAcc(item))) return null;
+  const limpo = atual.replace(/\s+$/, "");
+  return (limpo ? limpo + "\n" : "") + "- " + item;
+}
+
+/* id de texto (fase_templates.id e fase_categorias.id são text sem default):
+   slug legível, com sufixo numérico se já existir */
+function idTexto(nome, existentes) {
+  const base = normAcc(nome).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "item";
+  const usados = new Set(existentes || []);
+  if (!usados.has(base)) return base;
+  for (let k = 2; k < 1000; k++) if (!usados.has(base + "_" + k)) return base + "_" + k;
+  return base + "_" + novoUUID().slice(0, 8);
+}
+
+function ordenarTpls(a, b) {
+  return ((a.ordem ?? 100) - (b.ordem ?? 100)) ||
+    String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR");
+}
+
+/* categorias -> templates na ordem das duas tabelas. Template sem categoria
+   (ou com categoria que não existe mais) cai em "Sem categoria" em vez de sumir. */
+function agruparTemplates(tpls, cats, opts) {
+  const { verArq, busca, soComItens } = opts || {};
+  const vis = (tpls || []).filter(t =>
+    (verArq || t.ativo !== false) && (!busca || cbCasa(t.nome, busca)));
+  const ids = new Set((cats || []).map(c => c.id));
+  const grupos = [...(cats || [])]
+    .sort((a, b) => (a.ordem ?? 100) - (b.ordem ?? 100))
+    .map(c => ({ id: c.id, nome: c.nome, cor: c.cor,
+                 itens: vis.filter(t => t.categoria_id === c.id).sort(ordenarTpls) }));
+  const orf = vis.filter(t => !t.categoria_id || !ids.has(t.categoria_id)).sort(ordenarTpls);
+  if (orf.length) grupos.push({ id: "", nome: "Sem categoria", cor: null, itens: orf });
+  return soComItens ? grupos.filter(g => g.itens.length) : grupos;
+}
+
+/* categorias na ordem da primeira técnica de cada uma; dentro, ordem e nome.
+   Mantém cada categoria contígua mesmo se uma técnica mudou de categoria —
+   o Combobox repete o cabeçalho se o grupo vier quebrado. */
+function ordenarTecnicas(tecs) {
+  const minCat = new Map();
+  for (const t of (tecs || [])) {
+    const k = t.categoria || "Outros";
+    minCat.set(k, Math.min(minCat.has(k) ? minCat.get(k) : Infinity, t.ordem ?? 100));
+  }
+  return [...(tecs || [])].sort((a, b) => {
+    const ca = a.categoria || "Outros", cb = b.categoria || "Outros";
+    if (ca !== cb) return (minCat.get(ca) - minCat.get(cb)) || ca.localeCompare(cb, "pt-BR");
+    return ((a.ordem ?? 100) - (b.ordem ?? 100)) ||
+      String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR");
+  });
+}
+
+/* ordem de uma técnica nova: fim da própria categoria; categoria nova
+   ganha a próxima centena (a carga inicial usa 101.., 201.., ...) */
+function proximaOrdemTecnica(tecs, categoria) {
+  const lista = tecs || [];
+  const mesma = lista.filter(t => (t.categoria || "Outros") === categoria);
+  if (mesma.length) return Math.max(...mesma.map(t => t.ordem ?? 100)) + 1;
+  const max = lista.length ? Math.max(...lista.map(t => t.ordem ?? 100)) : 0;
+  return (Math.floor(max / 100) + 1) * 100 + 1;
+}
+
+/* fase do momento de um aluno: a ativa (do planejamento antes da avulsa,
+   depois a que começou por último); sem ativa, a próxima; sem próxima,
+   a última que venceu. dias = até o fim / até começar / desde que venceu. */
+function faseDoMomento(lista, hoje) {
+  const dd = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 864e5);
+  const fs = (lista || []).filter(f => f && f.inicio && f.fim);
+  const ativas = fs.filter(f => f.inicio <= hoje && f.fim >= hoje);
+  if (ativas.length) {
+    const f = [...ativas].sort((a, b) =>
+      ((b.posicao != null) - (a.posicao != null)) ||
+      (a.inicio < b.inicio ? 1 : a.inicio > b.inicio ? -1 : 0))[0];
+    return { tipo: "ativa", fase: f, dias: dd(hoje, f.fim) };
+  }
+  const fut = fs.filter(f => f.inicio > hoje)
+    .sort((a, b) => (a.inicio < b.inicio ? -1 : a.inicio > b.inicio ? 1 : 0))[0];
+  if (fut) return { tipo: "proxima", fase: fut, dias: dd(hoje, fut.inicio) };
+  const venc = fs.filter(f => f.fim < hoje)
+    .sort((a, b) => (a.fim > b.fim ? -1 : a.fim < b.fim ? 1 : 0))[0];
+  if (venc) return { tipo: "vencida", fase: venc, dias: dd(venc.fim, hoje) };
+  return { tipo: "nenhuma", fase: null, dias: null };
+}
+
+function rotuloFaseMomento(m) {
+  if (!m || m.tipo === "nenhuma")
+    return { txt: "sem fase nos últimos 60 dias", cls: "nenhuma", titulo: "" };
+  const f = m.fase, nm = nomeCurtoFase(f.nome);
+  const per = f.nome + "\n" + dBR(f.inicio) + " → " + dBR(f.fim);
+  if (m.tipo === "ativa") {
+    const q = m.dias === 0 ? "vence hoje"
+      : m.dias <= 7 ? "vence em " + m.dias + "d" : "faltam " + m.dias + "d";
+    return { txt: nm + " · " + q, cls: m.dias <= 7 ? "perto" : "", titulo: per };
+  }
+  if (m.tipo === "proxima")
+    return { txt: "sem fase ativa · " + nm + " começa em " + m.dias + "d",
+             cls: "perto", titulo: per };
+  return { txt: "⚠ " + nm + " venceu há " + m.dias + "d", cls: "vencida", titulo: per };
+}
+
+/* ---- componentes ---- */
+
+function ChipTecnica({ t, onClick, onRemover, titulo }) {
+  const tip = titulo || [t.nome, t.mecanica, t.restricao ? "⚠ " + t.restricao : "",
+                         t.observacao].filter(Boolean).join("\n");
+  return (
+    <span className={"tq" + (onClick ? " clik" : "") + (t.ativo === false ? " arq" : "")}
+      title={tip} onClick={onClick}>
+      {t.restricao && <i>⚠</i>}
+      {t.nome}
+      {onRemover && (
+        <button title="Tirar desta fase"
+          onClick={e => { e.stopPropagation(); onRemover(); }}>×</button>
+      )}
+    </span>
+  );
+}
+
+const BF_CORES = ["#00daef", "#ddff00", "#7fd858", "#f0a35e", "#e05c5c",
+                  "#8fb8ff", "#c89bff", "#89a0a3"];
+
+/* Biblioteca de fases: cria, edita, duplica, arquiva e ordena os templates
+   e atrela as técnicas sugeridas. Nunca apaga template: fases.template_id
+   aponta para ele (FK), e o histórico do aluno tem que continuar legível.
+   Editar o template NÃO reescreve fase já criada — nome/objetivo/métodos
+   são copiados na hora de aplicar. Só as técnicas sugeridas são lidas ao
+   vivo, então essas mudam em todas as fases que usam o template. */
+function BibliotecaFases({ foco, onAbrirTecnica }) {
+  const { toast, confirmar } = usarUI();
+  const cat = usarCatalogoFases();
+  const [selId, setSelId]   = useState("");       // "" nada · "__novo" fase nova
+  const [form, setForm]     = useState(null);
+  const [sujo, setSujo]     = useState(false);
+  const [busy, setBusy]     = useState(false);
+  const [erro, setErro]     = useState("");
+  const [busca, setBusca]   = useState("");
+  const [verArq, setVerArq] = useState(false);
+  const [uso, setUso]       = useState(null);
+  const [novaCat, setNovaCat] = useState(null);   // { nome, cor }
+  const alvoUso  = React.useRef("");
+  const focoFeito = React.useRef(0);
+
+  useEffect(() => { recarregarCatalogo(); }, []);
+
+  const tplSel = cat.tpls.find(t => t.id === selId) || null;
+  const novo = selId === "__novo";
+
+  function formDe(t) {
+    return { nome: t.nome || "", categoria_id: t.categoria_id || "",
+             objetivo: t.objetivo || "", metodos: t.metodos || "",
+             tecnicas_ids: Array.isArray(t.tecnicas_ids) ? [...t.tecnicas_ids] : [] };
+  }
+
+  async function podeSair() {
+    if (!sujo) return true;
+    return confirmar({ titulo: "Descartar alterações?",
+      texto: "Você mexeu nesta fase e não salvou.", ok: "Descartar", perigo: true });
+  }
+
+  async function contarUso(id) {
+    alvoUso.current = id; setUso(null);
+    const r = await sb.from("fases").select("id", { count: "exact", head: true })
+      .eq("template_id", id);
+    if (alvoUso.current === id) setUso(r.error ? null : (r.count ?? 0));
+  }
+
+  async function selecionar(id, semPerguntar) {
+    if (id === selId) return;
+    if (!semPerguntar && !(await podeSair())) return;
+    const t = cat.tpls.find(x => x.id === id);
+    if (!t) return;
+    if (t.ativo === false) setVerArq(true);
+    setSelId(id); setForm(formDe(t)); setSujo(false); setErro(""); setNovaCat(null);
+    contarUso(id);
+  }
+
+  /* veio do lápis do Planejamento ou de um link da tela de Técnicas */
+  useEffect(() => {
+    if (!foco || !foco.id || foco.n === focoFeito.current) return;
+    if (!cat.tpls.some(t => t.id === foco.id)) return;
+    focoFeito.current = foco.n;
+    selecionar(foco.id);
+  }, [foco, cat.tpls]);
+
+  async function nova() {
+    if (!(await podeSair())) return;
+    setSelId("__novo"); setSujo(false); setErro(""); setUso(null); setNovaCat(null);
+    alvoUso.current = "";
+    setForm({ nome: "", categoria_id: (tplSel && tplSel.categoria_id) ||
+                (cat.cats[0] && cat.cats[0].id) || "",
+              objetivo: "", metodos: "", tecnicas_ids: [] });
+  }
+
+  /* duplica o que está na tela (com as edições), como fase nova */
+  function duplicar() {
+    setForm(f => ({ ...f, nome: f.nome.trim() + " (cópia)" }));
+    setSelId("__novo"); setSujo(true); setErro(""); setUso(null);
+    alvoUso.current = "";
+  }
+
+  function mudar(campo, v) { setForm(f => ({ ...f, [campo]: v })); setSujo(true); }
+
+  async function salvar() {
+    const nome = form.nome.trim();
+    if (!nome) { setErro("Dá um nome para a fase."); return; }
+    if (/^fase\b/i.test(nome)) {
+      setErro('Escreve só o núcleo do nome, ex.: "Força Pura". ' +
+        'O "Fase de … I" entra sozinho quando você aplica o template.');
+      return;
+    }
+    if (!form.categoria_id) { setErro("Escolhe uma categoria."); return; }
+    const dup = cat.tpls.find(t => t.id !== selId && normAcc(t.nome) === normAcc(nome));
+    if (dup) {
+      setErro('Já existe "' + dup.nome + '"' + (dup.ativo === false ? " (arquivada)" : "") + ".");
+      return;
+    }
+    setBusy(true); setErro("");
+    const corpo = { nome, categoria_id: form.categoria_id,
+                    objetivo: form.objetivo || "", metodos: form.metodos || "" };
+    if (cat.temColunaTec) corpo.tecnicas_ids = form.tecnicas_ids;
+    let id = selId, r;
+    if (novo) {
+      id = idTexto(nome, cat.tpls.map(t => t.id));
+      const irmas = cat.tpls.filter(t => t.categoria_id === form.categoria_id);
+      const ordem = irmas.length ? Math.max(...irmas.map(t => t.ordem ?? 100)) + 10 : 100;
+      r = await sb.from("fase_templates").insert({ id, ...corpo, ordem, ativo: true });
+    } else {
+      r = await sb.from("fase_templates").update(corpo).eq("id", selId);
+    }
+    if (r.error) { setBusy(false); setErro(r.error.message); return; }
+    await recarregarCatalogo();
+    setBusy(false); setSujo(false); setSelId(id);
+    if (novo) { alvoUso.current = id; setUso(0); }
+    toast(novo ? "Fase criada ✓" : "Fase salva ✓");
+  }
+
+  async function arquivar(ativo) {
+    if (!tplSel) return;
+    if (!ativo) {
+      const ok = await confirmar({
+        titulo: 'Arquivar "' + tplSel.nome + '"?',
+        texto: "Ela sai da lista de templates do Planejamento e da Nova fase." +
+          (uso ? " As " + uso + " fase(s) de alunos que já usam este template continuam como estão." : "") +
+          " Dá para restaurar depois.",
+        ok: "Arquivar" });
+      if (!ok) return;
+    }
+    const r = await sb.from("fase_templates").update({ ativo }).eq("id", tplSel.id);
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    if (!ativo) setVerArq(true);
+    await recarregarCatalogo();
+    toast(ativo ? "Fase restaurada ✓" : "Fase arquivada");
+  }
+
+  /* reordena dentro da categoria. Renumera a categoria em 10, 20, 30…
+     (a ordem padrão é 100 para todo mundo, então trocar só os dois não
+     bastaria). Se alguma gravação falhar, devolve as que já foram. */
+  async function mover(dir) {
+    if (!tplSel || sujo) return;
+    const g = agruparTemplates(cat.tpls, cat.cats, { verArq })
+      .find(x => x.id === (tplSel.categoria_id || ""));
+    if (!g) return;
+    const i = g.itens.findIndex(t => t.id === tplSel.id), j = i + dir;
+    if (i < 0 || j < 0 || j >= g.itens.length) return;
+    const nova = [...g.itens];
+    [nova[i], nova[j]] = [nova[j], nova[i]];
+    const mud = nova.map((t, k) => ({ id: t.id, ordem: (k + 1) * 10, antes: t.ordem }))
+      .filter(m => m.ordem !== m.antes);
+    setBusy(true);
+    const rs = await Promise.all(mud.map(m =>
+      sb.from("fase_templates").update({ ordem: m.ordem }).eq("id", m.id)));
+    const err = rs.find(x => x.error);
+    if (err) {
+      await Promise.all(mud.map((m, k) => rs[k].error ? null :
+        sb.from("fase_templates").update({ ordem: m.antes }).eq("id", m.id)));
+      toast(err.error.message, "erro");
+    }
+    await recarregarCatalogo();
+    setBusy(false);
+  }
+
+  async function criarCategoria() {
+    const nome = (novaCat.nome || "").trim();
+    if (!nome) { setErro("Dá um nome para a categoria."); return; }
+    const dup = cat.cats.find(c => normAcc(c.nome) === normAcc(nome));
+    if (dup) {
+      setNovaCat(null); mudar("categoria_id", dup.id);
+      toast('Já existia "' + dup.nome + '" — usei ela.');
+      return;
+    }
+    const id = idTexto(nome, cat.cats.map(c => c.id));
+    const ordem = cat.cats.length ? Math.max(...cat.cats.map(c => c.ordem ?? 100)) + 10 : 100;
+    const r = await sb.from("fase_categorias").insert({ id, nome, cor: novaCat.cor, ordem });
+    if (r.error) { setErro(r.error.message); return; }
+    await recarregarCatalogo();
+    setNovaCat(null); mudar("categoria_id", id);
+    toast("Categoria criada ✓");
+  }
+
+  const grupos = agruparTemplates(cat.tpls, cat.cats,
+    { verArq, busca: busca.trim(), soComItens: !!busca.trim() });
+  const nArq = cat.tpls.filter(t => t.ativo === false).length;
+  const tecsAtivas = cat.tecs.filter(t => t.ativo !== false);
+  const selTecs = form
+    ? form.tecnicas_ids.map(id => cat.tecs.find(t => t.id === id)).filter(Boolean) : [];
+  const opcoesTec = form ? ordenarTecnicas(tecsAtivas)
+    .filter(t => !form.tecnicas_ids.includes(t.id))
+    .map(t => ({ value: t.id, label: t.nome + (t.restricao ? "  ⚠" : ""),
+                 grupo: t.categoria || "Outros" })) : [];
+  const gSel = tplSel ? agruparTemplates(cat.tpls, cat.cats, { verArq })
+    .find(x => x.id === (tplSel.categoria_id || "")) : null;
+  const posSel = gSel ? gSel.itens.findIndex(t => t.id === tplSel.id) : -1;
+
+  return (
+    <div className="bf-cols">
+      <div className="bf-lista">
+        <div className="bf-top">
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar fase..." />
+          <button className="fbtn mais" onClick={nova}>+ Nova</button>
+        </div>
+        {cat.carregando && <div className="bf-vazio">Carregando...</div>}
+        {cat.erro && <div className="err">{cat.erro}</div>}
+        {grupos.map(g => (
+          <div key={g.id || "__sem"}>
+            <div className="bf-cat">
+              <span className="mod-dot" style={{ background: g.cor || "#3d454f" }} />
+              {g.nome}<i>{g.itens.length}</i>
+            </div>
+            {g.itens.length === 0 && <div className="bf-vazio">nenhuma fase</div>}
+            {g.itens.map(t => {
+              const tt = tecnicasDoTemplate(t, cat.tecs);
+              return (
+                <div key={t.id}
+                  className={"bf-it" + (t.id === selId ? " on" : "") +
+                    (t.ativo === false ? " arq" : "")}
+                  onClick={() => selecionar(t.id)}>
+                  <b title={t.nome}>{t.nome}</b>
+                  <span>
+                    {t.ativo === false ? "arquivada"
+                      : tt.length ? tt.length + " técnica" + (tt.length > 1 ? "s" : "")
+                      : cat.temColunaTec && !cat.semTecnicas
+                        ? <span className="rs">sem técnicas</span> : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        {nArq > 0 && (
+          <button className="bf-arq" onClick={() => setVerArq(v => !v)}>
+            {verArq ? "Esconder arquivadas" : "Mostrar arquivadas (" + nArq + ")"}
+          </button>
+        )}
+      </div>
+
+      <div className="bf-ed">
+        {!form ? (
+          <div className="mt-vazio">
+            Escolhe uma fase à esquerda para editar, ou cria uma nova.
+            <br />As técnicas sugeridas aparecem no Planejamento (embaixo do template)
+            e na aba Treinos, na fase que usa o template.
+          </div>
+        ) : (
+          <>
+            <div className="bf-ed-h">
+              <h3>{novo ? "Nova fase" : (tplSel ? tplSel.nome : "")}</h3>
+              {!novo && tplSel && tplSel.ativo === false && <span className="st-tag">arquivada</span>}
+              {!novo && <span>{uso === null ? "" : "usada em " + uso + " fase(s) de alunos"}</span>}
+              {sujo && <span style={{ color: "var(--warn)" }}>• não salvo</span>}
+            </div>
+            {erro && <div className="err">{erro}</div>}
+
+            <div className="ed-lab">Nome</div>
+            <input value={form.nome} onChange={e => mudar("nome", e.target.value)}
+              placeholder="Força Pura" />
+            <div className="bf-prev">
+              No planejamento vira <b>Fase de {form.nome.trim() || "…"} I</b>
+            </div>
+
+            <div className="ed-lab">Categoria</div>
+            <select value={novaCat ? "__nova" : form.categoria_id}
+              onChange={e => {
+                if (e.target.value === "__nova") setNovaCat({ nome: "", cor: BF_CORES[0] });
+                else { setNovaCat(null); mudar("categoria_id", e.target.value); }
+              }}>
+              {!form.categoria_id && !novaCat && <option value="">Escolher…</option>}
+              {[...cat.cats].sort((a, b) => (a.ordem ?? 100) - (b.ordem ?? 100))
+                .map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              <option value="__nova">＋ Nova categoria…</option>
+            </select>
+            {novaCat && (
+              <div className="bf-novacat">
+                <input value={novaCat.nome} autoFocus placeholder="Nome da categoria"
+                  onChange={e => setNovaCat(n => ({ ...n, nome: e.target.value }))}
+                  onKeyDown={e => { if (e.key === "Enter") criarCategoria(); }} />
+                <div className="chips">
+                  {BF_CORES.map(c => (
+                    <button key={c} className={"bf-cor" + (novaCat.cor === c ? " on" : "")}
+                      style={{ background: c }} title={c}
+                      onClick={() => setNovaCat(n => ({ ...n, cor: c }))} />
+                  ))}
+                </div>
+                <div className="acoes">
+                  <button onClick={criarCategoria}>Criar categoria</button>
+                  <button className="btn-sec" onClick={() => setNovaCat(null)}>Cancelar</button>
+                </div>
+              </div>
+            )}
+
+            <div className="ed-lab">Objetivo</div>
+            <textarea className="nf-ta" rows={3} value={form.objetivo}
+              onChange={e => mudar("objetivo", e.target.value)} />
+
+            <div className="ed-lab">Métodos <i>texto que vai para o aluno e para o PNG</i></div>
+            <textarea className="nf-ta" rows={4} value={form.metodos}
+              onChange={e => mudar("metodos", e.target.value)} />
+
+            <div className="ed-lab">
+              Técnicas sugeridas
+              <i>só você vê · {selTecs.length}</i>
+            </div>
+            {cat.semTecnicas ? (
+              <div className="bf-aviso">
+                A tabela de técnicas ainda não existe no banco. Roda o
+                {" "}<code>idealis_tecnicas.sql</code> no SQL Editor do Supabase e recarrega a página.
+              </div>
+            ) : !cat.temColunaTec ? (
+              <div className="bf-aviso">
+                Falta a coluna <code>fase_templates.tecnicas_ids</code> — roda o
+                {" "}<code>idealis_tecnicas.sql</code>. O resto da fase salva normalmente.
+              </div>
+            ) : (
+              <>
+                {selTecs.length > 0 ? (
+                  <div className="tqs" style={{ marginBottom: 8 }}>
+                    {selTecs.map(t => (
+                      <ChipTecnica key={t.id} t={t}
+                        onClick={onAbrirTecnica ? () => onAbrirTecnica(t.id) : null}
+                        onRemover={() => mudar("tecnicas_ids",
+                          form.tecnicas_ids.filter(x => x !== t.id))} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bf-vazio" style={{ padding: "0 0 8px" }}>
+                    nenhuma técnica ainda
+                  </div>
+                )}
+                <Combobox opcoes={opcoesTec} value=""
+                  onChange={v => { if (v) mudar("tecnicas_ids", [...form.tecnicas_ids, v]); }}
+                  placeholder="Adicionar técnica..." />
+                {selTecs.some(t => t.restricao) && (
+                  <div className="bf-rest">
+                    {selTecs.filter(t => t.restricao).map(t => (
+                      <div key={t.id}>⚠ <b>{t.nome}</b> — {t.restricao}</div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="bf-acoes">
+              <button onClick={salvar} disabled={busy || (!sujo && !novo)}>
+                {busy ? "Salvando..." : novo ? "Criar fase" : "Salvar"}
+              </button>
+              {!novo && <button className="btn-sec" onClick={duplicar}>Duplicar</button>}
+              {novo && (
+                <button className="btn-sec" onClick={() => {
+                  setSelId(""); setForm(null); setSujo(false); setErro("");
+                }}>Cancelar</button>
+              )}
+              {!novo && tplSel && (
+                <button className="btn-sec" onClick={() => arquivar(tplSel.ativo === false)}>
+                  {tplSel.ativo === false ? "Restaurar" : "Arquivar"}
+                </button>
+              )}
+              {!novo && gSel && gSel.itens.length > 1 && (
+                <div className="ord" title={sujo ? "Salva antes de mudar a ordem" : "Ordem dentro da categoria"}>
+                  <button className="btn-sec" disabled={busy || sujo || posSel <= 0}
+                    onClick={() => mover(-1)}>▲</button>
+                  <button className="btn-sec" disabled={busy || sujo || posSel >= gSel.itens.length - 1}
+                    onClick={() => mover(1)}>▼</button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Catálogo de técnicas: a Constituição dentro da Dashboard. Cria, edita e
+   arquiva. Arquivar não tira a técnica dos templates (o id continua lá);
+   ela só some das telas, e volta inteira se restaurar. */
+function CatalogoTecnicas({ foco, onAbrirTemplate }) {
+  const { toast, confirmar } = usarUI();
+  const cat = usarCatalogoFases();
+  const [selId, setSelId]   = useState("");
+  const [form, setForm]     = useState(null);
+  const [sujo, setSujo]     = useState(false);
+  const [busy, setBusy]     = useState(false);
+  const [erro, setErro]     = useState("");
+  const [busca, setBusca]   = useState("");
+  const [catF, setCatF]     = useState("");
+  const [verArq, setVerArq] = useState(false);
+  const focoFeito = React.useRef(0);
+
+  useEffect(() => { recarregarCatalogo(); }, []);
+
+  const tecSel = cat.tecs.find(t => t.id === selId) || null;
+  const novo = selId === "__novo";
+  const ordenadas = ordenarTecnicas(cat.tecs);
+  const categorias = [...new Set(ordenadas.map(t => t.categoria || "Outros"))];
+  const restricoes = [...new Set(cat.tecs.map(t => String(t.restricao || "").trim())
+    .filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+  /* técnica -> templates ativos que sugerem */
+  const usoTpl = useMemo(() => {
+    const m = new Map();
+    for (const tp of cat.tpls) {
+      if (tp.ativo === false) continue;
+      for (const id of (tp.tecnicas_ids || [])) {
+        if (!m.has(id)) m.set(id, []);
+        m.get(id).push(tp);
+      }
+    }
+    return m;
+  }, [cat.tpls]);
+
+  function formDe(t) {
+    return { nome: t.nome || "", categoria: t.categoria || "", mecanica: t.mecanica || "",
+             restricao: t.restricao || "", observacao: t.observacao || "" };
+  }
+
+  async function podeSair() {
+    if (!sujo) return true;
+    return confirmar({ titulo: "Descartar alterações?",
+      texto: "Você mexeu nesta técnica e não salvou.", ok: "Descartar", perigo: true });
+  }
+
+  async function selecionar(id) {
+    if (id === selId) return;
+    if (!(await podeSair())) return;
+    const t = cat.tecs.find(x => x.id === id);
+    if (!t) return;
+    if (t.ativo === false) setVerArq(true);
+    setSelId(id); setForm(formDe(t)); setSujo(false); setErro("");
+  }
+
+  useEffect(() => {
+    if (!foco || !foco.id || foco.n === focoFeito.current) return;
+    if (!cat.tecs.some(t => t.id === foco.id)) return;
+    focoFeito.current = foco.n;
+    setBusca(""); setCatF("");
+    selecionar(foco.id);
+  }, [foco, cat.tecs]);
+
+  async function nova() {
+    if (!(await podeSair())) return;
+    setSelId("__novo"); setSujo(false); setErro("");
+    setForm({ nome: "", categoria: catF || (tecSel && tecSel.categoria) || "",
+              mecanica: "", restricao: "", observacao: "" });
+  }
+
+  function mudar(campo, v) { setForm(f => ({ ...f, [campo]: v })); setSujo(true); }
+
+  async function salvar() {
+    const nome = form.nome.trim();
+    if (!nome) { setErro("Dá um nome para a técnica."); return; }
+    const categoria = form.categoria.trim() || "Outros";
+    const dup = cat.tecs.find(t => t.id !== selId && normAcc(t.nome) === normAcc(nome));
+    if (dup) {
+      setErro('Já existe a técnica "' + dup.nome + '"' +
+        (dup.ativo === false ? " (arquivada — restaura ela em vez de criar outra)" : "") + ".");
+      return;
+    }
+    const corpo = { nome, categoria, mecanica: form.mecanica.trim(),
+                    restricao: form.restricao.trim() || null,
+                    observacao: form.observacao.trim() || null };
+    if (!tecSel || (tecSel.categoria || "Outros") !== categoria)
+      corpo.ordem = proximaOrdemTecnica(cat.tecs.filter(t => t.id !== selId), categoria);
+    setBusy(true); setErro("");
+    let id = selId, r;
+    if (novo) {
+      r = await sb.from("tecnicas").insert(corpo).select("id").single();
+      if (!r.error) id = r.data.id;
+    } else {
+      r = await sb.from("tecnicas")
+        .update({ ...corpo, atualizado_em: new Date().toISOString() }).eq("id", selId);
+    }
+    if (r.error) { setBusy(false); setErro(r.error.message); return; }
+    await recarregarCatalogo();
+    setBusy(false); setSujo(false); setSelId(id);
+    toast(novo ? "Técnica criada ✓" : "Técnica salva ✓");
+  }
+
+  async function arquivar(ativo) {
+    if (!tecSel) return;
+    if (!ativo) {
+      const usos = usoTpl.get(tecSel.id) || [];
+      const ok = await confirmar({
+        titulo: 'Arquivar "' + tecSel.nome + '"?',
+        texto: (usos.length
+          ? "Ela é sugerida em " + usos.length + " fase(s) da Biblioteca e some dessas sugestões. "
+          : "Ela some das listas. ") + "Fica guardada — restaurar devolve tudo.",
+        ok: "Arquivar" });
+      if (!ok) return;
+    }
+    const r = await sb.from("tecnicas")
+      .update({ ativo, atualizado_em: new Date().toISOString() }).eq("id", tecSel.id);
+    if (r.error) { toast(r.error.message, "erro"); return; }
+    if (!ativo) setVerArq(true);
+    await recarregarCatalogo();
+    toast(ativo ? "Técnica restaurada ✓" : "Técnica arquivada");
+  }
+
+  if (cat.semTecnicas) {
+    return (
+      <div className="bf-aviso">
+        <b>A tabela de técnicas ainda não existe no banco.</b><br />
+        Roda o <code>idealis_tecnicas.sql</code> no SQL Editor do Supabase e recarrega a página.
+        Ele cria a tabela, carrega as 75 técnicas da Constituição e liga um rascunho
+        de técnicas em cada template.
+        {cat.erroTecnicas && <div style={{ marginTop: 6, opacity: .7 }}>{cat.erroTecnicas}</div>}
+      </div>
+    );
+  }
+
+  const vis = ordenadas.filter(t =>
+    (verArq || t.ativo !== false) &&
+    (!catF || (t.categoria || "Outros") === catF) &&
+    (!busca.trim() || cbCasa(t.nome + " " + (t.mecanica || "") + " " +
+      (t.metodos_app || []).join(" "), busca)));
+  const blocos = [];
+  for (const t of vis) {
+    const k = t.categoria || "Outros";
+    if (!blocos.length || blocos[blocos.length - 1].nome !== k) blocos.push({ nome: k, itens: [] });
+    blocos[blocos.length - 1].itens.push(t);
+  }
+  const nArq = cat.tecs.filter(t => t.ativo === false).length;
+  const usosSel = tecSel ? (usoTpl.get(tecSel.id) || []) : [];
+
+  return (
+    <div className="bf-cols">
+      <div className="bf-lista">
+        <div className="bf-top">
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar técnica..." />
+          <button className="fbtn mais" onClick={nova}>+ Nova</button>
+        </div>
+        <select value={catF} onChange={e => setCatF(e.target.value)}
+          style={{ width: "100%", minWidth: 0, fontSize: 12, padding: "7px 10px", marginBottom: 4 }}>
+          <option value="">Todas as categorias ({cat.tecs.filter(t => t.ativo !== false).length})</option>
+          {categorias.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        {cat.carregando && <div className="bf-vazio">Carregando...</div>}
+        {!cat.carregando && vis.length === 0 && <div className="bf-vazio">Nada encontrado.</div>}
+        {blocos.map(b => (
+          <div key={b.nome}>
+            <div className="bf-cat">{b.nome}<i>{b.itens.length}</i></div>
+            {b.itens.map(t => {
+              const n = (usoTpl.get(t.id) || []).length;
+              return (
+                <div key={t.id}
+                  className={"bf-it" + (t.id === selId ? " on" : "") +
+                    (t.ativo === false ? " arq" : "")}
+                  onClick={() => selecionar(t.id)}
+                  title={[t.mecanica, t.restricao ? "⚠ " + t.restricao : ""]
+                    .filter(Boolean).join("\n")}>
+                  <b>{t.restricao && <span className="rs">⚠ </span>}{t.nome}</b>
+                  <span>
+                    {(t.metodos_app || []).length > 0 &&
+                      <span title={"No App: " + t.metodos_app.join(", ")}>📱 </span>}
+                    {n ? n + " fase" + (n > 1 ? "s" : "") : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        {nArq > 0 && (
+          <button className="bf-arq" onClick={() => setVerArq(v => !v)}>
+            {verArq ? "Esconder arquivadas" : "Mostrar arquivadas (" + nArq + ")"}
+          </button>
+        )}
+      </div>
+
+      <div className="bf-ed">
+        {!form ? (
+          <div className="mt-vazio">
+            Escolhe uma técnica à esquerda, ou cria uma nova.
+            <br />⚠ = tem restrição · 📱 = já existe como método pronto no App ·
+            o número é em quantas fases da Biblioteca ela é sugerida.
+          </div>
+        ) : (
+          <>
+            <div className="bf-ed-h">
+              <h3>{novo ? "Nova técnica" : (tecSel ? tecSel.nome : "")}</h3>
+              {!novo && tecSel && tecSel.ativo === false && <span className="st-tag">arquivada</span>}
+              {sujo && <span style={{ color: "var(--warn)" }}>• não salvo</span>}
+            </div>
+            {erro && <div className="err">{erro}</div>}
+
+            <div className="ed-lab">Nome</div>
+            <input value={form.nome} onChange={e => mudar("nome", e.target.value)}
+              placeholder="Rest-pause" />
+
+            <div className="ed-lab">Categoria <i>escolhe ou digita uma nova</i></div>
+            <input list="tq-cats" value={form.categoria}
+              onChange={e => mudar("categoria", e.target.value)}
+              placeholder="Densidade / Descanso" />
+            <datalist id="tq-cats">
+              {categorias.map(c => <option key={c} value={c} />)}
+            </datalist>
+
+            <div className="ed-lab">Mecânica</div>
+            <textarea className="nf-ta" rows={3} value={form.mecanica}
+              onChange={e => mudar("mecanica", e.target.value)} />
+
+            <div className="ed-lab">Restrição <i>vazio = sem restrição</i></div>
+            <input list="tq-rest" value={form.restricao}
+              onChange={e => mudar("restricao", e.target.value)}
+              placeholder="Proibido em livres e unilaterais instáveis" />
+            <datalist id="tq-rest">
+              {restricoes.map(c => <option key={c} value={c} />)}
+            </datalist>
+
+            <div className="ed-lab">Observação</div>
+            <textarea className="nf-ta" rows={2} value={form.observacao}
+              onChange={e => mudar("observacao", e.target.value)} />
+
+            {!novo && tecSel && (
+              <>
+                <div className="ed-lab">Métodos prontos no App</div>
+                {(tecSel.metodos_app || []).length ? (
+                  <div className="tqs">
+                    {tecSel.metodos_app.map(m => (
+                      <span key={m} className="tq" title="Método pronto do App">{m}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bf-info">
+                    Nenhum — no App esta técnica ainda não tem um método pronto
+                    {/^(bi|tri)-set|circuito/i.test(tecSel.nome)
+                      ? " (bi-set, tri-set e circuito são feitos pelo agrupamento de exercícios)."
+                      : /^hiit/i.test(tecSel.nome)
+                        ? " (HIIT é montado no editor de cardio)." : "."}
+                  </div>
+                )}
+
+                <div className="ed-lab">Sugerida nas fases <i>{usosSel.length}</i></div>
+                {usosSel.length ? (
+                  <div className="bf-ligados">
+                    {usosSel.map(tp => (
+                      <a key={tp.id} onClick={() => onAbrirTemplate && onAbrirTemplate(tp.id)}>
+                        {tp.nome} ↗
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bf-info">Nenhuma fase da Biblioteca sugere esta técnica.</div>
+                )}
+              </>
+            )}
+
+            <div className="bf-acoes">
+              <button onClick={salvar} disabled={busy || (!sujo && !novo)}>
+                {busy ? "Salvando..." : novo ? "Criar técnica" : "Salvar"}
+              </button>
+              {novo && (
+                <button className="btn-sec" onClick={() => {
+                  setSelId(""); setForm(null); setSujo(false); setErro("");
+                }}>Cancelar</button>
+              )}
+              {!novo && tecSel && (
+                <button className="btn-sec" onClick={() => arquivar(tecSel.ativo === false)}>
+                  {tecSel.ativo === false ? "Restaurar" : "Arquivar"}
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Ficha do aluno → aba Planejamento. Só leitura: editar continua no
+   Planejamento (um lugar só escrevendo a grade de 4 fases). */
+function PainelPlanejamentoAluno({ aluno, onIr }) {
+  const cat = usarCatalogoFases();
+  const [d, setD]       = useState(null);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    let vivo = true;
+    setD(null); setErro("");
+    (async () => {
+      const [p, f] = await Promise.all([
+        sb.from("planejamentos").select("*").eq("aluno_id", aluno.id)
+          .order("data_emissao", { ascending: false }).limit(1),
+        sb.from("fases")
+          .select("id, nome, inicio, fim, objetivo, template_id, planejamento_id, posicao")
+          .eq("aluno_id", aluno.id).order("inicio", { ascending: false })
+      ]);
+      if (!vivo) return;
+      if (p.error || f.error) setErro((p.error || f.error).message);
+      setD({ plan: (!p.error && p.data && p.data[0]) || null,
+             fases: f.error ? [] : (f.data || []) });
+    })();
+    return () => { vivo = false; };
+  }, [aluno.id]);
+
+  if (!d) return <div className="msg">Buscando...</div>;
+
+  const hoje = dISO(new Date());
+  const doPlano = d.plan
+    ? [1, 2, 3, 4].map(pos =>
+        d.fases.find(f => f.planejamento_id === d.plan.id && f.posicao === pos) ||
+        { vaga: true, posicao: pos, id: "vaga" + pos })
+    : [];
+  const avulsas = d.fases.filter(f => !f.planejamento_id);
+
+  function cartao(f, rotulo) {
+    if (f.vaga) {
+      return (
+        <div className="pa-f vaga" key={f.id}>
+          <div className="n">{rotulo}</div>
+          <div className="nm">não preenchida</div>
+        </div>
+      );
+    }
+    const st = situacaoFase(f, hoje);
+    const rest = st === "ativa" && f.fim
+      ? Math.round((parseISO(f.fim) - parseISO(hoje)) / 864e5) : null;
+    const tt = tecnicasDoTemplate(templateDaFase(f, cat.tpls), cat.tecs);
+    return (
+      <div className={"pa-f " + st} key={f.id}>
+        <div className="n">{rotulo}</div>
+        <div className="nm">{f.nome}</div>
+        <div className="dt">
+          {dBR(f.inicio)} → {dBR(f.fim)}
+          <span className={"pl-sit " + st}>
+            {st}{rest !== null ? " · " + (rest <= 0 ? "vence hoje" : "faltam " + rest + "d") : ""}
+          </span>
+        </div>
+        {f.objetivo && <div className="ob">{f.objetivo}</div>}
+        {tt.length > 0 && (
+          <div className="tqs">{tt.map(t => <ChipTecnica key={t.id} t={t} />)}</div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {erro && <div className="err">{erro}</div>}
+      <div className="pa-h">
+        <div>
+          <b>{d.plan ? (d.plan.titulo || "Planejamento de Periodização")
+                     : "Sem planejamento de periodização"}</b>
+          <span>
+            {d.plan
+              ? "emitido em " + dBR(d.plan.data_emissao) + " · " +
+                (d.plan.duracao_semanas || 6) + " semanas por fase"
+              : "Nenhum planejamento salvo para este aluno ainda."}
+          </span>
+        </div>
+        <button className="btn-sec" onClick={() => onIr("planejamento")}>
+          {d.plan ? "Editar no Planejamento ↗" : "Criar no Planejamento ↗"}
+        </button>
+      </div>
+
+      {doPlano.map(f => cartao(f, "Fase " + f.posicao))}
+
+      {avulsas.length > 0 && (
+        <>
+          <div className="pa-sec">Fases avulsas · fora do planejamento</div>
+          {avulsas.map(f => cartao(f, "avulsa"))}
+        </>
+      )}
+
+      {!d.plan && avulsas.length === 0 && (
+        <div className="vazio-nota">Nenhuma fase cadastrada.</div>
+      )}
+    </div>
+  );
+}
+
+/* Aba Planejamento: o planejamento do aluno + a Biblioteca de fases + o
+   catálogo de técnicas. As três ficam montadas (só escondidas) depois da
+   primeira visita, então trocar de vista não perde nada que não foi salvo. */
+function PainelPlanejamento() {
+  const [vista, setVista]   = useState("aluno");
+  const [vistas, setVistas] = useState({ aluno: true });
+  const [foco, setFoco]     = useState(null);   // { tipo, id, n }
+  const seq = React.useRef(0);   // contador, não relógio: dois cliques nunca empatam
+
+  function ir(v, f) {
+    setVista(v);
+    setVistas(x => ({ ...x, [v]: true }));
+    if (f) setFoco({ ...f, n: ++seq.current });
+  }
+
+  const pill = (v, rot) => (
+    <button className={"fbtn" + (vista === v ? " on" : "")} onClick={() => ir(v)}>{rot}</button>
+  );
+
+  return (
+    <div>
+      <div className="pl-vistas">
+        {pill("aluno", "Planejamento do aluno")}
+        {pill("biblioteca", "Biblioteca de fases")}
+        {pill("tecnicas", "Técnicas")}
+      </div>
+      <div style={{ display: vista === "aluno" ? "" : "none" }}>
+        <BarraAluno />
+        <PlanejamentoAluno onEditarTemplate={id => ir("biblioteca", { tipo: "tpl", id })} />
+      </div>
+      {vistas.biblioteca && (
+        <div style={{ display: vista === "biblioteca" ? "" : "none" }}>
+          <BibliotecaFases foco={foco && foco.tipo === "tpl" ? foco : null}
+            onAbrirTecnica={id => ir("tecnicas", { tipo: "tec", id })} />
+        </div>
+      )}
+      {vistas.tecnicas && (
+        <div style={{ display: vista === "tecnicas" ? "" : "none" }}>
+          <CatalogoTecnicas foco={foco && foco.tipo === "tec" ? foco : null}
+            onAbrirTemplate={id => ir("biblioteca", { tipo: "tpl", id })} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 
 /* ---------- Editor de exercício ---------- */
@@ -8953,6 +10152,11 @@ function PainelMontagem() {
 
   const hoje = dISO(new Date());
   const alunoObj = alunos.find(a => a.id === sel) || null;
+  /* técnicas sugeridas do template da fase aberta — lembrete na hora de montar */
+  const catF = usarCatalogoFases();
+  const faseObj = fases.find(f => f.id === faseSel) || null;
+  const tplFase = templateDaFase(faseObj, catF.tpls);
+  const tecsFase = tecnicasDoTemplate(tplFase, catF.tecs);
 
   const carregar = useCallback(async (alunoId) => {
     if (!alunoId) { setFases([]); setTreinos([]); setExs({}); setCarr(false); return; }
@@ -9366,6 +10570,13 @@ function PainelMontagem() {
                 disabled={criandoS || !nomeSessao.trim()}>
                 {criandoS ? "Criando..." : "+ Sessão"}
               </button>
+            </div>
+          )}
+          {faseSel && tecsFase.length > 0 && (
+            <div className="mt-tecs"
+              title="Vem da Biblioteca de fases (aba Planejamento). Passa o mouse no chip para ver a mecânica e a restrição.">
+              <span className="lb">💡 Técnicas sugeridas · {tplFase.nome}</span>
+              {tecsFase.map(t => <ChipTecnica key={t.id} t={t} />)}
             </div>
           )}
           {!faseSel
@@ -10451,6 +11662,7 @@ function PainelAcompanhamento() {
   const [busca, setBusca]   = useState("");
   const [aberto, setAberto] = useState(null);
   const [ordem, setOrdem]   = useState("risco");
+  const [fasesAl, setFasesAl] = useState(null);   // aluno_id -> fases recentes
 
   const carregar = useCallback(async () => {
     setErro(""); setDiag("");
@@ -10504,6 +11716,20 @@ function PainelAcompanhamento() {
       }
       setCal(m);
     }
+
+    /* fase do momento: UMA consulta com as fases que terminam a partir de
+       60 dias atrás (ativas, futuras e as que venceram há pouco), agrupada
+       no cliente. Ordenada pelo fim decrescente: se um dia passar do limite
+       de 1000 linhas do PostgREST, o que cai fora é o mais antigo. */
+    const fz = await sb.from("fases")
+      .select("aluno_id, nome, inicio, fim, posicao, planejamento_id")
+      .gte("fim", dISO(addDias(new Date(), -60)))
+      .order("fim", { ascending: false });
+    if (!fz.error) {
+      const m = {};
+      for (const r of (fz.data || [])) (m[r.aluno_id] = m[r.aluno_id] || []).push(r);
+      setFasesAl(m);
+    }
   }, []);
 
   useEffect(() => { carregar(); }, [carregar]);
@@ -10555,6 +11781,7 @@ function PainelAcompanhamento() {
   const cont = (linhas || []).reduce((acc, l) => {
     acc[risco(l).n]++; return acc;
   }, { r: 0, a: 0, v: 0 });
+  const hojeAc = dISO(new Date());
 
   /* mesma segmentação da aba Alunos: família > modalidade.
      A ordem escolhida no chip vale DENTRO de cada modalidade. */
@@ -10691,6 +11918,10 @@ function PainelAcompanhamento() {
                 <div className="ac-nome">
                   {nome}
                   {minhaSem && <i>entrou na semana {entrou} · {minhaSem}ª dele</i>}
+                  {fasesAl && aid && (() => {
+                    const fm = rotuloFaseMomento(faseDoMomento(fasesAl[aid] || [], hojeAc));
+                    return <span className={"ac-fase " + fm.cls} title={fm.titulo}>{fm.txt}</span>;
+                  })()}
                 </div>
                 <div className={"ac-num" + (dias === 0 ? " zero" : "")}
                   title={"dias com treino concluído nos últimos 7 dias" +
@@ -10750,6 +11981,9 @@ function PainelAcompanhamento() {
         Clica no aluno para abrir a ficha. O ponto colorido é sinal operacional
         (red flag, ausência de treino, tarefas não entregues) — os sinais clínicos
         de irritabilidade e mecanismo entram na aba Dores.
+        <br />
+        Embaixo do nome vai a <b>fase do momento</b>: laranja quando vence em até 7 dias
+        ou o aluno está entre fases, vermelho quando a última fase já venceu.
       </div>
     </div>
   );
@@ -11979,8 +13213,11 @@ function App() {
   });
 
   useEffect(() => {
-    const novo = "#/" + aba;
-    if (!location.hash.startsWith(novo)) history.replaceState(null, "", novo);
+    /* mantém o aluno escolhido (#/aba/<id>) ao trocar de aba: sem isso o
+       F5 depois de um atalho voltava sem aluno */
+    const id = (location.hash || "").replace(/^#\/?/, "").split("/")[1] || "";
+    const novo = "#/" + aba + (id ? "/" + id : "");
+    if (location.hash !== novo) history.replaceState(null, "", novo);
     /* Treinos e Trocas usam a tela larga: colunas lado a lado */
     document.body.classList.toggle("larga", aba === "montagem" || aba === "trocas");
   }, [aba]);
@@ -12003,7 +13240,9 @@ function App() {
   if (sessao === undefined) return <div className="msg">Carregando...</div>;
   if (!sessao) return <Login />;
 
-  const abasComAluno = ["volume", "montagem", "planejamento"];
+  /* o Planejamento desenha a própria barra de aluno: ela só aparece na
+     vista "Planejamento do aluno", não na Biblioteca nem nas Técnicas */
+  const abasComAluno = ["volume", "montagem"];
 
   return (
     <ProvedorUI>
