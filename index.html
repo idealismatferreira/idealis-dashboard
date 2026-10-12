@@ -1065,6 +1065,11 @@
     border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:12px}
   .ev-ad div{font-size:12px;color:var(--mut)}
   .ev-ad div b{display:block;font-size:17px;color:var(--accent);font-weight:700}
+  /* ---- Cardio (histórico + tema) ---- */
+  .ev-cr{margin-top:18px;scroll-margin-top:12px}
+  .ev-cr .ev-ad div em{display:block;font-style:normal;font-size:10px;color:#4a5a5d}
+  .ev-tema{font-size:11px;color:var(--mut);margin-top:5px}
+  .ev-tema.auto{color:#4a5a5d}
   .ev-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));
     gap:10px;margin-bottom:16px}
   .ev-card{background:var(--card);border:1px solid var(--line);border-radius:12px;
@@ -3650,7 +3655,10 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
   function irPara(aba) { setAlunoId(aluno.id); if (irAba) irAba(aba); }
   const [atual, setAtual]     = useState(undefined);
   const [hist, setHist]       = useState([]);
-  const [modo, setModo]       = useState(modoInicial || "secoes");
+  /* "cardio" = Evolução de Carga já rolada até a seção Cardio (vem do feed) */
+  const [modo, setModo]       = useState(
+    modoInicial === "cardio" ? "evolucao" : (modoInicial || "secoes"));
+  const focoCardioRef         = React.useRef(modoInicial === "cardio");
   const [rascunho, setRasc]   = useState("");
   const [erro, setErro]       = useState("");
   const [aviso, setAviso]     = useState("");
@@ -3926,7 +3934,8 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
           {modo === "entradas" ? (
             <PainelEntradas aluno={aluno} />
           ) : modo === "evolucao" ? (
-            <PainelEvolucao aluno={aluno} />
+            <PainelEvolucao aluno={aluno} focoCardio={focoCardioRef.current}
+              onFocado={() => { focoCardioRef.current = false; }} />
           ) : modo === "planejamento" ? (
             <PainelPlanejamentoAluno aluno={aluno} onIr={irPara} />
           ) : modo === "aparelhos" ? (
@@ -6427,7 +6436,190 @@ function evSessoes(logs) {
     .sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : 0);
 }
 
-function PainelEvolucao({ aluno }) {
+/* ---------- Cardio: histórico + Cardio temático (App Idealis, out/2026) ----------
+   Uma linha de `logs` por sessão de cardio (extra.tipo = 'cardio'), com
+   segundos (tempo feito), completo, blocos/totalBlocos e bpm. O tema mora em
+   extra.tema dessa mesma linha. A Dashboard SÓ LÊ: nunca escreve em extra.tema.
+   Rótulo: sempre o *Nome gravado no log (foto do momento, segura tema próprio
+   de tenant no futuro). As tabelas abaixo são reserva, para id sem nome. */
+const TEMA_MAQ = { caminhada: "Caminhada na Esteira",
+  caminhada_incl: "Caminhada na Esteira com Inclinação", trote: "Trote na Esteira",
+  bike_h: "Bicicleta Horizontal", bike_v: "Bicicleta Vertical",
+  eliptico: "Elíptico", escada: "Simulador Escada" };
+const TEMA_CEN = { parque: "Parque da cidade", orla: "Orla da praia",
+  serra: "Trilha na serra", cidade: "Cidade à noite", estrada: "Estrada da serra",
+  ciclovia: "Ciclovia urbana", campo: "Estrada no campo", neve: "Montanha nevada",
+  aurora: "Aurora no gelo", dunas: "Dunas dos Lençóis", predio: "Arranha-céu",
+  farol: "Farol", escadaria: "Escadaria da montanha" };
+const TEMA_CLI = { limpo: "Céu limpo", nublado: "Nublado", chuva: "Chuva fina",
+  neblina: "Neblina", vento: "Ventania", nevasca: "Nevasca", areia: "Vento de areia" };
+/* abaixo disso a % de conclusão por modo é ruído: mostra só a contagem */
+const CR_MIN_N = 10;
+
+const ehLogCardio = l => !!(l && l.extra && l.extra.tipo === "cardio");
+
+/* extra -> tema normalizado, ou null (log antigo, modo desconhecido, sem tema) */
+function temaDe(extra) {
+  const t = extra && extra.tema;
+  if (!t || typeof t !== "object") return null;
+  const nm = (nome, id, tab) => {
+    const n = nome == null ? "" : String(nome).trim();
+    if (n) return n;
+    if (id == null || id === "") return "";
+    return tab[id] || String(id);
+  };
+  if (t.modo === "tematico") {
+    return {
+      modo: "tematico",
+      cenario: nm(t.cenarioNome, t.cenario, TEMA_CEN),
+      clima: nm(t.climaNome, t.clima, TEMA_CLI),
+      maquina: nm(t.exercicioNome, t.exercicio, TEMA_MAQ),
+      prescrito: t.trocouMaquina === true ? (nm(null, t.prescrito, TEMA_MAQ) || null) : null,
+      curtiu: t.curtiu === true ? true : t.curtiu === false ? false : null,
+      sorteou: t.sorteou === true
+    };
+  }
+  if (t.modo === "classico") return { modo: t.auto === true ? "auto" : "classico" };
+  return null;
+}
+
+/* tema -> linha discreta. null = não mostrar nada */
+function temaTexto(tm) {
+  if (!tm) return null;
+  if (tm.modo === "classico") return "Clássico";
+  if (tm.modo === "auto") return "Clássico (automático)";
+  const partes = [tm.cenario, tm.clima, tm.maquina].filter(Boolean);
+  let s = "🏞 " + (partes.length ? partes.join(" · ") : "Temático");
+  if (tm.prescrito) s += " (prescrito: " + tm.prescrito + ")";
+  if (tm.curtiu === true) s += " 👍";
+  else if (tm.curtiu === false) s += " 👎";
+  return s;
+}
+
+/* 960 -> "16 min"; 90 -> "1min 30s"; 45 -> "45s" */
+function fmtSegCardio(s) {
+  const v = Number(s);
+  if (!(v > 0)) return "—";
+  const t = Math.round(v);
+  if (t < 60) return t + "s";
+  const m = Math.floor(t / 60), r = t % 60;
+  return r ? m + "min " + r + "s" : m + " min";
+}
+
+const nomeCardioEx = e => (e && e.cardio && e.cardio.nome) || (e && e.nome) || "Cardio";
+
+/* logs de cardio -> sessões prontas para a tela, mais recente primeiro */
+function cardioSessoes(logs, exs) {
+  const ex = new Map((exs || []).map(e => [e.id, e]));
+  return (logs || []).filter(ehLogCardio).map(l => {
+    const x = l.extra || {};
+    const num = v => (v == null || v === "" || isNaN(Number(v)) ? null : Number(v));
+    return {
+      id: l.id, data: String(l.data || "").slice(0, 10), reg: feedMs(l.criado_em),
+      nome: nomeCardioEx(ex.get(l.exercicio_id)),
+      segundos: num(x.segundos), completo: x.completo === true,
+      blocos: num(x.blocos), totalBlocos: num(x.totalBlocos),
+      bpm: num(x.bpm) || null, tema: temaDe(x)
+    };
+  }).sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : (b.reg - a.reg) ||
+    String(b.id).localeCompare(String(a.id))));
+}
+
+/* conclusão por modo. Automático fica SEPARADO do clássico: ele nem escolheu,
+   é outra população. pct só a partir de CR_MIN_N sessões no modo. */
+function resumoTemas(sessoes) {
+  const g = () => ({ n: 0, ok: 0, pct: null });
+  const out = { tematico: g(), classico: g(), auto: g(), total: 0 };
+  for (const s of (sessoes || [])) {
+    if (!s.tema || !out[s.tema.modo]) continue;
+    const k = out[s.tema.modo];
+    k.n++; if (s.completo) k.ok++;
+    out.total++;
+  }
+  for (const k of ["tematico", "classico", "auto"]) {
+    const x = out[k];
+    x.pct = x.n >= CR_MIN_N ? Math.round(x.ok / x.n * 100) : null;
+  }
+  return out;
+}
+
+/* linha de feed / sessão: "16 min · 8/8 blocos" */
+function resumoSessaoCardio(s) {
+  const p = [];
+  if (s.segundos) p.push(fmtSegCardio(s.segundos));
+  if (s.totalBlocos) p.push((s.blocos != null ? s.blocos : "?") + "/" + s.totalBlocos + " blocos");
+  return p.join(" · ");
+}
+
+function EvCardio({ sessoes }) {
+  const [todas, setTodas] = useState(false);
+  if (!sessoes.length) return null;
+  const r = resumoTemas(sessoes);
+  const vis = todas ? sessoes : sessoes.slice(0, 20);
+  const grupos = [["tematico", "temático"], ["classico", "clássico (escolheu)"],
+                  ["auto", "clássico automático"]];
+  return (
+    <div id="ev-cardio" className="ev-cr">
+      <div className="dz-tit">Cardio · {sessoes.length} {sessoes.length === 1 ? "sessão" : "sessões"}</div>
+
+      {r.total > 0 && (
+        <>
+          <div className="ev-ad">
+            {grupos.map(([k, rot]) => {
+              const x = r[k];
+              return (
+                <div key={k}>
+                  <b>{!x.n ? "—" : x.pct != null ? x.pct + "%" : x.ok + "/" + x.n}</b>
+                  {rot}
+                  <em>{!x.n ? "nenhuma sessão"
+                    : x.pct != null ? x.ok + "/" + x.n + " completas"
+                    : "completas · poucos dados para %"}</em>
+                </div>
+              );
+            })}
+          </div>
+          <div className="ed-cnt" style={{ marginBottom: 10 }}>
+            Comparação observacional: o aluno escolhe o modo, então diferença aqui não
+            prova que o temático faz terminar mais. A % só aparece a partir de {CR_MIN_N} sessões
+            no modo. Sessões de antes do tema não entram nesta conta.
+          </div>
+        </>
+      )}
+
+      {vis.map(s => {
+        const tt = temaTexto(s.tema);
+        return (
+          <div className="ev-ses" key={s.id}>
+            <div className="dt">
+              <span>{dBR(s.data)}</span>
+              <em>{s.nome}</em>
+            </div>
+            <div className="sr">
+              <span><i>tempo</i>
+                <b className={s.completo ? "" : "no"}>
+                  {fmtSegCardio(s.segundos)}{s.completo ? " ✓" : " · incompleto"}
+                </b>
+              </span>
+              {s.totalBlocos ? (
+                <span><i>blocos</i><b>{s.blocos != null ? s.blocos : "?"}/{s.totalBlocos}</b></span>
+              ) : null}
+              {s.bpm ? <span><i>bpm</i><b>{s.bpm}</b></span> : null}
+            </div>
+            {tt && <div className={"ev-tema" + (s.tema.modo === "auto" ? " auto" : "")}>{tt}</div>}
+          </div>
+        );
+      })}
+      {sessoes.length > 20 && (
+        <button className="fd-mais" onClick={() => setTodas(v => !v)}>
+          {todas ? "Mostrar só as 20 mais recentes" : "Ver todas (" + sessoes.length + ")"}
+          <span>{todas ? "⌃" : "›"}</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function PainelEvolucao({ aluno, focoCardio, onFocado }) {
   const [base, setBase]   = useState(null);
   const [erro, setErro]   = useState("");
   const [sel, setSel]     = useState("");
@@ -6527,6 +6719,21 @@ function PainelEvolucao({ aluno }) {
   const gruposComLog = useMemo(
     () => grupos.filter(g => logsDe(g).length), [grupos, logsDe]);
 
+  /* cardio: fora dos gráficos, com seção própria no fim da tela */
+  const cardioLista = useMemo(
+    () => (base ? cardioSessoes(base.logs, base.exs) : []), [base]);
+
+  /* veio do feed ("Abrir cardio na ficha"): rola até a seção uma vez */
+  useEffect(() => {
+    if (!focoCardio || !base) return;
+    const t = setTimeout(() => {
+      const el = document.getElementById("ev-cardio");
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (onFocado) onFocado();
+    }, 80);
+    return () => clearTimeout(t);
+  }, [focoCardio, base]);
+
   const grupo = porGrupo.get(sel) || null;
   const logsGrupo = useMemo(() => logsDe(grupo), [grupo, logsDe]);
   const ehIso = !!(grupo && grupo.iso);
@@ -6581,12 +6788,11 @@ function PainelEvolucao({ aluno }) {
 
   const RC = window.Recharts;
 
-  if (!gruposComLog.length && !grade.length) return (
+  if (!gruposComLog.length && !grade.length && !cardioLista.length) return (
     <div className="dz-nada">
       <b>Nada para mostrar ainda</b>
-      {aluno.nome} não tem fase em vigor nem log de musculação, isometria ou alongamento.
-      Cardio não entra aqui — ele tem histórico próprio e misturar os dois inventa
-      progressão que não existe.
+      {aluno.nome} não tem fase em vigor nem registro de musculação, isometria,
+      alongamento ou cardio.
     </div>
   );
 
@@ -6773,10 +6979,13 @@ function PainelEvolucao({ aluno }) {
         </>
       )}
 
+      {!sel && <EvCardio sessoes={cardioLista} />}
+
       <div className="pl-hint" style={{ marginTop: 16 }}>
         A grade mostra os treinos da <b>fase em vigor</b>, mas cada gráfico traz o
         histórico inteiro do exercício dentro deste aluno — senão fase nova nasceria
-        com todos os cartões vazios. Cardio fica de fora: ele tem histórico próprio.
+        com todos os cartões vazios. Cardio não entra nos gráficos (viraria uma prancha
+        de 20 minutos): ele tem a seção <b>Cardio</b> própria, no fim desta tela.
         <br />
         Cada cartão mostra <b>uma variante só</b>, a do registro mais recente com valor.
         Comparar carga entre aparelhos diferentes mostraria queda onde houve troca de
@@ -11302,6 +11511,7 @@ function feedFrase(it) {
     case "treino":       return it.minutos != null ? ["treinou por ", fmtMin(it.minutos)]
                               : it.sessao ? ["concluiu o ", it.alvo]
                               : ["registrou séries no ", it.alvo];
+    case "cardio":       return it.alvo ? ["concluiu o cardio ", it.alvo] : ["concluiu o ", "cardio"];
     default:             return ["enviou ", "algo"];
   }
 }
@@ -11506,7 +11716,8 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
           <div className="fd-ac" onClick={e => e.stopPropagation()}>
             <button className="btn-sec cr-mini" onClick={onFicha}>
               {FEED_TIPO_DOR.includes(it.tipo) ? "Abrir Dores da ficha"
-                : it.tipo === "treino" ? "Abrir Evolução de Carga" : "Abrir ficha"}
+                : it.tipo === "treino" ? "Abrir Evolução de Carga"
+                : it.tipo === "cardio" ? "Abrir cardio na ficha" : "Abrir ficha"}
             </button>
             {it.treino_id && (
               <button className="btn-sec cr-mini" onClick={onTreino}>Ver treinos</button>
@@ -11825,7 +12036,8 @@ async function carregarInicio() {
 
   let exercicios = [], treinos = [];
   try {
-    exercicios = await feedPorIds("exercicios", "id, nome, treino_id",
+    /* cardio (jsonb) vem junto: o feed usa o nome do protocolo */
+    exercicios = await feedPorIds("exercicios", "id, nome, treino_id, cardio",
       logs.map(l => l.exercicio_id));
     treinos = await feedPorIds("treinos", "id, nome, aluno_id",
       [...exercicios.map(e => e.treino_id), ...sessoes.map(s => s.treino_id)]);
@@ -11895,15 +12107,41 @@ function montarInicio(raw) {
     }
   }
 
+  /* cardio CONCLUÍDO (extra.completo = true) vira item próprio no feed, separado
+     do treino. Incompleto continua só como "cardio incompleto" na linha do treino. */
+  const cardioOk = l => ehLogCardio(l) && l.extra.completo === true;
+  const feedCardio = [];
+  for (const l of (raw.logs || [])) {
+    if (!cardioOk(l)) continue;
+    const e = ex.get(l.exercicio_id);
+    const t = e ? tr.get(e.treino_id) : null;
+    if (!t) continue;                 /* sem treino não há aluno: não inventa */
+    const a = al.get(t.aluno_id);
+    const [s] = cardioSessoes([l], [e]);
+    const qms = feedMs(l.criado_em) || null;
+    feedCardio.push({
+      key: "car:" + l.id, tipo: "cardio",
+      aluno_id: t.aluno_id, aluno: a ? a.nome : "(aluno não encontrado)",
+      foto: a ? a.foto_url || null : null, treino_id: t.id,
+      data: s.data, reg: qms || feedMsDia(s.data), quandoMs: qms,
+      alvo: s.nome, sub: "",
+      texto: [resumoSessaoCardio(s), temaTexto(s.tema)].filter(Boolean).join(" · "),
+      tag: null, cor: null
+    });
+  }
+
   const feedTreinos = [...grupos.values()].map(g => {
     const alunoId = g.ses ? g.ses.aluno_id : g.t.aluno_id;
     const a = al.get(alunoId);
-    const cardio = g.logs.filter(l => l.extra && l.extra.tipo === "cardio").length;
+    const cardio = g.logs.filter(ehLogCardio).length;
+    const cardioInc = cardio - g.logs.filter(cardioOk).length;
     const series = g.logs.length - cardio;
+    /* só cardio concluído e treino não finalizado: o item de cardio já conta tudo */
+    if (!g.ses && !series && cardio && !cardioInc) return null;
     const kgS = tonelagemDe(g.logs);
     const partes = [];
     if (series) partes.push(series + (series === 1 ? " série" : " séries"));
-    if (cardio) partes.push("cardio");
+    if (cardioInc) partes.push("cardio incompleto");
     if (kgS) partes.push(fmtVol(kgS));
     const nome = feedSemAluno(g.t.nome, a && a.nome) || "treino";
     const dur = g.ses && Number(g.ses.duracao) > 0
@@ -11924,7 +12162,7 @@ function montarInicio(raw) {
       /* com duração, o nome do treino desce para a linha de conteúdo */
       sub: dur != null ? nome : "", texto: partes.join(" · "), tag, cor: null
     };
-  });
+  }).filter(Boolean).concat(feedCardio);
 
   const parados = raw.painel == null ? null : raw.painel.filter(p =>
     p.status === "ativo" && p.dias_sem_treinar != null &&
@@ -11946,7 +12184,8 @@ function FeedInicio({ treinos, filtro, setFiltro, onAbrirAluno }) {
   const [pisca, setPisca]   = useState(null);
   const hoje = dISO(new Date());
 
-  const ehTr  = i => i.tipo === "treino";
+  /* cardio concluído entra no filtro Treinos e, como treino, nunca é "nova" */
+  const ehTr  = i => i.tipo === "treino" || i.tipo === "cardio";
   const ehDor = i => FEED_TIPO_DOR.includes(i.tipo);
   const nova  = i => !ehTr(i) && i.reg > visto;
   const porData = (x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : y.reg - x.reg);
@@ -12022,7 +12261,8 @@ function FeedInicio({ treinos, filtro, setFiltro, onAbrirAluno }) {
               piscar={pisca === it.key}
               onClick={() => setAberto(aberto === it.key ? null : it.key)}
               onFicha={() => onAbrirAluno({ id: it.aluno_id, nome: it.aluno },
-                ehDor(it) ? "dores" : ehTr(it) ? "evolucao" : null)}
+                ehDor(it) ? "dores" : it.tipo === "cardio" ? "cardio"
+                  : ehTr(it) ? "evolucao" : null)}
               onTreino={() => { setAlunoId(it.aluno_id); if (irAba) irAba("montagem"); }} />
           ))}
         </div>
@@ -12174,6 +12414,7 @@ function PainelInicio() {
         pela data do aparelho do aluno, e a conta da tonelagem é a mesma do card de
         Progresso do App: carga × repetições de cada série; peso corporal, isometria
         e cardio ficam fora. Toca no card para trocar a comparação.
+        Cardio concluído aparece como item próprio no feed, com o tema quando houver.
         Observações e sinais de dor cobrem {FEED_DIAS} dias; <b>nova</b> = chegou
         depois da última vez que você abriu o sino ou marcou como lidas.
       </div>
