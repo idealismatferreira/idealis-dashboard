@@ -658,6 +658,15 @@
   .chip.on{background:var(--accent);color:#04191c;border-color:var(--accent)}
   .chip.mini{padding:6px 10px;font-size:12px}
   .chip.kb{color:var(--mut);padding:8px 10px}
+  /* descanso: grade 3×3 + "digitar", igual ao App */
+  .ds-grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .ds-ch{background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    min-height:42px;padding:0 6px;border-radius:10px;font-size:14px;font-weight:600;
+    font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:7px}
+  .ds-ch:hover{border-color:var(--accent);filter:none}
+  .ds-ch.on{background:#0f2a2e;border-color:var(--accent);color:#71fcff}
+  .ds-ch.ds-dig{font-size:12px;font-weight:500;color:var(--mut)}
+  .ds-ch.ds-dig.on{color:#71fcff}
   .ed-tog{display:flex;align-items:center;gap:11px;padding:11px 13px;
     background:var(--bg);border:1px solid var(--line);border-radius:9px;
     cursor:pointer;margin-bottom:4px}
@@ -1576,6 +1585,232 @@
     .tn-app .pgtopo{flex-wrap:wrap}
     .tn-app .pgcard.destaque{flex:1 1 100%}
     .in-card b{font-size:21px}
+  }
+  /* ============ TREINOS · visão geral + sessão ampliada (V1, 18/10/2026) ============ */
+  .tw{--tw-orange:var(--soft-orange)}
+  .tw-btn{width:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    background:#121a1c;border:1px solid #26363a;color:var(--txt);font-size:13px;
+    font-weight:500;padding:8px 13px;border-radius:9px;white-space:nowrap}
+  .tw-btn:hover{border-color:var(--accent);filter:none}
+  .tw-btn.pri{background:var(--accent);border-color:var(--accent);color:#04191c;font-weight:600}
+  .tw-btn.pri:hover{filter:brightness(1.08)}
+  .tw-ico{width:30px;height:30px;padding:0;flex-shrink:0;display:inline-flex;align-items:center;
+    justify-content:center;background:#121a1c;border:1px solid #26363a;color:var(--mut);
+    border-radius:8px;font-size:15px;line-height:1}
+  .tw-ico:hover,.tw-ico.on{border-color:var(--accent);color:var(--accent);filter:none}
+  /* card da fase */
+  .tw-hero{position:relative;display:flex;gap:24px;align-items:center;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:20px 24px;margin-bottom:14px}
+  .tw-hm{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .tw-kick{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--marca)}
+  .tw-hero.futura .tw-kick{color:var(--mut)}
+  .tw-hero.encerrada .tw-kick{color:var(--warn)}
+  .tw-hero h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.3px;line-height:1.2}
+  .tw-datas{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .tw-datas .seta{color:#3d4d50;font-size:12px}
+  .tw-pos{font-size:12px;color:var(--mut);margin-left:6px}
+  .tw-tecs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px}
+  .tw-tecs .lb,.tw-per .lb{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;
+    color:#5f7477;margin-right:4px}
+  .tw-per{flex:0 1 330px;min-width:240px;display:flex;flex-direction:column;gap:9px}
+  .tw-dots{display:flex;align-items:center}
+  .tw-traco{flex:1;height:2px;background:#2d3f42;display:block}
+  .tw-dot{width:13px;height:13px;padding:0;border-radius:50%;border:2px solid #2d3f42;
+    background:var(--bg);flex-shrink:0;cursor:pointer}
+  .tw-dot:hover{border-color:var(--accent);filter:none}
+  .tw-dot.encerrada{border-color:#4a3a28}
+  .tw-dot.atual{width:17px;height:17px;border-color:var(--accent);background:var(--accent)}
+  .tw-dots-lb{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--mut)}
+  .tw-dots-lb span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;
+    text-align:center}
+  .tw-dots-lb span:first-child{text-align:left}
+  .tw-dots-lb span:last-child{text-align:right}
+  .tw-dots-lb span.atual{color:var(--accent)}
+  .tw-rmf{position:absolute;top:12px;right:12px;width:26px;height:26px}
+  .tw-rmf:hover{border-color:var(--alert);color:var(--alert)}
+  /* barra de fases e ações */
+  .tw-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .tw-pills{display:flex;gap:3px;background:#0f1517;border:1px solid var(--line);
+    border-radius:999px;padding:3px}
+  .tw-pills button{width:auto;background:none;border:none;color:var(--mut);font-size:12.5px;
+    font-weight:500;padding:6px 13px;border-radius:999px;display:flex;gap:6px;align-items:center}
+  .tw-pills button i{font-style:normal;font-size:11px;color:#5f7477}
+  .tw-pills button:hover{color:var(--txt);filter:none}
+  .tw-pills button.on{background:#1b2a2d;color:var(--txt)}
+  .tw-pills button.on i{color:var(--accent)}
+  .tw-fchips{display:flex;gap:6px;flex-wrap:wrap}
+  .tw-fchips button{width:auto;background:transparent;border:1px solid var(--line);
+    border-radius:10px;padding:5px 11px;display:flex;flex-direction:column;align-items:flex-start;
+    gap:1px;color:var(--txt);font-weight:400}
+  .tw-fchips button:hover{border-color:var(--mut);filter:none}
+  .tw-fchips button.on{border-color:var(--accent);background:#0f1d20}
+  .tw-fchips b{font-size:12px;font-weight:600}
+  .tw-fchips span{font-size:10.5px;color:var(--mut);font-family:ui-monospace,monospace}
+  .tw-ns{display:inline-flex;gap:6px;align-items:center}
+  .tw-ns input{margin:0;width:190px;padding:8px 11px;font-size:13px}
+  /* colunas */
+  .tw-cols{display:grid;grid-template-columns:repeat(var(--tw-n,4),minmax(0,1fr));
+    gap:14px;align-items:start}
+  .tw-cols.muitas{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+  .tw-col{position:relative;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;display:flex;flex-direction:column;min-width:0;padding-bottom:10px}
+  .tw-cor{display:block;height:4px;border-radius:13px 13px 0 0}
+  .tw-ch{display:flex;gap:10px;align-items:flex-start;padding:13px 13px 11px}
+  .tw-let{font-size:22px;font-weight:700;line-height:1;flex-shrink:0;min-width:16px}
+  .tw-cht{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .tw-cht b{font-size:13.5px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+  .tw-cht span{font-size:11px;color:var(--mut)}
+  .tw-vz{padding:14px 13px;font-size:12px;color:var(--mut);border-top:1px solid #172124}
+  /* exercício (visão geral) */
+  .tw-ex{position:relative;border-top:1px solid #172124}
+  .tw-exb{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+    background:none;border:none;border-radius:0;padding:11px 13px;color:var(--txt);
+    font-weight:400;font-size:13px;cursor:pointer}
+  .tw-exb:hover{background:#121d20;filter:none}
+  .tw-exb:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .tw-n{font-size:11px;color:#4f6467;font-family:ui-monospace,monospace;width:16px;
+    flex-shrink:0;padding-top:2px}
+  .tw-n.g{color:var(--tw-orange);font-weight:700}
+  .tw-exc{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .tw-nm{font-size:13.5px;font-weight:600;line-height:1.32;overflow-wrap:anywhere}
+  .tw-pls{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .tw-pl{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;
+    font-family:ui-monospace,monospace;padding:3px 7px;border-radius:6px;background:#141d20;
+    color:#c8d6d8;white-space:nowrap}
+  .tw-pl.s{background:#0e2226;color:var(--accent)}
+  .tw-pl.vz{color:#4f6467}
+  .tw-pls .mt-tag{font-size:9.5px;padding:3px 7px}
+  .tw-det{display:block;padding:7px 9px;background:#0b1416;border-left:2px solid #1f3a3d;
+    border-radius:0 5px 5px 0;font-size:11px;color:#a8c4c7;line-height:1.65;
+    font-family:ui-monospace,monospace}
+  .tw-det .tit{display:block;color:#8fb8ff;font-weight:600;margin-bottom:2px;font-family:inherit}
+  .tw-det.c .tit{color:#dbff00}
+  .tw-det .ln{display:block}
+  .tw-ob{display:block;font-size:12px;color:#a3b6b9;line-height:1.45;border-left:2px solid #26363a;
+    padding-left:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .tw-rel{display:block;padding:6px 9px;background:#0d1a1c;border-left:2px solid var(--accent);
+    border-radius:0 5px 5px 0;font-size:11px;line-height:1.5}
+  .tw-rel .quem{display:block;color:var(--accent);font-size:9px;text-transform:uppercase;
+    letter-spacing:.5px;margin-bottom:2px}
+  .tw-rel .txt{display:block;color:#c3d6d8;white-space:pre-wrap;overflow-wrap:anywhere}
+  .tw-rel.fix{border-left-color:var(--warn);background:#161208}
+  .tw-rel.fix .quem{color:var(--warn)}
+  .tw-rel-mais{display:block;font-size:10px;color:#3d4d50}
+  .tw-lp{color:#3d4d50;padding-top:1px;flex-shrink:0}
+  .tw-exb:hover .tw-lp{color:var(--accent)}
+  .tw-ferr{position:absolute;bottom:8px;right:10px;display:flex;gap:3px;opacity:0;
+    transition:opacity .15s}
+  .tw-ex:hover .tw-ferr,.tw-ex:focus-within .tw-ferr{opacity:1}
+  .tw-ferr button{width:auto;padding:2px 7px;font-size:11px;background:var(--card);
+    border:1px solid var(--line);color:var(--mut);border-radius:6px}
+  .tw-ferr button:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  .tw-ferr button.rm:hover{border-color:var(--alert);color:var(--alert)}
+  /* bi-set / tri-set / circuito */
+  .tw-gr{border-top:1px solid #172124;background:#15120d;box-shadow:inset 3px 0 0 var(--tw-orange)}
+  .tw-gr .tw-ex{border-top:1px dashed #2b2418}
+  .tw-gr .tw-exb:hover{background:#1c180f}
+  .tw-grh{position:relative;display:flex;align-items:center;gap:6px;padding:9px 13px 2px;
+    font-size:10px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;
+    color:var(--tw-orange)}
+  .tw-grh>span:first-of-type{flex:1;min-width:0}
+  .tw-grh.tb{background:#15120d;box-shadow:inset 3px 0 0 var(--tw-orange);
+    padding:12px 12px 6px;border-bottom:1px solid #2a2418}
+  .tw-gr-ferr{display:flex;gap:3px;opacity:.35;transition:opacity .15s}
+  .tw-grh:hover .tw-gr-ferr,.tw-grh:focus-within .tw-gr-ferr{opacity:1}
+  .tw-gr-ferr button{width:auto;padding:2px 7px;font-size:11px;background:var(--card);
+    border:1px solid var(--line);color:var(--mut);border-radius:6px;text-transform:none}
+  .tw-gr-ferr button:hover{border-color:var(--tw-orange);color:var(--tw-orange);filter:none}
+  .tw-join{height:0;display:flex;justify-content:center;position:relative;z-index:2;
+    opacity:.2;transition:opacity .15s}
+  .tw-col:hover .tw-join{opacity:1}
+  .tw-join button{position:relative;top:-10px;width:auto;display:inline-flex;align-items:center;
+    gap:5px;padding:2px 10px;font-size:10px;letter-spacing:.3px;background:var(--card);
+    border:1px dashed #3a3020;color:var(--mut);border-radius:20px;font-weight:500}
+  .tw-join button:hover{border-color:var(--tw-orange);color:var(--tw-orange);
+    border-style:solid;filter:none}
+  .tw-add{margin:8px 10px 0;width:auto;background:none;border:1px dashed #26363a;
+    color:var(--mut);font-size:12px;font-weight:500;padding:9px;border-radius:9px}
+  .tw-add:hover{border-color:var(--accent);color:var(--accent);filter:none}
+  /* formulário embutido: linha ciano lateral (padrão aprovado) */
+  .tw-fxw{border-top:1px solid #172124}
+  .tw-fx{background:#0d1b1e;box-shadow:inset 3px 0 0 var(--accent);display:flex;
+    flex-direction:column;gap:14px}
+  .tw-fx.coluna{padding:13px 13px 14px 16px}
+  .tw-fx.painel{padding:4px 18px 16px 58px;background:transparent;box-shadow:none}
+  .tw-fx .ed-lab{margin:0 0 7px}
+  .tw-fx .ed-lab:not(:first-child){margin-top:14px}
+  .tw-fx input,.tw-fx textarea,.tw-fx select{margin-bottom:0}
+  .tw-fx textarea{font-size:13px;font-family:inherit;min-height:0;line-height:1.5}
+  .tw-fx.coluna .ds-ch{min-height:34px;font-size:12.5px;border-radius:8px}
+  .tw-fx.coluna .ds-grade{gap:5px}
+  .tw-fx .ed-tog{margin-bottom:0}
+  .tw-fx-grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+  .tw-fx-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .tw-fx-bt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tw-fx-bt button{width:auto}
+  .tw-seg{display:flex;flex-wrap:wrap;gap:3px;background:var(--bg);border:1px solid var(--line);
+    border-radius:9px;padding:3px}
+  .tw-seg button{flex:1 1 auto;width:auto;background:none;border:none;color:var(--mut);
+    font-size:12px;font-weight:500;padding:7px 8px;border-radius:7px}
+  .tw-seg button:hover{color:var(--txt);filter:none}
+  .tw-seg button.on{background:#1b2a2d;color:var(--txt)}
+  /* sessão ampliada */
+  .tw-fbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:11px 15px;margin-bottom:14px}
+  .tw-fbar-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .tw-fbar-t b{font-size:15px;font-weight:600}
+  .tw-fbar-t span{font-size:11.5px;color:var(--mut)}
+  .tw-abas{display:flex;align-items:flex-end;gap:2px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);margin-bottom:0}
+  .tw-abas>button[role=tab]{width:auto;background:none;border:none;border-radius:10px 10px 0 0;
+    color:var(--mut);font-size:13px;font-weight:500;padding:11px 14px;display:flex;gap:8px;
+    align-items:center;max-width:280px}
+  .tw-abas>button[role=tab]:hover{color:var(--txt);background:#10181a;filter:none}
+  .tw-abas>button[role=tab].on{color:var(--txt);background:var(--card)}
+  .tw-abas>button[role=tab] b{font-size:15px;font-weight:700}
+  .tw-abas>button[role=tab] i{font-style:normal;font-size:11px;color:#5f7477}
+  .tw-abas>.tw-btn,.tw-abas>.tw-ns{margin-bottom:7px}
+  .tw-ses{background:var(--card);border:1px solid var(--line);border-top:none;
+    border-radius:0 0 14px 14px;padding:4px 0 10px}
+  .tw-ses-h{display:flex;align-items:center;gap:12px;padding:14px 18px 12px;flex-wrap:wrap}
+  .tw-ses-h .tw-let{font-size:28px}
+  .tw-ses-h .tw-cht b{font-size:17px}
+  .tw-tb{overflow-x:auto;padding:0 8px}
+  .tw-tb-in{min-width:1060px}
+  .tw-tg{display:grid;grid-template-columns:46px minmax(220px,2.2fr) 70px 112px 112px
+    minmax(140px,1fr) minmax(220px,2.4fr) 150px;align-items:start}
+  .tw-th>span{font-size:10px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;
+    color:#5f7477;padding:10px 10px;border-bottom:1px solid var(--line)}
+  .tw-tr{border-bottom:1px solid #172124}
+  .tw-tr.gr{background:#15120d;box-shadow:inset 3px 0 0 var(--tw-orange)}
+  .tw-tr.gr+.tw-tr.gr{border-top:1px dashed #2b2418}
+  .tw-tr.ed{background:#0d1b1e;box-shadow:inset 3px 0 0 var(--accent)}
+  .tw-td{padding:13px 10px;font-size:13.5px;line-height:1.42;min-width:0;display:flex;
+    flex-direction:column;gap:6px;align-items:flex-start}
+  .tw-td.mono{font-family:ui-monospace,monospace;font-size:13px;color:#c8d6d8;display:block}
+  .tw-td.cy{color:var(--accent)}
+  .tw-td .vz,.tw-td.vz{color:#3d4d50}
+  .tw-tags{display:flex;gap:5px;flex-wrap:wrap}
+  .tw-tags .mt-tag{font-size:9.5px;padding:3px 7px}
+  .tw-obt{font-size:13px;color:#a3b6b9;white-space:pre-wrap;overflow-wrap:anywhere}
+  .tw-acs{flex-direction:row;flex-wrap:wrap;gap:4px;padding-top:9px;justify-content:flex-end}
+  .tw-acs .tw-ferr{position:static;opacity:1;gap:4px}
+  .tw-acs .tw-ferr button{padding:5px 8px;font-size:11px}
+  @media (hover:none){
+    .tw-ferr,.tw-gr-ferr,.tw-join{opacity:1}
+  }
+  @media (max-width: 1100px){
+    .tw-fx-grade{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width: 900px){
+    .tw-cols,.tw-cols.muitas{grid-template-columns:minmax(0,1fr)}
+    .tw-hero{padding:16px}
+    .tw-hero h2{font-size:20px}
+    .tw-per{flex-basis:100%}
+    .tw-ns{flex:1 1 100%}
+    .tw-ns input{flex:1;width:auto}
+    .tw-abas>button[role=tab]{max-width:none}
   }
 </style>
 </head>
@@ -9143,7 +9378,69 @@ function duracaoCardio(c) {
   if (!tot) return null;
   return tot >= 60 ? Math.round(tot / 60) + "min" : Math.round(tot) + "s";
 }
-const DESC_OPC  = ["30~45","45~60","60~90","90~120","120~180"];
+/* Descanso: MESMA lista e mesma ordem do App Idealis (print de 18/10/2026).
+   Grava com "~" (formato que a Dashboard sempre gravou) e mostra com "–".
+   A comparação ignora o separador: exercício salvo pelo App como "60–90",
+   "60-90" ou "60~90" acende o mesmo chip. */
+const DESC_OPC  = ["30","30~45","45~60","50~70","60~75","60~90","75~90","90~120","120~180"];
+const descNorm  = v => String(v == null ? "" : v).trim().replace(/\s+/g, "").replace(/[–—-]/g, "~");
+const descRot   = v => String(v).replace("~", "–");
+
+function IconeTeclado({ px }) {
+  return (
+    <svg width={px || 15} height={px || 15} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={{ display: "block" }}>
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+    </svg>
+  );
+}
+
+/* Botões de escolha + "digitar", no padrão do App Idealis.
+   O campo de texto só aparece quando você pede (ou quando o valor salvo já
+   está fora da lista, ex: reps "até a falha" ou a prancha com 20-30").
+   `igual` decide se um botão está aceso: o descanso ignora o separador,
+   séries e reps comparam o texto. */
+const chipIgual = (a, b) =>
+  String(a == null ? "" : a).trim().toLowerCase() === String(b == null ? "" : b).trim().toLowerCase();
+
+function ChipsDigitar({ opcoes, valor, onPick, colunas, rot, igual, placeholder, soIcone }) {
+  const eq = igual || chipIgual;
+  const naLista = opcoes.some(o => eq(o, valor));
+  const [dig, setDig] = useState(!!String(valor == null ? "" : valor).trim() && !naLista);
+  const [foco, setFoco] = useState(false);
+  return (
+    <>
+      <div className="ds-grade"
+        style={{ gridTemplateColumns: "repeat(" + (colunas || 3) + ",minmax(0,1fr))" }}>
+        {opcoes.map(o => (
+          <button key={o} type="button"
+            className={"ds-ch" + (!dig && eq(o, valor) ? " on" : "")}
+            onClick={() => { setDig(false); onPick(String(o)); }}>{rot ? rot(o) : o}</button>
+        ))}
+        <button type="button" className={"ds-ch ds-dig" + (dig ? " on" : "")}
+          aria-label="Digitar outro valor" title="digitar"
+          onClick={() => { setFoco(true); setDig(v => !v); }}>
+          <IconeTeclado px={soIcone ? 15 : 14} />
+          {!soIcone && "digitar"}
+        </button>
+      </div>
+      {dig && (
+        <input autoFocus={foco} value={valor == null ? "" : valor}
+          onChange={e => onPick(e.target.value)}
+          placeholder={placeholder || "digite"} style={{ marginTop: 8, marginBottom: 0 }} />
+      )}
+    </>
+  );
+}
+
+function ChipsDescanso({ valor, onPick }) {
+  return (
+    <ChipsDigitar opcoes={DESC_OPC} valor={valor} onPick={onPick} colunas={3}
+      rot={descRot} igual={(a, b) => descNorm(a) === descNorm(b)}
+      placeholder="ex: 75 ou 60~90" />
+  );
+}
 const SERIES_OPC = [1,2,3,4,5,6];
 
 /* formato canônico: "3 x 8 a 12" */
@@ -9315,9 +9612,27 @@ function BuscaExercicio({ valor, onPick, onTexto }) {
   );
 }
 
-function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
-  useEsc(true, onFechar);
+/* ---------- Formulário de exercício (embutido na aba Treinos) ----------
+   Antes era uma gaveta lateral (EditorExercicio). Agora abre dentro da própria
+   tela: na visão geral, no lugar da linha do exercício (layout "coluna"); na
+   sessão ampliada, logo abaixo da linha, em três colunas (layout "painel").
+   A LÓGICA DE GRAVAÇÃO É A MESMA DE ANTES, linha por linha: montaSeriesIso
+   como única porta da isometria, montaIsoJson para não perder o `modo` do
+   alongamento, cardio x musculação excludentes e update parcial (não toca em
+   done_date, audio_url nem ordem). Só mudou a embalagem.
+   `onSujo(bool)` avisa a tela quando há alteração não salva, para ela pedir
+   confirmação antes de trocar de exercício, sessão ou fase. */
+const TIPOS_EX = [["musculacao", "Musculação"], ["cardio", "Cardio"],
+                  ["isometria", "Isometria"], ["alongamento", "Alongamento"]];
+
+function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo }) {
+  /* Esc fecha o formulário só quando não há nada por cima dele: com a
+     confirmação, uma gaveta ou o calendário abertos, o Esc é deles */
+  useEsc(true, () => {
+    if (!document.querySelector(".conf, .drawer-bg, .sd-pop")) onFechar();
+  });
   const novo = !ex;
+  const painel = layout === "painel";
   const p0 = parseSeries(ex ? ex.series : "");
   const [nome, setNome]     = useState(ex ? ex.nome || "" : "");
   const [cardId, setCardId] = useState(ex ? ex.cardapio_id : null);
@@ -9343,6 +9658,16 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
   const [iso, setIso]       = useState(isoDe(ex));
   const [card, setCard]     = useState(
     (ex && ex.cardio) ? ex.cardio : { nome: "", repetir: 1, blocos: [] });
+
+  /* "sujo" = algo diferente do que abriu. Comparação por foto em JSON:
+     barata e não depende de quem mexeu em qual campo. */
+  const foto = JSON.stringify([nome, cardId, nSer, reps, desc, obs, filmar,
+    metodo, tipo, iso, card]);
+  const fotoIni = React.useRef(foto);
+  useEffect(() => {
+    if (onSujo) onSujo(foto !== fotoIni.current);
+  }, [foto]);
+  useEffect(() => () => { if (onSujo) onSujo(false); }, []);
 
   function mudarBloco(i, campo, v) {
     setCard(c => ({ ...c, blocos: c.blocos.map((b, k) =>
@@ -9451,257 +9776,284 @@ function EditorExercicio({ ex, treinoId, ordem, onFechar, onSalvo }) {
         const r = await sb.from("exercicios").update(corpo).eq("id", ex.id);
         if (r.error) throw new Error(r.error.message);
       }
-      onSalvo();
+      fotoIni.current = foto;
+      if (onSujo) onSujo(false);
+      setBusy(false);
+      onSalvo(novo);
+      return;
     } catch (e) { setErro(e.message); }
     setBusy(false);
   }
 
-  const famMet = [...new Set(mets.map(m => m.familia || "Sem família"))];
+  /* ---------- pedaços do formulário ---------- */
+  const lab = (txt, dica) => (
+    <div className="ed-lab">{txt}{dica != null && <i>{dica}</i>}</div>
+  );
 
-  return (
-    <>
-      <div className="drawer-bg" onClick={onFechar} />
-      <div className="ed">
-        <div className="ed-h">
-          <button className="dr-x" onClick={onFechar}>×</button>
-          <h3>{novo ? "Novo exercício" : "Editar exercício"}</h3>
-          <p>Nome, séries e repetições ficam fixos no treino.
-             A carga o aluno registra a cada aula.</p>
+  const secNome = (
+    <div>
+      {lab(novo ? "Novo exercício" : "Exercício")}
+      <BuscaExercicio valor={nome}
+        onPick={(id, txt) => { setCardId(id); setNome(txt); }}
+        onTexto={t => { setNome(t); setCardId(null); }} />
+      <div className="ed-cnt" style={{ marginTop: 5 }}>
+        {cardId ? "vinculado ao catálogo · id " + cardId
+                : "avulso — sem vídeo nem grupo muscular"}
+      </div>
+    </div>
+  );
+
+  const secTipo = (
+    <div>
+      {lab("Tipo")}
+      <div className="tw-seg" role="group" aria-label="Tipo de exercício">
+        {TIPOS_EX.map(t => (
+          <button key={t[0]} type="button" className={tipo === t[0] ? "on" : ""}
+            onClick={() => setTipo(t[0])}>{t[1]}</button>
+        ))}
+      </div>
+      <div className="ed-cnt" style={{ marginTop: 5 }}>
+        {ehCard ? "sem séries, descanso nem método"
+          : ehAlong ? "sem método; o tempo é a carga · fora do volume dos grupos musculares"
+          : ehIso ? "sem método; a carga do aluno passa a ser o tempo"
+          : "carga e repetições registradas pelo aluno"}
+      </div>
+    </div>
+  );
+
+  const secSeries = (
+    <div>
+      {lab("Séries", metodo && !ehIso ? "vem do método: " + metodo.series.length : null)}
+      {(!metodo || ehIso) && (
+        <ChipsDigitar opcoes={SERIES_OPC} valor={nSer} onPick={setNSer}
+          colunas={7} soIcone placeholder="ex: 5" />
+      )}
+    </div>
+  );
+
+  const secReps = (
+    <div>
+      {lab("Repetições")}
+      <ChipsDigitar opcoes={REPS_OPC} valor={reps} onPick={setReps}
+        colunas={3} placeholder='ex: "até a falha"' />
+    </div>
+  );
+
+  const secDesc = (
+    <div>
+      {lab("Descanso", "segundos")}
+      <ChipsDescanso valor={desc} onPick={setDesc} />
+    </div>
+  );
+
+  const secIso = (
+    <div>
+      {lab("Segurar", iso ? isoRot(iso) : "escolhe a faixa")}
+      <div className="ds-grade">
+        {ISO_FAIXAS.map(f => {
+          const on = !!iso && iso.min === f[0] && iso.max === f[1];
+          return (
+            <button key={f[0] + "-" + f[1]} type="button" className={"ds-ch" + (on ? " on" : "")}
+              onClick={() => setIso({ min: f[0], max: f[1] })}>
+              {f[0]}-{f[1]}"
+            </button>
+          );
+        })}
+      </div>
+      <div className="ed-cnt" style={{ marginTop: 6 }}>
+        Faixas fixas do App. Vai para o banco como{" "}
+        <code>{iso ? montaSeriesIso(nSer, iso) : "—"}</code>.
+      </div>
+    </div>
+  );
+
+  const secMetodo = (
+    <div>
+      <div className="ed-lab">
+        Método
+        {metodo && <i onClick={() => setMetodo(null)}
+          style={{ cursor: "pointer", color: "var(--warn)" }}>remover</i>}
+      </div>
+      {metodo ? (
+        <div className="ed-met">
+          <b>{metodo.nome}</b>
+          {(fmtMetodo(metodo) || []).map((l, i) => <div key={i}>{l}</div>)}
         </div>
+      ) : (
+        <button type="button" className="chip" style={{ width: "100%" }}
+          onClick={() => setVerMet(v => !v)}>
+          {verMet ? "Fechar" : "Escolher método"}
+        </button>
+      )}
+      {verMet && !metodo && (
+        <div style={{ marginTop: 8 }}>
+          {mets.length === 0
+            ? <div className="ed-cnt">
+                Nenhum método na tabela ainda. Os ~40 templates estão no código do
+                App — migra eles para a tabela <code>metodos</code> e eles aparecem aqui.
+              </div>
+            : <Combobox
+                opcoes={mets.map(m => ({
+                  value: m.id, label: m.nome, grupo: m.familia || "Sem família" }))}
+                value="" onChange={v => {
+                  const m = mets.find(x => String(x.id) === String(v));
+                  if (m) { setMetodo({ nome: m.nome, tipo: m.tipo, series: m.series });
+                           setVerMet(false); }
+                }}
+                placeholder="Buscar método..." />}
+        </div>
+      )}
+    </div>
+  );
 
-        <div className="ed-b">
-          {erro && <div className="err">{erro}</div>}
+  const secCardioTopo = (
+    <div>
+      {lab("Nome do protocolo", duracaoCardio(card) || "—")}
+      <input value={card.nome}
+        onChange={e => setCard(c => ({ ...c, nome: e.target.value }))}
+        placeholder='Ex: HIIT 60"/30"' style={{ marginBottom: 0 }} />
+      {lab("Repetir o conjunto")}
+      <Chips opcoes={[1,2,3,4,5,6,8,10,12]} valor={card.repetir}
+        onPick={v => setCard(c => ({ ...c, repetir: +v }))} mini />
+      <input type="number" min="1" value={card.repetir}
+        onChange={e => setCard(c => ({ ...c, repetir: e.target.value }))}
+        style={{ marginTop: 7, marginBottom: 0 }} />
+    </div>
+  );
 
-          <div className="ed-lab">Exercício</div>
-          <BuscaExercicio valor={nome}
-            onPick={(id, txt) => { setCardId(id); setNome(txt); }}
-            onTexto={t => { setNome(t); setCardId(null); }} />
-          <div className="ed-cnt" style={{ marginTop: 5 }}>
-            {cardId ? "vinculado ao catálogo · id " + cardId
-                    : "avulso — sem vídeo nem grupo muscular"}
+  const secCardioBlocos = (
+    <div>
+      {lab("Blocos", card.blocos.length + " bloco(s)")}
+      {card.blocos.length === 0 && (
+        <div className="ed-cnt" style={{ marginBottom: 8 }}>
+          Nenhum bloco ainda. Ex: 60s Leve + 30s Forte, repetindo 8×.
+        </div>
+      )}
+      {card.blocos.map((b, i) => (
+        <div className="cd-bl" key={i} style={{ borderLeftColor: corNivel(b.nivel) }}>
+          <div className="cd-top">
+            <span className="cd-n">{i + 1}</span>
+            <div className="chips" style={{ flex: 1 }}>
+              {NIVEIS.map(n => (
+                <button key={n.id} type="button"
+                  className={"chip mini" + (b.nivel === n.id ? " on" : "")}
+                  onClick={() => mudarBloco(i, "nivel", n.id)}
+                  style={b.nivel === n.id
+                    ? { background: n.cor, borderColor: n.cor, color: "#04191c" } : {}}>
+                  {n.nome}
+                </button>
+              ))}
+            </div>
+            <div className="cd-ferr">
+              <button type="button" onClick={() => moverBloco(i, -1)}>▲</button>
+              <button type="button" onClick={() => moverBloco(i, 1)}>▼</button>
+              <button type="button" onClick={() => removeBloco(i)}>×</button>
+            </div>
           </div>
-
-          <div className="ed-lab">Tipo</div>
-          <div className="chips">
-            {[["musculacao", "🏋️ Musculação"], ["cardio", "🏃 Cardio"],
-              ["isometria", "🔥 Isometria"], ["alongamento", "🧘 Alongamento"]].map(t => (
-              <button key={t[0]} className={"chip" + (tipo === t[0] ? " on" : "")}
-                onClick={() => setTipo(t[0])}>{t[1]}</button>
+          <div className="cd-lin">
+            <input value={b.tempo}
+              onChange={e => mudarBloco(i, "tempo", e.target.value)}
+              placeholder="60s" style={{ width: 74, marginBottom: 0 }} />
+            <input value={b.rotulo}
+              onChange={e => mudarBloco(i, "rotulo", e.target.value)}
+              placeholder="rótulo (opcional) — ex: Sprint"
+              style={{ flex: 1, marginBottom: 0 }} />
+          </div>
+          <div className="chips" style={{ marginTop: 6 }}>
+            {TEMPO_OPC.map(t => (
+              <button key={t} type="button" className="chip mini"
+                onClick={() => mudarBloco(i, "tempo", t)}>{t}</button>
             ))}
           </div>
-          <div className="ed-cnt" style={{ marginTop: 5 }}>
-            {ehCard ? "sem séries, descanso nem método"
-              : ehAlong ? "sem método; o tempo é a carga · fora do volume dos grupos musculares"
-              : ehIso ? "sem método; a carga do aluno passa a ser o tempo"
-              : "carga e repetições registradas pelo aluno"}
-          </div>
-
-          {ehIso ? (
-            <>
-              <div className="ed-lab">
-                Segurar <i>{iso ? isoRot(iso) : "escolhe a faixa"}</i>
-              </div>
-              <div className="chips">
-                {ISO_FAIXAS.map(f => {
-                  const on = !!iso && iso.min === f[0] && iso.max === f[1];
-                  return (
-                    <button key={f[0] + "-" + f[1]} className={"chip" + (on ? " on" : "")}
-                      onClick={() => setIso({ min: f[0], max: f[1] })}>
-                      {f[0]}-{f[1]}"
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="ed-cnt" style={{ marginTop: 5 }}>
-                Faixas fixas do App. O aluno cumpre a série ao atingir o mínimo —
-                o cronômetro dele encerra sozinho {"15s"} depois do máximo.
-              </div>
-
-              <div className="ed-lab">Séries</div>
-              <Chips opcoes={SERIES_OPC} valor={nSer} onPick={setNSer} />
-              <input value={nSer} onChange={e => setNSer(e.target.value)}
-                placeholder="ou digite" style={{ marginTop: 7, marginBottom: 0 }} />
-
-              <div className="ed-lab">Descanso <i>segundos</i></div>
-              <Chips opcoes={DESC_OPC} valor={desc} onPick={setDesc} mini />
-              <input value={desc} onChange={e => setDesc(e.target.value)}
-                placeholder="ou digite (ex: 75 ou 60~90)"
-                style={{ marginTop: 7, marginBottom: 0 }} />
-
-              <div className="ed-cnt" style={{ marginTop: 9 }}>
-                Vai para o banco como <code>{iso ? montaSeriesIso(nSer, iso) : "—"}</code>.
-                O App lê os segundos do campo próprio e as séries desse texto.
-              </div>
-            </>
-          ) : ehCard ? (
-            <>
-              <div className="ed-lab">
-                Nome do protocolo <i>{duracaoCardio(card) || "—"}</i>
-              </div>
-              <input value={card.nome}
-                onChange={e => setCard(c => ({ ...c, nome: e.target.value }))}
-                placeholder='Ex: HIIT 60"/30"' style={{ marginBottom: 0 }} />
-
-              <div className="ed-lab">Repetir o conjunto</div>
-              <Chips opcoes={[1,2,3,4,5,6,8,10,12]} valor={card.repetir}
-                onPick={v => setCard(c => ({ ...c, repetir: +v }))} mini />
-              <input type="number" min="1" value={card.repetir}
-                onChange={e => setCard(c => ({ ...c, repetir: e.target.value }))}
-                style={{ marginTop: 7, marginBottom: 0 }} />
-
-              <div className="ed-lab">
-                Blocos <i>{card.blocos.length} bloco(s)</i>
-              </div>
-              {card.blocos.length === 0 && (
-                <div className="ed-cnt" style={{ marginBottom: 8 }}>
-                  Nenhum bloco ainda. Ex: 60s Leve + 30s Forte, repetindo 8×.
-                </div>
-              )}
-              {card.blocos.map((b, i) => (
-                <div className="cd-bl" key={i}
-                  style={{ borderLeftColor: corNivel(b.nivel) }}>
-                  <div className="cd-top">
-                    <span className="cd-n">{i + 1}</span>
-                    <div className="chips" style={{ flex: 1 }}>
-                      {NIVEIS.map(n => (
-                        <button key={n.id}
-                          className={"chip mini" + (b.nivel === n.id ? " on" : "")}
-                          onClick={() => mudarBloco(i, "nivel", n.id)}
-                          style={b.nivel === n.id
-                            ? { background: n.cor, borderColor: n.cor, color: "#04191c" }
-                            : {}}>
-                          {n.nome}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="cd-ferr">
-                      <button onClick={() => moverBloco(i, -1)}>▲</button>
-                      <button onClick={() => moverBloco(i, 1)}>▼</button>
-                      <button onClick={() => removeBloco(i)}>×</button>
-                    </div>
-                  </div>
-                  <div className="cd-lin">
-                    <input value={b.tempo}
-                      onChange={e => mudarBloco(i, "tempo", e.target.value)}
-                      placeholder="60s" style={{ width: 74, marginBottom: 0 }} />
-                    <input value={b.rotulo}
-                      onChange={e => mudarBloco(i, "rotulo", e.target.value)}
-                      placeholder="rótulo (opcional) — ex: Sprint"
-                      style={{ flex: 1, marginBottom: 0 }} />
-                  </div>
-                  <div className="chips" style={{ marginTop: 6 }}>
-                    {TEMPO_OPC.map(t => (
-                      <button key={t} className="chip mini"
-                        onClick={() => mudarBloco(i, "tempo", t)}>{t}</button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <button className="chip" style={{ width: "100%", marginTop: 8 }}
-                onClick={addBloco}>+ Bloco</button>
-            </>
-          ) : (
-          <>
-          <div className="ed-lab">
-            Método
-            {metodo && <i onClick={() => setMetodo(null)}
-              style={{ cursor: "pointer", color: "var(--warn)" }}>remover</i>}
-          </div>
-          {metodo ? (
-            <div className="ed-met">
-              <b>{metodo.nome}</b>
-              {(fmtMetodo(metodo) || []).map((l, i) => <div key={i}>{l}</div>)}
-            </div>
-          ) : (
-            <button className="chip" style={{ width: "100%" }}
-              onClick={() => setVerMet(v => !v)}>
-              {verMet ? "Fechar" : "Escolher método"}
-            </button>
-          )}
-          {verMet && !metodo && (
-            <div style={{ marginTop: 8 }}>
-              {mets.length === 0
-                ? <div className="ed-cnt">
-                    Nenhum método na tabela ainda. Os ~40 templates estão no código do
-                    App — migra eles para a tabela <code>metodos</code> e eles aparecem aqui.
-                  </div>
-                : <Combobox
-                    opcoes={mets.map(m => ({
-                      value: m.id, label: m.nome, grupo: m.familia || "Sem família" }))}
-                    value="" onChange={v => {
-                      const m = mets.find(x => String(x.id) === String(v));
-                      if (m) { setMetodo({ nome: m.nome, tipo: m.tipo, series: m.series });
-                               setVerMet(false); }
-                    }}
-                    placeholder="Buscar método..." />}
-            </div>
-          )}
-
-          <div className="ed-lab">
-            Séries
-            {metodo && <i>vem do método: {metodo.series.length}</i>}
-          </div>
-          {!metodo && (
-            <>
-              <Chips opcoes={SERIES_OPC} valor={nSer} onPick={setNSer} />
-              <input value={nSer} onChange={e => setNSer(e.target.value)}
-                placeholder="ou digite" style={{ marginTop: 7, marginBottom: 0 }} />
-            </>
-          )}
-
-          <div className="ed-lab">Repetições</div>
-          <Chips opcoes={REPS_OPC} valor={reps} onPick={setReps} mini />
-          <input value={reps} onChange={e => setReps(e.target.value)}
-            placeholder='ou digite (ex: "até a falha")'
-            style={{ marginTop: 7, marginBottom: 0 }} />
-
-          <div className="ed-lab">Descanso <i>segundos</i></div>
-          <Chips opcoes={DESC_OPC} valor={desc} onPick={setDesc} mini />
-          <input value={desc} onChange={e => setDesc(e.target.value)}
-            placeholder="ou digite (ex: 75 ou 60~90)"
-            style={{ marginTop: 7, marginBottom: 0 }} />
-
-          </>
-          )}
-
-          <div className="ed-lab">
-            Observação para o aluno <i>{obs.length}/500</i>
-          </div>
-          <textarea value={obs} maxLength={500} rows={3}
-            onChange={e => setObs(e.target.value)}
-            placeholder="Ex: segure 2s embaixo, escápula retraída..." />
-
-          {ex && ex.audio_url && (
-            <>
-              <div className="ed-lab">Dica em áudio <i>o aluno ouve</i></div>
-              <div className="ed-audio">
-                <audio controls src={ex.audio_url} />
-              </div>
-              <div className="ed-cnt" style={{ marginTop: 5 }}>
-                Gravar áudio só pelo App. Aqui dá para ouvir.
-              </div>
-            </>
-          )}
-
-          <div className="ed-lab">Filmar</div>
-          <div className={"ed-tog" + (filmar ? " on" : "")}
-            onClick={() => setFilmar(v => !v)}>
-            <div className="sw"><i /></div>
-            <div>
-              <b>🎥 Recomendado filmar?</b>
-              <span>O aluno vê um aviso neste exercício</span>
-            </div>
-          </div>
         </div>
+      ))}
+      <button type="button" className="chip" style={{ width: "100%", marginTop: 8 }}
+        onClick={addBloco}>+ Bloco</button>
+    </div>
+  );
 
-        <div className="ed-f">
-          <button className="btn-sec" onClick={onFechar}>Cancelar</button>
-          <button onClick={salvar} disabled={busy || !nome.trim()}>
-            {busy ? "Salvando..." : "Salvar"}
-          </button>
+  const secObs = (
+    <div>
+      {lab("Observação para o aluno", obs.length + "/500")}
+      <textarea value={obs} maxLength={500} rows={painel ? 4 : 3}
+        onChange={e => setObs(e.target.value)}
+        placeholder="Ex: segure 2s embaixo, escápula retraída..." />
+    </div>
+  );
+
+  const secAudio = ex && ex.audio_url ? (
+    <div>
+      {lab("Dica em áudio", "o aluno ouve")}
+      <div className="ed-audio"><audio controls src={ex.audio_url} /></div>
+      <div className="ed-cnt" style={{ marginTop: 5 }}>
+        Gravar áudio só pelo App. Aqui dá para ouvir.
+      </div>
+    </div>
+  ) : null;
+
+  const secFilmar = (
+    <div>
+      {lab("Filmar")}
+      <div className={"ed-tog" + (filmar ? " on" : "")} role="switch" aria-checked={filmar}
+        tabIndex={0} onClick={() => setFilmar(v => !v)}
+        onKeyDown={e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); setFilmar(v => !v); } }}>
+        <div className="sw"><i /></div>
+        <div>
+          <b>Recomendado filmar?</b>
+          <span>O aluno vê um aviso neste exercício</span>
         </div>
       </div>
-    </>
+    </div>
+  );
+
+  const botoes = (
+    <div className="tw-fx-bt">
+      {erro && <div className="err" style={{ flex: "1 1 100%", marginBottom: 0 }}>{erro}</div>}
+      <span style={{ flex: 1 }} />
+      <button type="button" className="btn-sec" onClick={onFechar}>Cancelar</button>
+      <button type="button" onClick={salvar} disabled={busy || !nome.trim()}
+        style={{ width: "auto", padding: "9px 20px" }}>
+        {busy ? "Salvando..." : novo ? "Adicionar" : "Salvar"}
+      </button>
+    </div>
+  );
+
+  /* ---------- montagem por layout ---------- */
+  let cols;
+  if (ehCard) {
+    cols = [[secNome, secTipo, secFilmar], [secCardioTopo, secCardioBlocos], [secObs, secAudio]];
+  } else if (ehIso) {
+    cols = [[secNome, secTipo, secFilmar], [secIso, secSeries], [secDesc, secObs, secAudio]];
+  } else {
+    cols = [[secNome, secTipo, secMetodo, secFilmar], [secSeries, secReps], [secDesc, secObs, secAudio]];
+  }
+
+  if (painel) {
+    return (
+      <div className="tw-fx painel">
+        <div className="tw-fx-grade">
+          {cols.map((c, i) => (
+            <div className="tw-fx-col" key={i}>
+              {c.filter(Boolean).map((s, k) => <React.Fragment key={k}>{s}</React.Fragment>)}
+            </div>
+          ))}
+        </div>
+        {botoes}
+      </div>
+    );
+  }
+  /* coluna: tudo empilhado, na ordem em que você monta (nome, tipo, séries,
+     reps, descanso, método, observação) */
+  const pilha = ehCard
+    ? [secNome, secTipo, secCardioTopo, secCardioBlocos, secObs, secAudio, secFilmar]
+    : ehIso
+    ? [secNome, secTipo, secIso, secSeries, secDesc, secObs, secAudio, secFilmar]
+    : [secNome, secTipo, secSeries, secReps, secDesc, secMetodo, secObs, secAudio, secFilmar];
+  return (
+    <div className="tw-fx coluna">
+      {pilha.filter(Boolean).map((s, k) => <React.Fragment key={k}>{s}</React.Fragment>)}
+      {botoes}
+    </div>
   );
 }
 
@@ -10451,105 +10803,318 @@ function DrawerNovaFase({ aluno, onFechar, onCriada }) {
   );
 }
 
+/* ---------- Aba Treinos · visão geral + sessão ampliada ----------
+   Layout aprovado em 18/10/2026 (canvas "Montagem de Treinos", variação V1):
+   - VISÃO GERAL: card da fase no topo (anel de dias, datas editáveis,
+     periodização, técnicas sugeridas) e uma coluna por sessão. Clicar no
+     exercício abre o formulário NA PRÓPRIA LINHA, com a linha ciano lateral.
+   - SESSÃO AMPLIADA (ícone ⤢ da coluna): uma sessão por vez em tabela, com o
+     formulário em três colunas logo abaixo da linha editada.
+   Nos dois modos o nome do exercício quebra linha e séries, reps, descanso,
+   método, observação e relatos do aluno ficam sempre à vista.
+   Funções puras (mt*) primeiro: são elas que os testes cobrem. */
+
+/* laranja fica fora de propósito: é a cor do bi-set */
+const MT_CORES = ["#00daef", "#ddff00", "#9cc0ff", "#c89bff", "#7fd858", "#f4a8a8"];
+const mtCor = i => MT_CORES[((i % MT_CORES.length) + MT_CORES.length) % MT_CORES.length];
+
+/* "Pedro - Treino A - Quadríceps" -> "A". Sem letra no nome: posição (A, B, C...) */
+function mtLetra(nome, i) {
+  const r = rotuloTreino(nome);
+  return /^[A-Z0-9]{1,2}$/.test(r) ? r : String.fromCharCode(65 + (i % 26));
+}
+
+/* nome da sessão sem o aluno e sem o "Treino A -" (a letra já aparece grande) */
+function mtNomeSessao(nomeTreino, nomeAluno) {
+  const s = feedSemAluno(nomeTreino || "", nomeAluno || "");
+  const t = s.replace(/^\s*treino\s*[A-Za-z0-9]{1,3}(?![A-Za-z0-9])\s*[-–—:·|]?\s*/i, "").trim();
+  return t || s || "Sessão";
+}
+
+/* "6 exercícios · 20 séries" (cardio não soma série) */
+function mtResumo(lista) {
+  const n = (lista || []).length;
+  const s = (lista || []).reduce((a, ex) => a + (ex.cardio ? 0 : (nSeriesDe(ex) || 0)), 0);
+  return n + (n === 1 ? " exercício" : " exercícios") + (s ? " · " + s + " séries" : "");
+}
+
+/* "90~120" -> "90–120s"; texto livre ("1min", "até recuperar") fica como está */
+function mtDescRot(d) {
+  const t = String(d == null ? "" : d).trim();
+  if (!t) return "";
+  return /^\d+(\s*[~–—-]\s*\d+)?$/.test(t) ? descRot(t.replace(/\s/g, "").replace(/[–—-]/g, "~")) + "s" : t;
+}
+
+/* repetições do texto de séries: "3 x 8 a 12" -> "8 a 12" */
+function mtReps(ex) {
+  return String((ex && ex.series) || "").replace(/^\s*\d+\s*[x×]\s*/i, "").trim();
+}
+
+/* o que vai na pílula principal */
+function mtPrescricao(ex) {
+  if (!ex) return "—";
+  if (ex.cardio) return duracaoCardio(ex.cardio) ? "cardio · " + duracaoCardio(ex.cardio) : "cardio";
+  const n = nSeriesDe(ex);
+  const iso = isoDe(ex);
+  if (iso) return (n ? n + " × " : "") + "segurar " + isoRot(iso);
+  const r = mtReps(ex).replace(/^(\d+)\s+a\s+(\d+)$/i, "$1–$2");
+  if (n) return n + " × " + (r || "—");
+  return r || String(ex.series || "") || "—";
+}
+
+/* tempo da fase para o anel e o subtítulo */
+function mtFaseInfo(f, hoje) {
+  if (!f) return null;
+  const dd = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 864e5);
+  const st = situacaoFase(f, hoje);
+  const total = f.inicio && f.fim ? Math.max(1, dd(f.inicio, f.fim) + 1) : null;
+  const semanas = total ? Math.max(1, Math.ceil(total / 7)) : null;
+  if (st === "ativa" && f.inicio && f.fim) {
+    const passou = dd(f.inicio, hoje) + 1;
+    const restam = dd(hoje, f.fim);
+    const semana = Math.min(semanas, Math.floor((passou - 1) / 7) + 1);
+    return { st, total, semanas, semana, restam, pct: Math.min(1, passou / total),
+      num: String(restam), lab: restam === 1 ? "dia" : "dias",
+      topo: "Fase ativa · semana " + semana + " de " + semanas };
+  }
+  if (st === "futura" && f.inicio) {
+    const faltam = dd(hoje, f.inicio);
+    return { st, total, semanas, pct: 0, num: String(faltam),
+      lab: faltam === 1 ? "dia p/ começar" : "dias p/ começar",
+      topo: "Fase futura · começa em " + dBR(f.inicio).slice(0, 5) };
+  }
+  if (st === "encerrada" && f.fim) {
+    const ha = dd(f.fim, hoje);
+    return { st, total, semanas, pct: 1, num: "✓", lab: "encerrada",
+      topo: "Encerrada há " + ha + (ha === 1 ? " dia" : " dias") };
+  }
+  return { st, total, semanas, pct: 0, num: "—", lab: "sem datas", topo: "Fase sem datas" };
+}
+
+/* as fases do mesmo planejamento, na ordem das 4 posições */
+function mtPlano(fases, f) {
+  if (!f || !f.planejamento_id) return [];
+  return (fases || []).filter(x => x.planejamento_id === f.planejamento_id)
+    .sort((a, b) => (a.posicao ?? 99) - (b.posicao ?? 99) ||
+      String(a.inicio || "").localeCompare(String(b.inicio || "")));
+}
+
+const MT_ABA_DE = { ativa: "atuais", encerrada: "anteriores", futura: "futuros" };
+
+function AnelFase({ info, px }) {
+  const t = px || 86, C = 2 * Math.PI * 36;
+  const cor = info.st === "encerrada" ? "#5f7477" : info.st === "futura" ? "#8ea3a6" : "var(--accent)";
+  return (
+    <svg width={t} height={t} viewBox="0 0 86 86" role="img"
+      aria-label={info.num + " " + info.lab} style={{ flexShrink: 0, display: "block" }}>
+      <circle cx="43" cy="43" r="36" fill="none" stroke="#1b2427" strokeWidth="7" />
+      <circle cx="43" cy="43" r="36" fill="none" stroke={cor} strokeWidth="7"
+        strokeLinecap="round" strokeDasharray={C + " " + C}
+        strokeDashoffset={C * (1 - (info.pct || 0))} transform="rotate(-90 43 43)" />
+      {t >= 60 && (
+        <>
+          <text x="43" y={info.lab.length > 9 ? 44 : 43} textAnchor="middle" fill="var(--txt)"
+            fontSize="22" fontWeight="700">{info.num}</text>
+          <text x="43" y="58" textAnchor="middle" fill="var(--mut)"
+            fontSize={info.lab.length > 9 ? 7.5 : 10}>{info.lab}</text>
+        </>
+      )}
+    </svg>
+  );
+}
+
+function IconeAmpliar() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+      style={{ display: "block" }}>
+      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+    </svg>
+  );
+}
+function IconeRecolher() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+      style={{ display: "block" }}>
+      <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
+    </svg>
+  );
+}
+function IconeLapis() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={{ display: "block" }}>
+      <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+    </svg>
+  );
+}
+function IconeElo() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.4" strokeLinecap="round" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>
+      <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
+    </svg>
+  );
+}
+function IconeRelogio() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>
+      <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2 2M9 2h6" />
+    </svg>
+  );
+}
+
 function PainelMontagem() {
   const { alunoId: sel, alunos } = usarAluno();
-  /* lista de fases recolhível (só desktop): com 4+ sessões a largura vai
-     toda para os treinos. Lembra a escolha neste navegador. */
-  const [recFases, setRecFases] = useState(() => {
-    try { return localStorage.getItem("idealis_mt_fases_rec_v1") === "1"; }
-    catch (e) { return false; }
-  });
-  const mudarRec = v => {
-    setRecFases(v);
-    try { localStorage.setItem("idealis_mt_fases_rec_v1", v ? "1" : "0"); } catch (e) {}
-  };
   const { toast, confirmar } = usarUI();
-  const [fases, setFases]   = useState([]);
+  const [fases, setFases]     = useState([]);
   const [faseSel, setFaseSel] = useState("");
-  const [aba, setAbaF]      = useState("atuais");
+  const [aba, setAbaF]        = useState("atuais");
   const [treinos, setTreinos] = useState([]);
-  const [exs, setExs]       = useState({});
-  const [erro, setErro]     = useState("");
-  const [carregando, setCarr] = useState(false);
-  const [editando, setEdit] = useState(null);   // {ex} ou {treinoId, ordem}
+  const [exs, setExs]         = useState({});
   const [relatos, setRelatos] = useState({});
-  const [novaFase, setNovaFase] = useState(false);
-  const [importar, setImportar] = useState(false);
+  const [erro, setErro]       = useState("");
+  const [carregando, setCarr] = useState(false);
+  /* edição embutida: { exId } edita um exercício; { novoEm: treinoId } cria */
+  const [edit, setEdit]       = useState(null);
+  /* sessão ampliada: id do treino aberto em tabela, ou null na visão geral */
+  const [foco, setFoco]       = useState(null);
+  const [novaFase, setNovaFase]   = useState(false);
+  const [importar, setImportar]   = useState(false);
   const [nomeSessao, setNomeSessao] = useState("");
-  const [criandoS, setCriandoS] = useState(false);
+  const [criandoS, setCriandoS]   = useState(false);
+  const sujoRef = React.useRef(false);
+  const reqRef  = React.useRef(0);
 
   const hoje = dISO(new Date());
   const alunoObj = alunos.find(a => a.id === sel) || null;
-  /* técnicas sugeridas do template da fase aberta — lembrete na hora de montar */
   const catF = usarCatalogoFases();
   const faseObj = fases.find(f => f.id === faseSel) || null;
   const tplFase = templateDaFase(faseObj, catF.tpls);
   const tecsFase = tecnicasDoTemplate(tplFase, catF.tecs);
+  const info = mtFaseInfo(faseObj, hoje);
+  const plano = mtPlano(fases, faseObj);
 
-  const carregar = useCallback(async (alunoId) => {
-    if (!alunoId) { setFases([]); setTreinos([]); setExs({}); setCarr(false); return; }
-    setCarr(true); setErro(""); setTreinos([]); setExs({});
-    const f = await sb.from("fases").select("*")
-      .eq("aluno_id", alunoId).order("inicio", { ascending: false });
-    if (f.error) { setErro(f.error.message); setCarr(false); return; }
-    setFases(f.data || []);
-    setFaseSel("");
-    setCarr(false);
-  }, []);
+  /* alteração não salva no formulário? pergunta antes de sair dele */
+  async function podeSair() {
+    if (!sujoRef.current) return true;
+    const ok = await confirmar({ titulo: "Descartar alterações?",
+      texto: "Você mexeu no exercício e não salvou.", ok: "Descartar", perigo: true });
+    if (ok) sujoRef.current = false;
+    return ok;
+  }
 
-  useEffect(() => { carregar(sel); }, [sel, carregar]);
-
-  /* carrega treinos + exercícios da fase escolhida */
-  const abrirFase = useCallback(async (faseId) => {
-    setFaseSel(faseId);
-    setCarr(true); setErro(""); setTreinos([]); setExs({});
-    const t = await sb.from("treinos").select("*")
-      .eq("fase_id", faseId).order("ordem");
+  /* carrega treinos + exercícios + relatos da fase.
+     `manter`: recarga depois de salvar — não limpa a tela, só troca os dados.
+     reqRef descarta resposta atrasada de uma fase que já não está aberta. */
+  const abrirFase = useCallback(async (faseId, manter) => {
+    const req = ++reqRef.current;
+    setFaseSel(faseId || "");
+    if (!faseId) { setTreinos([]); setExs({}); setRelatos({}); setCarr(false); return; }
+    if (!manter) { setCarr(true); setTreinos([]); setExs({}); setRelatos({}); }
+    setErro("");
+    const t = await sb.from("treinos").select("*").eq("fase_id", faseId).order("ordem");
+    if (req !== reqRef.current) return;
     if (t.error) { setErro(t.error.message); setCarr(false); return; }
     const lista = t.data || [];
-    setTreinos(lista);
+    const mapa = {}, mr = {};
     if (lista.length) {
       const e = await sb.from("exercicios").select("*")
         .in("treino_id", lista.map(x => x.id)).order("ordem");
+      if (req !== reqRef.current) return;
       if (e.error) { setErro(e.error.message); setCarr(false); return; }
-      const mapa = {};
-      for (const x of (e.data || [])) {
-        (mapa[x.treino_id] = mapa[x.treino_id] || []).push(x);
-      }
-      setExs(mapa);
-
-      /* anotações do aluno por exercício — a tabela pode não existir ainda,
-         então falha em silêncio em vez de quebrar a tela */
-      const r = await sb.from("relatos")
-        .select("id, exercicio_id, exercicio_nome, data, texto, fixado, created_at")
-        .in("exercicio_id", (e.data || []).map(x => x.id))
-        .order("fixado", { ascending: false })
-        .order("data", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
-      if (r.error) { setErro("relatos: " + r.error.message); }
-      else {
-        const mr = {};
-        for (const x of (r.data || [])) {
-          (mr[x.exercicio_id] = mr[x.exercicio_id] || []).push(x);
-        }
-        setRelatos(mr);
+      for (const x of (e.data || [])) (mapa[x.treino_id] = mapa[x.treino_id] || []).push(x);
+      const ids = (e.data || []).map(x => x.id);
+      if (ids.length) {
+        /* anotações do aluno por exercício: falha sem derrubar a tela */
+        const r = await sb.from("relatos")
+          .select("id, exercicio_id, exercicio_nome, data, texto, fixado, created_at")
+          .in("exercicio_id", ids)
+          .order("fixado", { ascending: false })
+          .order("data", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false });
+        if (req !== reqRef.current) return;
+        if (r.error) setErro("relatos: " + r.error.message);
+        else for (const x of (r.data || [])) (mr[x.exercicio_id] = mr[x.exercicio_id] || []).push(x);
       }
     }
-    setCarr(false);
+    setTreinos(lista); setExs(mapa); setRelatos(mr); setCarr(false);
   }, []);
 
-  const porAba = fases.filter(f => {
-    const st = situacaoFase(f, hoje);
-    return aba === "atuais" ? st === "ativa"
-         : aba === "anteriores" ? st === "encerrada"
-         : st === "futura";
-  });
+  const recarregar = () => abrirFase(faseSel, true);
 
-  const cont = {
-    atuais: fases.filter(f => situacaoFase(f, hoje) === "ativa").length,
-    anteriores: fases.filter(f => situacaoFase(f, hoje) === "encerrada").length,
-    futuros: fases.filter(f => situacaoFase(f, hoje) === "futura").length
-  };
+  /* troca de aluno: lista as fases e já abre a fase do momento */
+  const carregar = useCallback(async (alunoId) => {
+    reqRef.current++;
+    setEdit(null); setFoco(null); sujoRef.current = false;
+    setFases([]); setFaseSel(""); setTreinos([]); setExs({}); setRelatos({});
+    if (!alunoId) { setCarr(false); return; }
+    setCarr(true); setErro("");
+    const f = await sb.from("fases").select("*")
+      .eq("aluno_id", alunoId).order("inicio", { ascending: false });
+    if (f.error) { setErro(f.error.message); setCarr(false); return; }
+    const lista = f.data || [];
+    setFases(lista);
+    const m = faseDoMomento(lista, dISO(new Date()));
+    if (m.fase) {
+      setAbaF(m.tipo === "ativa" ? "atuais" : m.tipo === "proxima" ? "futuros" : "anteriores");
+      await abrirFase(m.fase.id);
+    } else {
+      setAbaF("atuais"); setCarr(false);
+    }
+  }, [abrirFase]);
+
+  useEffect(() => { carregar(sel); }, [sel, carregar]);
+
+  const daAba = k => fases.filter(f => MT_ABA_DE[situacaoFase(f, hoje)] === k);
+  const porAba = daAba(aba);
+  const cont = { anteriores: daAba("anteriores").length, atuais: daAba("atuais").length,
+                 futuros: daAba("futuros").length };
+
+  async function trocarAba(k) {
+    if (k === aba) return;
+    if (!(await podeSair())) return;
+    setEdit(null); setFoco(null); setAbaF(k);
+    const lista = daAba(k);
+    await abrirFase(lista.length ? lista[0].id : "");
+  }
+
+  async function irParaFase(f) {
+    if (!f || f.id === faseSel) return;
+    if (!(await podeSair())) return;
+    setEdit(null); setFoco(null);
+    setAbaF(MT_ABA_DE[situacaoFase(f, hoje)] || "atuais");
+    await abrirFase(f.id);
+  }
+
+  async function abrirEdicao(alvo) {
+    const igual = edit && ((alvo.exId && edit.exId === alvo.exId) ||
+      (alvo.novoEm && edit.novoEm === alvo.novoEm));
+    if (igual) return;
+    if (!(await podeSair())) return;
+    setEdit(alvo);
+  }
+
+  async function fecharEdicao() {
+    if (!(await podeSair())) return;
+    setEdit(null);
+  }
+
+  async function aposSalvar(novo) {
+    sujoRef.current = false;
+    setEdit(null);
+    toast(novo ? "Exercício adicionado ✓" : "Exercício salvo ✓");
+    await recarregar();
+  }
+
+  async function abrirFoco(treinoId) {
+    if (treinoId === foco) return;
+    if (!(await podeSair())) return;
+    setEdit(null); setFoco(treinoId);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   /* reescreve a coluna ordem do treino a partir da lista nova, tocando
      só as linhas que realmente mudaram de posição */
@@ -10572,7 +11137,7 @@ function PainelMontagem() {
     [arr[bi], arr[bj]] = [arr[bj], arr[bi]];
     const e = await gravarOrdem(arr.flatMap(b => b.itens.map(it => it.ex)));
     if (e) { setErro(e); return; }
-    await abrirFase(faseSel);
+    await recarregar();
   }
 
   /* dentro do grupo a ordem dos membros muda sem quebrar a adjacência */
@@ -10584,7 +11149,7 @@ function PainelMontagem() {
     [nova[a], nova[b]] = [nova[b], nova[a]];
     const e = await gravarOrdem(nova);
     if (e) { setErro(e); return; }
-    await abrirFase(faseSel);
+    await recarregar();
   }
 
   /* agrupar é juntar dois BLOCOS vizinhos — assim "somar o 3º ao bi-set"
@@ -10599,7 +11164,7 @@ function PainelMontagem() {
     const err = rs.find(r => r.error);
     if (err) { setErro(err.error.message); return; }
     toast(rotuloGrupo(ids.length) + " criado.");
-    await abrirFase(faseSel);
+    await recarregar();
   }
 
   async function desagrupar(bl) {
@@ -10608,7 +11173,7 @@ function PainelMontagem() {
     const err = rs.find(r => r.error);
     if (err) { setErro(err.error.message); return; }
     toast("Grupo desfeito — os exercícios continuam no treino.");
-    await abrirFase(faseSel);
+    await recarregar();
   }
 
   async function apagarEx(ex, lista) {
@@ -10633,16 +11198,15 @@ function PainelMontagem() {
       await Promise.all(orfaos.map(id =>
         sb.from("exercicios").update({ grupo: null }).eq("id", id)));
     }
+    if (edit && edit.exId === ex.id) { sujoRef.current = false; setEdit(null); }
     toast("Exercício apagado." + (orfaos.length ? " O grupo foi desfeito." : ""));
-    await abrirFase(faseSel);
+    await recarregar();
   }
 
-  /* Ajustar prazo e a operacao mais frequente, entao os inputs ficam no proprio
-     card, sem modal. O onClick do card seleciona a fase - por isso o wrapper
-     tem stopPropagation, senao mexer na data recarrega os treinos.
-     Update de campo UNICO: mandar o objeto inteiro sobrescreveria nome,
-     objetivo e metodos com o que estiver em memoria.
-     Otimista com rollback, igual PainelAparelhos.gravar(). */
+  /* Ajustar prazo é a operação mais frequente: as datas ficam no próprio card
+     da fase, sem modal. Update de campo ÚNICO: mandar o objeto inteiro
+     sobrescreveria nome, objetivo e métodos com o que estiver em memória.
+     Otimista com rollback. */
   async function mudarDataFase(f, campo, valor) {
     if (!valor) return;
     if (campo === "inicio" && f.fim && valor > f.fim) {
@@ -10658,6 +11222,9 @@ function PainelMontagem() {
       setFases(fs => fs.map(x => x.id === f.id ? { ...x, [campo]: antes } : x));
       toast(r.error.message, "erro"); return;
     }
+    /* a data pode ter mudado a fase de aba (ex: virou encerrada) */
+    const nova = { ...f, [campo]: valor };
+    setAbaF(MT_ABA_DE[situacaoFase(nova, hoje)] || aba);
     toast("Data atualizada ✓");
   }
 
@@ -10666,8 +11233,8 @@ function PainelMontagem() {
     setNovaFase(false);
     setFases(fs => [f, ...fs]
       .sort((a, b) => String(b.inicio || "").localeCompare(String(a.inicio || ""))));
-    const st = situacaoFase(f, hoje);
-    setAbaF(st === "ativa" ? "atuais" : st === "futura" ? "futuros" : "anteriores");
+    setAbaF(MT_ABA_DE[situacaoFase(f, hoje)] || "atuais");
+    setEdit(null); setFoco(null);
     await abrirFase(f.id);
     toast("Fase criada.");
     if (querCopiar) setImportar(true);
@@ -10675,8 +11242,7 @@ function PainelMontagem() {
 
   /* só fase avulsa some por aqui — fase do planejamento se apaga no
      Planejamento, senão a grade de 4 posições fica com buraco */
-  async function apagarFase(f, ev) {
-    ev.stopPropagation();
+  async function apagarFase(f) {
     const c = await sb.from("treinos")
       .select("id", { count: "exact", head: true }).eq("fase_id", f.id);
     if (c.error) { toast(c.error.message, "erro"); return; }
@@ -10692,8 +11258,10 @@ function PainelMontagem() {
     if (!ok) return;
     const r = await sb.from("fases").delete().eq("id", f.id);
     if (r.error) { toast(r.error.message, "erro"); return; }
-    setFases(fs => fs.filter(x => x.id !== f.id));
-    if (faseSel === f.id) { setFaseSel(""); setTreinos([]); setExs({}); }
+    const resto = fases.filter(x => x.id !== f.id);
+    setFases(resto);
+    const prox = resto.filter(x => MT_ABA_DE[situacaoFase(x, hoje)] === aba)[0];
+    await abrirFase(prox ? prox.id : "");
     toast("Fase apagada.");
   }
 
@@ -10708,119 +11276,486 @@ function PainelMontagem() {
     setCriandoS(false);
     if (r.error) { toast(r.error.message, "erro"); return; }
     setNomeSessao("");
-    await abrirFase(faseSel);
+    await recarregar();
     toast("Sessão criada.");
   }
 
   async function aposImportar(nT, nE, colide) {
     setImportar(false);
-    await abrirFase(faseSel);
+    await recarregar();
     toast(nT + " sessão(ões) e " + nE + " exercício(s) copiados." +
       (colide ? "  " + colide + " com nome que já existia." : ""));
   }
 
-  function Exercicio({ ex, lista, blocos, bl, bi, k, letra }) {
-    const n = nSeriesDe(ex);
+  /* ---------- pedaços de tela (funções, não componentes: componente criado
+     dentro do render remonta a cada atualização e apagaria o formulário) ---------- */
+  const sessoes = treinos.map((t, i) => {
+    const lista = exs[t.id] || [];
+    return { t, i, lista, blocos: blocosDoTreino(lista), cor: mtCor(i),
+      letra: mtLetra(t.nome, i), nome: mtNomeSessao(t.nome, alunoObj && alunoObj.nome),
+      resumo: mtResumo(lista) };
+  });
+  const sesFoco = foco ? sessoes.find(s => s.t.id === foco) || null : null;
+
+  const proxOrdem = lista => Math.max(-1, ...lista.map(x => x.ordem ?? -1)) + 1;
+
+  function tagsEx(ex) {
+    const tg = [];
+    if (ex.metodo && ex.metodo.nome) tg.push(<span key="m" className="mt-tag met">{ex.metodo.nome}</span>);
+    if (ex.cardio) tg.push(<span key="c" className="mt-tag car">{(ex.cardio && ex.cardio.nome) || "cardio"}</span>);
+    if (isoDe(ex)) tg.push(modoDe(ex) === "alongamento"
+      ? <span key="i" className="mt-tag alo">alongamento</span>
+      : <span key="i" className="mt-tag iso">isometria</span>);
+    if (ex.filmar) tg.push(<span key="f" className="mt-tag flm">filmar</span>);
+    if (ex.audio_url) tg.push(<span key="a" className="mt-tag aud">áudio</span>);
+    if (!ex.cardapio_id) tg.push(<span key="v" className="mt-tag avl">avulso</span>);
+    return tg;
+  }
+
+  function detalhesEx(ex) {
     const met = fmtMetodo(ex.metodo);
     const car = fmtCardio(ex.cardio);
-    const iso = isoDe(ex);
-    const reps = String(ex.series || "").replace(/^\s*\d+\s*[x×]\s*/i, "");
-    const emGrupo = !!bl.grupo;
     return (
-      <div className="mt-ex">
-        <div className="ferr">
-          <button title={emGrupo ? "Subir dentro do grupo" : "Subir"}
-            onClick={() => emGrupo ? moverDentro(lista, bl, k, -1)
-                                   : moverBlocoTreino(blocos, bi, -1)}>▲</button>
-          <button title={emGrupo ? "Descer dentro do grupo" : "Descer"}
-            onClick={() => emGrupo ? moverDentro(lista, bl, k, 1)
-                                   : moverBlocoTreino(blocos, bi, 1)}>▼</button>
-          <button onClick={() => setEdit({ ex })} title="Editar">✎</button>
-          <button onClick={() => apagarEx(ex, lista)} title="Apagar">×</button>
-        </div>
-        <div className="lin1">
-          <span className={"ord" + (letra ? " gl" : "")}>
-            {letra || ((ex.ordem ?? 0) + 1)}</span>
-          <span className="nm">{ex.nome}</span>
-          <span className="sr">
-            {car ? "cardio"
-              : iso ? (n ? n + "× " : "") + "segurar " + isoRot(iso)
-              : (n ? n + "×" + (reps ? " " + reps : "") : "—")}
-          </span>
-        </div>
-        {(ex.descanso || (ex.metodo && ex.metodo.nome)) && (
-          <div className="sub">
-            {ex.descanso && "desc " + ex.descanso}
-            {ex.descanso && ex.metodo && ex.metodo.nome && " · "}
-            {ex.metodo && ex.metodo.nome}
-          </div>
-        )}
+      <>
         {met && (
-          <div className="mt-det">
-            <div className="tit">{(ex.metodo && ex.metodo.nome) || "Método"}</div>
-            {met.map((l, i) => <div key={i}>{l}</div>)}
-          </div>
+          <span className="tw-det">
+            <span className="tit">{(ex.metodo && ex.metodo.nome) || "Método"}</span>
+            {met.map((l, k) => <span key={k} className="ln">{l}</span>)}
+          </span>
         )}
         {car && (
-          <div className="mt-det c">
-            <div className="tit">{(ex.cardio && ex.cardio.nome) || "Cardio"}</div>
-            <div>{car.rep ? car.rep + " → " : ""}{car.blocos.join("  |  ")}</div>
-          </div>
+          <span className="tw-det c">
+            <span className="tit">{(ex.cardio && ex.cardio.nome) || "Cardio"}</span>
+            <span className="ln">{car.rep ? car.rep + " → " : ""}{car.blocos.join("  |  ")}</span>
+          </span>
         )}
-        {ex.observacao && <div className="obs">“{ex.observacao}”</div>}
-        {(() => {
-          const todos = relatos[ex.id] || [];
-          const fix = todos.filter(r => r.fixado);
-          const resto = todos.filter(r => !r.fixado).slice(0, 3);
-          const mostrar = [...fix, ...resto];
-          const ocultos = todos.length - mostrar.length;
-          return (
-            <>
-              {mostrar.map(r => (
-                <div className={"rel" + (r.fixado ? " fix" : "")} key={r.id}>
-                  <div className="quem">
-                    {r.fixado && "📌 "}
-                    {dBR(String(r.data || r.created_at).slice(0, 10))} · aluno
-                  </div>
-                  <div className="txt">{r.texto}</div>
-                </div>
-              ))}
-              {ocultos > 0 && (
-                <div className="rel-mais">+{ocultos} relato(s) mais antigo(s)</div>
+      </>
+    );
+  }
+
+  function relatosEx(ex) {
+    const todos = relatos[ex.id] || [];
+    if (!todos.length) return null;
+    const fix = todos.filter(r => r.fixado);
+    const resto = todos.filter(r => !r.fixado).slice(0, 3);
+    const mostrar = [...fix, ...resto];
+    const ocultos = todos.length - mostrar.length;
+    return (
+      <>
+        {mostrar.map(r => (
+          <span className={"tw-rel" + (r.fixado ? " fix" : "")} key={r.id}>
+            <span className="quem">
+              {r.fixado ? "fixado · " : ""}
+              {dBR(String(r.data || r.created_at).slice(0, 10))} · aluno
+            </span>
+            <span className="txt">{r.texto}</span>
+          </span>
+        ))}
+        {ocultos > 0 && <span className="tw-rel-mais">+{ocultos} relato(s) mais antigo(s)</span>}
+      </>
+    );
+  }
+
+  /* ferramentas da linha: mover (bloco solto) ou mover dentro do grupo, apagar */
+  function ferramentas(s, bl, bi, k, ex) {
+    const emGrupo = !!bl.grupo;
+    return (
+      <span className="tw-ferr">
+        <button type="button" title={emGrupo ? "Subir dentro do grupo" : "Subir"}
+          aria-label="Subir" onClick={() => emGrupo ? moverDentro(s.lista, bl, k, -1)
+            : moverBlocoTreino(s.blocos, bi, -1)}>▲</button>
+        <button type="button" title={emGrupo ? "Descer dentro do grupo" : "Descer"}
+          aria-label="Descer" onClick={() => emGrupo ? moverDentro(s.lista, bl, k, 1)
+            : moverBlocoTreino(s.blocos, bi, 1)}>▼</button>
+        <button type="button" title="Apagar" aria-label="Apagar exercício"
+          className="rm" onClick={() => apagarEx(ex, s.lista)}>×</button>
+      </span>
+    );
+  }
+
+  function cabGrupo(s, bl, bi, cls) {
+    return (
+      <div className={cls}>
+        <IconeElo />
+        <span>{rotuloGrupo(bl.itens.length)} · {rodadasDoBloco(bl)} rodadas · descanso só no fim</span>
+        <span className="tw-gr-ferr">
+          <button type="button" title="Subir o bloco inteiro" aria-label="Subir o bloco"
+            onClick={() => moverBlocoTreino(s.blocos, bi, -1)}>▲</button>
+          <button type="button" title="Descer o bloco inteiro" aria-label="Descer o bloco"
+            onClick={() => moverBlocoTreino(s.blocos, bi, 1)}>▼</button>
+          <button type="button" title="Desagrupar" aria-label="Desagrupar"
+            onClick={() => desagrupar(bl)}>✕</button>
+        </span>
+      </div>
+    );
+  }
+
+  /* ----- visão geral: uma linha de exercício na coluna ----- */
+  function linhaColuna(s, bl, bi, it, k) {
+    const ex = it.ex;
+    if (edit && edit.exId === ex.id) {
+      return (
+        <div className={"tw-fxw" + (bl.grupo ? " gr" : "")} key={ex.id}>
+          <FormExercicio key={ex.id} ex={ex} layout="coluna"
+            onFechar={fecharEdicao} onSalvo={aposSalvar}
+            onSujo={v => { sujoRef.current = v; }} />
+        </div>
+      );
+    }
+    const desc = mtDescRot(ex.descanso);
+    const tg = tagsEx(ex);
+    return (
+      <div className={"tw-ex" + (bl.grupo ? " gr" : "")} key={ex.id}>
+        <button type="button" className="tw-exb" onClick={() => abrirEdicao({ exId: ex.id })}
+          title="Editar exercício">
+          <span className={"tw-n" + (bl.grupo ? " g" : "")}>
+            {bl.grupo ? ("ABCDEFGH"[k] || "•") : ((ex.ordem ?? it.idx) + 1)}
+          </span>
+          <span className="tw-exc">
+            <span className="tw-nm">{ex.nome}</span>
+            <span className="tw-pls">
+              <span className="tw-pl s">{mtPrescricao(ex)}</span>
+              {!ex.cardio && (
+                <span className={"tw-pl" + (desc ? "" : " vz")}>
+                  <IconeRelogio />{desc || (bl.grupo && k < bl.itens.length - 1 ? "sem pausa" : "sem descanso")}
+                </span>
               )}
-            </>
-          );
-        })()}
-        <div className="mt-tags">
-          {ex.metodo && <span className="mt-tag met">método</span>}
-          {ex.cardio && <span className="mt-tag car">cardio</span>}
-          {iso && (modoDe(ex) === "alongamento"
-            ? <span className="mt-tag alo">alongamento</span>
-            : <span className="mt-tag iso">isometria</span>)}
-          {ex.filmar && <span className="mt-tag flm">filmar</span>}
-          {ex.audio_url && <span className="mt-tag aud">áudio</span>}
-          {!ex.cardapio_id && <span className="mt-tag avl">avulso</span>}
+              {tg}
+            </span>
+            {detalhesEx(ex)}
+            {ex.observacao && <span className="tw-ob">{ex.observacao}</span>}
+            {relatosEx(ex)}
+          </span>
+          <span className="tw-lp" aria-hidden="true"><IconeLapis /></span>
+        </button>
+        {ferramentas(s, bl, bi, k, ex)}
+      </div>
+    );
+  }
+
+  function colunaSessao(s) {
+    const novoAqui = edit && edit.novoEm === s.t.id;
+    return (
+      <section className="tw-col" key={s.t.id}>
+        <i className="tw-cor" style={{ background: s.cor }} />
+        <div className="tw-ch">
+          <b className="tw-let" style={{ color: s.cor }}>{s.letra}</b>
+          <div className="tw-cht">
+            <b title={s.t.nome}>{s.nome}</b>
+            <span>{s.resumo}</span>
+          </div>
+          <button type="button" className="tw-ico" title="Ampliar sessão"
+            aria-label={"Ampliar sessão " + s.letra} onClick={() => abrirFoco(s.t.id)}>
+            <IconeAmpliar />
+          </button>
+        </div>
+        {s.lista.length === 0 && !novoAqui && (
+          <div className="tw-vz">Sem exercícios ainda.</div>
+        )}
+        {s.blocos.map((bl, bi) => (
+          <React.Fragment key={bl.itens[0].ex.id}>
+            {bl.grupo ? (
+              <div className="tw-gr">
+                {cabGrupo(s, bl, bi, "tw-grh")}
+                {bl.itens.map((it, k) => linhaColuna(s, bl, bi, it, k))}
+              </div>
+            ) : linhaColuna(s, bl, bi, bl.itens[0], 0)}
+            {bi < s.blocos.length - 1 && (
+              <div className="tw-join">
+                <button type="button" onClick={() => agrupar(s.blocos, bi)}>
+                  <IconeElo />{bl.grupo ? "Somar o próximo ao grupo" : "Agrupar com o próximo"}
+                </button>
+              </div>
+            )}
+          </React.Fragment>
+        ))}
+        {novoAqui ? (
+          <div className="tw-fxw">
+            <FormExercicio key={"novo-" + s.t.id} treinoId={s.t.id} ordem={proxOrdem(s.lista)}
+              layout="coluna" onFechar={fecharEdicao} onSalvo={aposSalvar}
+              onSujo={v => { sujoRef.current = v; }} />
+          </div>
+        ) : (
+          <button type="button" className="tw-add"
+            onClick={() => abrirEdicao({ novoEm: s.t.id })}>+ Exercício</button>
+        )}
+      </section>
+    );
+  }
+
+  /* ----- sessão ampliada: uma linha da tabela ----- */
+  function linhaTabela(s, bl, bi, it, k) {
+    const ex = it.ex;
+    const ed = edit && edit.exId === ex.id;
+    const desc = mtDescRot(ex.descanso);
+    const iso = isoDe(ex);
+    const n = ex.cardio ? null : nSeriesDe(ex);
+    const reps = ex.cardio ? (duracaoCardio(ex.cardio) || "—")
+      : iso ? "segurar " + isoRot(iso) : (mtReps(ex) || "—");
+    const ultimoDoBloco = k === bl.itens.length - 1;
+    const tg = tagsEx(ex);
+    return (
+      <div className={"tw-tr" + (ed ? " ed" : "") + (bl.grupo ? " gr" : "")} key={ex.id}>
+        <div className="tw-tg">
+          <span className="tw-td">
+            <span className={"tw-n" + (bl.grupo ? " g" : "")}>
+              {bl.grupo ? ("ABCDEFGH"[k] || "•") : ((ex.ordem ?? it.idx) + 1)}
+            </span>
+          </span>
+          <span className="tw-td">
+            <b className="tw-nm">{ex.nome}</b>
+            {detalhesEx(ex)}
+          </span>
+          <span className="tw-td mono">{n || "—"}</span>
+          <span className="tw-td mono">{reps}</span>
+          <span className={"tw-td mono" + (desc ? " cy" : " vz")}>
+            {ex.cardio ? "—" : (desc || (bl.grupo && !ultimoDoBloco ? "sem pausa" : "—"))}
+          </span>
+          <span className="tw-td"><span className="tw-tags">{tg.length ? tg : <span className="vz">—</span>}</span></span>
+          <span className="tw-td">
+            {ex.observacao ? <span className="tw-obt">{ex.observacao}</span>
+              : <span className="vz">—</span>}
+            {relatosEx(ex)}
+          </span>
+          <span className="tw-td tw-acs">
+            <button type="button" className={"tw-ico" + (ed ? " on" : "")}
+              title={ed ? "Fechar edição" : "Editar"} aria-label="Editar exercício"
+              onClick={() => ed ? fecharEdicao() : abrirEdicao({ exId: ex.id })}><IconeLapis /></button>
+            {ultimoDoBloco && bi < s.blocos.length - 1 && (
+              <button type="button" className="tw-ico" aria-label="Agrupar com o próximo"
+                title={bl.grupo ? "Somar o próximo ao grupo" : "Agrupar com o próximo (bi-set)"}
+                onClick={() => agrupar(s.blocos, bi)}><IconeElo /></button>
+            )}
+            {ferramentas(s, bl, bi, k, ex)}
+          </span>
+        </div>
+        {ed && (
+          <FormExercicio key={ex.id} ex={ex} layout="painel"
+            onFechar={fecharEdicao} onSalvo={aposSalvar}
+            onSujo={v => { sujoRef.current = v; }} />
+        )}
+      </div>
+    );
+  }
+
+  function tabelaSessao(s) {
+    const novoAqui = edit && edit.novoEm === s.t.id;
+    return (
+      <div className="tw-tb">
+        <div className="tw-tb-in">
+          <div className="tw-tg tw-th">
+            <span /><span>Exercício</span><span>Séries</span><span>Repetições</span>
+            <span>Descanso</span><span>Método · marcações</span><span>Observação para o aluno</span><span />
+          </div>
+          {s.lista.length === 0 && !novoAqui && (
+            <div className="tw-vz" style={{ padding: "26px 14px" }}>Sem exercícios ainda.</div>
+          )}
+          {s.blocos.map((bl, bi) => (
+            <React.Fragment key={bl.itens[0].ex.id}>
+              {bl.grupo && cabGrupo(s, bl, bi, "tw-grh tb")}
+              {bl.itens.map((it, k) => linhaTabela(s, bl, bi, it, k))}
+            </React.Fragment>
+          ))}
+          {novoAqui && (
+            <div className="tw-tr ed">
+              <FormExercicio key={"novo-" + s.t.id} treinoId={s.t.id} ordem={proxOrdem(s.lista)}
+                layout="painel" onFechar={fecharEdicao} onSalvo={aposSalvar}
+                onSujo={v => { sujoRef.current = v; }} />
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  return (
-    <div>
-      <div className="mt-bar">
-
-        <button className={"fbtn" + (aba === "anteriores" ? " on" : "")}
-          onClick={() => setAbaF("anteriores")}>Anteriores ({cont.anteriores})</button>
-        <button className={"fbtn" + (aba === "atuais" ? " on" : "")}
-          onClick={() => setAbaF("atuais")}>Atuais ({cont.atuais})</button>
-        <button className={"fbtn" + (aba === "futuros" ? " on" : "")}
-          onClick={() => setAbaF("futuros")}>Futuros ({cont.futuros})</button>
-        {sel && (
-          <button className="fbtn mais" style={{ marginLeft: "auto" }}
-            onClick={() => setNovaFase(true)}>+ Nova fase</button>
+  /* ---------- card da fase ---------- */
+  function cardFase() {
+    if (!faseObj || !info) return null;
+    const f = faseObj;
+    const posPlano = f.planejamento_id && f.posicao
+      ? "planejamento · fase " + f.posicao + (plano.length ? " de " + Math.max(plano.length, 4) : "")
+      : "fase avulsa · fora do planejamento";
+    return (
+      <section className={"tw-hero " + info.st}>
+        <AnelFase info={info} />
+        <div className="tw-hm">
+          <span className="tw-kick">{info.topo}</span>
+          <h2 title={f.nome}>{nomeCurtoFase(f.nome) || f.nome}</h2>
+          <div className="tw-datas">
+            <SeletorData value={f.inicio || ""} max={f.fim || undefined}
+              faixa={[f.inicio, f.fim]} title="Início da fase"
+              onChange={v => mudarDataFase(f, "inicio", v)} />
+            <span className="seta">→</span>
+            <SeletorData value={f.fim || ""} min={f.inicio || undefined}
+              faixa={[f.inicio, f.fim]} title="Fim da fase"
+              onChange={v => mudarDataFase(f, "fim", v)} />
+            <span className="tw-pos">{posPlano}</span>
+          </div>
+          {tecsFase.length > 0 && (
+            <div className="tw-tecs"
+              title="Vem da Biblioteca de fases (aba Planejamento). Passa o mouse no chip para ver a mecânica e a restrição.">
+              <span className="lb">Técnicas sugeridas</span>
+              {tecsFase.map(t => <ChipTecnica key={t.id} t={t} />)}
+            </div>
+          )}
+        </div>
+        {plano.length > 1 && (
+          <div className="tw-per">
+            <span className="lb">Periodização</span>
+            <div className="tw-dots">
+              {plano.map((p, i) => (
+                <React.Fragment key={p.id}>
+                  {i > 0 && <i className="tw-traco" />}
+                  <button type="button" title={p.nome + "\n" + dBR(p.inicio) + " → " + dBR(p.fim)}
+                    aria-label={"Abrir " + p.nome}
+                    className={"tw-dot " + situacaoFase(p, hoje) + (p.id === f.id ? " atual" : "")}
+                    onClick={() => irParaFase(p)} />
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="tw-dots-lb">
+              {plano.map(p => (
+                <span key={p.id} className={p.id === f.id ? "atual" : ""}>
+                  {nomeCurtoFase(p.nome)}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
-      </div>
+        {!f.planejamento_id && (
+          <button type="button" className="tw-ico tw-rmf" title="Apagar esta fase avulsa"
+            aria-label="Apagar fase avulsa" onClick={() => apagarFase(f)}>×</button>
+        )}
+      </section>
+    );
+  }
 
+  /* ---------- telas ---------- */
+  const barraNovaSessao = (
+    <span className="tw-ns">
+      <input value={nomeSessao} onChange={e => setNomeSessao(e.target.value)}
+        onKeyDown={e => { if (e.key === "Enter") criarSessao(); }}
+        placeholder="Nome da sessão nova" aria-label="Nome da sessão nova" />
+      <button type="button" className="tw-btn pri" onClick={criarSessao}
+        disabled={criandoS || !nomeSessao.trim()}>
+        {criandoS ? "Criando..." : "+ Sessão"}
+      </button>
+    </span>
+  );
+
+  function visaoGeral() {
+    const n = sessoes.length;
+    return (
+      <>
+        {cardFase()}
+        <div className="tw-bar">
+          <div className="tw-pills" role="tablist" aria-label="Fases">
+            {[["anteriores", "Anteriores"], ["atuais", "Atuais"], ["futuros", "Futuras"]].map(([k, r]) => (
+              <button key={k} type="button" role="tab" aria-selected={aba === k}
+                className={aba === k ? "on" : ""} onClick={() => trocarAba(k)}>
+                {r}<i>{cont[k]}</i>
+              </button>
+            ))}
+          </div>
+          {porAba.length > 1 && (
+            <div className="tw-fchips">
+              {porAba.map(f => (
+                <button key={f.id} type="button" className={f.id === faseSel ? "on" : ""}
+                  onClick={() => irParaFase(f)} title={f.nome}>
+                  <b>{nomeCurtoFase(f.nome) || f.nome}</b>
+                  <span>{dBR(f.inicio).slice(0, 5)} → {dBR(f.fim).slice(0, 5)}
+                    {f.planejamento_id ? "" : " · avulsa"}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <span style={{ flex: 1 }} />
+          <button type="button" className="tw-btn" onClick={() => setNovaFase(true)}>+ Nova fase</button>
+          {faseSel && (
+            <button type="button" className="tw-btn" onClick={() => setImportar(true)}>Importar sessões</button>
+          )}
+          {faseSel && barraNovaSessao}
+        </div>
+
+        {!fases.length && !carregando ? (
+          <div className="sem-aluno">
+            <b>Este aluno ainda não tem fase</b>
+            Crie uma fase avulsa aqui ou monte o planejamento na aba Planejamento.
+          </div>
+        ) : !faseSel ? (
+          <div className="mt-vazio">Nenhuma fase nesta aba.</div>
+        ) : carregando ? (
+          <div className="mt-vazio">Carregando...</div>
+        ) : n === 0 ? (
+          <div className="mt-vazio">
+            Esta fase ainda não tem sessões. Crie uma em <b>+ Sessão</b> ou traga de outra
+            fase em <b>Importar sessões</b>.
+          </div>
+        ) : (
+          <div className={"tw-cols" + (n > 4 ? " muitas" : "")}
+            style={{ "--tw-n": Math.max(3, Math.min(n, 4)) }}>
+            {sessoes.map(colunaSessao)}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function sessaoAmpliada(s) {
+    return (
+      <>
+        <section className="tw-fbar">
+          <button type="button" className="tw-btn" onClick={() => abrirFoco(null)}>
+            <IconeRecolher />Visão geral
+          </button>
+          {info && <AnelFase info={info} px={38} />}
+          <div className="tw-fbar-t">
+            <b title={faseObj && faseObj.nome}>{faseObj ? (nomeCurtoFase(faseObj.nome) || faseObj.nome) : ""}</b>
+            <span>{faseObj ? dBR(faseObj.inicio) + " → " + dBR(faseObj.fim) : ""}{info ? " · " + info.topo.toLowerCase() : ""}</span>
+          </div>
+          <span style={{ flex: 1 }} />
+          {tecsFase.length > 0 && (
+            <span className="tw-tecs" style={{ margin: 0 }}>
+              {tecsFase.map(t => <ChipTecnica key={t.id} t={t} />)}
+            </span>
+          )}
+        </section>
+
+        <div className="tw-abas" role="tablist" aria-label="Sessões">
+          {sessoes.map(x => (
+            <button key={x.t.id} type="button" role="tab" aria-selected={x.t.id === s.t.id}
+              className={x.t.id === s.t.id ? "on" : ""}
+              style={x.t.id === s.t.id ? { boxShadow: "inset 0 -2px 0 " + x.cor } : undefined}
+              onClick={() => abrirFoco(x.t.id)} title={x.t.nome}>
+              <b style={{ color: x.cor }}>{x.letra}</b>{x.nome}<i>{x.lista.length}</i>
+            </button>
+          ))}
+          <span style={{ flex: 1 }} />
+          <button type="button" className="tw-btn" onClick={() => setImportar(true)}>Importar sessões</button>
+          {barraNovaSessao}
+        </div>
+
+        <div className="tw-ses">
+          <div className="tw-ses-h">
+            <b className="tw-let" style={{ color: s.cor }}>{s.letra}</b>
+            <div className="tw-cht">
+              <b title={s.t.nome}>{s.nome}</b>
+              <span>{s.resumo}</span>
+            </div>
+            <span style={{ flex: 1 }} />
+            {!(edit && edit.novoEm === s.t.id) && (
+              <button type="button" className="tw-btn pri"
+                onClick={() => abrirEdicao({ novoEm: s.t.id })}>+ Exercício</button>
+            )}
+          </div>
+          {tabelaSessao(s)}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="tw">
       {erro && <div className="err">{erro}</div>}
 
       {!sel ? (
@@ -10828,174 +11763,7 @@ function PainelMontagem() {
           <b>Escolhe um aluno lá em cima</b>
           As fases e os treinos dele aparecem aqui.
         </div>
-      ) : (
-      <div className={"mt-cols" + (recFases ? " rec" : "")}>
-        {recFases && (
-          <button className="mt-rec" title="Mostrar a lista de fases"
-            onClick={() => mudarRec(false)}>
-            <b>›</b>
-            <i>{(fases.find(f => f.id === faseSel) || {}).nome || "Fases"}</i>
-          </button>
-        )}
-        <div className="mt-fases">
-          <div className="mt-fases-cab">
-            <span>{porAba.length} fase(s)</span>
-            <button className="mt-rec-bt" title="Recolher a lista e dar espaço aos treinos"
-              onClick={() => mudarRec(true)}>‹ recolher</button>
-          </div>
-          {porAba.length === 0
-            ? <div className="mt-vazio">Nenhuma fase nesta aba.</div>
-            : porAba.map(f => {
-                const st = situacaoFase(f, hoje);
-                const rest = f.fim
-                  ? Math.round((parseISO(f.fim) - parseISO(hoje)) / 864e5) : null;
-                return (
-                  <div key={f.id}
-                    className={"mt-fase " + st + (faseSel === f.id ? " on" : "")}
-                    onClick={() => abrirFase(f.id)}>
-                    {!f.planejamento_id && (
-                      <button className="fx" title="Apagar esta fase avulsa"
-                        onClick={e => apagarFase(f, e)}>×</button>
-                    )}
-                    <b>{f.nome}</b>
-                    <div className="per" onClick={e => e.stopPropagation()}>
-                      <SeletorData value={f.inicio || ""} max={f.fim || undefined}
-                        faixa={[f.inicio, f.fim]} title="Início da fase"
-                        onChange={v => mudarDataFase(f, "inicio", v)} />
-                      <span className="seta">→</span>
-                      <SeletorData value={f.fim || ""} min={f.inicio || undefined}
-                        faixa={[f.inicio, f.fim]} title="Fim da fase"
-                        onChange={v => mudarDataFase(f, "fim", v)} />
-                    </div>
-                    {st === "ativa" && rest !== null && (
-                      <div className="rest">
-                        {rest >= 0 ? "faltam " + rest + " dias" : "vencida"}
-                      </div>
-                    )}
-                    {f.planejamento_id && f.posicao && (
-                      <div className="rest" style={{ color: "var(--mut)" }}>
-                        planejamento · fase {f.posicao}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-        </div>
-
-        <div>
-          {faseSel && (
-            <div className="mt-sub">
-              <span className="nm">
-                <b>{(fases.find(f => f.id === faseSel) || {}).nome}</b>
-              </span>
-              <button className="btn-sec" onClick={() => setImportar(true)}>
-                ⤵ Importar sessões
-              </button>
-              <input value={nomeSessao} onChange={e => setNomeSessao(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") criarSessao(); }}
-                placeholder="Nome da sessão nova" />
-              <button className="btn-sec" onClick={criarSessao}
-                disabled={criandoS || !nomeSessao.trim()}>
-                {criandoS ? "Criando..." : "+ Sessão"}
-              </button>
-            </div>
-          )}
-          {faseSel && tecsFase.length > 0 && (
-            <div className="mt-tecs"
-              title="Vem da Biblioteca de fases (aba Planejamento). Passa o mouse no chip para ver a mecânica e a restrição.">
-              <span className="lb">💡 Técnicas sugeridas · {tplFase.nome}</span>
-              {tecsFase.map(t => <ChipTecnica key={t.id} t={t} />)}
-            </div>
-          )}
-          {!faseSel
-            ? <div className="mt-vazio">Escolhe uma fase à esquerda para ver os treinos.</div>
-            : carregando
-              ? <div className="mt-vazio">Carregando...</div>
-              : treinos.length === 0
-                ? <div className="mt-vazio">Esta fase ainda não tem treinos.</div>
-                : (
-                  <div className="mt-treinos">
-                    {treinos.map(t => {
-                      const lista = exs[t.id] || [];
-                      return (
-                        <div className="mt-tr" key={t.id}>
-                          <div className="mt-tr-h">
-                            {/* nome do aluno sai do cabeçalho: já está na barra
-                               lá em cima e roubava metade da largura */}
-                            <b title={t.nome}>
-                              {feedSemAluno(t.nome, (alunos.find(a => a.id === sel) || {}).nome)}
-                            </b>
-                            <span className="cnt">{lista.length} exerc.</span>
-                          </div>
-                          <div className="mt-tr-c">
-                          {lista.length === 0
-                            ? <div className="mt-vazio">Sem exercícios.</div>
-                            : (() => {
-                                const blocos = blocosDoTreino(lista);
-                                return blocos.map((bl, bi) => (
-                                  <React.Fragment key={bl.itens[0].ex.id}>
-                                    {bl.grupo ? (
-                                      <div className="mt-gr">
-                                        <div className="mt-gr-h">
-                                          <span>🔗 {rotuloGrupo(bl.itens.length)}</span>
-                                          <span className="rod">
-                                            {rodadasDoBloco(bl)} rodadas · descanso só no fim
-                                          </span>
-                                          <div className="gr-ferr">
-                                            <button title="Subir o bloco inteiro"
-                                              onClick={() => moverBlocoTreino(blocos, bi, -1)}>▲</button>
-                                            <button title="Descer o bloco inteiro"
-                                              onClick={() => moverBlocoTreino(blocos, bi, 1)}>▼</button>
-                                            <button title="Desagrupar"
-                                              onClick={() => desagrupar(bl)}>✕</button>
-                                          </div>
-                                        </div>
-                                        {bl.itens.map((it, k) => (
-                                          <Exercicio key={it.ex.id} ex={it.ex} lista={lista}
-                                            blocos={blocos} bl={bl} bi={bi} k={k}
-                                            letra={"ABCDEFGH"[k] || "•"} />
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <Exercicio ex={bl.itens[0].ex} lista={lista}
-                                        blocos={blocos} bl={bl} bi={bi} k={0} />
-                                    )}
-                                    {bi < blocos.length - 1 && (
-                                      <div className="mt-join">
-                                        <button onClick={() => agrupar(blocos, bi)}>
-                                          🔗 {bl.grupo ? "Somar o próximo"
-                                                       : "Agrupar com o próximo"}
-                                        </button>
-                                      </div>
-                                    )}
-                                  </React.Fragment>
-                                ));
-                              })()}
-                          </div>
-                          <div className="mt-acao">
-                            <button className="btn-sec"
-                              onClick={() => setEdit({ treinoId: t.id,
-                                ordem: Math.max(-1, ...lista.map(x => x.ordem ?? -1)) + 1 })}>
-                              + Exercício
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-        </div>
-      </div>
-      )}
-
-      {editando && (
-        <EditorExercicio
-          ex={editando.ex}
-          treinoId={editando.ex ? editando.ex.treino_id : editando.treinoId}
-          ordem={editando.ordem}
-          onFechar={() => setEdit(null)}
-          onSalvo={async () => { setEdit(null); await abrirFase(faseSel); }} />
-      )}
+      ) : sesFoco ? sessaoAmpliada(sesFoco) : visaoGeral()}
 
       {novaFase && alunoObj && (
         <DrawerNovaFase aluno={alunoObj}
@@ -11013,23 +11781,17 @@ function PainelMontagem() {
       )}
 
       <div className="pl-hint" style={{ marginTop: 18 }}>
-        <b>+ Nova fase</b> cria fase avulsa, fora do planejamento de periodização —
-        ela não entra na grade de 4 colunas de lá. <b>⤵ Importar sessões</b> traz
-        sessões de qualquer fase, deste ou de outro aluno: vêm exercícios, séries,
-        método, cardio, isometria/alongamento e os bi-sets (com id novo); não vêm carga, correções,
-        áudio nem histórico — o aluno de destino abre a sessão já com os dele.
-        <br />
-        Passa o mouse sobre o exercício para <b>reordenar, editar ou apagar</b>.
-        As setas movem o <b>bloco inteiro</b> — dentro de um grupo elas trocam a ordem
-        dos membros. <b>🔗 Agrupar com o próximo</b> junta dois blocos vizinhos em
-        bi-set, tri-set ou circuito (o nome vem da contagem). Sem descanso entre os
-        membros: ele acontece uma vez, no fim da rodada.
-        Cardio e criação de novos métodos ainda são feitos no App.
+        Clica num exercício para editar ali mesmo; o <b>⤢</b> da coluna abre a sessão
+        ampliada, em tabela. As setas movem o <b>bloco inteiro</b> — dentro de um bi-set
+        elas trocam a ordem dos membros. <b>Agrupar com o próximo</b> junta dois blocos
+        vizinhos em bi-set, tri-set ou circuito (o nome vem da contagem), com descanso
+        uma vez só, no fim da rodada. <b>Importar sessões</b> traz exercícios, séries,
+        método, cardio, isometria/alongamento e bi-sets; não traz carga, correções,
+        áudio nem histórico. As datas da fase se ajustam direto no card de cima.
       </div>
     </div>
   );
 }
-
 
 
 
