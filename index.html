@@ -732,7 +732,7 @@
   .ac-ciclo .det{font-size:11px;color:var(--mut);margin-top:2px}
   .ac-ciclo.vazio{border-left-color:var(--warn)}
   .ac-ciclo.vazio .sem{color:var(--warn)}
-  .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 76px 70px 200px auto;
+  .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 140px 70px 220px 158px auto;
     gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);
     border-left:3px solid var(--line);border-radius:11px;padding:13px 17px;
     margin-bottom:9px;cursor:pointer}
@@ -761,19 +761,114 @@
   .ac-badge.r{background:var(--alert);box-shadow:0 0 0 3px #e05c5c22}
   .ac-badge.a{background:var(--warn);box-shadow:0 0 0 3px #f0a35e22}
   .ac-badge.v{background:var(--accent);box-shadow:0 0 0 3px #00daef22}
-  .ac-head{display:grid;grid-template-columns:auto minmax(0,1fr) 76px 70px 200px auto;
+  .ac-head{display:grid;grid-template-columns:auto minmax(0,1fr) 140px 70px 220px 158px auto;
     gap:16px;padding:0 17px 8px;font-size:10px;text-transform:uppercase;
     letter-spacing:.9px;color:var(--mut)}
   .ac-head span{text-align:center}
-  .ac-head span:nth-child(2){text-align:left}
+  .ac-head span:nth-child(2),.ac-head span:nth-child(5),.ac-head span:nth-child(6){text-align:left}
   .ac-diag{background:#2a2418;border:1px solid #5c4a24;color:#f0a35e;
     padding:11px 14px;border-radius:9px;font-size:12px;line-height:1.6;
     margin-bottom:14px;font-family:ui-monospace,monospace}
+  /* ---- Acompanhamento · treinou + chip de tarefas, fase atual, observações ---- */
+  .ao-trein{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+  .ao-tar{display:inline-flex;align-items:center;gap:4px;font-size:10px;line-height:1;
+    padding:3px 6px;border-radius:5px;border:1px solid var(--line);color:var(--mut);
+    white-space:nowrap;cursor:help}
+  .ao-tar.zero{color:#c98a52;border-color:#3b2c18}
+  .ao-tar.ok{color:#5fa9b0;border-color:#1d3a3e}
+  .ao-fz{min-width:0}
+  .ao-fz .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    font-size:12px;margin-bottom:5px}
+  .ao-fz .t b{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ao-fz .t span{color:var(--mut);flex-shrink:0;white-space:nowrap}
+  .ao-fz.perto .t span{color:var(--warn);font-weight:600}
+  .ao-fz.venc .t b,.ao-fz.venc .t span{color:#ff8a8a}
+  .ao-fz.prox .t b,.ao-fz.nenhuma .t b{color:var(--mut);font-weight:500}
+  .ao-fz.prox .t span{color:var(--warn)}
+  .ao-fz .ac-bar i.perto{background:var(--warn)}
+  .ao-fz .ac-bar i.venc{background:var(--alert)}
+  .ao-fz .d{font-size:10.5px;color:var(--mut);margin-top:5px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .ao-obsbt{display:inline-flex;align-items:center;gap:7px;width:auto;padding:7px 11px;
+    border-radius:9px;background:transparent;border:1px solid #26363a;color:#9fb3b8;
+    font-size:12px;font-weight:500;min-height:36px;white-space:nowrap}
+  .ao-obsbt b{font-size:13px;font-weight:700}
+  .ao-obsbt:hover{border-color:var(--mut);color:var(--txt);filter:none}
+  .ao-obsbt.pend{border-color:#4d5a10;background:#15190a;color:var(--marca)}
+  .ao-obsbt.on{background:var(--marca);border-color:var(--marca);color:#0b0f10}
+  .ao-semobs{font-size:12px;color:#7a8d90}
+  .ac-lin.ao-aberta{border-radius:11px 11px 0 0;margin-bottom:0;border-bottom-color:#16262a}
+  .fbtn.ao-pend{border-color:#4d5a10;color:var(--marca)}
+  .fbtn.ao-pend.on{background:var(--marca);border-color:var(--marca);color:#0b0f10}
+  .ao-pn{background:#0f1719;border:1px solid var(--line);border-top:none;
+    border-left:3px solid var(--line);border-radius:0 0 11px 11px;
+    padding:4px 18px 10px 72px;margin-bottom:12px}
+  .ao-pn.r{border-left-color:var(--alert)}
+  .ao-pn.a{border-left-color:var(--warn)}
+  .ao-pn.v{border-left-color:var(--accent)}
+  .ao-pn-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0 8px}
+  .ao-pn-h b{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--marca)}
+  .ao-ob{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;
+    align-items:start;padding:12px 0;border-top:1px solid #1a2628}
+  .ao-ob.feita .ao-tx{color:var(--mut)}
+  .ao-ckw{width:36px;height:36px;padding:0;background:none;border:none;display:flex;
+    align-items:center;justify-content:center;margin-top:-7px}
+  .ao-ckw:hover{filter:none}
+  .ao-ck{width:22px;height:22px;border-radius:50%;border:1.5px solid #5d7377;display:flex;
+    align-items:center;justify-content:center;color:#04191c}
+  .ao-ckw:hover .ao-ck{border-color:var(--accent)}
+  .ao-ck.on{background:var(--accent);border-color:var(--accent)}
+  .ao-l1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .ao-dt{font-family:ui-monospace,monospace;font-size:11px;color:var(--accent)}
+  .ao-ex{font-size:13.5px;font-weight:600}
+  .ao-ex.geral{font-weight:500}
+  .ao-trn{font-size:11.5px;color:var(--mut)}
+  .ao-tg{font-size:9.5px;padding:2px 7px;border-radius:4px;letter-spacing:.3px;
+    font-weight:600;white-space:nowrap}
+  .ao-tg.nv{background:#2b2f10;color:var(--marca)}
+  .ao-tg.rv{background:#0f2a2e;color:var(--accent)}
+  .ao-tg.an{background:#241a2e;color:#c9a6ff}
+  .ao-tg.orf{background:#2a2418;color:var(--warn)}
+  .ao-tx{font-size:13.5px;line-height:1.55;color:#c3d6d8;margin-top:5px;
+    white-space:pre-wrap;overflow-wrap:anywhere}
+  .ao-acs{display:flex;gap:6px;align-items:center}
+  .ao-bt{display:inline-flex;align-items:center;gap:6px;width:auto;padding:7px 10px;
+    font-size:11.5px;font-weight:500;border-radius:8px;border:1px solid #26363a;
+    background:#121a1c;color:var(--txt);white-space:nowrap}
+  .ao-bt:hover{border-color:var(--accent);filter:none}
+  .ao-bt.on{border-color:var(--accent);color:var(--accent)}
+  .ao-bt.pri{background:var(--accent);border-color:var(--accent);color:#04191c;font-weight:600}
+  .ao-bt.pri:hover{filter:brightness(1.08)}
+  .ao-bt.ico{width:34px;height:34px;padding:0;justify-content:center;color:#9fb3b8}
+  .ao-fx{margin-top:12px;background:#0d1b1e;box-shadow:inset 3px 0 0 var(--accent);
+    border-radius:0 10px 10px 0;padding:15px 16px 15px 19px;display:flex;
+    flex-direction:column;gap:14px}
+  .ao-fx-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .ao-fx-h b{font-size:13.5px}
+  .ao-lab{display:flex;gap:8px;align-items:baseline;font-size:10px;text-transform:uppercase;
+    letter-spacing:.9px;color:var(--mut);margin-bottom:7px}
+  .ao-lab i{font-style:normal;text-transform:none;letter-spacing:0}
+  .ao-sug{font-size:9px;font-weight:700;letter-spacing:.3px;padding:1px 5px;border-radius:4px;
+    background:#2b2f10;color:var(--marca);text-transform:uppercase;margin-left:6px}
+  .chip.on .ao-sug{background:#04191c}
+  .ao-g{display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,1fr);gap:14px}
+  .ao-vinc{display:flex;flex-direction:column;gap:2px;padding:7px 11px;background:var(--bg);
+    border:1px solid var(--line);border-radius:8px}
+  .ao-vinc b{font-size:13px;font-weight:600}
+  .ao-vinc span{font-size:10.5px;color:var(--mut)}
+  .ao-fx input{margin-bottom:0;font-size:13px}
+  .ao-fx textarea{font-family:inherit;font-size:13px;min-height:70px;line-height:1.5}
+  .ao-fx-b{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   @media (max-width:900px){
     .ac-head{display:none}
     .ac-lin{grid-template-columns:auto minmax(0,1fr) auto;gap:10px}
     .ac-lin .ac-hm{grid-column:2;justify-self:start}
     .ac-tar{grid-column:1/-1}
+    .ac-lin .ao-fz,.ac-lin .ao-obsc{grid-column:1/-1}
+    .ao-pn{padding-left:14px}
+    .ao-ob{grid-template-columns:36px minmax(0,1fr)}
+    .ao-ob .ao-acs{grid-column:2}
+    .ao-g{grid-template-columns:1fr}
   }
   /* ============ APARELHOS (matriz) ============ */
   .ap-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
@@ -12169,6 +12264,9 @@ function montarFeed(raw) {
     const geral = !r.exercicio_id && !r.exercicio_nome;
     push({
       key: "rel:" + r.id, tipo: geral ? "relato_geral" : "relato_ex",
+      /* relato_id e exercicio_id: usados pelo Acompanhamento (revisar e
+         inserir na anamnese). O feed do Início não lê. */
+      relato_id: r.id, exercicio_id: r.exercicio_id || null,
       aluno_id: r.aluno_id, treino_id: r.treino_id || null,
       data: r.data || feedDiaDe(r.created_at),
       reg: feedMs(r.created_at) || feedMsDia(r.data),
@@ -13295,6 +13393,439 @@ function Heatmap({ dias, nome }) {
   return <canvas ref={ref} className="ac-hm" title={titulo} />;
 }
 
+/* ---------- Acompanhamento · fase atual de cada aluno ----------
+   Recebe o resultado de faseDoMomento() e devolve o que a coluna "Fase atual"
+   desenha: nome, tempo restante e quanto da fase já passou. A timeline GLOBAL
+   (v_semana_atual) continua só no card de cima. */
+function progressoFase(m, hojeISO) {
+  const dd = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 864e5);
+  if (!m || m.tipo === "nenhuma" || !m.fase) {
+    return { cls: "nenhuma", nome: "Sem fase", resto: "", pct: 0, barCls: "",
+             det: "nenhuma fase nos últimos 60 dias", titulo: "" };
+  }
+  const f = m.fase, nm = nomeCurtoFase(f.nome) || f.nome || "fase";
+  const per = dBR(f.inicio).slice(0, 5) + " → " + dBR(f.fim).slice(0, 5);
+  const total = dd(f.inicio, f.fim) + 1, sems = Math.max(1, Math.ceil(total / 7));
+  const titulo = (f.nome || nm) + "\n" + dBR(f.inicio) + " → " + dBR(f.fim);
+  if (m.tipo === "proxima") {
+    return { cls: "prox", nome: "Sem fase ativa", resto: "começa em " + m.dias + "d",
+             pct: 0, barCls: "", det: "próxima: " + nm + " · " + per, titulo };
+  }
+  if (m.tipo === "vencida") {
+    return { cls: "venc", nome: "⚠ " + nm, resto: "venceu há " + m.dias + "d", pct: 100,
+             barCls: "venc", det: "terminou em " + dBR(f.fim).slice(0, 5) + " · sem fase nova",
+             titulo };
+  }
+  const passou = dd(f.inicio, hojeISO) + 1, restam = m.dias;
+  const semana = Math.min(sems, Math.floor((passou - 1) / 7) + 1);
+  const perto = restam <= 7;
+  return {
+    cls: perto ? "perto" : "", nome: nm,
+    resto: restam === 0 ? "vence hoje" : perto ? "vence em " + restam + "d" : "faltam " + restam + "d",
+    pct: Math.max(4, Math.min(100, Math.round(passou / total * 100))),
+    barCls: perto ? "perto" : "",
+    det: "semana " + semana + " de " + sems + " · " + per,
+    titulo: titulo + "\n" + passou + " de " + total + " dias"
+  };
+}
+
+/* ---------- Acompanhamento · observações da semana ----------
+   Embaixo de cada aluno, as observações (relatos com e sem exercício) dos
+   últimos 7 dias. A leitura sai do feed do Início, que já carrega 30 dias de
+   relatos: nenhuma consulta nova para LER.
+
+   "Revisada" é diferente de "lida":
+   - lida = o sino, marca-d'água por navegador (FEED_LS)
+   - revisada = o check daqui: você tratou a observação. Só se marca no
+     Acompanhamento.
+   A revisão mora em relato_revisoes, tabela da Dashboard (a `relatos` é do
+   App e não é tocada). Enquanto relato_revisoes não existir, o check fica no
+   localStorage deste navegador e a tela avisa; quando a tabela aparecer, o
+   que estava aqui sobe sozinho, uma vez.
+
+   "Inserir na anamnese" grava em anamnese_entradas exatamente o que o editor
+   de Entradas grava (origem 'manual'), só que já preenchido. Só para aluno
+   migrado: num aluno ainda em texto, uma entrada solta faria a ficha passar a
+   copiar só as Entradas e esconder o texto antigo. */
+const OBS_DIAS = 7;
+const REV_LS   = "idealis_obs_revisadas_v1";
+let obsSecoesCache = null;
+
+/* janela pela data do relato (dia no aparelho) OU pela chegada no servidor:
+   relato preso na fila offline que chegou hoje com data de 10 dias atrás
+   não pode sumir da semana sem ninguém ver */
+function montarObsSemana(itens, hojeISO, agoraMs) {
+  const desde = dISO(addDias(parseISO(hojeISO), -(OBS_DIAS - 1)));
+  const corteMs = agoraMs - OBS_DIAS * 864e5;
+  const porAluno = {}, ids = [];
+  for (const i of (itens || [])) {
+    if (i.tipo !== "relato_ex" && i.tipo !== "relato_geral") continue;
+    if (!((i.data && i.data >= desde) || (i.reg && i.reg >= corteMs))) continue;
+    (porAluno[i.aluno_id] = porAluno[i.aluno_id] || []).push(i);
+    if (i.relato_id != null) ids.push(String(i.relato_id));
+  }
+  for (const k in porAluno) {
+    porAluno[k].sort((x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : (y.reg || 0) - (x.reg || 0)));
+  }
+  return { porAluno, ids, desde };
+}
+
+function quandoObs(iso, hojeISO) {
+  if (!iso) return "";
+  const n = Math.round((parseISO(hojeISO) - parseISO(iso)) / 864e5);
+  if (n <= 0) return "hoje";
+  if (n === 1) return "ontem";
+  return ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][parseISO(iso).getDay()] +
+    " " + dBR(iso).slice(0, 5);
+}
+
+/* Sugestão de seção: regra simples, sem IA, e você sempre confirma.
+   Palavra de dor/sintoma -> Dor/Pat; observação final do treino -> Obs Gerais;
+   o resto -> Dif. Exerc. "puxada" (o exercício) NÃO conta como "puxando". */
+const OBS_DOR_RE = /(^|[^a-zà-ú])(dor|dores|doeu|doendo|d[oó]i|incomod\w*|estal\w*|puxando|puxou|repux\w*|formig\w*|travou|travad\w*|les[aã]o|inflam\w*|machuc\w*|pontada|fisgada)([^a-zà-ú]|$)/i;
+const OBS_REGIAO_RE = /(^|[^a-zà-ú])(joelho|ombro|lombar|cervical|pesco[cç]o|quadril|tornozelo|punho|cotovelo|coxa|panturrilha|gl[uú]teo|virilha|calcanhar|esc[aá]pula|costas|tor[aá]cica)(\s+(direit[oa]|esquerd[oa]))?/i;
+function sugerirSecao(o, ids) {
+  const t = String((o && o.texto) || "");
+  const tem = id => (ids || []).includes(id);
+  let secao;
+  if (OBS_DOR_RE.test(t) && tem("Dor/Pat")) secao = "Dor/Pat";
+  else if (o && o.tipo === "relato_geral" && tem("Obs Gerais")) secao = "Obs Gerais";
+  else if (tem("Dif. Exerc")) secao = "Dif. Exerc";
+  else if (tem("Obs Gerais")) secao = "Obs Gerais";
+  else secao = (ids && ids[0]) || "";
+  const m = t.match(OBS_REGIAO_RE);
+  const regiao = m ? (m[2] + (m[4] ? " " + m[4] : "")).toLowerCase() : "";
+  return { secao, regiao };
+}
+
+const revSemTabela = msg => /relato_revisoes/.test(msg || "") &&
+  /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(msg || "");
+function revLerLocal() {
+  try { return JSON.parse(localStorage.getItem(REV_LS) || "{}") || {}; }
+  catch (e) { return {}; }
+}
+function revGravarLocal(m) {
+  try { localStorage.setItem(REV_LS, JSON.stringify(m)); } catch (e) {}
+}
+
+/* { mapa: {relato_id: {em, entrada_id}}, modo: "banco" | "local", erro } */
+async function carregarRevisoes(ids) {
+  const uniq = [...new Set((ids || []).filter(x => x != null).map(String))];
+  const mapa = {};
+  for (let i = 0; i < uniq.length; i += LOTE) {
+    const r = await sb.from("relato_revisoes")
+      .select("relato_id, revisado_em, entrada_id")
+      .in("relato_id", uniq.slice(i, i + LOTE));
+    if (r.error) {
+      if (revSemTabela(r.error.message)) {
+        const loc = revLerLocal(), m = {};
+        uniq.forEach(id => { if (loc[id]) m[id] = loc[id]; });
+        return { mapa: m, modo: "local", erro: "" };
+      }
+      return { mapa, modo: "banco", erro: "relato_revisoes: " + r.error.message };
+    }
+    for (const x of (r.data || [])) {
+      mapa[String(x.relato_id)] = { em: x.revisado_em, entrada_id: x.entrada_id || null };
+    }
+  }
+  /* a tabela existe: o que ficou guardado neste navegador sobe uma vez */
+  const loc = revLerLocal();
+  const sobe = Object.keys(loc).filter(id => !mapa[id]);
+  if (sobe.length) {
+    const up = await sb.from("relato_revisoes").upsert(sobe.map(id => ({
+      relato_id: id, revisado_em: loc[id].em || new Date().toISOString(),
+      entrada_id: loc[id].entrada_id || null
+    })), { onConflict: "relato_id" });
+    if (!up.error) {
+      sobe.forEach(id => { if (uniq.includes(id)) mapa[id] = loc[id]; });
+      revGravarLocal({});
+    }
+  } else if (Object.keys(loc).length) {
+    revGravarLocal({});
+  }
+  return { mapa, modo: "banco", erro: "" };
+}
+
+/* marca ou desmarca várias de uma vez. Sem a tabela, cai no navegador. */
+async function gravarRevisoes(modo, ids, valor, entradaId) {
+  const agora = new Date().toISOString();
+  const local = () => {
+    const loc = revLerLocal();
+    ids.forEach(id => {
+      if (valor) loc[id] = { em: agora, entrada_id: entradaId || (loc[id] && loc[id].entrada_id) || null };
+      else delete loc[id];
+    });
+    revGravarLocal(loc);
+    return { ok: true, modo: "local" };
+  };
+  if (modo === "local") return local();
+  const r = valor
+    ? await sb.from("relato_revisoes").upsert(ids.map(id => ({
+        relato_id: id, revisado_em: agora, ...(entradaId ? { entrada_id: entradaId } : {})
+      })), { onConflict: "relato_id" })
+    : await sb.from("relato_revisoes").delete().in("relato_id", ids);
+  if (r.error) return revSemTabela(r.error.message) ? local() : { ok: false, erro: r.error.message };
+  return { ok: true, modo: "banco" };
+}
+
+function IconeAnamnese() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+      <path d="M14 3v6h6" /><path d="M12 12v6" /><path d="M9 15h6" />
+    </svg>
+  );
+}
+function IconeBalaoP() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+function IconeTarefas() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
+      <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  );
+}
+
+/* formulário embutido: já vem preenchido, você confere e insere */
+function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
+  const { toast } = usarUI();
+  const geral = o.tipo === "relato_geral";
+  const [secoes, setSecoes] = useState(obsSecoesCache);
+  const [secao, setSecao]   = useState("");
+  const [sug, setSug]       = useState("");
+  const [data, setData]     = useState(o.data || dISO(new Date()));
+  const [texto, setTexto]   = useState(o.texto || "");
+  const [regiao, setRegiao] = useState("");
+  const [migrado, setMigrado] = useState(null);
+  const [cardId, setCardId] = useState(null);
+  const [busy, setBusy]     = useState(false);
+  const [erro, setErro]     = useState("");
+
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      const [se, ct, ex] = await Promise.all([
+        obsSecoesCache ? Promise.resolve({ data: obsSecoesCache, error: null })
+          : sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem"),
+        sb.from("anamnese_entradas").select("id", { count: "exact", head: true })
+          .eq("aluno_id", aluno.id),
+        o.exercicio_id
+          ? sb.from("exercicios").select("cardapio_id").eq("id", o.exercicio_id).maybeSingle()
+          : Promise.resolve({ data: null, error: null })
+      ]);
+      if (!vivo) return;
+      if (se.error) { setErro("seções: " + se.error.message); setSecoes([]); }
+      else {
+        obsSecoesCache = se.data || [];
+        setSecoes(obsSecoesCache);
+        const s = sugerirSecao(o, obsSecoesCache.map(x => x.id));
+        setSug(s.secao); setSecao(s.secao); setRegiao(s.regiao);
+      }
+      if (ct.error) setErro(e => e || "anamnese: " + ct.error.message);
+      setMigrado(ct.error ? null : (ct.count || 0) > 0);
+      if (!ex.error && ex.data) setCardId(ex.data.cardapio_id ?? null);
+    })();
+    return () => { vivo = false; };
+  }, [aluno.id, o.key]);
+
+  const S = (secoes || []).find(x => x.id === secao) || null;
+
+  function copiar() {
+    const linha = "- " + (secao || "Obs Gerais") + ":\n" + (data ? dBR(data) + ": " : "") +
+      texto.trim() + (!geral && o.alvo ? " [" + o.alvo + "]" : "");
+    try { navigator.clipboard.writeText(linha); toast("Copiado no formato da planilha."); }
+    catch (e) { toast("Não consegui copiar: " + e.message, "erro"); }
+  }
+
+  async function inserir() {
+    if (!S || !texto.trim() || !migrado || busy) return;
+    setBusy(true); setErro("");
+    const ins = await sb.from("anamnese_entradas").insert({
+      aluno_id: aluno.id, secao_id: S.id, data: data || null,
+      data_texto: data ? dBR(data) : null, texto: texto.trim(),
+      cardapio_id: cardId || null, tipo_id: null,
+      regiao: S.usa_regiao ? (regiao.trim() || null) : null,
+      escala: null, origem: "manual"
+    }).select("id").single();
+    if (ins.error) { setBusy(false); setErro(ins.error.message); return; }
+    const ok = await onInserida(ins.data.id, S.nome);
+    if (!ok) {
+      /* revisão não salvou: desfaz a entrada para não ficar meio caminho */
+      await sb.from("anamnese_entradas").delete().eq("id", ins.data.id);
+      setBusy(false);
+      setErro("A revisão não foi salva, então a entrada foi desfeita. Nada mudou na anamnese.");
+    }
+  }
+
+  const primeiro = String(aluno.nome || "").split(" ")[0];
+  return (
+    <div className="ao-fx">
+      <div className="ao-fx-h">
+        <b>Inserir na anamnese</b>
+        <span className="ed-cnt">já veio preenchido · confere e ajusta antes de inserir</span>
+      </div>
+      {erro && <div className="err" style={{ marginBottom: 0 }}>{erro}</div>}
+      {migrado === false && (
+        <div className="ac-diag" style={{ marginBottom: 0, fontFamily: "inherit" }}>
+          A anamnese de {primeiro} ainda está em texto, não migrada. Uma entrada solta
+          faria a ficha passar a copiar só as Entradas e esconder o texto antigo.
+          Usa "Só copiar", ou migra antes em Alunos → Migrar anamneses.
+        </div>
+      )}
+      <div>
+        <div className="ao-lab">Seção</div>
+        {secoes === null ? <div className="ed-cnt">carregando seções...</div> : (
+          <div className="chips">
+            {secoes.map(s => (
+              <button key={s.id} className={"chip mini" + (secao === s.id ? " on" : "")}
+                onClick={() => setSecao(s.id)}>
+                {s.nome}{sug === s.id && <span className="ao-sug">sugerida</span>}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="ao-g">
+        <div>
+          <div className="ao-lab">Data</div>
+          <SeletorData value={data} max={dISO(new Date())} onChange={setData}
+            className="sd-lg" style={{ width: "100%" }} title="Data da entrada" />
+        </div>
+        <div>
+          <div className="ao-lab">Exercício</div>
+          <div className="ao-vinc">
+            <b>{geral ? "—" : o.alvo}</b>
+            <span>{geral ? "observação geral do treino"
+              : (o.orfao || !cardId) ? "sem vínculo com o Cardápio" : "vai junto, vinculado ao Cardápio"}</span>
+          </div>
+        </div>
+        {S && S.usa_regiao && (
+          <div>
+            <label className="ao-lab" htmlFor={"ao-rg-" + o.key}>Região</label>
+            <input id={"ao-rg-" + o.key} value={regiao} placeholder="ex: joelho direito"
+              onChange={e => setRegiao(e.target.value)} />
+          </div>
+        )}
+      </div>
+      <div>
+        <label className="ao-lab" htmlFor={"ao-tx-" + o.key}>
+          Texto da entrada <i>editável · veio com as palavras do aluno</i>
+        </label>
+        <textarea id={"ao-tx-" + o.key} rows={3} value={texto}
+          onChange={e => setTexto(e.target.value)} />
+      </div>
+      <div className="ao-fx-b">
+        <span className="ed-cnt">Ao inserir, a observação fica marcada como revisada.</span>
+        <span style={{ flex: 1 }} />
+        <button className="ao-bt" onClick={onCancelar}>Cancelar</button>
+        <button className="ao-bt" onClick={copiar}>Só copiar</button>
+        <button className="ao-bt pri" onClick={inserir}
+          disabled={busy || !migrado || !S || !texto.trim()}>
+          {busy ? "Inserindo..." : "Inserir em " + (S ? S.nome : "...")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* painel que abre embaixo da linha do aluno */
+function PainelObsSemana({ aluno, st, obs, revs, desde, hoje, onMarcar, onInserida, onFicha }) {
+  const { toast } = usarUI();
+  const [ins, setIns] = useState(null);
+  const pend = obs.filter(o => !revs[String(o.relato_id)]);
+
+  function copiar(o) {
+    const linha = dBR(o.data) + ": " + o.texto +
+      (o.tipo === "relato_ex" && o.alvo ? " [" + o.alvo + "]" : "");
+    try { navigator.clipboard.writeText(linha); toast("Observação copiada."); }
+    catch (e) { toast("Não consegui copiar: " + e.message, "erro"); }
+  }
+
+  function alternar(o) {
+    const id = String(o.relato_id), r = revs[id];
+    if (r && r.entrada_id) {
+      toast("Já está na anamnese. Para desfazer, apaga a entrada na ficha (Entradas).", "aviso");
+      return;
+    }
+    onMarcar([id], !r);
+  }
+
+  return (
+    <div className={"ao-pn " + st}>
+      <div className="ao-pn-h">
+        <b>Observações da semana</b>
+        <span className="ed-cnt">
+          {dBR(desde).slice(0, 5)} a {dBR(hoje).slice(0, 5)} · {obs.length} no total
+        </span>
+        <span style={{ flex: 1 }} />
+        {pend.length > 0 && (
+          <button className="ao-bt"
+            onClick={() => onMarcar(pend.map(o => String(o.relato_id)), true)}>
+            Marcar todas como revisadas ({pend.length})
+          </button>
+        )}
+        <button className="ao-bt" onClick={onFicha}>Abrir ficha ↗</button>
+      </div>
+      {obs.map(o => {
+        const id = String(o.relato_id), r = revs[id], rev = !!r;
+        const geral = o.tipo === "relato_geral", naAnam = !!(r && r.entrada_id);
+        const aberto = ins === o.key;
+        return (
+          <div className={"ao-ob" + (rev ? " feita" : "")} key={o.key}>
+            <button className="ao-ckw" onClick={() => alternar(o)}
+              title={rev ? "Desmarcar revisada" : "Marcar como revisada"}
+              aria-label={rev ? "Desmarcar revisada" : "Marcar como revisada"}>
+              <span className={"ao-ck" + (rev ? " on" : "")}>{rev && <IconeCheck />}</span>
+            </button>
+            <div style={{ minWidth: 0 }}>
+              <div className="ao-l1">
+                <span className="ao-dt">{quandoObs(o.data, hoje)}</span>
+                <span className={"ao-ex" + (geral ? " geral" : "")}>
+                  {geral ? "Sobre o " + o.alvo : o.alvo}
+                </span>
+                <span className="ao-trn">{geral ? "observação final do treino" : o.sub}</span>
+                {o.orfao && <span className="ao-tg orf">exercício removido</span>}
+                {rev ? <span className="ao-tg rv">revisada</span>
+                     : <span className="ao-tg nv">para revisar</span>}
+                {naAnam && <span className="ao-tg an">na anamnese</span>}
+              </div>
+              <div className="ao-tx">{o.texto}</div>
+              {aberto && (
+                <FormObsAnamnese aluno={aluno} o={o} onCancelar={() => setIns(null)}
+                  onInserida={async (entradaId, secNome) => {
+                    const ok = await onInserida(id, entradaId);
+                    if (ok) {
+                      setIns(null);
+                      toast("Inserida em " + secNome + ". A observação ficou marcada como revisada.");
+                    }
+                    return ok;
+                  }} />
+              )}
+            </div>
+            <div className="ao-acs">
+              <button className={"ao-bt" + (aberto ? " on" : "")} disabled={naAnam}
+                title={naAnam ? "Já está na anamnese" : "Inserir na anamnese"}
+                onClick={() => setIns(aberto ? null : o.key)}>
+                <IconeAnamnese />{naAnam ? "Já na anamnese" : "Inserir na anamnese"}
+              </button>
+              <button className="ao-bt ico" title="Copiar" aria-label="Copiar observação"
+                onClick={() => copiar(o)}><IconeCopiar /></button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* Acompanhamento é um MODO da aba Alunos (chip lima "Iniciar Acompanhamento").
    Filtro Ativos/Inativos/Todos e a busca vêm da aba Alunos; aqui só a ordem.
    Padrão: ordem alfabética. */
@@ -13311,6 +13842,45 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
   const [aberto, setAberto] = useState(null);
   const [ordem, setOrdem]   = useState(ordemInicial || "nome");
   const [fasesAl, setFasesAl] = useState(null);   // aluno_id -> fases recentes
+  /* observações da semana: leitura vem do feed; o check (revisada) é daqui */
+  const { toast } = usarUI();
+  const { itens: fdItens } = usarFeed();
+  const [obsAb, setObsAb]   = useState(null);     // aluno com o painel aberto
+  const [soObs, setSoObs]   = useState(false);
+  const [revs, setRevs]     = useState({});       // relato_id -> {em, entrada_id}
+  const [revModo, setRevModo] = useState(null);   // "banco" | "local"
+  const [revErro, setRevErro] = useState("");
+  const obsSemana = useMemo(
+    () => montarObsSemana(fdItens, dISO(new Date()), Date.now()), [fdItens]);
+  const obsIdsKey = obsSemana.ids.join(",");
+  useEffect(() => {
+    if (!obsSemana.ids.length) return;
+    let vivo = true;
+    carregarRevisoes(obsSemana.ids).then(r => {
+      if (!vivo) return;
+      setRevs(r.mapa); setRevModo(r.modo); setRevErro(r.erro);
+    });
+    return () => { vivo = false; };
+  }, [obsIdsKey]);
+
+  /* otimista: pinta na hora, desfaz se o banco recusar */
+  async function marcarRev(ids, valor, entradaId) {
+    const antes = revs, agora = new Date().toISOString();
+    setRevs(m => {
+      const n = { ...m };
+      ids.forEach(id => {
+        if (valor) n[id] = { em: agora, entrada_id: entradaId || (m[id] && m[id].entrada_id) || null };
+        else delete n[id];
+      });
+      return n;
+    });
+    const r = await gravarRevisoes(revModo, ids, valor, entradaId);
+    if (!r.ok) { setRevs(antes); toast("A revisão não foi salva: " + r.erro, "erro"); return false; }
+    if (r.modo !== revModo) setRevModo(r.modo);
+    return true;
+  }
+  const pendObs = aid => (obsSemana.porAluno[aid] || [])
+    .filter(o => !revs[String(o.relato_id)]).length;
 
   const carregar = useCallback(async () => {
     setErro(""); setDiag("");
@@ -13425,9 +13995,16 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
     if (!st) return filtro === "ativo";
     return filtro === "ativo" ? st === "ativo" : st !== "ativo";
   };
-  const visiveis = (linhas || [])
+  const base = (linhas || [])
     .filter(passaFiltro)
-    .filter(l => !q.trim() || cbCasa(String(campo(l, "aluno", "nome") || ""), q))
+    .filter(l => !q.trim() || cbCasa(String(campo(l, "aluno", "nome") || ""), q));
+  let obsPendTot = 0, alObsPend = 0;
+  for (const l of base) {
+    const p = pendObs(campo(l, "aluno_id", "id"));
+    if (p) { obsPendTot += p; alObsPend++; }
+  }
+  const visiveis = base
+    .filter(l => !soObs || pendObs(campo(l, "aluno_id", "id")) > 0)
     .map(l => ({ l, r: risco(l) }))
     .sort((a, b) => {
       if (ordem === "risco") {
@@ -13496,6 +14073,9 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
               <span>observar</span></div>
             <div className="ac-num"><b style={{ color: "var(--accent)" }}>{cont.v}</b>
               <span>estável</span></div>
+            <div className="ac-num" style={{ borderLeft: "1px solid var(--line)", paddingLeft: 14 }}>
+              <b style={{ color: "var(--marca)" }}>{obsPendTot}</b>
+              <span>obs. p/ revisar</span></div>
           </div>
         </div>
       ) : (
@@ -13513,6 +14093,14 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
 
       {erro && <div className="err">{erro}</div>}
       {diag && <div className="ac-diag">{diag}</div>}
+      {revErro && <div className="err">{revErro}</div>}
+      {revModo === "local" && (
+        <div className="ac-diag" style={{ fontFamily: "inherit" }}>
+          O check de "revisada" está guardado só neste navegador, porque a tabela
+          relato_revisoes ainda não existe no banco. Quando ela for criada, o que você
+          marcou aqui sobe sozinho.
+        </div>
+      )}
 
       <div className="ap-bar">
         <span className="ed-cnt">ordenar:</span>
@@ -13522,6 +14110,10 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
           onClick={() => setOrdem("risco")}>Por atenção</button>
         <button className={"fbtn" + (ordem === "treinos" ? " on" : "")}
           onClick={() => setOrdem("treinos")}>Por treinos</button>
+        <button className={"fbtn ao-pend" + (soObs ? " on" : "")}
+          onClick={() => setSoObs(v => !v)}>
+          Só com observação para revisar · {alObsPend}
+        </button>
         <span style={{ flex: 1 }} />
         <span className="ed-cnt">{visiveis.length} aluno(s)</span>
       </div>
@@ -13535,7 +14127,8 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
             <span>Aluno</span>
             <span>treinou</span>
             <span>6 semanas</span>
-            <span>Semana</span>
+            <span>Fase atual</span>
+            <span>Observações</span>
             <span />
           </div>
           {familias.map(F => (
@@ -13562,8 +14155,14 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
             /* aluno que entrou depois: mostra a ordem dele, não a global */
             const minhaSem = (sem && entrou && entrou > 1)
               ? (sem - entrou + 1) : null;
+            /* fase do momento DESTE aluno, com quanto já passou */
+            const pf = fasesAl ? progressoFase(faseDoMomento(fasesAl[aid] || [], hojeAc), hojeAc) : null;
+            const obsAl = obsSemana.porAluno[aid] || [];
+            const pend = pendObs(aid);
+            const obsAberto = obsAb === aid && obsAl.length > 0;
             return (
-              <div className={"ac-lin " + r.n} key={aid || nome}
+              <React.Fragment key={aid || nome}>
+              <div className={"ac-lin " + r.n + (obsAberto ? " ao-aberta" : "")}
                 onClick={() => { if (aid) { setAlunoId(aid); setAberto({ id: aid, nome }); } }}>
                 {campo(l, "foto_url")
                   ? <img className="av" style={{ width: 38, height: 38 }}
@@ -13579,33 +14178,59 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
                       {novasPorAluno[aid]} nova(s)</span>
                   )}
                   {minhaSem && <i>entrou na semana {entrou} · {minhaSem}ª dele</i>}
-                  {fasesAl && aid && (() => {
-                    const fm = rotuloFaseMomento(faseDoMomento(fasesAl[aid] || [], hojeAc));
-                    return <span className={"ac-fase " + fm.cls} title={fm.titulo}>{fm.txt}</span>;
-                  })()}
                 </div>
-                <div className={"ac-num" + (dias === 0 ? " zero" : "")}
-                  title={"dias com treino concluído nos últimos 7 dias" +
-                    (aces !== null ? "\napp acessado " + aces + "×" : "")}>
-                  <b>{dias}</b>
-                  <span>{aces !== null && aces > 0
-                    ? "de " + aces + " acessos" : "treinos"}</span>
+                <div className="ao-trein">
+                  <div className={"ac-num" + (dias === 0 ? " zero" : "")}
+                    title={"dias com treino concluído nos últimos 7 dias" +
+                      (aces !== null ? "\napp acessado " + aces + "×" : "")}>
+                    <b>{dias}</b>
+                    <span>{aces !== null && aces > 0
+                      ? "de " + aces + " acessos" : "treinos"}</span>
+                  </div>
+                  {total > 0 && (
+                    <span className={"ao-tar" + (feitas === 0 ? " zero" : feitas >= total ? " ok" : "")}
+                      title={"tarefas da semana do ciclo" + (sem ? " (semana " + sem +
+                        (rot ? " · " + rot : "") + ")" : "") + ": " + feitas + " de " + total + " entregues"}>
+                      <IconeTarefas />{feitas}/{total}
+                    </span>
+                  )}
                 </div>
                 <Heatmap dias={cal[aid]} nome={nome} />
-                <div className="ac-tar">
-                  <div className="top">
-                    <b>{sem ? "Sem " + sem + (campo(l, "semanas") ? "/" + campo(l, "semanas") : "")
-                        : "—"}{rot ? " · " + rot : ""}</b>
-                    <span>{total ? feitas + "/" + total : "—"}</span>
+                {pf ? (
+                  <div className={"ao-fz " + pf.cls} title={pf.titulo}>
+                    <div className="t"><b>{pf.nome}</b>{pf.resto && <span>{pf.resto}</span>}</div>
+                    <div className="ac-bar">
+                      <i className={pf.barCls} style={{ width: pf.pct + "%" }} />
+                    </div>
+                    <div className="d">{pf.det}</div>
                   </div>
-                  <div className="ac-bar">
-                    <i className={feitas && feitas < total ? "parcial" : ""}
-                      style={{ width: total ? Math.round(feitas / total * 100) + "%" : "0%" }} />
-                  </div>
+                ) : (
+                  <div className="ao-fz nenhuma"><div className="t"><b>—</b></div></div>
+                )}
+                <div className="ao-obsc">
+                  {obsAl.length ? (
+                    <button className={"ao-obsbt" + (obsAberto ? " on" : pend ? " pend" : "")}
+                      aria-expanded={obsAberto}
+                      onClick={e => { e.stopPropagation(); setObsAb(obsAberto ? null : aid); }}>
+                      <IconeBalaoP /><b>{obsAl.length}</b>
+                      <span>{pend ? pend + " para revisar" : obsAl.length > 1 ? "revisadas" : "revisada"}</span>
+                      <span aria-hidden="true">{obsAberto ? "▴" : "▾"}</span>
+                    </button>
+                  ) : (
+                    <span className="ao-semobs">nenhuma esta semana</span>
+                  )}
                 </div>
                 <span className={"ac-badge " + r.n} title={r.txt}
                   onClick={e => e.stopPropagation()} />
               </div>
+              {obsAberto && (
+                <PainelObsSemana aluno={{ id: aid, nome }} st={r.n} obs={obsAl} revs={revs}
+                  desde={obsSemana.desde} hoje={hojeAc}
+                  onMarcar={(ids, valor) => marcarRev(ids, valor)}
+                  onInserida={(id, entradaId) => marcarRev([id], true, entradaId)}
+                  onFicha={() => { setAlunoId(aid); setAberto({ id: aid, nome, modo: "entradas" }); }} />
+              )}
+              </React.Fragment>
             );
                   })}
                 </div>
@@ -13643,8 +14268,14 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
         (red flag, ausência de treino, tarefas não entregues) — os sinais clínicos
         de irritabilidade e mecanismo entram na aba Dores.
         <br />
-        Embaixo do nome vai a <b>fase do momento</b>: laranja quando vence em até 7 dias
-        ou o aluno está entre fases, vermelho quando a última fase já venceu.
+        <b>Fase atual</b> é a fase do momento de cada aluno: a barra mostra quanto já
+        passou; laranja quando vence em até 7 dias ou o aluno está entre fases, vermelho
+        quando a última fase já venceu. O chip ao lado de "treinou" são as tarefas da
+        semana do ciclo.
+        <br />
+        <b>Observações</b> são as dos últimos 7 dias. O check marca como <b>revisada</b>
+        (diferente de "lida" no sino) e só existe aqui. "Inserir na anamnese" já vem
+        preenchido e também marca como revisada.
       </div>
     </div>
   );
