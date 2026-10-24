@@ -93,11 +93,10 @@
   .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
   .sub{color:var(--mut);font-size:13px;margin-bottom:20px}
   .row{display:flex;align-items:center;gap:16px;background:var(--card);
-    border:1px solid var(--line);border-left:3px solid var(--line);
+    border:1px solid var(--line);
     border-radius:10px;padding:14px 18px;margin-bottom:8px}
-  .row.w{border-left-color:var(--warn)}
-  .row.a{border-left-color:var(--alert)}
-  .row.ok{border-left-color:var(--accent)}
+  .row.w{--luz:var(--status-atencao)}
+  .row.a{--luz:var(--status-alerta)}
   .av{width:46px;height:46px;border-radius:50%;object-fit:cover;
     background:var(--line);flex-shrink:0}
   .ph{width:46px;height:46px;border-radius:50%;background:var(--line);
@@ -118,10 +117,9 @@
   .acoes button{width:auto;padding:10px 20px}
   .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
   .kpi{background:var(--card);border:1px solid var(--line);
-    border-left:3px solid var(--line);border-radius:10px;padding:16px 18px}
-  .kpi.g{border-left-color:var(--accent)}
-  .kpi.w{border-left-color:var(--warn)}
-  .kpi.r{border-left-color:var(--alert)}
+    border-radius:10px;padding:16px 18px}
+  .kpi.w{--luz:var(--status-atencao)}
+  .kpi.r{--luz:var(--status-alerta)}
   .kpi b{font-size:26px;font-weight:600;display:block;line-height:1.15}
   .kpi span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
   .barra{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:14px 0 6px}
@@ -220,10 +218,9 @@
   }
   .lg-lin{display:grid;grid-template-columns:minmax(0,1fr) 250px auto 150px;
     gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
-    border-left:3px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:7px}
-  .lg-lin.v{border-left-color:var(--accent)}
-  .lg-lin.a{border-left-color:var(--warn)}
-  .lg-lin.r{border-left-color:var(--alert)}
+    border-radius:10px;padding:11px 14px;margin-bottom:7px}
+  .lg-lin.a{--luz:var(--status-atencao)}
+  .lg-lin.r{--luz:var(--status-alerta)}
   .lg-nome{min-width:0;font-size:14px;font-weight:500}
   .lg-nome i{display:block;font-style:normal;font-size:10px;color:var(--mut);
     font-weight:400;margin-top:2px}
@@ -242,7 +239,7 @@
     .lg-mail{grid-column:1/-1}
     .lg-acao{grid-column:1/-1;text-align:left}
   }
-  .lg-box{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--accent);
+  .lg-box{background:var(--bg);border:1px solid var(--line);--luz:var(--accent);
     border-radius:10px;padding:13px 15px;margin-top:9px}
   .nv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
   @media (max-width:640px){ .nv-grid{grid-template-columns:1fr} }
@@ -277,8 +274,7 @@
     margin-bottom:3px}
   .cr-it .cr-tt{font-size:13px;line-height:1.55;white-space:pre-wrap;
     margin-bottom:5px}
-  .cr-it.nova{border-left:2px solid var(--marca);padding-left:9px}
-  .cr-it.ed{border-left:2px solid var(--accent);padding-left:9px}
+  .cr-it.ed .cr-ex{display:flex;align-items:center;gap:6px;color:var(--accent)}
   .en-tag.nv{background:#2b2f10;color:var(--marca);font-weight:600}
   .en-tag.al{background:#2e1a1a;color:#ff9c9c;font-weight:600}
   .cr-sh{font-size:10px;text-transform:uppercase;letter-spacing:.9px;
@@ -461,12 +457,12 @@
   .busca-alunos .cb-lim{right:6px}
   .toasts{position:fixed;right:18px;bottom:18px;z-index:200;display:flex;
     flex-direction:column;gap:8px;pointer-events:none;max-width:min(380px,90vw)}
-  .toast{background:var(--card);border:1px solid var(--line);border-left:3px solid;
+  .toast{background:var(--card);border:1px solid var(--line);
     border-radius:9px;padding:12px 15px;font-size:13px;line-height:1.5;
     box-shadow:0 10px 34px rgba(0,0,0,.6);animation:tin .22s ease-out}
-  .toast.ok{border-left-color:var(--accent);color:#c8f4f8}
-  .toast.erro{border-left-color:var(--alert);color:#f5b8b8}
-  .toast.aviso{border-left-color:var(--warn);color:#f3d1a8}
+  .toast.ok{--luz:var(--status-ok);color:#c8f4f8}
+  .toast.erro{--luz:var(--status-alerta);color:#f5b8b8}
+  .toast.aviso{--luz:var(--status-atencao);color:#f3d1a8}
   @keyframes tin{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
   .conf{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:91;
     background:var(--card);border:1px solid var(--line);border-radius:14px;
@@ -687,7 +683,7 @@
     border:1px solid var(--line);border-radius:9px;padding:9px 11px}
   .ed-audio audio{flex:1;height:32px}
   .ed-cnt{font-size:10px;color:var(--mut)}
-  .cd-bl{background:var(--bg);border:1px solid var(--line);border-left:3px solid;
+  .cd-bl{background:var(--bg);border:1px solid var(--line);
     border-radius:9px;padding:10px 11px;margin-bottom:8px}
   .cd-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .cd-n{font-family:ui-monospace,monospace;font-size:11px;color:var(--mut);
@@ -725,21 +721,20 @@
   .rel-mais{margin-left:24px;margin-top:4px;font-size:10px;color:#3d4d50}
   /* ============ ACOMPANHAMENTO ============ */
   .ac-ciclo{display:flex;gap:14px;align-items:center;flex-wrap:wrap;
-    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+    background:var(--card);border:1px solid var(--line);--luz:var(--accent);
     border-radius:11px;padding:13px 16px;margin-bottom:16px}
   .ac-ciclo .sem{font-size:20px;font-weight:700;color:var(--accent);line-height:1}
   .ac-ciclo .rot{font-size:13px;font-weight:600}
   .ac-ciclo .det{font-size:11px;color:var(--mut);margin-top:2px}
-  .ac-ciclo.vazio{border-left-color:var(--warn)}
+  .ac-ciclo.vazio{--luz:var(--status-atencao)}
   .ac-ciclo.vazio .sem{color:var(--warn)}
   .ac-lin{display:grid;grid-template-columns:auto minmax(0,1fr) 140px 70px 220px 158px auto;
     gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);
-    border-left:3px solid var(--line);border-radius:11px;padding:13px 17px;
+    border-radius:11px;padding:13px 17px;
     margin-bottom:9px;cursor:pointer}
   .ac-lin:hover{border-color:var(--accent)}
-  .ac-lin.r{border-left-color:var(--alert)}
-  .ac-lin.a{border-left-color:var(--warn)}
-  .ac-lin.v{border-left-color:var(--accent)}
+  .ac-lin.r{--luz:var(--status-alerta)}
+  .ac-lin.a{--luz:var(--status-atencao)}
   .ac-nome{min-width:0;font-size:15px;font-weight:500;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ac-nome i{font-style:normal;font-size:11px;color:var(--mut);display:block;
@@ -801,11 +796,8 @@
   .fbtn.ao-pend{border-color:#4d5a10;color:var(--marca)}
   .fbtn.ao-pend.on{background:var(--marca);border-color:var(--marca);color:#0b0f10}
   .ao-pn{background:#0f1719;border:1px solid var(--line);border-top:none;
-    border-left:3px solid var(--line);border-radius:0 0 11px 11px;
+    border-radius:0 0 11px 11px;
     padding:4px 18px 10px 72px;margin-bottom:12px}
-  .ao-pn.r{border-left-color:var(--alert)}
-  .ao-pn.a{border-left-color:var(--warn)}
-  .ao-pn.v{border-left-color:var(--accent)}
   .ao-pn-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0 8px}
   .ao-pn-h b{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--marca)}
   .ao-ob{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;
@@ -1257,8 +1249,8 @@
   .sn-hd span{font-size:11px;color:var(--mut)}
   .sn-lista{max-height:min(62vh,470px);overflow-y:auto}
   .sn-it{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
-    background:transparent;border:none;border-left:3px solid transparent;
-    border-bottom:1px solid #182224;border-radius:0;padding:10px 13px 10px 11px;
+    background:transparent;border:none;
+    border-bottom:1px solid #182224;border-radius:0;padding:10px 13px 10px 14px;
     color:var(--txt);font-weight:400;font-size:12.5px}
   .sn-it:hover{background:#0f1a1c;filter:none}
   .sn-it.nv{background:#12180a}
@@ -1278,14 +1270,14 @@
     color:var(--marca);font-weight:600}
   .fd-n{font-style:normal;opacity:.6;margin-left:2px}
   .fd-lista.tudo{max-height:560px;overflow-y:auto}
-  .fd-it{display:flex;gap:13px;align-items:flex-start;padding:11px 10px 11px 9px;
-    border-left:3px solid transparent;border-top:1px solid #182224;cursor:pointer;
+  .fd-it{display:flex;gap:13px;align-items:flex-start;padding:11px 10px 11px 12px;
+    border-top:1px solid #182224;cursor:pointer;
     border-radius:0 8px 8px 0;transition:background .15s}
   .fd-lista .fd-it:first-child{border-top-color:transparent}
   .fd-it:hover{background:#0f1a1c}
   .fd-it.ab{background:#0d1719}
   .fd-it.pisca{animation:fdpisca 1.2s ease-in-out 2}
-  @keyframes fdpisca{50%{background:#1d2205}}
+  @keyframes fdpisca{50%{background-color:#1d2205}}
   .fd-tx{flex:1;min-width:0}
   .fd-nm{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
   .fd-nm b{font-size:14.5px;font-weight:600}
@@ -1627,15 +1619,15 @@
     margin-bottom:24px}
   .in-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;
     text-align:left;background:var(--card);border:1px solid var(--line);
-    border-left:3px solid var(--line);border-radius:11px;padding:13px 15px 12px;
+    border-radius:11px;padding:13px 15px 12px;
     color:var(--txt);font-weight:400;cursor:pointer}
   .in-card:hover{border-color:var(--accent);filter:none}
   .in-card b{font-size:24px;font-weight:700;line-height:1.1}
   .in-card span{font-size:12.5px;color:var(--txt);line-height:1.35}
   .in-card em{font-style:normal;font-size:10.5px;color:var(--mut);line-height:1.4}
-  .in-card.on{border-left-color:var(--marca)}
+  .in-card.on{--luz:var(--marca)}
   .in-card.on b{color:var(--marca)}
-  .in-card.dor.on{border-left-color:#e0803c}
+  .in-card.dor.on{--luz:#e0803c}
   .in-card.dor.on b{color:#e0a06c}
   .in-card.zero b{color:#3d4d50}
   .in-card.zero span{color:var(--mut)}
@@ -1648,7 +1640,8 @@
   .pgcard{flex:1;padding:16px 12px;border-radius:14px;background:var(--surface);
     border:1px solid var(--line);text-align:center;display:flex;flex-direction:column;
     align-items:center;justify-content:center;min-width:0}
-  .pgcard.destaque{border-color:var(--cyan);background:rgba(0,201,204,.07)}
+  .pgcard.destaque{border-color:var(--cyan);background-color:var(--bg);
+    background-image:linear-gradient(rgba(0,201,204,.07),rgba(0,201,204,.07))}
   .pgcard.clicavel{cursor:pointer;-webkit-tap-highlight-color:transparent}
   .pgcard.clicavel:active{background:var(--surface-2)}
   .pgnum{font-size:30px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-.02em}
@@ -1776,20 +1769,17 @@
   .tw-pl.s{background:#0e2226;color:var(--accent)}
   .tw-pl.vz{color:#4f6467}
   .tw-pls .mt-tag{font-size:9.5px;padding:3px 7px}
-  .tw-det{display:block;padding:7px 9px;background:#0b1416;border-left:2px solid #1f3a3d;
-    border-radius:0 5px 5px 0;font-size:11px;color:#a8c4c7;line-height:1.65;
-    font-family:ui-monospace,monospace}
+  .tw-det{display:flex;gap:7px;align-items:flex-start;font-size:11px;color:#a8c4c7;
+    line-height:1.65;font-family:ui-monospace,monospace}
   .tw-det .tit{display:block;color:#8fb8ff;font-weight:600;margin-bottom:2px;font-family:inherit}
   .tw-det.c .tit{color:#dbff00}
   .tw-det .ln{display:block}
-  .tw-ob{display:block;font-size:12px;color:#a3b6b9;line-height:1.45;border-left:2px solid #26363a;
-    padding-left:8px;white-space:pre-wrap;overflow-wrap:anywhere}
-  .tw-rel{display:block;padding:6px 9px;background:#0d1a1c;border-left:2px solid var(--accent);
-    border-radius:0 5px 5px 0;font-size:11px;line-height:1.5}
+  .tw-ob{display:flex;gap:7px;align-items:flex-start;font-size:12px;color:#a3b6b9;
+    line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+  .tw-rel{display:flex;gap:7px;align-items:flex-start;font-size:11px;line-height:1.5}
   .tw-rel .quem{display:block;color:var(--accent);font-size:9px;text-transform:uppercase;
     letter-spacing:.5px;margin-bottom:2px}
   .tw-rel .txt{display:block;color:#c3d6d8;white-space:pre-wrap;overflow-wrap:anywhere}
-  .tw-rel.fix{border-left-color:var(--warn);background:#161208}
   .tw-rel.fix .quem{color:var(--warn)}
   .tw-rel-mais{display:block;font-size:10px;color:#3d4d50}
   .tw-lp{color:#3d4d50;padding-top:1px;flex-shrink:0}
@@ -1907,6 +1897,58 @@
     .tw-ns input{flex:1;width:auto}
     .tw-abas>button[role=tab]{max-width:none}
   }
+  /* ===== LOTE_TEXTURA_LUZ ===== (Dashboard, 24/10/2026)
+     Mesma linguagem do App (lote de 16/10): textura Dunas no fundo e a cor do
+     card vira luz difusa no canto superior esquerdo. Diferenças do Dashboard:
+     1B cards de STATUS: só atenção/alerta acendem, com força maior; "ok" fica liso
+        (destaque visual funciona quando o alvo é único entre vizinhos iguais).
+     2A trilhos de bi-set/tri-set e de formulário em edição continuam: eles AGRUPAM.
+     3D citações viram ícone + texto.  4C cardio: perfil do treino no lugar do traço.
+     Tokens semânticos (--status-*, --papel-*, --int-*): base pro multitenant —
+     um tenant troca a paleta aqui sem mexer nas regras. */
+  :root{
+    --tx-relevo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='540' viewBox='0 0 540 540'%3E%3Cg fill='none' stroke='%23d4f1f3' stroke-linecap='round'%3E%3Cpath stroke-opacity='0.0281' stroke-width='.8' d='M0 -59.2l9 -1.9 9 -.7 9 .4 9 1.4 9 2.3 9 2.9 9 3.2 9 3.3 9 3 9 2.6 9 1.9 9 1.2 9 .5 9 -.3 9 -.9 9 -1.5 9 -1.9 9 -2 9 -2 9 -1.6 9 -.9 9 0 9 1.2 9 2.3 9 3.3 9 4.1 9 4.4 9 4.3 9 4 9 3.5 9 3.1 9 2.6 9 2.2 9 2.1 9 2.1 9 2.1 9 2.3 9 2.6 9 2.9 9 3.3 9 3.6 9 3.7 9 3.6 9 3.2 9 2.5 9 1.4 9 .1 9 -1.5 9 -3.2 9 -4.9 9 -6.6 9 -7.9 9 -8.8 9 -9.2 9 -8.9 9 -8.1 9 -7 9 -5.8 9 -4.4 9 -3.2M0 -6.9l9 -2.8 9 -1.4 9 .1 9 1.1 9 2 9 2.4 9 2.7 9 2.6 9 2.4 9 2 9 1.6 9 1.3 9 .9 9 .7 9 .5 9 .5 9 .6 9 .7 9 1.2 9 1.5 9 2.1 9 2.6 9 2.9 9 3 9 2.9 9 2.3 9 1.7 9 1.1 9 .5 9 .2 9 .1 9 0 9 .3 9 .6 9 1 9 1.7 9 2.3 9 2.9 9 3.7 9 4.1 9 4.5 9 4.5 9 4.3 9 3.7 9 2.8 9 1.7 9 .5 9 -.8 9 -2.1 9 -3.4 9 -4.9 9 -6.3 9 -7.5 9 -8.6 9 -9.2 9 -9.2 9 -8.6 9 -7.5 9 -6 9 -4.5M0 22.6l9 -3.6 9 -2 9 -.6 9 .4 9 1.2 9 1.7 9 1.8 9 1.9 9 1.7 9 1.6 9 1.3 9 1.2 9 1.1 9 1.2 9 1.2 9 1.4 9 1.8 9 2.2 9 2.8 9 3.3 9 3.8 9 4 9 3.9 9 3.4 9 2.7 9 1.8 9 .7 9 -.2 9 -.8 9 -1.2 9 -1.2 9 -1.1 9 -.7 9 -.1 9 .6 9 1.3 9 2.2 9 3.1 9 3.7 9 4.3 9 4.5 9 4.4 9 4.1 9 3.4 9 2.5 9 1.5 9 .5 9 -.6 9 -1.7 9 -2.8 9 -4 9 -5.1 9 -6.2 9 -7.3 9 -8.2 9 -8.6 9 -8.5 9 -7.9 9 -6.6 9 -5.2M0 54.7l9 -4.4 9 -3 9 -1.8 9 -.7 9 -0 9 .5 9 .7 9 .9 9 .9 9 1 9 1 9 1.1 9 1.2 9 1.5 9 1.9 9 2.3 9 2.9 9 3.6 9 4.2 9 4.8 9 5.1 9 5 9 4.7 9 3.8 9 2.7 9 1.4 9 .3 9 -.7 9 -1.5 9 -2 9 -2.2 9 -1.9 9 -1.4 9 -.7 9 .1 9 1.1 9 2.1 9 2.9 9 3.7 9 4 9 4.3 9 4 9 3.5 9 2.8 9 2 9 1.2 9 .3 9 -.6 9 -1.3 9 -2.3 9 -3.1 9 -3.9 9 -4.8 9 -5.8 9 -6.5 9 -7.3 9 -7.6 9 -7.4 9 -6.9 9 -5.7M0 89.4l9 -5.2 9 -4.3 9 -3.2 9 -2.4 9 -1.6 9 -1.1 9 -.6 9 -.3 9 0 9 .3 9 .6 9 .9 9 1.3 9 1.9 9 2.4 9 3.2 9 3.9 9 4.7 9 5.4 9 5.8 9 6 9 5.7 9 5 9 3.9 9 2.8 9 1.6 9 .4 9 -.7 9 -1.6 9 -2.1 9 -2.3 9 -2.2 9 -1.8 9 -1.1 9 -.2 9 .9 9 1.8 9 2.6 9 3.3 9 3.5 9 3.5 9 3.2 9 2.7 9 2 9 1.4 9 .6 9 0 9 -.6 9 -1.1 9 -1.8 9 -2.2 9 -2.9 9 -3.4 9 -4.1 9 -4.7 9 -5.3 9 -6 9 -6.3 9 -6.3 9 -5.9M0 160.6l9 -5.5 9 -6 9 -6.2 9 -6 9 -5.4 9 -4.7 9 -3.9 9 -3 9 -2.2 9 -1.3 9 -.4 9 .4 9 1.4 9 2.4 9 3.4 9 4.4 9 5.4 9 6.2 9 6.7 9 6.8 9 6.5 9 5.9 9 5 9 4.1 9 3 9 2.2 9 1.3 9 .5 9 0 9 -.4 9 -.7 9 -.8 9 -.6 9 -.3 9 .2 9 .6 9 1 9 1.3 9 1.3 9 1.1 9 .8 9 .5 9 .1 9 -.2 9 -.5 9 -.6 9 -.8 9 -.9 9 -1 9 -.9 9 -.9 9 -.9 9 -1 9 -1.1 9 -1.2 9 -1.7 9 -2.1 9 -2.9 9 -3.7 9 -4.7M0 193.7l9 -4.9 9 -6 9 -6.8 9 -7 9 -7 9 -6.3 9 -5.5 9 -4.4 9 -3.3 9 -2.2 9 -1 9 .1 9 1.3 9 2.6 9 3.7 9 4.8 9 5.9 9 6.5 9 6.8 9 6.8 9 6.3 9 5.6 9 4.8 9 4 9 3.2 9 2.5 9 1.9 9 1.5 9 1.1 9 .9 9 .9 9 .8 9 .9 9 1 9 1 9 .9 9 .7 9 .3 9 -.2 9 -.6 9 -1.1 9 -1.3 9 -1.4 9 -1.6 9 -1.5 9 -1.5 9 -1.3 9 -1.1 9 -.9 9 -.7 9 -.4 9 -.2 9 -0 9 .1 9 0 9 -.2 9 -.8 9 -1.5 9 -2.5 9 -3.7M0 224.1l9 -4.2 9 -5.5 9 -6.6 9 -7.4 9 -7.7 9 -7.4 9 -6.7 9 -5.7 9 -4.4 9 -3.1 9 -1.7 9 -.2 9 1.2 9 2.6 9 3.9 9 5.1 9 6 9 6.5 9 6.6 9 6.4 9 5.9 9 5.3 9 4.5 9 3.9 9 3.3 9 2.9 9 2.6 9 2.4 9 2.3 9 2.4 9 2.5 9 2.6 9 2.6 9 2.5 9 2.1 9 1.4 9 .5 9 -.6 9 -1.5 9 -2.3 9 -2.8 9 -3.1 9 -3.1 9 -3 9 -2.7 9 -2.3 9 -1.9 9 -1.4 9 -1 9 -.5 9 -0 9 .4 9 .7 9 1 9 .9 9 .8 9 .1 9 -.6 9 -1.6 9 -2.9M0 252l9 -3.5 9 -4.8 9 -6 9 -7 9 -7.6 9 -7.8 9 -7.4 9 -6.6 9 -5.3 9 -3.9 9 -2.3 9 -.6 9 1 9 2.5 9 3.9 9 5.1 9 5.7 9 6.2 9 6.1 9 5.8 9 5.3 9 4.8 9 4.2 9 3.8 9 3.4 9 3.3 9 3.2 9 3.3 9 3.5 9 3.8 9 4 9 4.2 9 4.3 9 3.8 9 3.1 9 1.9 9 .5 9 -.9 9 -2.4 9 -3.4 9 -4.3 9 -4.6 9 -4.6 9 -4.3 9 -3.9 9 -3.2 9 -2.6 9 -1.8 9 -1.2 9 -.4 9 .2 9 .9 9 1.2 9 1.5 9 1.5 9 1.2 9 .7 9 -.1 9 -1.1 9 -2.3M0 301.9l9 -2.5 9 -3.3 9 -4.2 9 -5 9 -5.8 9 -6.3 9 -6.6 9 -6.4 9 -5.7 9 -4.6 9 -3.1 9 -1.4 9 .2 9 1.8 9 3 9 3.8 9 4.2 9 4.4 9 4.2 9 4 9 3.8 9 3.5 9 3.4 9 3.5 9 3.6 9 4 9 4.4 9 4.9 9 5.5 9 6.1 9 6.4 9 6.4 9 6.1 9 5.3 9 4 9 2.6 9 1.1 9 -.7 9 -2.2 9 -3.7 9 -4.9 9 -5.8 9 -6.2 9 -6.2 9 -5.8 9 -5 9 -3.9 9 -2.9 9 -1.8 9 -.8 9 .1 9 .9 9 1.3 9 1.5 9 1.5 9 1.1 9 .6 9 0 9 -.8 9 -1.6M0 325l9 -2.1 9 -2.7 9 -3.3 9 -3.9 9 -4.4 9 -4.9 9 -5.1 9 -5.2 9 -4.8 9 -4 9 -3 9 -1.6 9 -.3 9 .9 9 1.9 9 2.6 9 2.8 9 3 9 2.9 9 2.8 9 2.8 9 2.9 9 3 9 3.3 9 3.7 9 4.3 9 4.9 9 5.6 9 6.3 9 6.8 9 7.1 9 7 9 6.3 9 5.4 9 4.2 9 2.8 9 1.3 9 -.2 9 -1.7 9 -3 9 -4.2 9 -5.3 9 -6 9 -6.3 9 -6.1 9 -5.6 9 -4.6 9 -3.5 9 -2.3 9 -1.3 9 -.3 9 .4 9 .8 9 .9 9 .9 9 .6 9 .2 9 -.3 9 -.9 9 -1.5M0 347.2l9 -1.8 9 -2.2 9 -2.4 9 -2.8 9 -3.1 9 -3.2 9 -3.4 9 -3.4 9 -3.2 9 -2.8 9 -2.3 9 -1.5 9 -.8 9 -0 9 .5 9 .9 9 1.1 9 1.3 9 1.4 9 1.6 9 1.8 9 2.1 9 2.6 9 3.1 9 3.8 9 4.5 9 5.4 9 6.2 9 6.9 9 7.3 9 7.4 9 7.1 9 6.3 9 5.3 9 4.1 9 2.9 9 1.5 9 .3 9 -1 9 -2 9 -3.2 9 -4.2 9 -5 9 -5.6 9 -5.8 9 -5.6 9 -5 9 -4.1 9 -3 9 -2.1 9 -1.2 9 -.5 9 -.2 9 0 9 0 9 -.2 9 -.4 9 -.8 9 -1.1 9 -1.5M0 369l9 -1.6 9 -1.7 9 -1.7 9 -1.8 9 -1.7 9 -1.6 9 -1.6 9 -1.5 9 -1.4 9 -1.2 9 -1.1 9 -1 9 -1 9 -1 9 -.9 9 -.8 9 -.7 9 -.4 9 -.2 9 .3 9 .8 9 1.4 9 2.1 9 2.9 9 3.8 9 4.8 9 5.8 9 6.6 9 7.2 9 7.6 9 7.4 9 6.9 9 6 9 5 9 4 9 2.7 9 1.8 9 .7 9 -.1 9 -1.1 9 -1.9 9 -2.8 9 -3.5 9 -4.2 9 -4.7 9 -4.9 9 -4.8 9 -4.5 9 -3.8 9 -3.2 9 -2.5 9 -1.9 9 -1.6 9 -1.3 9 -1.3 9 -1.2 9 -1.2 9 -1.4 9 -1.5 9 -1.5M0 412.3l9 -1.5 9 -1 9 -.5 9 0 9 .6 9 1 9 1.3 9 1.7 9 1.7 9 1.4 9 1 9 .3 9 -.7 9 -1.5 9 -2.2 9 -2.9 9 -3.1 9 -3 9 -2.6 9 -1.9 9 -1.1 9 .1 9 1.2 9 2.6 9 3.8 9 5 9 6.1 9 6.7 9 7.1 9 7 9 6.5 9 5.8 9 4.9 9 4 9 3.3 9 2.7 9 2 9 1.6 9 1.3 9 .9 9 .6 9 .3 9 0 9 -.5 9 -1.1 9 -1.8 9 -2.9 9 -3.8 9 -4.7 9 -5.4 9 -5.6 9 -5.7 9 -5.3 9 -4.9 9 -4.4 9 -3.9 9 -3.3 9 -2.9 9 -2.4 9 -1.9M0 434.4l9 -1.5 9 -.8 9 -.1 9 .7 9 1.4 9 1.9 9 2.4 9 2.6 9 2.5 9 2.2 9 1.5 9 .8 9 -.3 9 -1.2 9 -2.1 9 -2.8 9 -3.3 9 -3.4 9 -3.1 9 -2.5 9 -1.5 9 -.4 9 1 9 2.3 9 3.7 9 5 9 5.9 9 6.4 9 6.4 9 6.2 9 5.6 9 4.9 9 4.1 9 3.5 9 2.9 9 2.5 9 2.1 9 2 9 1.9 9 1.8 9 1.7 9 1.7 9 1.6 9 1.1 9 .6 9 -.4 9 -1.6 9 -2.9 9 -4.5 9 -5.7 9 -6.7 9 -7.1 9 -7.2 9 -6.8 9 -6.1 9 -5.3 9 -4.6 9 -3.7 9 -3 9 -2.3M0 457.1l9 -1.7 9 -.6 9 .2 9 1.2 9 1.9 9 2.6 9 3 9 3.1 9 3 9 2.5 9 1.8 9 1.1 9 .1 9 -.8 9 -1.6 9 -2.3 9 -2.8 9 -3 9 -2.9 9 -2.4 9 -1.5 9 -.5 9 .9 9 2.3 9 3.5 9 4.7 9 5.3 9 5.6 9 5.4 9 5 9 4.5 9 3.8 9 3.2 9 2.8 9 2.5 9 2.3 9 2.3 9 2.3 9 2.4 9 2.6 9 2.8 9 2.8 9 2.8 9 2.4 9 1.7 9 .7 9 -.5 9 -2.2 9 -3.8 9 -5.5 9 -6.9 9 -8 9 -8.4 9 -8.3 9 -7.7 9 -6.8 9 -5.8 9 -4.7 9 -3.7 9 -2.7M0 480.8l9 -1.9 9 -.7 9 .4 9 1.4 9 2.3 9 2.9 9 3.2 9 3.3 9 3 9 2.6 9 1.9 9 1.2 9 .5 9 -.3 9 -.9 9 -1.5 9 -1.9 9 -2 9 -2 9 -1.6 9 -.9 9 0 9 1.2 9 2.3 9 3.3 9 4.1 9 4.4 9 4.3 9 4 9 3.5 9 3.1 9 2.6 9 2.2 9 2.1 9 2.1 9 2.1 9 2.3 9 2.6 9 2.9 9 3.3 9 3.6 9 3.7 9 3.6 9 3.2 9 2.5 9 1.4 9 .1 9 -1.5 9 -3.2 9 -4.9 9 -6.6 9 -7.9 9 -8.8 9 -9.2 9 -8.9 9 -8.1 9 -7 9 -5.8 9 -4.4 9 -3.2M0 533.1l9 -2.8 9 -1.4 9 .1 9 1.1 9 2 9 2.4 9 2.7 9 2.6 9 2.4 9 2 9 1.6 9 1.3 9 .9 9 .7 9 .5 9 .5 9 .6 9 .7 9 1.2 9 1.5 9 2.1 9 2.6 9 2.9 9 3 9 2.9 9 2.3 9 1.7 9 1.1 9 .5 9 .2 9 .1 9 0 9 .3 9 .6 9 1 9 1.7 9 2.3 9 2.9 9 3.7 9 4.1 9 4.5 9 4.5 9 4.3 9 3.7 9 2.8 9 1.7 9 .5 9 -.8 9 -2.1 9 -3.4 9 -4.9 9 -6.3 9 -7.5 9 -8.6 9 -9.2 9 -9.2 9 -8.6 9 -7.5 9 -6 9 -4.5'/%3E%3Cpath stroke-opacity='0.0468' stroke-width='1.2' d='M0 -34l9 -2.3 9 -.9 9 .4 9 1.4 9 2.3 9 2.9 9 3.1 9 3.1 9 2.8 9 2.4 9 1.8 9 1.3 9 .7 9 .2 9 -.2 9 -.5 9 -.7 9 -.7 9 -.6 9 -.1 9 .4 9 1.1 9 1.9 9 2.6 9 3 9 3.2 9 3.1 9 2.7 9 2.3 9 1.8 9 1.6 9 1.3 9 1.3 9 1.3 9 1.6 9 1.9 9 2.3 9 2.8 9 3.3 9 3.8 9 4.2 9 4.3 9 4.1 9 3.6 9 2.8 9 1.7 9 .4 9 -1 9 -2.6 9 -4.2 9 -5.8 9 -7.2 9 -8.5 9 -9.3 9 -9.4 9 -9 9 -8 9 -6.8 9 -5.2 9 -3.8M0 125.3l9 -5.6 9 -5.4 9 -4.9 9 -4.3 9 -3.5 9 -2.8 9 -2.2 9 -1.6 9 -1.1 9 -.5 9 .1 9 .7 9 1.4 9 2.1 9 3 9 3.9 9 4.7 9 5.6 9 6.2 9 6.5 9 6.5 9 5.9 9 5.1 9 4 9 2.9 9 1.8 9 .8 9 -.2 9 -1 9 -1.5 9 -1.8 9 -1.9 9 -1.5 9 -1 9 -.2 9 .6 9 1.5 9 2.1 9 2.4 9 2.6 9 2.4 9 2 9 1.5 9 1 9 .5 9 0 9 -.3 9 -.7 9 -1 9 -1.3 9 -1.6 9 -1.8 9 -2.1 9 -2.5 9 -2.9 9 -3.4 9 -4 9 -4.5 9 -5.2 9 -5.5M0 277.7l9 -2.9 9 -4.1 9 -5.1 9 -6.1 9 -6.9 9 -7.4 9 -7.4 9 -6.9 9 -5.8 9 -4.4 9 -2.8 9 -1.1 9 .7 9 2.3 9 3.6 9 4.6 9 5.2 9 5.5 9 5.3 9 5 9 4.6 9 4.1 9 3.9 9 3.6 9 3.6 9 3.6 9 3.8 9 4.1 9 4.6 9 5 9 5.4 9 5.6 9 5.3 9 4.8 9 3.7 9 2.4 9 .7 9 -.9 9 -2.5 9 -3.9 9 -5 9 -5.6 9 -5.7 9 -5.5 9 -4.9 9 -4.2 9 -3.2 9 -2.4 9 -1.4 9 -.5 9 .3 9 1 9 1.5 9 1.6 9 1.7 9 1.4 9 .8 9 0 9 -.8 9 -1.9M0 390.6l9 -1.5 9 -1.3 9 -1.1 9 -.8 9 -.5 9 -.2 9 .1 9 .2 9 .4 9 .3 9 0 9 -.3 9 -.9 9 -1.5 9 -1.9 9 -2.2 9 -2.2 9 -1.9 9 -1.6 9 -.9 9 -.2 9 .7 9 1.6 9 2.7 9 3.9 9 4.9 9 6 9 6.8 9 7.4 9 7.4 9 7.1 9 6.5 9 5.5 9 4.6 9 3.6 9 2.8 9 1.9 9 1.2 9 .5 9 -0 9 -.7 9 -1.2 9 -1.7 9 -2.4 9 -2.9 9 -3.6 9 -4 9 -4.4 9 -4.5 9 -4.4 9 -4.1 9 -3.8 9 -3.3 9 -3 9 -2.8 9 -2.4 9 -2.3 9 -2 9 -1.9 9 -1.7M0 506l9 -2.3 9 -.9 9 .4 9 1.4 9 2.3 9 2.9 9 3.1 9 3.1 9 2.8 9 2.4 9 1.8 9 1.3 9 .7 9 .2 9 -.2 9 -.5 9 -.7 9 -.7 9 -.6 9 -.1 9 .4 9 1.1 9 1.9 9 2.6 9 3 9 3.2 9 3.1 9 2.7 9 2.3 9 1.8 9 1.6 9 1.3 9 1.3 9 1.3 9 1.6 9 1.9 9 2.3 9 2.8 9 3.3 9 3.8 9 4.2 9 4.3 9 4.1 9 3.6 9 2.8 9 1.7 9 .4 9 -1 9 -2.6 9 -4.2 9 -5.8 9 -7.2 9 -8.5 9 -9.3 9 -9.4 9 -9 9 -8 9 -6.8 9 -5.2 9 -3.8'/%3E%3C/g%3E%3C/svg%3E");
+    --luz-forca:19%;--luz-forca-alerta:30%;
+    --status-ok:var(--accent);--status-atencao:var(--warn);--status-alerta:var(--alert);
+    --papel-aluno:var(--accent);--papel-treinador:var(--marca);--papel-correcao:var(--soft-orange);
+    --int-aquecimento:#54c8e0;--int-leve:#7fd858;--int-moderado:#f0d35e;
+    --int-forte:#f0855e;--int-maximo:#e05c5c}
+  /* textura só no fundo da página; rola junto (sem fixed = sem repintura).
+     html também ganha a cor, senão a área fora do body (rolagem elástica) fica branca */
+  html{background-color:var(--bg)}
+  html,body{background-image:var(--tx-relevo);background-size:540px 540px;background-repeat:repeat}
+
+  /* luz de PAPEL / destaque (19%) */
+  .ac-ciclo,.in-card.on,.lg-box,.toast.ok{
+    --luz-img:radial-gradient(120% 130% at 0% 0%,
+      color-mix(in srgb,var(--luz) var(--luz-forca),transparent),transparent 60%);
+    background-image:var(--luz-img)}
+  /* luz de ALERTA (30%) — 1B. Os estados :hover/.ab/.nv do feed e do sino usam
+     o atalho background:, que zeraria a imagem; por isso entram na lista. */
+  .row.w,.row.a,.kpi.w,.kpi.r,.lg-lin.a,.lg-lin.r,.ac-lin.a,.ac-lin.r,
+  .ac-ciclo.vazio,.toast.erro,.toast.aviso,
+  .fd-it.lz,.fd-it.lz:hover,.fd-it.lz.ab,.sn-it.lz,.sn-it.lz:hover,.sn-it.lz.nv{
+    --luz-img:radial-gradient(120% 130% at 0% 0%,
+      color-mix(in srgb,var(--luz) var(--luz-forca-alerta),transparent),transparent 60%);
+    background-image:var(--luz-img)}
+
+  /* 3D — citações: ícone + texto */
+  .tw-q{display:block;flex:1;min-width:0}
+  .tw-det > svg,.tw-ob > svg{margin-top:3px}
+  .tw-rel > svg{margin-top:1px}
+  .tw-det > svg{color:#8fb8ff}
+  .tw-det.c > svg{color:#dbff00}
+  .tw-ob > svg{color:#5b6f73}
+  .tw-rel > svg{color:var(--papel-aluno)}
+  .tw-rel.fix > svg{color:var(--warn)}
+
+  /* 4C — perfil do treino: altura = intensidade, largura = duração */
+  .cd-perfil{margin:0 0 10px}
+  .cd-pf-barras{display:flex;align-items:flex-end;gap:2px;height:48px;
+    padding-bottom:5px;border-bottom:1px solid var(--line)}
+  .cd-pf-barras span{flex:1 1 0;min-width:3px;border-radius:2px 2px 0 0}
+  .cd-pf-rod{display:flex;justify-content:space-between;font-size:10px;
+    color:var(--mut);margin-top:5px}
 </style>
 </head>
 <body>
@@ -7571,7 +7613,10 @@ function PainelCorrecoes({ aluno, onContagem }) {
         (edit && edit.id === c.id ? " ed" : "")}>
         <span className="dt">{dBR(String(c.criado_em).slice(0, 10))}</span>
         <span className="tx">
-          <b className="cr-ex">{c.exercicio_nome || "— sem exercício —"}</b>
+          <b className="cr-ex">
+            {edit && edit.id === c.id && <IconeLapis />}
+            {c.exercicio_nome || "— sem exercício —"}
+          </b>
           <div className="cr-tt">{c.texto}</div>
           <span className="en-tags">
             <span className={"en-tag " + (c.vista_em ? "es" : "nv")}>
@@ -9449,30 +9494,71 @@ const REPS_OPC  = ["4 a 6","6 a 8","6 a 10","8 a 10","8 a 12","10 a 12",
                    "10 a 15","12 a 15","15 a 20"];
 /* os 5 níveis válidos — o App mapeia cada um para uma zona de FC */
 const NIVEIS = [
-  { id: "aquecimento", nome: "Aquecimento", cor: "#8fa3a6" },
-  { id: "leve",        nome: "Leve",        cor: "#7fd858" },
-  { id: "moderado",    nome: "Moderado",    cor: "#f0d35e" },
-  { id: "forte",       nome: "Forte",       cor: "#f0855e" },
-  { id: "maximo",      nome: "Máximo",      cor: "#e05c5c" }
+  /* cores vêm dos tokens --int-* (LOTE_TEXTURA_LUZ); aquecimento azul = App */
+  { id: "aquecimento", nome: "Aquecimento", cor: "var(--int-aquecimento)" },
+  { id: "leve",        nome: "Leve",        cor: "var(--int-leve)" },
+  { id: "moderado",    nome: "Moderado",    cor: "var(--int-moderado)" },
+  { id: "forte",       nome: "Forte",       cor: "var(--int-forte)" },
+  { id: "maximo",      nome: "Máximo",      cor: "var(--int-maximo)" }
 ];
 const TEMPO_OPC = ["30s","45s","60s","90s","2min","3min","5min"];
 const corNivel = n => (NIVEIS.find(x => x.id === n) || NIVEIS[1]).cor;
 
+/* segundos de um tempo de bloco ("60s", "2min", "1,5min"); 0 se não der pra ler.
+   Mesma leitura que a duracaoCardio sempre usou (LOTE_TEXTURA_LUZ só a expôs). */
+function segCardio(t) {
+  const m = String(t || "").match(/^\s*([\d.,]+)\s*(min|m|'|s|"|seg)?/i);
+  if (!m) return 0;
+  const v = parseFloat(String(m[1]).replace(",", "."));
+  const u = (m[2] || "s").toLowerCase();
+  return (u === "min" || u === "m" || u === "'") ? v * 60 : v;
+}
+
 /* soma a duração total do cardio, para mostrar "16min" como o App faz */
 function duracaoCardio(c) {
   if (!c || !Array.isArray(c.blocos)) return null;
-  const seg = t => {
-    const m = String(t || "").match(/^\s*([\d.,]+)\s*(min|m|'|s|"|seg)?/i);
-    if (!m) return 0;
-    const v = parseFloat(String(m[1]).replace(",", "."));
-    const u = (m[2] || "s").toLowerCase();
-    return (u === "min" || u === "m" || u === "'") ? v * 60 : v;
-  };
+  const seg = segCardio;
   const um = c.blocos.reduce((a, b) => a + seg(b.tempo), 0);
   const tot = um * (c.repetir || 1);
   if (!tot) return null;
   return tot >= 60 ? Math.round(tot / 60) + "min" : Math.round(tot) + "s";
 }
+/* LOTE_TEXTURA_LUZ · 4C — perfil do treino de cardio.
+   Altura = intensidade (1 a 5), largura = duração do bloco. Substitui o traço
+   colorido dos blocos, que só repetia a cor do chip. Tempo que não dá pra ler
+   entra com 30s, só pra o bloco não sumir do desenho. Mostra UMA rodada;
+   o rodapé diz quantas vezes repete e a duração total. */
+const NIVEL_ALTURA = { aquecimento: 1, leve: 2, moderado: 3, forte: 4, maximo: 5 };
+function perfilCardio(c) {
+  if (!c || !Array.isArray(c.blocos) || !c.blocos.length) return null;
+  return c.blocos.map(b => {
+    const s = segCardio(b.tempo);
+    const n = NIVEIS.find(x => x.id === b.nivel) || NIVEIS[1];
+    return { s: s > 0 ? s : 30, lido: s > 0, alt: NIVEL_ALTURA[n.id],
+             cor: n.cor, nome: n.nome, tempo: b.tempo };
+  });
+}
+function PerfilCardio({ card }) {
+  const barras = perfilCardio(card);
+  if (!barras) return null;
+  const rep = Math.max(1, parseInt(card.repetir, 10) || 1);
+  return (
+    <div className="cd-perfil">
+      <div className="cd-pf-barras" role="img"
+        aria-label={"Perfil do treino: " + barras.map(b => b.nome).join(", ")}>
+        {barras.map((b, i) => (
+          <span key={i} title={b.nome + " · " + (b.lido ? b.tempo : "tempo não lido")}
+            style={{ flexGrow: b.s, height: (b.alt * 20) + "%", background: b.cor }} />
+        ))}
+      </div>
+      <div className="cd-pf-rod">
+        <span>{barras.length} bloco(s){rep > 1 ? " · ×" + rep : ""}</span>
+        <span>{duracaoCardio(card) || "—"}</span>
+      </div>
+    </div>
+  );
+}
+
 /* Descanso: MESMA lista e mesma ordem do App Idealis (print de 18/10/2026).
    Grava com "~" (formato que a Dashboard sempre gravou) e mostra com "–".
    A comparação ignora o separador: exercício salvo pelo App como "60–90",
@@ -10019,13 +10105,14 @@ function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo 
   const secCardioBlocos = (
     <div>
       {lab("Blocos", card.blocos.length + " bloco(s)")}
+      <PerfilCardio card={card} />
       {card.blocos.length === 0 && (
         <div className="ed-cnt" style={{ marginBottom: 8 }}>
           Nenhum bloco ainda. Ex: 60s Leve + 30s Forte, repetindo 8×.
         </div>
       )}
       {card.blocos.map((b, i) => (
-        <div className="cd-bl" key={i} style={{ borderLeftColor: corNivel(b.nivel) }}>
+        <div className="cd-bl" key={i}>
           <div className="cd-top">
             <span className="cd-n">{i + 1}</span>
             <div className="chips" style={{ flex: 1 }}>
@@ -11052,6 +11139,40 @@ function IconeElo() {
     </svg>
   );
 }
+/* LOTE_TEXTURA_LUZ · 3D — ícones das citações (traço fino, cor vem do CSS) */
+function IcoLinha({ children }) {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+      style={{ display: "block", flexShrink: 0 }}>{children}</svg>
+  );
+}
+function IconeMetodo() {
+  return <IcoLinha><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></IcoLinha>;
+}
+function IconeCardio() {
+  return <IcoLinha><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></IcoLinha>;
+}
+function IconeNota() {
+  return (
+    <IcoLinha>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+    </IcoLinha>
+  );
+}
+function IconeRelato() {
+  return <IcoLinha><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z" /></IcoLinha>;
+}
+function IconeFixado() {
+  return (
+    <IcoLinha>
+      <path d="M12 17v5" />
+      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+    </IcoLinha>
+  );
+}
+
 function IconeRelogio() {
   return (
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -11414,14 +11535,20 @@ function PainelMontagem() {
       <>
         {met && (
           <span className="tw-det">
-            <span className="tit">{(ex.metodo && ex.metodo.nome) || "Método"}</span>
-            {met.map((l, k) => <span key={k} className="ln">{l}</span>)}
+            <IconeMetodo />
+            <span className="tw-q">
+              <span className="tit">{(ex.metodo && ex.metodo.nome) || "Método"}</span>
+              {met.map((l, k) => <span key={k} className="ln">{l}</span>)}
+            </span>
           </span>
         )}
         {car && (
           <span className="tw-det c">
-            <span className="tit">{(ex.cardio && ex.cardio.nome) || "Cardio"}</span>
-            <span className="ln">{car.rep ? car.rep + " → " : ""}{car.blocos.join("  |  ")}</span>
+            <IconeCardio />
+            <span className="tw-q">
+              <span className="tit">{(ex.cardio && ex.cardio.nome) || "Cardio"}</span>
+              <span className="ln">{car.rep ? car.rep + " → " : ""}{car.blocos.join("  |  ")}</span>
+            </span>
           </span>
         )}
       </>
@@ -11439,11 +11566,14 @@ function PainelMontagem() {
       <>
         {mostrar.map(r => (
           <span className={"tw-rel" + (r.fixado ? " fix" : "")} key={r.id}>
-            <span className="quem">
-              {r.fixado ? "fixado · " : ""}
-              {dBR(String(r.data || r.created_at).slice(0, 10))} · aluno
+            {r.fixado ? <IconeFixado /> : <IconeRelato />}
+            <span className="tw-q">
+              <span className="quem">
+                {r.fixado ? "fixado · " : ""}
+                {dBR(String(r.data || r.created_at).slice(0, 10))} · aluno
+              </span>
+              <span className="txt">{r.texto}</span>
             </span>
-            <span className="txt">{r.texto}</span>
           </span>
         ))}
         {ocultos > 0 && <span className="tw-rel-mais">+{ocultos} relato(s) mais antigo(s)</span>}
@@ -11518,7 +11648,9 @@ function PainelMontagem() {
               {tg}
             </span>
             {detalhesEx(ex)}
-            {ex.observacao && <span className="tw-ob">{ex.observacao}</span>}
+            {ex.observacao && (
+              <span className="tw-ob"><IconeNota /><span className="tw-q">{ex.observacao}</span></span>
+            )}
             {relatosEx(ex)}
           </span>
           <span className="tw-lp" aria-hidden="true"><IconeLapis /></span>
@@ -12562,9 +12694,10 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
   const [a, b] = feedFrase(it);
   const ehObs = it.tipo === "relato_ex" || it.tipo === "relato_geral";
   return (
-    <div className={"fd-it" + (aberto ? " ab" : "") + (piscar ? " pisca" : "")}
+    <div className={"fd-it" + (aberto ? " ab" : "") + (piscar ? " pisca" : "") +
+        (it.cor ? " lz" : "")}
       data-key={it.key} onClick={onClick}
-      style={it.cor ? { borderLeftColor: it.cor } : undefined}>
+      style={it.cor ? { "--luz": it.cor } : undefined}>
       <FeedAvatar it={it} px={40} />
       <div className="fd-tx">
         <div className="fd-nm">
@@ -12655,8 +12788,9 @@ function SinoFeed() {
              : lista.map(it => {
                 const [a, b] = feedFrase(it);
                 return (
-                  <button key={it.key} className={"sn-it" + (it.reg > antes ? " nv" : "")}
-                    style={it.cor ? { borderLeftColor: it.cor } : undefined}
+                  <button key={it.key}
+                    className={"sn-it" + (it.reg > antes ? " nv" : "") + (it.cor ? " lz" : "")}
+                    style={it.cor ? { "--luz": it.cor } : undefined}
                     onClick={() => { setAberto(false); focar(it.key); }}>
                     <FeedAvatar it={it} px={30} />
                     <span className="sn-tx">
