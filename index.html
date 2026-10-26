@@ -679,6 +679,9 @@
     padding:10px 12px;font-size:12px;color:var(--mut);line-height:1.6;
     font-family:ui-monospace,monospace;margin-top:7px}
   .ed-met b{color:#8fb8ff;font-family:inherit;display:block;margin-bottom:3px}
+  .ed-tec{margin-top:7px;padding-top:6px;border-top:1px dashed var(--line);
+    font-family:inherit;color:#9fe8ef;font-size:11px;line-height:1.5}
+  .ed-tec .rs{color:var(--warn)}
   .ed-audio{display:flex;gap:8px;align-items:center;background:var(--bg);
     border:1px solid var(--line);border-radius:9px;padding:9px 11px}
   .ed-audio audio{flex:1;height:32px}
@@ -8516,6 +8519,131 @@ function usarCatalogoFases() {
   return d || CAT_VAZIO;
 }
 
+/* ---------- Métodos (tabela `metodos`) ----------
+   Duas origens na mesma tabela:
+   · biblioteca base (treinador_id vazio): os 40 métodos que antes só existiam
+     no código do App, carregados pelo idealis_metodos_base.sql. Nenhum app
+     apaga (regra metodos_base_nao_apaga no banco).
+   · seus (treinador_id preenchido): os salvos pelo App em "Meus métodos" ou
+     numa família. Um método seu com o mesmo nome (normAcc) de um da base
+     ESCONDE o da base, igual no App.
+   tecnica_id liga o método à técnica do catálogo (substitui
+   tecnicas.metodos_app, que fica só como leitura antiga).
+   Antes do SQL as colunas treinador_id/tecnica_id/ordem não existem: a busca
+   cai na leitura antiga, toda linha conta como sua e semBase fica true.
+   Cache único como o catFases: quem grava chama recarregarMetodos() ou
+   mudarMetodoLocal(), e todas as telas abertas recebem a versão nova. */
+const FAM_MEUS = "Meus métodos";
+/* mesma ordem do App (FAMILIAS_MET lá), com "Meus métodos" primeiro */
+const FAMILIAS_MET = [FAM_MEUS, "Pirâmide", "Cluster", "Drop", "Degrau",
+                      "Back-off", "Alternado", "Cadência", "Volume"];
+const catMet = { dados: null, prom: null, subs: new Set() };
+const MET_VAZIO = { mets: [], semBase: false, erro: "", carregando: true };
+
+function linhaMetodo(m, legado) {
+  return {
+    id: m.id, nome: m.nome || "", familia: m.familia || FAM_MEUS,
+    tipo: m.tipo || "porSerie", series: Array.isArray(m.series) ? m.series : [],
+    seu: legado ? true : m.treinador_id != null,
+    tecnica_id: legado ? null : (m.tecnica_id || null),
+    ordem: legado || m.ordem == null ? 100 : m.ordem
+  };
+}
+
+async function buscarMetodos() {
+  const r = await sb.from("metodos")
+    .select("id, nome, familia, tipo, series, treinador_id, tecnica_id, ordem");
+  if (!r.error)
+    return { mets: (r.data || []).map(m => linhaMetodo(m, false)),
+             semBase: false, erro: "", carregando: false };
+  /* SQL ainda não rodou: as colunas novas não existem */
+  const r2 = await sb.from("metodos").select("id, nome, familia, tipo, series");
+  if (r2.error) return { mets: [], semBase: true, erro: r2.error.message, carregando: false };
+  return { mets: (r2.data || []).map(m => linhaMetodo(m, true)),
+           semBase: true, erro: "", carregando: false };
+}
+
+function avisarMetodos(d) { catMet.dados = d; catMet.subs.forEach(f => f(d)); }
+
+function recarregarMetodos() {
+  if (catMet.prom) return catMet.prom;
+  catMet.prom = buscarMetodos()
+    .then(d => { catMet.prom = null; avisarMetodos(d); return d; })
+    .catch(e => {
+      catMet.prom = null;
+      const d = { ...(catMet.dados || MET_VAZIO), erro: String(e && e.message || e),
+                  carregando: false };
+      avisarMetodos(d);
+      return d;
+    });
+  return catMet.prom;
+}
+
+/* troca campos de um método só no cache (gravação otimista) */
+function mudarMetodoLocal(id, campos) {
+  if (!catMet.dados) return;
+  avisarMetodos({ ...catMet.dados,
+    mets: catMet.dados.mets.map(m => m.id === id ? { ...m, ...campos } : m) });
+}
+
+function usarMetodos() {
+  const [d, setD] = useState(catMet.dados);
+  useEffect(() => {
+    catMet.subs.add(setD);
+    if (catMet.dados) setD(catMet.dados);
+    else if (!catMet.prom) recarregarMetodos();
+    return () => { catMet.subs.delete(setD); };
+  }, []);
+  return d || MET_VAZIO;
+}
+
+/* ---- funções puras dos métodos (cobertas pelos testes) ---- */
+
+/* o que o seletor mostra: os seus + os da base que nenhum seu cobre pelo nome */
+function metodosVisiveis(mets) {
+  const lista = mets || [];
+  const nomesSeus = new Set(lista.filter(m => m.seu).map(m => normAcc(m.nome)));
+  return lista.filter(m => m.seu || !nomesSeus.has(normAcc(m.nome)));
+}
+
+/* família na ordem do App (desconhecidas no fim, em ordem alfabética);
+   dentro da família: os seus primeiro (por nome), depois a base na ordem do App */
+function ordenarMetodos(mets) {
+  const fi = f => { const i = FAMILIAS_MET.indexOf(f); return i < 0 ? FAMILIAS_MET.length : i; };
+  return (mets || []).slice().sort((a, b) => {
+    const fa = a.familia || FAM_MEUS, fb = b.familia || FAM_MEUS;
+    if (fi(fa) !== fi(fb)) return fi(fa) - fi(fb);
+    if (fa !== fb) return fa.localeCompare(fb, "pt-BR");
+    if (a.seu !== b.seu) return a.seu ? -1 : 1;
+    if (!a.seu && a.ordem !== b.ordem) return a.ordem - b.ordem;
+    return a.nome.localeCompare(b.nome, "pt-BR");
+  });
+}
+
+/* método de um exercício (exercicios.metodo só guarda nome/tipo/séries):
+   acha a linha pelo nome, a sua antes da base */
+function metodoPorNome(nome, mets) {
+  const k = normAcc(nome);
+  if (!k) return null;
+  const achados = (mets || []).filter(m => normAcc(m.nome) === k);
+  return achados.find(m => m.seu) || achados[0] || null;
+}
+
+function tecnicaDoMetodo(nome, mets, tecs) {
+  const m = metodoPorNome(nome, mets);
+  if (!m || !m.tecnica_id) return null;
+  return (tecs || []).find(t => t.id === m.tecnica_id) || null;
+}
+
+/* técnica -> métodos ligados. Com o SQL: pelo metodos.tecnica_id.
+   Sem ele: os nomes antigos de tecnicas.metodos_app (só leitura). */
+function metodosDaTecnica(tec, mets, semBase) {
+  if (!tec) return [];
+  if (semBase)
+    return (tec.metodos_app || []).map(n => ({ id: "app:" + n, nome: n, legado: true }));
+  return ordenarMetodos((mets || []).filter(m => m.tecnica_id === tec.id));
+}
+
 /* ---- funções puras (cobertas pelos testes) ---- */
 
 /* ids do template -> técnicas, na ordem gravada. Arquivada e id órfão
@@ -9059,8 +9187,20 @@ function CatalogoTecnicas({ foco, onAbrirTemplate }) {
   const [catF, setCatF]     = useState("");
   const [verArq, setVerArq] = useState(false);
   const focoFeito = React.useRef(0);
+  const met = usarMetodos();
+  const [ligando, setLigando] = useState("");
 
-  useEffect(() => { recarregarCatalogo(); }, []);
+  useEffect(() => { recarregarCatalogo(); recarregarMetodos(); }, []);
+
+  /* técnica -> métodos ligados (com o SQL: metodos.tecnica_id) */
+  const metsPorTec = useMemo(() => {
+    const m = new Map();
+    for (const t of cat.tecs) {
+      const l = metodosDaTecnica(t, met.mets, met.semBase);
+      if (l.length) m.set(t.id, l);
+    }
+    return m;
+  }, [cat.tecs, met.mets, met.semBase]);
 
   const tecSel = cat.tecs.find(t => t.id === selId) || null;
   const novo = selId === "__novo";
@@ -9149,6 +9289,34 @@ function CatalogoTecnicas({ foco, onAbrirTemplate }) {
     toast(novo ? "Técnica criada ✓" : "Técnica salva ✓");
   }
 
+  /* liga (tecId) ou desliga (null) um método. Grava na hora, fora do
+     "Salvar" da técnica: é a linha do método que muda, não a da técnica.
+     Um método tem uma técnica só — trocar de técnica pede confirmação. */
+  async function ligarMetodo(m, tecId) {
+    if (!m || ligando) return;
+    if (tecId && m.tecnica_id && m.tecnica_id !== tecId) {
+      const outra = cat.tecs.find(t => t.id === m.tecnica_id);
+      const ok = await confirmar({
+        titulo: 'Mudar "' + m.nome + '" de técnica?',
+        texto: 'Hoje ele está ligado a "' + (outra ? outra.nome : "outra técnica") +
+          '". Um método fica ligado a uma técnica só.',
+        ok: "Mudar" });
+      if (!ok) return;
+    }
+    const antes = m.tecnica_id || null;
+    setLigando(m.id);
+    mudarMetodoLocal(m.id, { tecnica_id: tecId });
+    /* .select(): sem permissão o banco não dá erro, só devolve 0 linhas */
+    const r = await sb.from("metodos").update({ tecnica_id: tecId }).eq("id", m.id).select("id");
+    setLigando("");
+    if (r.error || !r.data || !r.data.length) {
+      mudarMetodoLocal(m.id, { tecnica_id: antes });
+      toast(r.error ? r.error.message : "O banco não deixou alterar este método.", "erro");
+      return;
+    }
+    toast(tecId ? '"' + m.nome + '" ligado ✓' : '"' + m.nome + '" desligado');
+  }
+
   async function arquivar(ativo) {
     if (!tecSel) return;
     if (!ativo) {
@@ -9185,7 +9353,7 @@ function CatalogoTecnicas({ foco, onAbrirTemplate }) {
     (verArq || t.ativo !== false) &&
     (!catF || (t.categoria || "Outros") === catF) &&
     (!busca.trim() || cbCasa(t.nome + " " + (t.mecanica || "") + " " +
-      (t.metodos_app || []).join(" "), busca)));
+      (metsPorTec.get(t.id) || []).map(m => m.nome).join(" "), busca)));
   const blocos = [];
   for (const t of vis) {
     const k = t.categoria || "Outros";
@@ -9215,6 +9383,7 @@ function CatalogoTecnicas({ foco, onAbrirTemplate }) {
             <div className="bf-cat">{b.nome}<i>{b.itens.length}</i></div>
             {b.itens.map(t => {
               const n = (usoTpl.get(t.id) || []).length;
+              const lig = metsPorTec.get(t.id) || [];
               return (
                 <div key={t.id}
                   className={"bf-it" + (t.id === selId ? " on" : "") +
@@ -9224,8 +9393,8 @@ function CatalogoTecnicas({ foco, onAbrirTemplate }) {
                     .filter(Boolean).join("\n")}>
                   <b>{t.restricao && <span className="rs">⚠ </span>}{t.nome}</b>
                   <span>
-                    {(t.metodos_app || []).length > 0 &&
-                      <span title={"No App: " + t.metodos_app.join(", ")}>📱 </span>}
+                    {lig.length > 0 &&
+                      <span title={"Métodos: " + lig.map(m => m.nome).join(", ")}>📱 </span>}
                     {n ? n + " fase" + (n > 1 ? "s" : "") : ""}
                   </span>
                 </div>
@@ -9244,8 +9413,8 @@ function CatalogoTecnicas({ foco, onAbrirTemplate }) {
         {!form ? (
           <div className="mt-vazio">
             Escolhe uma técnica à esquerda, ou cria uma nova.
-            <br />⚠ = tem restrição · 📱 = já existe como método pronto no App ·
-            o número é em quantas fases da Biblioteca ela é sugerida.
+            <br />⚠ = tem restrição · 📱 = tem método pronto ligado (aparece no
+            seletor de método) · o número é em quantas fases da Biblioteca ela é sugerida.
           </div>
         ) : (
           <>
@@ -9286,22 +9455,60 @@ function CatalogoTecnicas({ foco, onAbrirTemplate }) {
 
             {!novo && tecSel && (
               <>
-                <div className="ed-lab">Métodos prontos no App</div>
-                {(tecSel.metodos_app || []).length ? (
-                  <div className="tqs">
-                    {tecSel.metodos_app.map(m => (
-                      <span key={m} className="tq" title="Método pronto do App">{m}</span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bf-info">
-                    Nenhum — no App esta técnica ainda não tem um método pronto
-                    {/^(bi|tri)-set|circuito/i.test(tecSel.nome)
-                      ? " (bi-set, tri-set e circuito são feitos pelo agrupamento de exercícios)."
-                      : /^hiit/i.test(tecSel.nome)
-                        ? " (HIIT é montado no editor de cardio)." : "."}
-                  </div>
-                )}
+                {(() => {
+                  const lig = metsPorTec.get(tecSel.id) || [];
+                  const nomeTec = id => { const t = cat.tecs.find(x => x.id === id);
+                                          return t ? t.nome : "outra técnica"; };
+                  const visiveis = new Set(metodosVisiveis(met.mets).map(m => m.id));
+                  const opcoesLigar = ordenarMetodos(metodosVisiveis(met.mets))
+                    .filter(m => m.tecnica_id !== tecSel.id)
+                    .map(m => ({ value: m.id, grupo: m.familia,
+                      label: m.nome + (m.tecnica_id ? " · hoje em " + nomeTec(m.tecnica_id) : "") }));
+                  return (
+                    <>
+                      <div className="ed-lab">Métodos prontos <i>{lig.length}</i></div>
+                      {lig.length ? (
+                        <div className="tqs">
+                          {lig.map(m => (
+                            <span key={m.id} className="tq"
+                              title={m.legado ? "Leitura antiga (tecnicas.metodos_app)"
+                                : (m.seu ? "Método seu · " : "Biblioteca base · ") + m.familia +
+                                  (!m.seu && !visiveis.has(m.id)
+                                    ? " · escondido no seletor por um método seu de mesmo nome" : "")}>
+                              {m.seu ? "★ " : ""}{m.nome}
+                              {!m.legado && (
+                                <button title="Desligar desta técnica" disabled={!!ligando}
+                                  onClick={e => { e.stopPropagation(); ligarMetodo(m, null); }}>×</button>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="bf-info">
+                          Nenhum método pronto ligado
+                          {/^(bi|tri)-set|circuito/i.test(tecSel.nome)
+                            ? " — bi-set, tri-set e circuito são feitos pelo agrupamento de exercícios."
+                            : /^hiit/i.test(tecSel.nome)
+                              ? " — HIIT é montado no editor de cardio." : "."}
+                        </div>
+                      )}
+                      {met.semBase ? (
+                        <div className="bf-info" style={{ marginTop: 6 }}>
+                          Para ligar métodos aqui, roda o <code>idealis_metodos_base.sql</code> no Supabase.
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: 7 }}>
+                          <Combobox opcoes={opcoesLigar} value=""
+                            onChange={v => ligarMetodo(met.mets.find(m => m.id === v), tecSel.id)}
+                            placeholder={ligando ? "Salvando..." : "+ Ligar um método..."} />
+                          <div className="ed-cnt" style={{ marginTop: 4 }}>
+                            ★ = método seu · grava na hora, sem precisar do Salvar
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 <div className="ed-lab">Sugerida nas fases <i>{usosSel.length}</i></div>
                 {usosSel.length ? (
@@ -9823,7 +10030,8 @@ function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo 
   const [obs, setObs]       = useState(ex ? ex.observacao || "" : "");
   const [filmar, setFilmar] = useState(ex ? !!ex.filmar : false);
   const [metodo, setMetodo] = useState(ex ? ex.metodo : null);
-  const [mets, setMets]     = useState([]);
+  const met = usarMetodos();
+  const catTec = usarCatalogoFases();
   const [verMet, setVerMet] = useState(false);
   const [erro, setErro]     = useState("");
   const [busy, setBusy]     = useState(false);
@@ -9871,11 +10079,11 @@ function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo 
     });
   }
 
-  useEffect(() => {
-    sb.from("metodos").select("id, nome, familia, tipo, series")
-      .order("familia").order("nome")
-      .then(({ data, error }) => { if (!error) setMets(data || []); });
-  }, []);
+  /* relê a cada abertura do editor: um método salvo no App agora há pouco
+     já aparece aqui (o cache mostra o que tinha enquanto isso) */
+  useEffect(() => { recarregarMetodos(); }, []);
+  const metsSeletor = useMemo(() => ordenarMetodos(metodosVisiveis(met.mets)), [met.mets]);
+  const tecMet = metodo ? tecnicaDoMetodo(metodo.nome, met.mets, catTec.tecs) : null;
 
   async function salvar() {
     if (!nome.trim()) { setErro("Preenche o nome do exercício."); return; }
@@ -10059,6 +10267,12 @@ function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo 
         <div className="ed-met">
           <b>{metodo.nome}</b>
           {(fmtMetodo(metodo) || []).map((l, i) => <div key={i}>{l}</div>)}
+          {tecMet && (
+            <div className="ed-tec" title={tecMet.mecanica || ""}>
+              💡 {tecMet.nome}
+              {tecMet.restricao && <span className="rs"> · ⚠ {tecMet.restricao}</span>}
+            </div>
+          )}
         </div>
       ) : (
         <button type="button" className="chip" style={{ width: "100%" }}
@@ -10068,20 +10282,33 @@ function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo 
       )}
       {verMet && !metodo && (
         <div style={{ marginTop: 8 }}>
-          {mets.length === 0
+          {met.carregando && !metsSeletor.length
+            ? <div className="ed-cnt">Carregando métodos...</div>
+            : metsSeletor.length === 0
             ? <div className="ed-cnt">
-                Nenhum método na tabela ainda. Os ~40 templates estão no código do
-                App — migra eles para a tabela <code>metodos</code> e eles aparecem aqui.
+                {met.erro ? "Não consegui ler os métodos: " + met.erro
+                  : <>Nenhum método no banco ainda. Roda o <code>idealis_metodos_base.sql</code>{" "}
+                    no Supabase e os 40 métodos do App aparecem aqui.</>}
               </div>
             : <Combobox
-                opcoes={mets.map(m => ({
-                  value: m.id, label: m.nome, grupo: m.familia || "Sem família" }))}
+                opcoes={metsSeletor.map(m => ({
+                  value: m.id, label: m.nome, grupo: m.familia }))}
                 value="" onChange={v => {
-                  const m = mets.find(x => String(x.id) === String(v));
-                  if (m) { setMetodo({ nome: m.nome, tipo: m.tipo, series: m.series });
-                           setVerMet(false); }
+                  const m = metsSeletor.find(x => String(x.id) === String(v));
+                  if (m) {
+                    /* cópia: o editor nunca mexe no objeto do cache */
+                    setMetodo({ nome: m.nome, tipo: m.tipo,
+                                series: JSON.parse(JSON.stringify(m.series)) });
+                    setVerMet(false);
+                  }
                 }}
                 placeholder="Buscar método..." />}
+          {met.semBase && metsSeletor.length > 0 && (
+            <div className="ed-cnt" style={{ marginTop: 6 }}>
+              Só aparecem os métodos que você salvou. Os 40 do App chegam quando o{" "}
+              <code>idealis_metodos_base.sql</code> rodar no Supabase.
+            </div>
+          )}
         </div>
       )}
     </div>
