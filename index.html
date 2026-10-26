@@ -829,6 +829,7 @@
   .ao-tg.rv{background:#0f2a2e;color:var(--accent)}
   .ao-tg.an{background:#241a2e;color:#c9a6ff}
   .ao-tg.orf{background:#2a2418;color:var(--warn)}
+  .ao-tg.dor{background:#2e1a1d;color:#e8a0a8}
   .ao-tx{font-size:13.5px;line-height:1.55;color:#c3d6d8;margin-top:5px;
     white-space:pre-wrap;overflow-wrap:anywhere}
   .ao-acs{display:flex;gap:6px;align-items:center}
@@ -856,6 +857,13 @@
     border:1px solid var(--line);border-radius:8px}
   .ao-vinc b{font-size:13px;font-weight:600}
   .ao-vinc span{font-size:10.5px;color:var(--mut)}
+  .ao-vinc.ed{position:relative;width:100%;text-align:left;cursor:pointer;color:inherit;
+    font:inherit;padding-right:58px}
+  .ao-vinc.ed:hover,.ao-vinc.ed.on{border-color:var(--accent)}
+  .ao-vinc.ed i{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+    font-style:normal;font-size:10.5px;color:var(--accent)}
+  .ao-esc{display:flex;flex-direction:column;gap:10px;padding:12px 13px;
+    background:var(--bg);border:1px solid var(--line);border-radius:8px}
   .ao-fx input{margin-bottom:0;font-size:13px}
   .ao-fx textarea{font-family:inherit;font-size:13px;min-height:70px;line-height:1.5}
   .ao-fx-b{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -13116,6 +13124,9 @@ function montarFeed(raw) {
     const n = g.series.size;
     push({
       key: "dor:" + g.exercicio_id + ":" + g.data, tipo: "dor",
+      /* log_ids, exercicio_id e locais: usados pelo Acompanhamento (revisar e
+         inserir na anamnese). O feed do Início não lê. */
+      log_ids: g.ids, exercicio_id: g.exercicio_id, locais: [...g.locais],
       aluno_id: t.aluno_id, treino_id: t.id, data: g.data, reg: g.reg,
       alvo: e.nome, sub: nomeTreino(t.id, t.aluno_id), valor: g.max,
       texto: [...g.locais].join(" · ") +
@@ -14247,8 +14258,9 @@ function progressoFase(m, hojeISO) {
 }
 
 /* ---------- Acompanhamento · observações da semana ----------
-   Embaixo de cada aluno, as observações (relatos com e sem exercício) dos
-   últimos 7 dias. A leitura sai do feed do Início, que já carrega 30 dias de
+   Embaixo de cada aluno, as observações (relatos com e sem exercício) e as
+   DORES registradas nas séries (logs.dor, agrupadas por exercício + dia,
+   igual ao feed) dos últimos 7 dias. A leitura sai do feed do Início, que já carrega 30 dias de
    relatos: nenhuma consulta nova para LER.
 
    "Revisada" é diferente de "lida":
@@ -14266,7 +14278,37 @@ function progressoFase(m, hojeISO) {
    copiar só as Entradas e esconder o texto antigo. */
 const OBS_DIAS = 7;
 const REV_LS   = "idealis_obs_revisadas_v1";
+const REV_LS_DOR = "idealis_dor_revisadas_v1";
+/* dor mínima (0-10) para o item entrar na revisão: vale a MAIOR dor do
+   exercício no dia. Decisão de 26/10/2026: 3. Dor 1-2 continua no feed do
+   Início e na aba Dores, só não pede revisão. Para mudar, é só esta linha. */
+const OBS_DOR_MIN_REV = 3;
 let obsSecoesCache = null;
+
+/* Chaves de revisão de um item da semana:
+   - relato -> o id do relato (como sempre foi, sem prefixo)
+   - dor    -> "log:" + id de CADA série com dor do grupo
+   Item de dor fica revisado só quando TODAS as séries dele estão revisadas:
+   se o aluno marcar dor em mais uma série no mesmo dia, ele volta para
+   "para revisar", porque é informação nova. */
+function obsChaves(o) {
+  if (!o) return [];
+  if (o.tipo === "dor") return (o.log_ids || []).filter(x => x != null).map(x => "log:" + x);
+  return o.relato_id != null ? [String(o.relato_id)] : [];
+}
+function obsRevisada(o, revs) {
+  const k = obsChaves(o);
+  return k.length > 0 && k.every(x => revs && revs[x]);
+}
+function obsNaAnamnese(o, revs) {
+  return obsChaves(o).some(x => revs && revs[x] && revs[x].entrada_id);
+}
+/* o que vai pronto para o texto da entrada / cópia */
+function obsTextoBase(o) {
+  if (!o) return "";
+  if (o.tipo === "dor") return "dor " + o.valor + "/10" + (o.texto ? " · " + o.texto : "");
+  return o.texto || "";
+}
 
 /* janela pela data do relato (dia no aparelho) OU pela chegada no servidor:
    relato preso na fila offline que chegou hoje com data de 10 dias atrás
@@ -14276,10 +14318,13 @@ function montarObsSemana(itens, hojeISO, agoraMs) {
   const corteMs = agoraMs - OBS_DIAS * 864e5;
   const porAluno = {}, ids = [];
   for (const i of (itens || [])) {
-    if (i.tipo !== "relato_ex" && i.tipo !== "relato_geral") continue;
+    if (i.tipo !== "relato_ex" && i.tipo !== "relato_geral" && i.tipo !== "dor") continue;
+    if (i.tipo === "dor" && !(Number(i.valor) >= OBS_DOR_MIN_REV)) continue;
     if (!((i.data && i.data >= desde) || (i.reg && i.reg >= corteMs))) continue;
+    const ch = obsChaves(i);
+    if (!ch.length) continue;        /* sem chave não dá para revisar: não entra */
     (porAluno[i.aluno_id] = porAluno[i.aluno_id] || []).push(i);
-    if (i.relato_id != null) ids.push(String(i.relato_id));
+    ids.push(...ch);
   }
   for (const k in porAluno) {
     porAluno[k].sort((x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : (y.reg || 0) - (x.reg || 0)));
@@ -14305,7 +14350,8 @@ function sugerirSecao(o, ids) {
   const t = String((o && o.texto) || "");
   const tem = id => (ids || []).includes(id);
   let secao;
-  if (OBS_DOR_RE.test(t) && tem("Dor/Pat")) secao = "Dor/Pat";
+  if (o && o.tipo === "dor" && tem("Dor/Pat")) secao = "Dor/Pat";
+  else if (OBS_DOR_RE.test(t) && tem("Dor/Pat")) secao = "Dor/Pat";
   else if (o && o.tipo === "relato_geral" && tem("Obs Gerais")) secao = "Obs Gerais";
   else if (tem("Dif. Exerc")) secao = "Dif. Exerc";
   else if (tem("Obs Gerais")) secao = "Obs Gerais";
@@ -14315,74 +14361,153 @@ function sugerirSecao(o, ids) {
   return { secao, regiao };
 }
 
-const revSemTabela = msg => /relato_revisoes/.test(msg || "") &&
-  /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(msg || "");
-function revLerLocal() {
-  try { return JSON.parse(localStorage.getItem(REV_LS) || "{}") || {}; }
-  catch (e) { return {}; }
+/* Exercício citado numa observação final do treino.
+   Procura, no texto do aluno, o nome de um exercício DA PRÓPRIA SESSÃO:
+   "pull down", "pulldown" e "pull-down" casam com "Puxada Alta (Pull Down)".
+   Usa normAcc (a canônica). Pedaço com menos de 4 letras não conta, e o
+   casamento "colado" (sem espaço) só vale a partir de 6, para "remo" não
+   achar "extremo". Dois exercícios empatados = null: aí você escolhe. */
+function obsPedacosNome(nome) {
+  const n = normAcc(nome);
+  return [...new Set([n, ...n.split(/[()\/|,;:\u2013\u2014-]+/)]
+    .map(x => x.replace(/[^a-z0-9]+/g, " ").trim()).filter(Boolean))];
 }
-function revGravarLocal(m) {
-  try { localStorage.setItem(REV_LS, JSON.stringify(m)); } catch (e) {}
+function acharExercicioNoTexto(texto, exs) {
+  const solto = " " + normAcc(texto).replace(/[^a-z0-9]+/g, " ").trim() + " ";
+  const colado = solto.replace(/ /g, "");
+  let melhor = null, tam = 0, empate = false;
+  for (const e of (exs || [])) {
+    let m = 0;
+    for (const p of obsPedacosNome(e && e.nome)) {
+      const pc = p.replace(/ /g, "");
+      if (pc.length < 4) continue;
+      if (solto.includes(" " + p + " ") || (pc.length >= 6 && colado.includes(pc))) {
+        m = Math.max(m, pc.length);
+      }
+    }
+    if (!m) continue;
+    if (m > tam) { melhor = e; tam = m; empate = false; }
+    else if (m === tam && melhor && melhor.id !== e.id) empate = true;
+  }
+  return empate ? null : melhor;
 }
 
-/* { mapa: {relato_id: {em, entrada_id}}, modo: "banco" | "local", erro } */
-async function carregarRevisoes(ids) {
-  const uniq = [...new Set((ids || []).filter(x => x != null).map(String))];
+/* Duas fontes de revisão, mesma mecânica (tabela da Dashboard; se ela ainda
+   não existir, o check fica no navegador e sobe sozinho quando ela aparecer):
+   - rel: relatos   -> relato_revisoes (relato_id) · chave = id do relato
+   - log: dor/série -> log_revisoes    (log_id)    · chave = "log:" + id do log
+   Nenhuma das duas toca nas tabelas do App (relatos, logs). */
+const REV_FONTES = {
+  rel: { tabela: "relato_revisoes", col: "relato_id", ls: REV_LS,     pre: "" },
+  log: { tabela: "log_revisoes",    col: "log_id",    ls: REV_LS_DOR, pre: "log:" }
+};
+const revFonteDe = k => (String(k).startsWith("log:") ? "log" : "rel");
+const revSemTabela = (msg, tabela) =>
+  new RegExp(tabela || "relato_revisoes").test(msg || "") &&
+  /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(msg || "");
+function revLerLocal(ls) {
+  try { return JSON.parse(localStorage.getItem(ls || REV_LS) || "{}") || {}; }
+  catch (e) { return {}; }
+}
+function revGravarLocal(m, ls) {
+  try { localStorage.setItem(ls || REV_LS, JSON.stringify(m)); } catch (e) {}
+}
+function revSeparar(ids) {
+  const por = { rel: [], log: [] };
+  for (const k of (ids || [])) if (k != null) por[revFonteDe(k)].push(String(k));
+  return por;
+}
+
+async function revCarregarFonte(f, chaves) {
+  const F = REV_FONTES[f], cru = k => k.slice(F.pre.length);
+  const uniq = [...new Set(chaves)];
   const mapa = {};
   for (let i = 0; i < uniq.length; i += LOTE) {
-    const r = await sb.from("relato_revisoes")
-      .select("relato_id, revisado_em, entrada_id")
-      .in("relato_id", uniq.slice(i, i + LOTE));
+    const r = await sb.from(F.tabela)
+      .select(F.col + ", revisado_em, entrada_id")
+      .in(F.col, uniq.slice(i, i + LOTE).map(cru));
     if (r.error) {
-      if (revSemTabela(r.error.message)) {
-        const loc = revLerLocal(), m = {};
+      if (revSemTabela(r.error.message, F.tabela)) {
+        const loc = revLerLocal(F.ls), m = {};
         uniq.forEach(id => { if (loc[id]) m[id] = loc[id]; });
         return { mapa: m, modo: "local", erro: "" };
       }
-      return { mapa, modo: "banco", erro: "relato_revisoes: " + r.error.message };
+      return { mapa, modo: "banco", erro: F.tabela + ": " + r.error.message };
     }
     for (const x of (r.data || [])) {
-      mapa[String(x.relato_id)] = { em: x.revisado_em, entrada_id: x.entrada_id || null };
+      mapa[F.pre + String(x[F.col])] = { em: x.revisado_em, entrada_id: x.entrada_id || null };
     }
   }
   /* a tabela existe: o que ficou guardado neste navegador sobe uma vez */
-  const loc = revLerLocal();
-  const sobe = Object.keys(loc).filter(id => !mapa[id]);
+  const loc = revLerLocal(F.ls);
+  const sobe = Object.keys(loc).filter(id => !mapa[id] && revFonteDe(id) === f);
   if (sobe.length) {
-    const up = await sb.from("relato_revisoes").upsert(sobe.map(id => ({
-      relato_id: id, revisado_em: loc[id].em || new Date().toISOString(),
+    const up = await sb.from(F.tabela).upsert(sobe.map(id => ({
+      [F.col]: cru(id), revisado_em: loc[id].em || new Date().toISOString(),
       entrada_id: loc[id].entrada_id || null
-    })), { onConflict: "relato_id" });
+    })), { onConflict: F.col });
     if (!up.error) {
       sobe.forEach(id => { if (uniq.includes(id)) mapa[id] = loc[id]; });
-      revGravarLocal({});
+      revGravarLocal({}, F.ls);
     }
   } else if (Object.keys(loc).length) {
-    revGravarLocal({});
+    revGravarLocal({}, F.ls);
   }
   return { mapa, modo: "banco", erro: "" };
 }
 
-/* marca ou desmarca várias de uma vez. Sem a tabela, cai no navegador. */
-async function gravarRevisoes(modo, ids, valor, entradaId) {
+/* { mapa: {chave: {em, entrada_id}}, modos: {rel, log}, erro } */
+async function carregarRevisoes(ids) {
+  const por = revSeparar(ids);
+  const mapa = {}, modos = { rel: null, log: null }, erros = [];
+  for (const f of ["rel", "log"]) {
+    if (!por[f].length) continue;
+    const r = await revCarregarFonte(f, por[f]);
+    Object.assign(mapa, r.mapa);
+    modos[f] = r.modo;
+    if (r.erro) erros.push(r.erro);
+  }
+  return { mapa, modos, erro: erros.join(" · ") };
+}
+
+async function revGravarFonte(f, modo, ids, valor, entradaId) {
+  const F = REV_FONTES[f], cru = k => k.slice(F.pre.length);
   const agora = new Date().toISOString();
   const local = () => {
-    const loc = revLerLocal();
+    const loc = revLerLocal(F.ls);
     ids.forEach(id => {
       if (valor) loc[id] = { em: agora, entrada_id: entradaId || (loc[id] && loc[id].entrada_id) || null };
       else delete loc[id];
     });
-    revGravarLocal(loc);
+    revGravarLocal(loc, F.ls);
     return { ok: true, modo: "local" };
   };
   if (modo === "local") return local();
   const r = valor
-    ? await sb.from("relato_revisoes").upsert(ids.map(id => ({
-        relato_id: id, revisado_em: agora, ...(entradaId ? { entrada_id: entradaId } : {})
-      })), { onConflict: "relato_id" })
-    : await sb.from("relato_revisoes").delete().in("relato_id", ids);
-  if (r.error) return revSemTabela(r.error.message) ? local() : { ok: false, erro: r.error.message };
+    ? await sb.from(F.tabela).upsert(ids.map(id => ({
+        [F.col]: cru(id), revisado_em: agora, ...(entradaId ? { entrada_id: entradaId } : {})
+      })), { onConflict: F.col })
+    : await sb.from(F.tabela).delete().in(F.col, ids.map(cru));
+  if (r.error) return revSemTabela(r.error.message, F.tabela) ? local() : { ok: false, erro: r.error.message };
   return { ok: true, modo: "banco" };
+}
+
+/* marca ou desmarca várias de uma vez, das duas fontes. Se a segunda fonte
+   falhar, a primeira é desfeita: revisão pela metade engana mais que nenhuma. */
+async function gravarRevisoes(modos, ids, valor, entradaId) {
+  const por = revSeparar(ids);
+  const novos = { ...(modos || {}) }, feitas = [];
+  for (const f of ["rel", "log"]) {
+    if (!por[f].length) continue;
+    const r = await revGravarFonte(f, novos[f], por[f], valor, entradaId);
+    if (!r.ok) {
+      for (const d of feitas) await revGravarFonte(d, novos[d], por[d], !valor, null);
+      return { ok: false, erro: r.erro, modos: modos || {} };
+    }
+    novos[f] = r.modo;
+    feitas.push(f);
+  }
+  return { ok: true, modos: novos };
 }
 
 function IconeAnamnese() {
@@ -14419,24 +14544,37 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
   const [secao, setSecao]   = useState("");
   const [sug, setSug]       = useState("");
   const [data, setData]     = useState(o.data || dISO(new Date()));
-  const [texto, setTexto]   = useState(o.texto || "");
+  const [texto, setTexto]   = useState(obsTextoBase(o));
   const [regiao, setRegiao] = useState("");
   const [migrado, setMigrado] = useState(null);
-  const [cardId, setCardId] = useState(null);
+  /* vínculo do exercício: { exId, nome, cardId, auto } | null.
+     Começa com o exercício do relato; observação final do treino começa
+     vazia e tenta achar o exercício citado no texto. Sempre editável. */
+  const [vinc, setVinc]     = useState(geral ? null
+    : { exId: o.exercicio_id || null, nome: o.alvo || "", cardId: null, auto: false });
+  const [exsTreino, setExsTreino] = useState(null);
+  const [trocar, setTrocar] = useState(false);
   const [busy, setBusy]     = useState(false);
   const [erro, setErro]     = useState("");
+  const cardId = vinc ? vinc.cardId : null;
 
   useEffect(() => {
     let vivo = true;
+    /* defensivo: o texto sempre nasce com as palavras do aluno */
+    setTexto(t => t || obsTextoBase(o));
     (async () => {
-      const [se, ct, ex] = await Promise.all([
+      const [se, ct, ex, tr] = await Promise.all([
         obsSecoesCache ? Promise.resolve({ data: obsSecoesCache, error: null })
           : sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem"),
         sb.from("anamnese_entradas").select("id", { count: "exact", head: true })
           .eq("aluno_id", aluno.id),
         o.exercicio_id
           ? sb.from("exercicios").select("cardapio_id").eq("id", o.exercicio_id).maybeSingle()
-          : Promise.resolve({ data: null, error: null })
+          : Promise.resolve({ data: null, error: null }),
+        o.treino_id
+          ? sb.from("exercicios").select("id, nome, cardapio_id, ordem")
+              .eq("treino_id", o.treino_id).order("ordem")
+          : Promise.resolve({ data: [], error: null })
       ]);
       if (!vivo) return;
       if (se.error) { setErro("seções: " + se.error.message); setSecoes([]); }
@@ -14444,20 +14582,45 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
         obsSecoesCache = se.data || [];
         setSecoes(obsSecoesCache);
         const s = sugerirSecao(o, obsSecoesCache.map(x => x.id));
-        setSug(s.secao); setSecao(s.secao); setRegiao(s.regiao);
+        setSug(s.secao); setSecao(s.secao);
+        /* dor: a região vem do que o aluno marcou na série, não do texto */
+        setRegiao(o.tipo === "dor" && (o.locais || []).length ? o.locais.join(", ") : s.regiao);
       }
       if (ct.error) setErro(e => e || "anamnese: " + ct.error.message);
       setMigrado(ct.error ? null : (ct.count || 0) > 0);
-      if (!ex.error && ex.data) setCardId(ex.data.cardapio_id ?? null);
+      if (!ex.error && ex.data) {
+        const c = ex.data.cardapio_id ?? null;
+        setVinc(v => (v && v.exId === o.exercicio_id ? { ...v, cardId: c } : v));
+      }
+      const lista = tr.error ? [] : (tr.data || []);
+      setExsTreino(lista);
+      if (geral) {
+        const achado = acharExercicioNoTexto(o.texto, lista);
+        if (achado) {
+          setVinc(v => v || { exId: achado.id, nome: achado.nome,
+            cardId: achado.cardapio_id ?? null, auto: true });
+        }
+      }
     })();
     return () => { vivo = false; };
   }, [aluno.id, o.key]);
+
+  function escolherDaSessao(e) {
+    setVinc({ exId: e.id, nome: e.nome, cardId: e.cardapio_id ?? null, auto: false });
+    setTrocar(false);
+  }
+  function escolherSecao(id) {
+    setSecao(id);
+    /* seção que pede exercício e nada vinculado: já abre a escolha */
+    const s = (secoes || []).find(x => x.id === id);
+    if (s && s.usa_exercicio && !vinc) setTrocar(true);
+  }
 
   const S = (secoes || []).find(x => x.id === secao) || null;
 
   function copiar() {
     const linha = "- " + (secao || "Obs Gerais") + ":\n" + (data ? dBR(data) + ": " : "") +
-      texto.trim() + (!geral && o.alvo ? " [" + o.alvo + "]" : "");
+      texto.trim() + (vinc && vinc.nome ? " [" + vinc.nome + "]" : "");
     try { navigator.clipboard.writeText(linha); toast("Copiado no formato da planilha."); }
     catch (e) { toast("Não consegui copiar: " + e.message, "erro"); }
   }
@@ -14465,9 +14628,14 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
   async function inserir() {
     if (!S || !texto.trim() || !migrado || busy) return;
     setBusy(true); setErro("");
+    /* exercício fora do Cardápio não tem coluna própria: o nome vai no texto,
+       senão a informação some (mesmo formato "[nome]" do Só copiar) */
+    let corpo = texto.trim();
+    if (vinc && !vinc.cardId && vinc.nome &&
+        !normAcc(corpo).includes(normAcc(vinc.nome))) corpo += " [" + vinc.nome + "]";
     const ins = await sb.from("anamnese_entradas").insert({
       aluno_id: aluno.id, secao_id: S.id, data: data || null,
-      data_texto: data ? dBR(data) : null, texto: texto.trim(),
+      data_texto: data ? dBR(data) : null, texto: corpo,
       cardapio_id: cardId || null, tipo_id: null,
       regiao: S.usa_regiao ? (regiao.trim() || null) : null,
       escala: null, origem: "manual"
@@ -14503,7 +14671,7 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
           <div className="chips">
             {secoes.map(s => (
               <button key={s.id} className={"chip mini" + (secao === s.id ? " on" : "")}
-                onClick={() => setSecao(s.id)}>
+                onClick={() => escolherSecao(s.id)}>
                 {s.nome}{sug === s.id && <span className="ao-sug">sugerida</span>}
               </button>
             ))}
@@ -14518,11 +14686,15 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
         </div>
         <div>
           <div className="ao-lab">Exercício</div>
-          <div className="ao-vinc">
-            <b>{geral ? "—" : o.alvo}</b>
-            <span>{geral ? "observação geral do treino"
-              : (o.orfao || !cardId) ? "sem vínculo com o Cardápio" : "vai junto, vinculado ao Cardápio"}</span>
-          </div>
+          <button type="button" className={"ao-vinc ed" + (trocar ? " on" : "")}
+            onClick={() => setTrocar(t => !t)} title="Trocar o exercício desta entrada">
+            <b>{vinc ? vinc.nome : "—"}</b>
+            <span>{!vinc ? (geral ? "observação geral do treino · clica para vincular" : "nenhum")
+              : vinc.auto ? "achei no texto do aluno · confere"
+              : vinc.cardId ? "vai junto, vinculado ao Cardápio"
+              : "sem vínculo com o Cardápio · o nome vai no texto"}</span>
+            <i>{trocar ? "fechar" : "trocar"}</i>
+          </button>
         </div>
         {S && S.usa_regiao && (
           <div>
@@ -14532,9 +14704,36 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
           </div>
         )}
       </div>
+      {trocar && (
+        <div className="ao-esc">
+          <div className="ao-lab">
+            Exercícios {geral ? "do " + (o.alvo || "treino") : "da sessão"}
+            <i>ou busca no Cardápio embaixo</i>
+          </div>
+          {exsTreino === null ? <div className="ed-cnt">carregando...</div> : (
+            <div className="chips">
+              <button type="button" className={"chip mini" + (!vinc ? " on" : "")}
+                onClick={() => { setVinc(null); setTrocar(false); }}>
+                nenhum · {geral ? "observação geral" : "sem exercício"}
+              </button>
+              {exsTreino.map(e => (
+                <button type="button" key={e.id}
+                  className={"chip mini" + (vinc && vinc.exId === e.id ? " on" : "")}
+                  onClick={() => escolherDaSessao(e)}>{e.nome}</button>
+              ))}
+            </div>
+          )}
+          <BuscaExercicio valor=""
+            onPick={(id, nome) => {
+              setVinc({ exId: null, nome, cardId: id, auto: false }); setTrocar(false);
+            }}
+            onTexto={() => {}} />
+        </div>
+      )}
       <div>
         <label className="ao-lab" htmlFor={"ao-tx-" + o.key}>
-          Texto da entrada <i>editável · veio com as palavras do aluno</i>
+          Texto da entrada <i>editável · {o.tipo === "dor"
+            ? "montado com o registro de dor da série" : "veio com as palavras do aluno"}</i>
         </label>
         <textarea id={"ao-tx-" + o.key} rows={3} value={texto}
           onChange={e => setTexto(e.target.value)} />
@@ -14557,43 +14756,43 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
 function PainelObsSemana({ aluno, st, obs, revs, desde, hoje, onMarcar, onInserida, onFicha }) {
   const { toast } = usarUI();
   const [ins, setIns] = useState(null);
-  const pend = obs.filter(o => !revs[String(o.relato_id)]);
+  const pend = obs.filter(o => !obsRevisada(o, revs));
 
   function copiar(o) {
-    const linha = dBR(o.data) + ": " + o.texto +
-      (o.tipo === "relato_ex" && o.alvo ? " [" + o.alvo + "]" : "");
+    const linha = dBR(o.data) + ": " + obsTextoBase(o) +
+      (o.tipo !== "relato_geral" && o.alvo ? " [" + o.alvo + "]" : "");
     try { navigator.clipboard.writeText(linha); toast("Observação copiada."); }
     catch (e) { toast("Não consegui copiar: " + e.message, "erro"); }
   }
 
   function alternar(o) {
-    const id = String(o.relato_id), r = revs[id];
-    if (r && r.entrada_id) {
+    if (obsNaAnamnese(o, revs)) {
       toast("Já está na anamnese. Para desfazer, apaga a entrada na ficha (Entradas).", "aviso");
       return;
     }
-    onMarcar([id], !r);
+    onMarcar(obsChaves(o), !obsRevisada(o, revs));
   }
 
   return (
     <div className={"ao-pn " + st}>
       <div className="ao-pn-h">
-        <b>Observações da semana</b>
+        <b>Observações e dores da semana</b>
         <span className="ed-cnt">
           {dBR(desde).slice(0, 5)} a {dBR(hoje).slice(0, 5)} · {obs.length} no total
         </span>
         <span style={{ flex: 1 }} />
         {pend.length > 0 && (
           <button className="ao-bt"
-            onClick={() => onMarcar(pend.map(o => String(o.relato_id)), true)}>
+            onClick={() => onMarcar(pend.flatMap(obsChaves), true)}>
             Marcar todas como revisadas ({pend.length})
           </button>
         )}
         <button className="ao-bt" onClick={onFicha}>Abrir ficha ↗</button>
       </div>
       {obs.map(o => {
-        const id = String(o.relato_id), r = revs[id], rev = !!r;
-        const geral = o.tipo === "relato_geral", naAnam = !!(r && r.entrada_id);
+        const chaves = obsChaves(o), rev = obsRevisada(o, revs);
+        const geral = o.tipo === "relato_geral", naAnam = obsNaAnamnese(o, revs);
+        const dor = o.tipo === "dor";
         const aberto = ins === o.key;
         return (
           <div className={"ao-ob" + (rev ? " feita" : "")} key={o.key}>
@@ -14609,6 +14808,11 @@ function PainelObsSemana({ aluno, st, obs, revs, desde, hoje, onMarcar, onInseri
                   {geral ? "Sobre o " + o.alvo : o.alvo}
                 </span>
                 <span className="ao-trn">{geral ? "observação final do treino" : o.sub}</span>
+                {dor && (
+                  <span className="ao-tg dor" style={o.cor ? { color: o.cor } : null}>
+                    dor {o.valor}/10
+                  </span>
+                )}
                 {o.orfao && <span className="ao-tg orf">exercício removido</span>}
                 {rev ? <span className="ao-tg rv">revisada</span>
                      : <span className="ao-tg nv">para revisar</span>}
@@ -14618,7 +14822,7 @@ function PainelObsSemana({ aluno, st, obs, revs, desde, hoje, onMarcar, onInseri
               {aberto && (
                 <FormObsAnamnese aluno={aluno} o={o} onCancelar={() => setIns(null)}
                   onInserida={async (entradaId, secNome) => {
-                    const ok = await onInserida(id, entradaId);
+                    const ok = await onInserida(chaves, entradaId);
                     if (ok) {
                       setIns(null);
                       toast("Inserida em " + secNome + ". A observação ficou marcada como revisada.");
@@ -14633,7 +14837,7 @@ function PainelObsSemana({ aluno, st, obs, revs, desde, hoje, onMarcar, onInseri
                 onClick={() => setIns(aberto ? null : o.key)}>
                 <IconeAnamnese />{naAnam ? "Já na anamnese" : "Inserir na anamnese"}
               </button>
-              <button className="ao-bt ico" title="Copiar" aria-label="Copiar observação"
+              <button className="ao-bt ico" title="Copiar" aria-label={dor ? "Copiar dor" : "Copiar observação"}
                 onClick={() => copiar(o)}><IconeCopiar /></button>
             </div>
           </div>
@@ -14664,8 +14868,8 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
   const { itens: fdItens } = usarFeed();
   const [obsAb, setObsAb]   = useState(null);     // aluno com o painel aberto
   const [soObs, setSoObs]   = useState(false);
-  const [revs, setRevs]     = useState({});       // relato_id -> {em, entrada_id}
-  const [revModo, setRevModo] = useState(null);   // "banco" | "local"
+  const [revs, setRevs]     = useState({});       // chave -> {em, entrada_id}
+  const [revModos, setRevModos] = useState({});   // {rel, log}: "banco" | "local"
   const [revErro, setRevErro] = useState("");
   const obsSemana = useMemo(
     () => montarObsSemana(fdItens, dISO(new Date()), Date.now()), [fdItens]);
@@ -14675,7 +14879,7 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
     let vivo = true;
     carregarRevisoes(obsSemana.ids).then(r => {
       if (!vivo) return;
-      setRevs(r.mapa); setRevModo(r.modo); setRevErro(r.erro);
+      setRevs(r.mapa); setRevModos(r.modos); setRevErro(r.erro);
     });
     return () => { vivo = false; };
   }, [obsIdsKey]);
@@ -14691,13 +14895,13 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
       });
       return n;
     });
-    const r = await gravarRevisoes(revModo, ids, valor, entradaId);
+    const r = await gravarRevisoes(revModos, ids, valor, entradaId);
     if (!r.ok) { setRevs(antes); toast("A revisão não foi salva: " + r.erro, "erro"); return false; }
-    if (r.modo !== revModo) setRevModo(r.modo);
+    setRevModos(r.modos);
     return true;
   }
   const pendObs = aid => (obsSemana.porAluno[aid] || [])
-    .filter(o => !revs[String(o.relato_id)]).length;
+    .filter(o => !obsRevisada(o, revs)).length;
 
   const carregar = useCallback(async () => {
     setErro(""); setDiag("");
@@ -14911,11 +15115,14 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
       {erro && <div className="err">{erro}</div>}
       {diag && <div className="ac-diag">{diag}</div>}
       {revErro && <div className="err">{revErro}</div>}
-      {revModo === "local" && (
+      {(revModos.rel === "local" || revModos.log === "local") && (
         <div className="ac-diag" style={{ fontFamily: "inherit" }}>
-          O check de "revisada" está guardado só neste navegador, porque a tabela
-          relato_revisoes ainda não existe no banco. Quando ela for criada, o que você
-          marcou aqui sobe sozinho.
+          O check de "revisada" {revModos.rel === "local" && revModos.log === "local"
+            ? "das observações e das dores" : revModos.rel === "local" ? "das observações" : "das dores"} está
+          guardado só neste navegador, porque a tabela{" "}
+          {[revModos.rel === "local" && "relato_revisoes", revModos.log === "local" && "log_revisoes"]
+            .filter(Boolean).join(" / ")} ainda não existe no banco. Quando ela for
+          criada, o que você marcou aqui sobe sozinho.
         </div>
       )}
 
@@ -15044,7 +15251,7 @@ function PainelAcompanhamento({ filtro, busca, ordemInicial, novasPorAluno }) {
                 <PainelObsSemana aluno={{ id: aid, nome }} st={r.n} obs={obsAl} revs={revs}
                   desde={obsSemana.desde} hoje={hojeAc}
                   onMarcar={(ids, valor) => marcarRev(ids, valor)}
-                  onInserida={(id, entradaId) => marcarRev([id], true, entradaId)}
+                  onInserida={(ids, entradaId) => marcarRev(ids, true, entradaId)}
                   onFicha={() => { setAlunoId(aid); setAberto({ id: aid, nome, modo: "entradas" }); }} />
               )}
               </React.Fragment>
