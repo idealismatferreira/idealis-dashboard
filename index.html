@@ -11466,13 +11466,15 @@ function IconeRelogio() {
    consulta ao abrir a montagem do aluno. Falhou ou o arquivo não carregou:
    a montagem funciona igual, sem selos.
    Decisões do Matheus (24/10/2026):
-   - selos só em fase FUTURA. Em fase ativa a regra v1 erra quando o exercício
-     é novo na fase e já foi feito nela (aparece "volta · há 2 dias"). Liga a
-     ativa quando o App servir o historico.js v2 (HIST_SELO_EM.ativa = true);
+   - selos em fase FUTURA e ATIVA (ativa liberada em 25/10/2026, porque ele
+     ajusta treino no meio da fase). Na ativa a regra v1 erraria: ela conta a
+     execução DENTRO da fase montada, e um exercício novo feito 2x nela viraria
+     "volta · há 2 dias". histAntesDa() corrige isso nos DADOS que entram na
+     regra, sem mexer na regra. Some quando o App servir a v2 (feito_por_fase);
    - o ⚠️ aparece em todas as fases;
    - o resumo "3 novos · 2 retornos · 1 alerta" mora numa linha fixa no card
      da fase (a Dashboard salva exercício a exercício, não tem "salvar fase"). */
-const HIST_SELO_EM = { futura: true };
+const HIST_SELO_EM = { futura: true, ativa: true };
 /* Multitenant: vira a configuração do treinador do tenant ({dorAlerta,
    janelaResolvida}). null = CONFIG padrão do historico.js. Não espalhar
    números pelo código: tudo passa por aqui. */
@@ -11509,21 +11511,42 @@ function histFaseAnterior(fases, alvo) {
   return ant;
 }
 
+/* Ponte até a v2 do historico.js: o histórico como era ANTES da fase alvo
+   começar. A regra (H.selo) continua a mesma; só a entrada é filtrada.
+   - última execução antes do início: nada muda;
+   - primeira execução já dentro da fase: para a regra, "nunca feito antes";
+   - feito antes E dentro: continua feito; a data da última vez antes vem das
+     sessões registradas (dores_recentes, as 5 últimas). Fora delas, a data é
+     desconhecida (ultimoAntes null) e o selo sai sem data.
+   Se a view já mandar feito_por_fase (v2), não mexe em nada.
+   Devolve { hs: h para a regra, ultimoAntes }. */
+function histAntesDa(h, inicio) {
+  if (!h || !inicio || h.feito_por_fase || !h.ultimo_feito || h.ultimo_feito < inicio)
+    return { hs: h, ultimoAntes: h ? h.ultimo_feito : null };
+  const feitoAntes = !!(h.primeiro_feito && h.primeiro_feito < inicio);
+  if (!feitoAntes) return { hs: Object.assign({}, h, { ultimo_feito: null }), ultimoAntes: null };
+  const antes = (h.dores_recentes || []).map(d => d && d.data)
+    .filter(d => d && d < inicio).sort();
+  const ultimoAntes = antes.length ? antes[antes.length - 1] : null;
+  return { hs: Object.assign({}, h, { ultimo_feito: ultimoAntes || h.primeiro_feito }), ultimoAntes };
+}
+
 /* tudo que a tela precisa de um exercício.
-   ctx = { rows, alvoId, exAnt, comSelo }. null = sem dado (não mostra nada). */
+   ctx = { rows, alvoId, alvoInicio, exAnt, comSelo }. null = sem dado. */
 function histInfo(ctx, ex) {
   const H = histApi();
   if (!H || !ctx || !ctx.rows) return null;
   const e = histEx(ex);
   if (!e.nome && e.cardapioId == null) return null;
   const h = H.juntar(ctx.rows, e);
+  const { hs, ultimoAntes } = histAntesDa(h, ctx.alvoInicio);
   let selo = ctx.comSelo
-    ? H.selo(h, { alvoId: ctx.alvoId,
+    ? H.selo(hs, { alvoId: ctx.alvoId,
         naFaseAnterior: (ctx.exAnt || []).some(x => H.casaEx(x, e)) })
     : null;
   /* v1 devolve a string do selo; a v2 pedida ao App (25/10/2026) pode devolver
      { selo, ultimo }, com `ultimo` = última vez FORA da fase alvo. Aceita os dois. */
-  let ultimo = h ? h.ultimo_feito : null;
+  let ultimo = ultimoAntes;
   if (selo && typeof selo === "object") {
     ultimo = selo.ultimo || ultimo;
     selo = selo.selo || null;
@@ -11550,9 +11573,9 @@ function histSeloTexto(info, hoje) {
   const ult = info.ultimo !== undefined ? info.ultimo : (info.h && info.h.ultimo_feito);
   switch (info.selo) {
     case "novo":         return { txt: "🆕 novo", cls: "novo" };
-    case "retorno":      return { txt: "↺ volta · última vez " + histHa(ult, hoje), cls: "ret" };
+    case "retorno":      return { txt: "↺ volta" + (ult ? " · última vez " + histHa(ult, hoje) : " · já fez antes"), cls: "ret" };
     case "sem_registro": return { txt: "prescrito, sem registro", cls: "sr" };
-    case "recente":      return { txt: "fase anterior · " + histHa(ult, hoje), cls: "rec" };
+    case "recente":      return { txt: "fase anterior" + (ult ? " · " + histHa(ult, hoje) : ""), cls: "rec" };
     default:             return null;
   }
 }
@@ -11626,10 +11649,10 @@ function histResumoPartes(r) {
 /* mensagem pro WhatsApp: SÓ novos e retornos. Alerta fica com o treinador:
    avisar "esse doeu" aumenta a expectativa de dor (nocebo; Colloca e
    Benedetti, 2007). "" = nada a mandar. */
-function histMensagem(r) {
+function histMensagem(r, atualizacao) {
   if (!r || (!r.novos.length && !r.retornos.length)) return "";
   return [
-    "Fase nova liberada no app! 💪",
+    atualizacao ? "Treino atualizado no app! 💪" : "Fase nova liberada no app! 💪",
     r.novos.length ? "Novidades: " + r.novos.map(x => x.nome).join(", ") : null,
     r.retornos.length ? "De volta: " + r.retornos.map(x => x.nome).join(", ") : null,
     "Qualquer dúvida me chama."
@@ -11721,10 +11744,10 @@ function HistMarcas({ info, hoje }) {
 }
 
 /* linha fixa no card da fase: "3 novos · 2 retornos · 1 alerta" */
-function HistResumoFase({ r, hoje, onCopiar }) {
+function HistResumoFase({ r, hoje, onCopiar, atualizacao }) {
   const [aberto, setAberto] = useState(false);
   const partes = histResumoPartes(r);
-  const msg = histMensagem(r);
+  const msg = histMensagem(r, atualizacao);
   return (
     <div className="hs-res">
       <div className="hs-res-l">
@@ -11805,7 +11828,8 @@ function PainelMontagem() {
   const seloAqui = !!(faseObj && HIST_SELO_EM[situacaoFase(faseObj, hoje)]);
   /* contexto das regras: o selo só liga com a fase anterior já lida, senão
      tudo apareceria como "novo" por meio segundo */
-  const hctx = { rows: histRows, alvoId: faseSel, exAnt: exAnt ? exAnt.lista : null,
+  const hctx = { rows: histRows, alvoId: faseSel, alvoInicio: faseObj ? faseObj.inicio : null,
+                 exAnt: exAnt ? exAnt.lista : null,
                  comSelo: seloAqui && !!exAnt && exAnt.alvoId === faseSel };
   const marcasBusca = c => (
     <HistMarcas hoje={hoje} info={histInfo(hctx, { cardapio_id: c.id, nome: c.exercicio })} />
@@ -12477,6 +12501,7 @@ function PainelMontagem() {
           )}
           {hctx.comSelo && hctx.rows && treinos.length > 0 && (
             <HistResumoFase hoje={hoje} onCopiar={copiarMensagem}
+              atualizacao={situacaoFase(faseObj, hoje) === "ativa"}
               r={histResumo(sessoes.flatMap(x => x.lista), hctx)} />
           )}
         </div>
@@ -12669,7 +12694,7 @@ function PainelMontagem() {
         uma vez só, no fim da rodada. <b>Importar sessões</b> traz exercícios, séries,
         método, cardio, isometria/alongamento e bi-sets; não traz carga, correções,
         áudio nem histórico. As datas da fase se ajustam direto no card de cima.
-        Em fase futura, cada exercício mostra o histórico do aluno: <b>🆕 novo</b>,
+        Nas fases atual e futura, cada exercício mostra o histórico do aluno de antes da fase: <b>🆕 novo</b>,
         <b>↺ volta</b> (fez antes, não está na fase anterior) ou, em cinza, o que já
         vem da fase anterior. O <b>⚠️</b> é aviso, não veto: passa o mouse ou clica
         para ver a dor, a anamnese ou a correção por trás dele.
