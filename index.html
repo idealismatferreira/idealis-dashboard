@@ -39,6 +39,11 @@
      HTML termina de ser lido - o painel sabe esperar por ele. -->
 <script src="./mapa-dor-leitura.js"></script>
 <script type="module" src="./manequim-dor-dashboard.js"></script>
+<!-- Historico do exercicio na montagem (selos + aviso). VERBATIM do brief do
+     App de 24/10/2026: as regras de exibicao moram nesse arquivo e em mais
+     nenhum lugar. Quando o App passar a servir o historico.js, troca so este
+     src pela URL do App. Se nao carregar, a montagem funciona igual, sem selos. -->
+<script src="./historico.js"></script>
 <style>
   :root{
     --bg:#0b0f10; --card:#131a1c; --line:#1f2b2d;
@@ -1679,6 +1684,45 @@
   }
   /* ============ TREINOS · visão geral + sessão ampliada (V1, 18/10/2026) ============ */
   .tw{--tw-orange:var(--soft-orange)}
+  /* ---- histórico do exercício na montagem (selos + ⚠️), brief do App 24/10/2026.
+     Só "novo" e "volta" têm cor: selo em tudo vira papel de parede. ---- */
+  .hs-lin{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
+  .hs{font-size:10.5px;font-weight:600;line-height:1.3;white-space:nowrap}
+  .hs-novo{color:var(--marca)}
+  .hs-ret{color:#c89bff}
+  .hs-sr{color:var(--mut);font-weight:500}
+  .hs-rec{color:#4f6467;font-weight:400}
+  .hs-al{cursor:pointer;font-size:12px;line-height:1;border-radius:4px;padding:1px 2px}
+  .hs-al.off{opacity:.35}
+  .hs-al:hover,.hs-al:focus-visible{outline:1px solid var(--status-atencao);opacity:1}
+  .hs-pop{position:fixed;z-index:160;width:300px;max-width:calc(100vw - 16px);
+    background:var(--card);border:1px solid var(--status-atencao);border-radius:10px;padding:10px 11px 8px;
+    box-shadow:0 12px 32px rgba(0,0,0,.55);font-size:12px;font-weight:400;color:var(--txt);
+    text-align:left;white-space:normal;cursor:default;line-height:1.35}
+  /* sem tracinho lateral (LOTE_TEXTURA_LUZ, decisão 3D): ponto + texto.
+     --hs-c = cor do tipo da anamnese quando ela tem; senão, atenção */
+  .hs-pl{position:relative;padding:1px 0 1px 14px;margin-bottom:7px;overflow-wrap:anywhere}
+  .hs-pl::before{content:"";position:absolute;left:2px;top:6px;width:6px;height:6px;
+    border-radius:50%;background:var(--hs-c,var(--status-atencao))}
+  .hs-pl.off{opacity:.55}
+  .hs-pl.off::before{background:#3d4d50}
+  .hs-pl small{display:block;color:var(--mut);font-size:10.5px;margin-top:2px}
+  .hs-rod{border-top:1px solid var(--line);padding-top:6px;color:var(--mut);font-size:10.5px}
+  .ac-op .hs-lin{margin-left:8px;vertical-align:1px}
+  .tw-tg .hs-lin{display:flex;margin-top:4px}
+  .hs-res{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+  .hs-res-l{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+  .hs-res-l .lb{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#5f7477}
+  .hs-res-l .vz{color:var(--mut)}
+  .hs-lk{width:auto;background:none;border:none;padding:2px 0;color:var(--accent);
+    font-size:12px;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+  .hs-lk:hover{filter:none;color:var(--txt)}
+  .hs-res .tw-btn{padding:5px 11px;font-size:12px}
+  .hs-lista{display:flex;flex-direction:column;gap:8px;background:#0f1517;border:1px solid var(--line);
+    border-radius:9px;padding:9px 11px;font-size:12px}
+  .hs-lista b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;
+    color:#5f7477;font-weight:600;margin-bottom:2px}
+  .hs-lista span{color:var(--mut)}
   .tw-btn{width:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;
     background:#121a1c;border:1px solid #26363a;color:var(--txt);font-size:13px;
     font-weight:500;padding:8px 13px;border-radius:9px;white-space:nowrap}
@@ -9939,7 +9983,9 @@ function Chips({ opcoes, valor, onPick, mini }) {
 }
 
 /* autocomplete do Catálogo, lendo do espelho `cardapio` no Supabase */
-function BuscaExercicio({ valor, onPick, onTexto }) {
+/* `marcas(c)` (opcional): selo + ⚠️ do histórico do aluno, à direita do nome.
+   Só a montagem passa; as correções usam a busca sem ele. */
+function BuscaExercicio({ valor, onPick, onTexto, marcas }) {
   const [q, setQ]       = useState(valor || "");
   const [ops, setOps]   = useState([]);
   const [abr, setAbr]   = useState(false);
@@ -9991,6 +10037,7 @@ function BuscaExercicio({ valor, onPick, onTexto }) {
               onMouseEnter={() => setIdx(i)}
               onMouseDown={e => { e.preventDefault(); escolher(c); }}>
               {c.exercicio}
+              {marcas ? marcas(c) : null}
               <small>{(c.grupos || []).join(" · ") || "sem grupo"}</small>
             </div>
           ))}
@@ -10013,7 +10060,7 @@ function BuscaExercicio({ valor, onPick, onTexto }) {
 const TIPOS_EX = [["musculacao", "Musculação"], ["cardio", "Cardio"],
                   ["isometria", "Isometria"], ["alongamento", "Alongamento"]];
 
-function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo }) {
+function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo, marcasBusca }) {
   /* Esc fecha o formulário só quando não há nada por cima dele: com a
      confirmação, uma gaveta ou o calendário abertos, o Esc é deles */
   useEsc(true, () => {
@@ -10182,7 +10229,7 @@ function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo 
   const secNome = (
     <div>
       {lab(novo ? "Novo exercício" : "Exercício")}
-      <BuscaExercicio valor={nome}
+      <BuscaExercicio valor={nome} marcas={marcasBusca}
         onPick={(id, txt) => { setCardId(id); setNome(txt); }}
         onTexto={t => { setNome(t); setCardId(null); }} />
       <div className="ed-cnt" style={{ marginTop: 5 }}>
@@ -11409,6 +11456,315 @@ function IconeRelogio() {
   );
 }
 
+/* ---------- Histórico do exercício na montagem (selos + ⚠️) ----------
+   Brief do App Idealis de 24/10/2026. As REGRAS (o que é novo, volta, alerta
+   ativo ou apagado) moram no historico.js, carregado VERBATIM no <head> como
+   window.HistoricoExercicio. Aqui fica só a cola com a Dashboard e o visual.
+   NÃO reimplementar selo/alerta aqui: regra duplicada diverge no primeiro
+   ajuste (foi assim com o normAcc).
+   Dados: vw_historico_exercicio_aluno, SEMPRE com .eq("aluno_id"), uma
+   consulta ao abrir a montagem do aluno. Falhou ou o arquivo não carregou:
+   a montagem funciona igual, sem selos.
+   Decisões do Matheus (24/10/2026):
+   - selos só em fase FUTURA. Em fase ativa a regra v1 erra quando o exercício
+     é novo na fase e já foi feito nela (aparece "volta · há 2 dias"). Liga a
+     ativa quando o App servir o historico.js v2 (HIST_SELO_EM.ativa = true);
+   - o ⚠️ aparece em todas as fases;
+   - o resumo "3 novos · 2 retornos · 1 alerta" mora numa linha fixa no card
+     da fase (a Dashboard salva exercício a exercício, não tem "salvar fase"). */
+const HIST_SELO_EM = { futura: true };
+/* Multitenant: vira a configuração do treinador do tenant ({dorAlerta,
+   janelaResolvida}). null = CONFIG padrão do historico.js. Não espalhar
+   números pelo código: tudo passa por aqui. */
+const HIST_CFG = null;
+/* rótulos do registro de série do App (dor_max_local / dor_max_lado) */
+const HIST_REGIOES = { cervical: "Cervical / Nuca", ombro: "Ombro", cotovelo: "Cotovelo",
+  punho: "Punho / Mão", toracica: "Torácica", lombar: "Lombar", quadril: "Quadril",
+  joelho: "Joelho", tornozelo: "Tornozelo / Pé", outro: "Outro" };
+const HIST_LADO = { e: "esq.", d: "dir.", ambos: "ambos" };
+
+function histApi() {
+  const H = typeof window !== "undefined" ? window.HistoricoExercicio : null;
+  return H && typeof H.juntar === "function" ? H : null;
+}
+function histCfg() {
+  const H = histApi();
+  return Object.assign({}, H ? H.CONFIG : { dorAlerta: 3, janelaResolvida: 3 }, HIST_CFG || {});
+}
+
+/* exercício da Dashboard (snake_case) -> formato do historico.js */
+function histEx(ex) {
+  return { cardapioId: ex && ex.cardapio_id != null ? ex.cardapio_id : null,
+           nome: (ex && ex.nome) || "" };
+}
+
+/* fase IMEDIATAMENTE antes da alvo, por inicio (avulsa ou do planejamento) */
+function histFaseAnterior(fases, alvo) {
+  if (!alvo || !alvo.inicio) return null;
+  let ant = null;
+  for (const f of (fases || [])) {
+    if (!f || f.id === alvo.id || !f.inicio || f.inicio >= alvo.inicio) continue;
+    if (!ant || f.inicio > ant.inicio) ant = f;
+  }
+  return ant;
+}
+
+/* tudo que a tela precisa de um exercício.
+   ctx = { rows, alvoId, exAnt, comSelo }. null = sem dado (não mostra nada). */
+function histInfo(ctx, ex) {
+  const H = histApi();
+  if (!H || !ctx || !ctx.rows) return null;
+  const e = histEx(ex);
+  if (!e.nome && e.cardapioId == null) return null;
+  const h = H.juntar(ctx.rows, e);
+  let selo = ctx.comSelo
+    ? H.selo(h, { alvoId: ctx.alvoId,
+        naFaseAnterior: (ctx.exAnt || []).some(x => H.casaEx(x, e)) })
+    : null;
+  /* v1 devolve a string do selo; a v2 pedida ao App (25/10/2026) pode devolver
+     { selo, ultimo }, com `ultimo` = última vez FORA da fase alvo. Aceita os dois. */
+  let ultimo = h ? h.ultimo_feito : null;
+  if (selo && typeof selo === "object") {
+    ultimo = selo.ultimo || ultimo;
+    selo = selo.selo || null;
+  }
+  return { h, selo, ultimo, alerta: H.alerta(h, HIST_CFG) };
+}
+
+/* "há 6 dias", "há 3 semanas", "há 8 meses" */
+function histHa(iso, hoje) {
+  if (!iso) return "";
+  const d = Math.round((parseISO(hoje) - parseISO(iso)) / 864e5);
+  if (d <= 0) return "hoje";
+  if (d === 1) return "ontem";
+  if (d < 14) return "há " + d + " dias";
+  if (d < 60) return "há " + Math.round(d / 7) + " semanas";
+  const m = Math.round(d / 30.44);
+  if (m < 24) return "há " + m + (m === 1 ? " mês" : " meses");
+  return "há " + Math.floor(d / 365.25) + " anos";
+}
+
+/* texto e classe do selo; null = não mostra (planejado ou sem selo) */
+function histSeloTexto(info, hoje) {
+  if (!info || !info.selo) return null;
+  const ult = info.ultimo !== undefined ? info.ultimo : (info.h && info.h.ultimo_feito);
+  switch (info.selo) {
+    case "novo":         return { txt: "🆕 novo", cls: "novo" };
+    case "retorno":      return { txt: "↺ volta · última vez " + histHa(ult, hoje), cls: "ret" };
+    case "sem_registro": return { txt: "prescrito, sem registro", cls: "sr" };
+    case "recente":      return { txt: "fase anterior · " + histHa(ult, hoje), cls: "rec" };
+    default:             return null;
+  }
+}
+
+const histPl = (n, um, varios) => n + " " + (n === 1 ? um : varios);
+
+/* linhas do popover do ⚠️ + rodapé. Sem travessão, datas dd/mm/aa. */
+function histPopover(info) {
+  if (!info || !info.alerta) return null;
+  const C = histCfg();
+  const linhas = info.alerta.motivos.map(m => {
+    if (m.tipo === "dor") {
+      const onde = m.local ? (HIST_REGIOES[m.local] || m.local) +
+        (m.lado ? " (" + (HIST_LADO[m.lado] || m.lado) + ")" : "") : "";
+      return { ativo: m.ativo,
+        txt: ["Dor " + m.dor + "/10", onde, m.em ? dBR(m.em) : ""].filter(Boolean).join(" · "),
+        sub: m.ativo ? "" : "Últimas " + C.janelaResolvida + " sessões abaixo de " + C.dorAlerta + "/10" };
+    }
+    if (m.tipo === "anamnese") {
+      const quando = m.data ? dBR(m.data) : m.dataTexto;
+      return { ativo: m.ativo, cor: m.cor || null,
+        txt: ["Anamnese", m.secao, m.tipoNome].filter(Boolean).join(" · ") +
+          (m.texto ? ": " + m.texto : "") + (quando ? " (" + quando + ")" : ""),
+        sub: m.ativo ? "" : "Depois dela, " + C.janelaResolvida + " sessões abaixo de " + C.dorAlerta + "/10" };
+    }
+    if (m.tipo === "correcao") {
+      return { ativo: true, txt: histPl(m.n, "correção ativa", "correções ativas"), sub: "" };
+    }
+    return { ativo: !!m.ativo, txt: String(m.tipo || "alerta"), sub: "" };
+  });
+  const h = info.h;
+  const rodape = h && h.ultimo_feito
+    ? "Feito em " + histPl(h.sessoes, "sessão", "sessões") + ", " +
+      histPl(h.fases_feitas, "fase", "fases") + " · último " + dBR(h.ultimo_feito)
+    : "Nunca feito";
+  return { nivel: info.alerta.nivel, linhas, rodape };
+}
+
+/* resumo da fase: exercícios repetidos em duas sessões contam uma vez só */
+function histResumo(listaExs, ctx) {
+  const H = histApi();
+  const r = { novos: [], retornos: [], alertas: [] };
+  if (!H || !ctx || !ctx.rows) return r;
+  const vistos = [];
+  for (const ex of (listaExs || [])) {
+    const e = histEx(ex);
+    if (!e.nome && e.cardapioId == null) continue;
+    if (vistos.some(v => H.casaEx(v, e))) continue;
+    vistos.push(e);
+    const info = histInfo(ctx, ex);
+    if (!info) continue;
+    if (info.selo === "novo") r.novos.push({ nome: ex.nome });
+    if (info.selo === "retorno") r.retornos.push({ nome: ex.nome, ultimo: info.ultimo });
+    if (info.alerta && info.alerta.nivel === "ativo") {
+      const mot = info.alerta.motivos.filter(m => m.ativo).map(m =>
+        m.tipo === "dor" ? "dor " + m.dor + "/10" : m.tipo === "anamnese" ? "anamnese" : "correção ativa");
+      r.alertas.push({ nome: ex.nome, motivo: Array.from(new Set(mot)).join(", ") });
+    }
+  }
+  return r;
+}
+
+function histResumoPartes(r) {
+  return [
+    r.novos.length ? histPl(r.novos.length, "novo", "novos") : null,
+    r.retornos.length ? histPl(r.retornos.length, "retorno", "retornos") : null,
+    r.alertas.length ? histPl(r.alertas.length, "alerta", "alertas") : null
+  ].filter(Boolean);
+}
+
+/* mensagem pro WhatsApp: SÓ novos e retornos. Alerta fica com o treinador:
+   avisar "esse doeu" aumenta a expectativa de dor (nocebo; Colloca e
+   Benedetti, 2007). "" = nada a mandar. */
+function histMensagem(r) {
+  if (!r || (!r.novos.length && !r.retornos.length)) return "";
+  return [
+    "Fase nova liberada no app! 💪",
+    r.novos.length ? "Novidades: " + r.novos.map(x => x.nome).join(", ") : null,
+    r.retornos.length ? "De volta: " + r.retornos.map(x => x.nome).join(", ") : null,
+    "Qualquer dúvida me chama."
+  ].filter(Boolean).join("\n");
+}
+
+/* ⚠️ com popover. Vive dentro do botão do card e da opção da busca, então
+   todo evento para aqui: senão o clique abriria a edição ou escolheria o
+   exercício. O popover vai num portal (position:fixed) para não ser cortado
+   pela coluna. Passar o mouse mostra; clicar fixa. */
+function HistAlerta({ info }) {
+  const [pos, setPos] = useState(null);
+  const ref = React.useRef(null);
+  const fixo = React.useRef(false);
+
+  useEffect(() => {
+    if (!pos) return;
+    const fechar = () => { fixo.current = false; setPos(null); };
+    const fora = e => {
+      if (ref.current && ref.current.contains(e.target)) return;
+      if (e.target.closest && e.target.closest(".hs-pop")) return;
+      fechar();
+    };
+    window.addEventListener("scroll", fechar, true);
+    window.addEventListener("resize", fechar);
+    document.addEventListener("mousedown", fora);
+    return () => {
+      window.removeEventListener("scroll", fechar, true);
+      window.removeEventListener("resize", fechar);
+      document.removeEventListener("mousedown", fora);
+    };
+  }, [pos]);
+
+  const pop = histPopover(info);
+  if (!pop) return null;
+
+  function abrir() {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    const larg = Math.min(300, window.innerWidth - 16);
+    const left = Math.max(8, Math.min(r.left - 10, window.innerWidth - larg - 8));
+    const cima = r.bottom + 230 > window.innerHeight && r.top > 240;
+    setPos({ left, top: cima ? r.top - 6 : r.bottom + 6, cima });
+  }
+  const parar = e => { e.preventDefault(); e.stopPropagation(); };
+  function alternar(e) {
+    parar(e);
+    if (fixo.current) { fixo.current = false; setPos(null); }
+    else { fixo.current = true; abrir(); }
+  }
+
+  return (
+    <>
+      <span ref={ref} role="button" tabIndex={0}
+        className={"hs-al" + (pop.nivel === "apagado" ? " off" : "")}
+        aria-label={pop.nivel === "apagado" ? "Alerta resolvido: ver detalhes" : "Alerta: ver detalhes"}
+        onMouseEnter={() => { if (!fixo.current) abrir(); }}
+        onMouseLeave={() => { if (!fixo.current) setPos(null); }}
+        onMouseDown={parar} onClick={alternar}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") alternar(e); }}>⚠️</span>
+      {pos && ReactDOM.createPortal(
+        <div className="hs-pop" role="dialog"
+          style={{ left: pos.left, top: pos.top, transform: pos.cima ? "translateY(-100%)" : undefined }}
+          onMouseDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
+          {pop.linhas.map((l, i) => (
+            <div key={i} className={"hs-pl" + (l.ativo ? "" : " off")}
+              style={l.ativo && l.cor ? { "--hs-c": l.cor } : undefined}>
+              {l.txt}
+              {l.sub && <small>{l.sub}</small>}
+            </div>
+          ))}
+          <div className="hs-rod">{pop.rodape}</div>
+        </div>, document.body)}
+    </>
+  );
+}
+
+/* selo + ⚠️ lado a lado; nada a mostrar = nada no DOM */
+function HistMarcas({ info, hoje }) {
+  if (!info) return null;
+  const s = histSeloTexto(info, hoje);
+  if (!s && !info.alerta) return null;
+  return (
+    <span className="hs-lin">
+      {s && <span className={"hs hs-" + s.cls}>{s.txt}</span>}
+      {info.alerta && <HistAlerta info={info} />}
+    </span>
+  );
+}
+
+/* linha fixa no card da fase: "3 novos · 2 retornos · 1 alerta" */
+function HistResumoFase({ r, hoje, onCopiar }) {
+  const [aberto, setAberto] = useState(false);
+  const partes = histResumoPartes(r);
+  const msg = histMensagem(r);
+  return (
+    <div className="hs-res">
+      <div className="hs-res-l">
+        <span className="lb">Nesta fase</span>
+        {partes.length
+          ? <span>{partes.join(" · ")}</span>
+          : <span className="vz">nada novo, nenhum retorno nem alerta</span>}
+        {partes.length > 0 && (
+          <button type="button" className="hs-lk" onClick={() => setAberto(a => !a)}>
+            {aberto ? "esconder lista" : "ver lista"}
+          </button>
+        )}
+        {msg && (
+          <button type="button" className="tw-btn" onClick={() => onCopiar(msg)}
+            title={msg}>Copiar mensagem</button>
+        )}
+      </div>
+      {aberto && partes.length > 0 && (
+        <div className="hs-lista">
+          {r.novos.length > 0 && (
+            <div><b>Novidades</b>{r.novos.map(x => x.nome).join(", ")}</div>
+          )}
+          {r.retornos.length > 0 && (
+            <div><b>De volta</b>{r.retornos.map((x, i) => (
+              <React.Fragment key={i}>{i > 0 && ", "}{x.nome}
+                {x.ultimo && <span> ({histHa(x.ultimo, hoje)})</span>}</React.Fragment>
+            ))}</div>
+          )}
+          {r.alertas.length > 0 && (
+            <div><b>Alertas · só para você, fora da mensagem</b>{r.alertas.map((x, i) => (
+              <React.Fragment key={i}>{i > 0 && ", "}{x.nome}
+                {x.motivo && <span> ({x.motivo})</span>}</React.Fragment>
+            ))}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PainelMontagem() {
   const { alunoId: sel, alunos } = usarAluno();
   const { toast, confirmar } = usarUI();
@@ -11430,6 +11786,12 @@ function PainelMontagem() {
   const [criandoS, setCriandoS]   = useState(false);
   const sujoRef = React.useRef(false);
   const reqRef  = React.useRef(0);
+  /* histórico do exercício (selos + ⚠️). histRows null = sem dado: carregando,
+     falhou ou historico.js ausente. exAnt null = fase anterior ainda não lida. */
+  const [histRows, setHistRows] = useState(null);
+  const [exAnt, setExAnt]       = useState(null);
+  const histReq = React.useRef(0);
+  const antReq  = React.useRef(0);
 
   const hoje = dISO(new Date());
   const alunoObj = alunos.find(a => a.id === sel) || null;
@@ -11439,6 +11801,38 @@ function PainelMontagem() {
   const tecsFase = tecnicasDoTemplate(tplFase, catF.tecs);
   const info = mtFaseInfo(faseObj, hoje);
   const plano = mtPlano(fases, faseObj);
+  const antObj = histFaseAnterior(fases, faseObj);
+  const seloAqui = !!(faseObj && HIST_SELO_EM[situacaoFase(faseObj, hoje)]);
+  /* contexto das regras: o selo só liga com a fase anterior já lida, senão
+     tudo apareceria como "novo" por meio segundo */
+  const hctx = { rows: histRows, alvoId: faseSel, exAnt: exAnt ? exAnt.lista : null,
+                 comSelo: seloAqui && !!exAnt && exAnt.alvoId === faseSel };
+  const marcasBusca = c => (
+    <HistMarcas hoje={hoje} info={histInfo(hctx, { cardapio_id: c.id, nome: c.exercicio })} />
+  );
+
+  /* exercícios da fase IMEDIATAMENTE anterior (por inicio): é o que separa
+     "volta" de "fase anterior". Só quando a fase aberta mostra selo. */
+  useEffect(() => {
+    const rq = ++antReq.current;
+    setExAnt(null);
+    if (!faseSel || !seloAqui || !histApi()) return;
+    if (!antObj) { setExAnt({ alvoId: faseSel, lista: [] }); return; }
+    (async () => {
+      const t = await sb.from("treinos").select("id").eq("fase_id", antObj.id);
+      if (rq !== antReq.current) return;
+      if (t.error) { console.warn("[historico] fase anterior:", t.error.message); return; }
+      const ids = (t.data || []).map(x => x.id);
+      let lista = [];
+      if (ids.length) {
+        const e = await sb.from("exercicios").select("cardapio_id, nome").in("treino_id", ids);
+        if (rq !== antReq.current) return;
+        if (e.error) { console.warn("[historico] fase anterior:", e.error.message); return; }
+        lista = (e.data || []).map(histEx);
+      }
+      setExAnt({ alvoId: faseSel, lista });
+    })();
+  }, [faseSel, antObj ? antObj.id : "", seloAqui]);
 
   /* alteração não salva no formulário? pergunta antes de sair dele */
   async function podeSair() {
@@ -11493,6 +11887,21 @@ function PainelMontagem() {
     reqRef.current++;
     setEdit(null); setFoco(null); sujoRef.current = false;
     setFases([]); setFaseSel(""); setTreinos([]); setExs({}); setRelatos({});
+    /* histórico: UMA consulta por aluno, sempre filtrada por aluno_id (sem o
+       filtro a view calcula todos os alunos e estoura o timeout). Corre em
+       paralelo com as fases; falhou, a montagem segue sem selos. */
+    const hq = ++histReq.current;
+    setHistRows(null);
+    if (alunoId && histApi()) {
+      sb.from("vw_historico_exercicio_aluno").select("*").eq("aluno_id", alunoId)
+        .then(({ data, error }) => {
+          if (hq !== histReq.current) return;
+          if (error) { console.warn("[historico]", error.message); return; }
+          setHistRows(data || []);
+        }, e => console.warn("[historico]", e && e.message));
+    } else if (alunoId) {
+      console.warn("[historico] historico.js não carregou: montagem sem selos");
+    }
     if (!alunoId) { setCarr(false); return; }
     setCarr(true); setErro("");
     const f = await sb.from("fases").select("*")
@@ -11723,6 +12132,14 @@ function PainelMontagem() {
     toast("Sessão criada.");
   }
 
+  /* mensagem da fase nova pro WhatsApp do aluno (só novos e retornos) */
+  function copiarMensagem(msg) {
+    try {
+      Promise.resolve(navigator.clipboard.writeText(msg))
+        .then(() => toast("Mensagem copiada ✓"), () => toast("Não deu para copiar.", "erro"));
+    } catch (e) { toast("Não deu para copiar.", "erro"); }
+  }
+
   async function aposImportar(nT, nE, colide) {
     setImportar(false);
     await recarregar();
@@ -11850,7 +12267,8 @@ function PainelMontagem() {
         <div className={"tw-fxw" + (bl.grupo ? " gr" : "")} key={ex.id}>
           <FormExercicio key={ex.id} ex={ex} layout="coluna"
             onFechar={fecharEdicao} onSalvo={aposSalvar}
-            onSujo={v => { sujoRef.current = v; }} />
+            onSujo={v => { sujoRef.current = v; }}
+            marcasBusca={marcasBusca} />
         </div>
       );
     }
@@ -11873,6 +12291,7 @@ function PainelMontagem() {
                 </span>
               )}
               {tg}
+              <HistMarcas hoje={hoje} info={histInfo(hctx, ex)} />
             </span>
             {detalhesEx(ex)}
             {ex.observacao && (
@@ -11927,7 +12346,8 @@ function PainelMontagem() {
           <div className="tw-fxw">
             <FormExercicio key={"novo-" + s.t.id} treinoId={s.t.id} ordem={proxOrdem(s.lista)}
               layout="coluna" onFechar={fecharEdicao} onSalvo={aposSalvar}
-              onSujo={v => { sujoRef.current = v; }} />
+              onSujo={v => { sujoRef.current = v; }}
+            marcasBusca={marcasBusca} />
           </div>
         ) : (
           <button type="button" className="tw-add"
@@ -11958,6 +12378,7 @@ function PainelMontagem() {
           </span>
           <span className="tw-td">
             <b className="tw-nm">{ex.nome}</b>
+            <HistMarcas hoje={hoje} info={histInfo(hctx, ex)} />
             {detalhesEx(ex)}
           </span>
           <span className="tw-td mono">{n || "—"}</span>
@@ -11986,7 +12407,8 @@ function PainelMontagem() {
         {ed && (
           <FormExercicio key={ex.id} ex={ex} layout="painel"
             onFechar={fecharEdicao} onSalvo={aposSalvar}
-            onSujo={v => { sujoRef.current = v; }} />
+            onSujo={v => { sujoRef.current = v; }}
+            marcasBusca={marcasBusca} />
         )}
       </div>
     );
@@ -12014,7 +12436,8 @@ function PainelMontagem() {
             <div className="tw-tr ed">
               <FormExercicio key={"novo-" + s.t.id} treinoId={s.t.id} ordem={proxOrdem(s.lista)}
                 layout="painel" onFechar={fecharEdicao} onSalvo={aposSalvar}
-                onSujo={v => { sujoRef.current = v; }} />
+                onSujo={v => { sujoRef.current = v; }}
+            marcasBusca={marcasBusca} />
             </div>
           )}
         </div>
@@ -12051,6 +12474,10 @@ function PainelMontagem() {
               <span className="lb">Técnicas sugeridas</span>
               {tecsFase.map(t => <ChipTecnica key={t.id} t={t} />)}
             </div>
+          )}
+          {hctx.comSelo && hctx.rows && treinos.length > 0 && (
+            <HistResumoFase hoje={hoje} onCopiar={copiarMensagem}
+              r={histResumo(sessoes.flatMap(x => x.lista), hctx)} />
           )}
         </div>
         {plano.length > 1 && (
@@ -12242,6 +12669,10 @@ function PainelMontagem() {
         uma vez só, no fim da rodada. <b>Importar sessões</b> traz exercícios, séries,
         método, cardio, isometria/alongamento e bi-sets; não traz carga, correções,
         áudio nem histórico. As datas da fase se ajustam direto no card de cima.
+        Em fase futura, cada exercício mostra o histórico do aluno: <b>🆕 novo</b>,
+        <b>↺ volta</b> (fez antes, não está na fase anterior) ou, em cinza, o que já
+        vem da fase anterior. O <b>⚠️</b> é aviso, não veto: passa o mouse ou clica
+        para ver a dor, a anamnese ou a correção por trás dele.
       </div>
     </div>
   );
