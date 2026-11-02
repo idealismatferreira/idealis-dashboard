@@ -1690,6 +1690,70 @@
     .tn-app .pgcard.destaque{flex:1 1 100%}
     .in-card b{font-size:21px}
   }
+  /* ============ ANIVERSÁRIOS (01/11/2026) ============ */
+  /* card vermelho do Início: só existe com aluno ativo sem data de nascimento */
+  .in-card.alerta.on{--luz:var(--status-alerta)}
+  .in-card.alerta.on b{color:#ff8a8a}
+  .in-pend.c5{grid-template-columns:repeat(5,minmax(0,1fr))}
+  /* seções dentro do sino */
+  .sn-sec{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:9px 14px 5px;font-size:10px;text-transform:uppercase;letter-spacing:1px;
+    color:var(--mut);border-bottom:1px solid #182224}
+  .sn-sec button{width:auto;padding:0;background:none;border:none;color:var(--mut);
+    font-size:10.5px;font-weight:500;text-transform:none;letter-spacing:0;
+    text-decoration:underline;text-underline-offset:3px}
+  .sn-sec button:hover{color:var(--txt);filter:none}
+  .sn-tag{display:inline-block;font-style:normal;font-size:9px;padding:1px 6px;
+    border-radius:4px;font-weight:700;letter-spacing:.3px;vertical-align:1px}
+  .sn-tag.ok{background:#0f2a2e;color:var(--accent)}
+  .sn-tag.ts{background:#241a2e;color:#c9a6ff;text-transform:uppercase}
+  /* gaveta do bilhete */
+  .bl-st{font-size:12px;color:var(--mut);padding:9px 12px;border:1px dashed var(--line);
+    border-radius:9px}
+  .bl-st.ok{border-style:solid;border-color:#1d3a3e;color:var(--accent)}
+  .bl-teste{background:#1d1626;border:1px solid #3d2a52;color:#d9c2ff;border-radius:9px;
+    padding:10px 12px;font-size:12px;line-height:1.55;margin-bottom:12px}
+  .bl-teste button{width:auto;padding:5px 11px;font-size:11.5px;margin-top:8px;
+    background:transparent;border:1px solid #6b4e8f;color:#d9c2ff;font-weight:500}
+  .bl-teste button:hover{border-color:#c9a6ff;filter:none}
+  .bl-mods{display:flex;flex-wrap:wrap;gap:6px}
+  .bl-mods .chip{display:inline-flex;align-items:center;gap:6px}
+  .bl-mods .chip:disabled{opacity:.35;cursor:not-allowed}
+  .bl-mods .chip i{font-style:normal;font-size:9px;padding:1px 5px;border-radius:4px;
+    background:#2a2418;color:var(--warn);font-weight:600}
+  .bl-mods .chip.on i{background:#04191c}
+  .ed .bl-tx{font-family:inherit;font-size:13.5px;line-height:1.55;min-height:130px}
+  .bl-prev{background:#12160a;border:1px solid #4d5a10;border-radius:14px;
+    padding:13px 16px 15px;font-size:14px;line-height:1.6;white-space:pre-wrap;
+    overflow-wrap:anywhere;color:var(--txt)}
+  .bl-prev small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;
+    color:var(--marca);margin-bottom:6px;font-weight:600}
+  .bl-acs{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .bl-acs button{width:auto;padding:7px 12px;font-size:12px}
+  .bl-acs .rm:hover{border-color:var(--alert);color:var(--alert)}
+  .bl-info{font-size:11px;color:var(--mut);margin-top:6px;line-height:1.5}
+  /* lista de datas de nascimento faltando */
+  .ns-lin{display:grid;grid-template-columns:34px minmax(0,1fr) 128px 104px auto;
+    grid-template-areas:"av nm in id bt";gap:10px;align-items:center;
+    padding:9px 0;border-bottom:1px solid #182224}
+  .ns-av{grid-area:av;display:flex}
+  .ns-nm{grid-area:nm;font-size:13.5px;font-weight:500;min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .ns-lin .ns-in{grid-area:in;margin:0;padding:8px 10px;font-size:13px;
+    font-family:ui-monospace,monospace}
+  .ns-id{grid-area:id;font-size:11.5px;color:var(--mut)}
+  .ns-id.ok{color:var(--accent)}
+  .ns-id.err{color:#ff8a8a}
+  .ns-lin .ns-bt{grid-area:bt;width:auto;padding:8px 13px;font-size:12px}
+  @media (max-width: 900px){
+    .in-pend.c5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width: 720px){
+    .ed .bl-tx{font-size:16px}
+    .ns-lin{grid-template-columns:34px minmax(0,1fr) auto;
+      grid-template-areas:"av nm nm" ". in bt" ". id id"}
+    .ns-lin .ns-in{font-size:16px}
+  }
   /* ============ TREINOS · visão geral + sessão ampliada (V1, 18/10/2026) ============ */
   .tw{--tw-orange:var(--soft-orange)}
   /* ---- histórico do exercício na montagem (selos + ⚠️), brief do App 24/10/2026.
@@ -13438,8 +13502,11 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
    estiver aberto (marca-d'água anterior guardada no momento da abertura). */
 function SinoFeed() {
   const { itens, visto, naoLidas, marcarLidas, focar } = usarFeed();
+  /* aniversários: itens calculados, "visto" por navegador (sem DDL) */
+  const aniv = usarAniv();
   const [aberto, setAberto] = useState(false);
   const [antes, setAntes]   = useState(0);
+  const [anivAntes, setAnivAntes] = useState(() => new Set());
   const ref = React.useRef(null);
   const hoje = dISO(new Date());
   const fechar = useCallback(() => setAberto(false), []);
@@ -13455,28 +13522,65 @@ function SinoFeed() {
   function alternar() {
     if (aberto) { setAberto(false); return; }
     setAntes(visto);
+    setAnivAntes(new Set(aniv.vistos));
     setAberto(true);
     if (naoLidas) marcarLidas();
+    if (aniv.naoVistos) aniv.marcarVistos();
   }
 
   const lista = (itens || []).slice(0, 20);
-  const novas = lista.filter(i => i.reg > antes).length;
+  const anivs = aniv.itens;
+  const novas = lista.filter(i => i.reg > antes).length +
+    anivs.filter(i => !anivAntes.has(i.key)).length;
+  const total = naoLidas + aniv.naoVistos;
 
   return (
     <div className="sn" ref={ref}>
-      <button className={"sn-bt" + (naoLidas ? " aceso" : "") + (aberto ? " on" : "")}
-        title={naoLidas ? naoLidas + " observação(ões) nova(s)" : "Observações dos alunos"}
-        aria-label="Observações dos alunos" onClick={alternar}>
+      <button className={"sn-bt" + (total ? " aceso" : "") + (aberto ? " on" : "")}
+        title={total ? total + " notificação(ões) nova(s)" : "Notificações"}
+        aria-label="Notificações" onClick={alternar}>
         <IconeSino />
-        {naoLidas > 0 && <span className="sn-bd">{naoLidas > 99 ? "99+" : naoLidas}</span>}
+        {total > 0 && <span className="sn-bd">{total > 99 ? "99+" : total}</span>}
       </button>
       {aberto && (
         <div className="sn-pop">
           <div className="sn-hd">
-            <b>Observações</b>
+            <b>Notificações</b>
             <span>{novas ? novas + " nova(s)" : "nada novo"}</span>
           </div>
           <div className="sn-lista">
+            {anivs.length > 0 && (
+              <>
+                <div className="sn-sec">
+                  <span>Aniversários</span>
+                  {aniv.teste && (
+                    <button onClick={aniv.encerrarTeste}>encerrar teste</button>
+                  )}
+                </div>
+                {anivs.map(it => {
+                  const [a, b, c] = anivFrase(it);
+                  return (
+                    <button key={it.key}
+                      className={"sn-it anv" + (anivAntes.has(it.key) ? "" : " nv")}
+                      onClick={() => { setAberto(false); aniv.abrir(it); }}>
+                      <FeedAvatar it={it} px={30} />
+                      <span className="sn-tx">
+                        {it.dias === 0 ? "🎂 " : "🎈 "}{a}<b>{b}</b>{c}
+                        <i>
+                          {dBR(it.data).slice(0, 5)}
+                          {it.anos ? " · " + it.anos + " anos" : ""}
+                          {" · "}
+                          {it.teste ? <span className="sn-tag ts">teste</span>
+                            : it.bilhete ? <span className="sn-tag ok">✍️ bilhete pronto</span>
+                            : "sem bilhete"}
+                        </i>
+                      </span>
+                    </button>
+                  );
+                })}
+                <div className="sn-sec"><span>Observações</span></div>
+              </>
+            )}
             {itens === null ? <div className="fd-vz">Carregando...</div>
              : lista.length === 0 ? <div className="fd-vz">Nada nos últimos {FEED_DIAS} dias.</div>
              : lista.map(it => {
@@ -13501,6 +13605,645 @@ function SinoFeed() {
         </div>
       )}
     </div>
+  );
+}
+
+/* ============ ANIVERSÁRIOS · sino + bilhete do treinador ============
+   Decisões de 01/11/2026:
+   - aviso no sino de D-3 a D-1 ("Daqui 3 dias Fulano faz aniversário") e
+     no D-0 ("Fulano faz aniversário hoje!"). Só aluno ATIVO com nascimento.
+     O aviso de antes é UM item só: o texto conta os dias, mas não acende o
+     sino de novo. O do dia é outro item, e acende.
+   - sem "parabenizei": o único estado é o "visto" do sino, por navegador.
+   - o dia do aniversário NÃO vai para o "Precisa de você" do Início.
+   - quem nasceu em 29/02 é lembrado em 28/02 nos anos não bissextos.
+   - bilhete: tabela `bilhetes`, tipo 'aniversario'. O texto vai FINAL, já
+     resolvido: o App só exibe, não calcula nada. Sem bilhete, o App não
+     mostra nada (nada de texto genérico automático).
+   - RLS: o aluno só lê o bilhete a partir do exibir_em. A surpresa é
+     garantida no banco, não na boa vontade do App.
+   Multitenant: FUSO e TREINADOR_NOME viram configuração do tenant, e os
+   4 modelos migram para bilhete_modelos(tenant_id, ...). Por isso moram
+   aqui em cima, e em mais nenhum lugar. */
+const FUSO            = "America/Sao_Paulo";
+const TREINADOR_NOME  = "Matheus";
+const ANIV_JANELA     = 3;          /* dias de antecedência do aviso */
+const ANIV_POLL_MS    = 300000;
+const ANIV_LS_VISTOS  = "idealis_aniv_vistos_v1";
+const ANIV_LS_TESTE   = "idealis_aniv_teste_v1";
+const ANIV_TESTE_H    = 72;         /* o teste some sozinho depois disso */
+const BILHETE_MAX     = 600;        /* mesmo limite do check no banco */
+const BILHETE_MIN_TREINOS = 8;
+
+/* hoje no fuso da consultoria, não no relógio do computador */
+function hojeFuso(agora) {
+  const d = agora || new Date();
+  try {
+    const p = {};
+    for (const x of new Intl.DateTimeFormat("en-CA", { timeZone: FUSO, year: "numeric",
+      month: "2-digit", day: "2-digit" }).formatToParts(d)) p[x.type] = x.value;
+    if (p.year && p.month && p.day) return p.year + "-" + p.month + "-" + p.day;
+  } catch (e) {}
+  return dISO(d);
+}
+
+const ehBissexto = a => (a % 4 === 0 && a % 100 !== 0) || a % 400 === 0;
+const pad2 = n => String(n).padStart(2, "0");
+const nascValido = v => /^\d{4}-\d{2}-\d{2}/.test(String(v || ""));
+
+/* data do aniversário naquele ano (29/02 vira 28/02 fora do bissexto) */
+function anivNoAno(nascISO, ano) {
+  const [, m, d] = String(nascISO).slice(0, 10).split("-").map(Number);
+  const dia = (m === 2 && d === 29 && !ehBissexto(ano)) ? 28 : d;
+  return ano + "-" + pad2(m) + "-" + pad2(dia);
+}
+/* próximo aniversário a partir de hoje (inclusive) */
+function anivProximo(nascISO, hojeISO) {
+  const ano = Number(hojeISO.slice(0, 4));
+  const este = anivNoAno(nascISO, ano);
+  return este >= hojeISO ? este : anivNoAno(nascISO, ano + 1);
+}
+const diasEntre = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 864e5);
+
+/* idade completa no dia hojeISO */
+function idadeEm(nascISO, hojeISO) {
+  const n = String(nascISO).slice(0, 10);
+  const ano = Number(hojeISO.slice(0, 4));
+  return ano - Number(n.slice(0, 4)) - (hojeISO < anivNoAno(n, ano) ? 1 : 0);
+}
+
+/* alunos ativos com aniversário nos próximos ANIV_JANELA dias. Função pura:
+   é ela que os testes cobrem. */
+function anivProximos(alunos, hojeISO) {
+  const out = [];
+  for (const a of (alunos || [])) {
+    if (!a || a.status !== "ativo" || !nascValido(a.nascimento)) continue;
+    const data = anivProximo(a.nascimento, hojeISO);
+    const dias = diasEntre(hojeISO, data);
+    if (dias < 0 || dias > ANIV_JANELA) continue;
+    const anos = Number(data.slice(0, 4)) - Number(String(a.nascimento).slice(0, 4));
+    out.push({
+      /* o aviso de antes e o do dia têm chaves diferentes: o do dia acende
+         o sino de novo, o de antes não (o texto muda, a chave não) */
+      key: "aniv:" + a.id + ":" + data + (dias === 0 ? ":dia" : ":pre"),
+      aluno_id: a.id, aluno: a.nome, foto: a.foto_url || null,
+      telefone: a.telefone || null, data, dias,
+      /* idade fora disso = data cadastrada errada: avisa sem idade */
+      anos: anos >= 5 && anos <= 110 ? anos : null, teste: false
+    });
+  }
+  return out.sort((x, y) => x.dias - y.dias ||
+    String(x.aluno).localeCompare(String(y.aluno), "pt-BR"));
+}
+
+/* "Daqui 3 dias " + Fulano + " faz aniversário" */
+function anivFrase(it) {
+  if (it.dias === 0) return ["", it.aluno, " faz aniversário hoje!"];
+  if (it.dias === 1) return ["Amanhã ", it.aluno, " faz aniversário"];
+  return ["Daqui " + it.dias + " dias ", it.aluno, " faz aniversário"];
+}
+
+/* ---- modo teste: aparece sozinho na primeira abertura depois desta versão,
+   some com "encerrar teste" ou depois de ANIV_TESTE_H horas. Nada gravado. */
+function anivTesteAtivo(agoraMs) {
+  try {
+    const raw = localStorage.getItem(ANIV_LS_TESTE);
+    if (raw === "feito") return false;
+    let ini = Number(raw);
+    if (!ini) { ini = agoraMs; localStorage.setItem(ANIV_LS_TESTE, String(ini)); }
+    return agoraMs - ini < ANIV_TESTE_H * 36e5;
+  } catch (e) { return false; }
+}
+function anivItensTeste(hojeISO) {
+  return [
+    { key: "aniv:teste:dia", aluno_id: "teste-dia", aluno: "Aluno Teste", foto: null,
+      telefone: null, data: hojeISO, dias: 0, anos: 30, teste: true, bilhete: null },
+    { key: "aniv:teste:pre", aluno_id: "teste-pre", aluno: "Aluna Teste", foto: null,
+      telefone: null, data: dISO(addDias(parseISO(hojeISO), ANIV_JANELA)),
+      dias: ANIV_JANELA, anos: 25, teste: true, bilhete: null }
+  ];
+}
+
+function anivLerVistos() {
+  try {
+    const v = JSON.parse(localStorage.getItem(ANIV_LS_VISTOS) || "[]");
+    return new Set(Array.isArray(v) ? v : []);
+  } catch (e) { return new Set(); }
+}
+/* poda o que já passou há mais de uma semana: a lista não cresce para sempre */
+function anivGravarVistos(set, hojeISO) {
+  const lim = dISO(addDias(parseISO(hojeISO), -7));
+  const fica = [...set].filter(k => {
+    const m = String(k).match(/:(\d{4}-\d{2}-\d{2}):/);
+    return !m || m[1] >= lim;
+  });
+  try { localStorage.setItem(ANIV_LS_VISTOS, JSON.stringify(fica)); } catch (e) {}
+}
+
+/* ---- bilhete: os 4 modelos. Variáveis: {nome} (primeiro nome), {anos},
+   {treinos} (treinos no calendário dos últimos 12 meses), {treinador}.
+   O modelo 2 se apoia em Momma et al., 2022 (BJSM): fortalecimento muscular
+   associado a ~10-17% menos mortalidade por todas as causas. Associação, não
+   promessa: por isso "investimento". */
+const BILHETE_MODELOS = [
+  { id: "dados", rot: "📊 Dados do ano", precisa: "treinos",
+    texto: "Feliz aniversário, {nome}! 🎂 Nos últimos 12 meses você registrou " +
+      "{treinos} aqui, e cada um conta. Que esse novo ano venha com carga subindo " +
+      "e corpo agradecendo. Tamo junto! — {treinador}" },
+  { id: "forte", rot: "💪 Mais forte", precisa: "anos",
+    texto: "{anos} anos e cada vez mais forte, {nome}! 💪 Treino de força é um dos " +
+      "melhores investimentos na sua saúde a longo prazo, e você está construindo " +
+      "isso um treino de cada vez. Feliz aniversário! — {treinador}" },
+  { id: "dor", rot: "🌱 Quem treina com dor",
+    texto: "Feliz aniversário, {nome}! 🎂 Ver você voltando a confiar no próprio " +
+      "corpo é das coisas que mais me motivam nesse trabalho. Que esse novo ano " +
+      "venha com mais movimento e menos limites. — {treinador}" },
+  { id: "curto", rot: "🥳 Curto e caloroso",
+    texto: "Parabéns, {nome}! 🥳 Muita saúde, alegria e treino bom nesse novo ano. " +
+      "Feliz demais por fazer parte da sua jornada! Abraço, {treinador}" }
+];
+const primeiroNome = n => String(n || "").trim().split(/\s+/)[0] || "";
+
+function bilheteResolver(texto, v) {
+  return String(texto || "")
+    .replace(/\{nome\}/g, v.nome || "")
+    .replace(/\{anos\}/g, v.anos != null ? String(v.anos) : "")
+    .replace(/\{treinos\}/g, v.treinos == null ? ""
+      : v.treinos + (v.treinos === 1 ? " treino" : " treinos"))
+    .replace(/\{treinador\}/g, v.treinador || TREINADOR_NOME);
+}
+function bilheteModeloOk(m, v) {
+  if (m.precisa === "anos") return v.anos != null;
+  if (m.precisa === "treinos") return v.treinos != null;
+  return true;
+}
+/* abre no "Dados do ano" só quando há histórico que valha mostrar */
+function bilheteModeloPadrao(v) {
+  return v.treinos != null && v.treinos >= BILHETE_MIN_TREINOS ? "dados" : "curto";
+}
+const BILHETE_VAR_RE = /\{(nome|anos|treinos|treinador)\}/;
+
+/* "(11) 98765-4321" -> "5511987654321". null = não parece número BR */
+function waNumero(tel) {
+  let d = String(tel || "").replace(/\D/g, "");
+  if (!d) return null;
+  if (d.startsWith("00")) d = d.slice(2);
+  else if (d[0] === "0") d = d.slice(1);           /* 0 de longa distância */
+  if (d.length === 10 || d.length === 11) d = "55" + d;
+  return (d.length === 12 || d.length === 13) && d.startsWith("55") ? d : null;
+}
+
+/* ---- data de nascimento digitada (dd/mm/aaaa). Digitar, não calendário:
+   voltar até 1987 mês a mês é tortura. A trava contra erro é a idade na
+   hora: "2019" no lugar de "1991" aparece como "7 anos?" e não salva. */
+function mascaraData(v) {
+  const d = String(v || "").replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return d.slice(0, 2) + "/" + d.slice(2);
+  return d.slice(0, 2) + "/" + d.slice(2, 4) + "/" + d.slice(4);
+}
+function lerNascimento(txt, hojeISO) {
+  const m = String(txt || "").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return { incompleto: true };
+  const dd = +m[1], mm = +m[2], aa = +m[3];
+  if (mm < 1 || mm > 12) return { erro: "mês inválido" };
+  if (dd < 1 || dd > new Date(aa, mm, 0).getDate())
+    return { erro: "dia " + pad2(dd) + " não existe em " + pad2(mm) + "/" + aa };
+  const iso = aa + "-" + pad2(mm) + "-" + pad2(dd);
+  if (iso > hojeISO) return { erro: "data no futuro" };
+  const idade = idadeEm(iso, hojeISO);
+  if (idade < 10 || idade > 100) return { erro: idade + " anos? confere o ano" };
+  return { iso, idade };
+}
+
+/* ---- contexto: uma leitura de alunos serve o sino E o card do Início ---- */
+const CtxAniv = React.createContext({ itens: [], vistos: new Set(), naoVistos: 0,
+  marcarVistos: () => {}, teste: false, encerrarTeste: () => {}, abrir: () => {},
+  semNascimento: null, recarregar: async () => {}, hoje: "" });
+const usarAniv = () => React.useContext(CtxAniv);
+
+function ProvedorAniv({ children }) {
+  const [alunos, setAlunos]     = useState(null);
+  const [bilhetes, setBilhetes] = useState({});   /* "aluno|data" -> linha */
+  const [vistos, setVistos]     = useState(() => anivLerVistos());
+  const [teste, setTeste]       = useState(() => anivTesteAtivo(Date.now()));
+  const [aberto, setAberto]     = useState(null);
+  const [hoje, setHoje]         = useState(() => hojeFuso());
+
+  /* RLS decide quem aparece: no multitenant vira "alunos do tenant" sem
+     mudar uma linha aqui */
+  const recarregar = useCallback(async () => {
+    const h = hojeFuso();
+    setHoje(h);
+    const r = await sb.from("alunos")
+      .select("id, nome, foto_url, status, nascimento, telefone");
+    if (r.error) { console.warn("[aniversario] alunos:", r.error.message); return; }
+    setAlunos(r.data || []);
+    const b = await sb.from("bilhetes").select("id, aluno_id, exibir_em, atualizado_em")
+      .eq("tipo", "aniversario").gte("exibir_em", h)
+      .lte("exibir_em", dISO(addDias(parseISO(h), ANIV_JANELA)));
+    if (b.error) { console.warn("[aniversario] bilhetes:", b.error.message); return; }
+    const m = {};
+    for (const x of (b.data || [])) m[x.aluno_id + "|" + x.exibir_em] = x;
+    setBilhetes(m);
+  }, []);
+
+  useEffect(() => {
+    recarregar();
+    const t = setInterval(() => { if (!document.hidden) recarregar(); }, ANIV_POLL_MS);
+    const vis = () => { if (!document.hidden) recarregar(); };
+    document.addEventListener("visibilitychange", vis);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", vis); };
+  }, [recarregar]);
+
+  const itens = useMemo(() => {
+    const reais = alunos === null ? [] : anivProximos(alunos, hoje)
+      .map(i => ({ ...i, bilhete: bilhetes[i.aluno_id + "|" + i.data] || null }));
+    if (!teste) return reais;
+    /* teste entra na mesma ordem dos reais: quem faz hoje primeiro */
+    return [...anivItensTeste(hoje), ...reais].sort((x, y) => x.dias - y.dias ||
+      (y.teste - x.teste) || String(x.aluno).localeCompare(String(y.aluno), "pt-BR"));
+  }, [alunos, bilhetes, hoje, teste]);
+
+  const naoVistos = itens.filter(i => !vistos.has(i.key)).length;
+
+  const marcarVistos = useCallback(() => {
+    setVistos(v => {
+      const n = new Set(v);
+      itens.forEach(i => n.add(i.key));
+      anivGravarVistos(n, hoje);
+      return n;
+    });
+  }, [itens, hoje]);
+
+  const encerrarTeste = useCallback(() => {
+    try { localStorage.setItem(ANIV_LS_TESTE, "feito"); } catch (e) {}
+    setTeste(false);
+    setAberto(a => (a && a.teste ? null : a));
+  }, []);
+
+  const marcarBilhete = useCallback((alunoId, data, linha) => {
+    setBilhetes(m => {
+      const n = { ...m }, k = alunoId + "|" + data;
+      if (linha) n[k] = linha; else delete n[k];
+      return n;
+    });
+  }, []);
+
+  /* ativos sem data, em ordem alfabética: alimenta o card vermelho do Início */
+  const semNascimento = useMemo(() => alunos === null ? null
+    : alunos.filter(a => a.status === "ativo" && !nascValido(a.nascimento))
+        .sort((x, y) => String(x.nome).localeCompare(String(y.nome), "pt-BR")),
+  [alunos]);
+
+  const valor = { itens, vistos, naoVistos, marcarVistos, teste, encerrarTeste,
+    abrir: setAberto, semNascimento, recarregar, hoje };
+
+  return (
+    <CtxAniv.Provider value={valor}>
+      {children}
+      {aberto && (
+        <DrawerBilhete key={aberto.key} it={aberto} hoje={hoje}
+          onFechar={() => setAberto(null)} onEncerrarTeste={encerrarTeste}
+          onSalvo={linha => marcarBilhete(aberto.aluno_id, aberto.data, linha)} />
+      )}
+    </CtxAniv.Provider>
+  );
+}
+
+/* ---- gaveta do bilhete ----
+   Escreve um bilhete por aluno + dia (upsert na chave única). Salvar,
+   apagar, copiar e, no dia, abrir o WhatsApp do aluno com o texto. */
+function DrawerBilhete({ it, hoje, onFechar, onSalvo, onEncerrarTeste }) {
+  const { toast, confirmar } = usarUI();
+  const [treinos, setTreinos]     = useState(it.teste ? 48 : undefined);
+  const [existente, setExistente] = useState(it.teste ? null : undefined);
+  const [modelo, setModelo]       = useState("");
+  const [texto, setTexto]         = useState("");
+  const [base, setBase]           = useState("");
+  const [editado, setEditado]     = useState(false);
+  const [busy, setBusy]           = useState(false);
+  const [erro, setErro]           = useState("");
+
+  const vars = { nome: primeiroNome(it.aluno), anos: it.anos, treinos,
+                 treinador: TREINADOR_NOME };
+  const sujo = !it.teste && texto.trim() !== base.trim();
+
+  function aplicar(id, v) {
+    const m = BILHETE_MODELOS.find(x => x.id === id);
+    setModelo(id);
+    setTexto(m ? bilheteResolver(m.texto, v) : "");
+    setEditado(false);
+  }
+
+  useEffect(() => {
+    if (it.teste) { aplicar(bilheteModeloPadrao(vars), vars); return; }
+    let vivo = true;
+    (async () => {
+      const desde = dISO(addDias(parseISO(hoje), -365));
+      const [b, c] = await Promise.all([
+        sb.from("bilhetes").select("id, texto, atualizado_em")
+          .eq("aluno_id", it.aluno_id).eq("tipo", "aniversario")
+          .eq("exibir_em", it.data).maybeSingle(),
+        /* treinos = linhas do calendário (um por treino feito no dia), a
+           mesma fonte do heatmap do Acompanhamento */
+        sb.from("v_calendario_treinos").select("aluno_id", { count: "exact", head: true })
+          .eq("aluno_id", it.aluno_id).gte("data", desde).lte("data", hoje)
+      ]);
+      if (!vivo) return;
+      const tr = c.error ? null : (c.count || 0);
+      setTreinos(tr);
+      if (b.error) { setErro("bilhetes: " + b.error.message); setExistente(null); }
+      else setExistente(b.data || null);
+      if (b.data) {
+        setTexto(b.data.texto || ""); setBase(b.data.texto || ""); setModelo("");
+      } else {
+        const v = { ...vars, treinos: tr };
+        aplicar(bilheteModeloPadrao(v), v);
+      }
+    })();
+    return () => { vivo = false; };
+  }, [it.key]);
+
+  async function fecharSeguro() {
+    if (sujo) {
+      const ok = await confirmar({ titulo: "Fechar sem salvar?",
+        texto: "O bilhete não foi salvo. Sem ele, o App não mostra nada para " +
+          primeiroNome(it.aluno) + ".", ok: "Fechar", perigo: true });
+      if (!ok) return;
+    }
+    onFechar();
+  }
+  /* com a confirmação aberta, o Esc é dela */
+  useEsc(true, () => { if (!document.querySelector(".conf")) fecharSeguro(); });
+
+  async function escolher(m) {
+    if (!bilheteModeloOk(m, vars)) return;
+    if (editado) {
+      const ok = await confirmar({ titulo: "Trocar pelo modelo?",
+        texto: "O que você escreveu no texto será substituído.", ok: "Trocar" });
+      if (!ok) return;
+    }
+    aplicar(m.id, vars);
+  }
+
+  async function salvar() {
+    const t = texto.trim();
+    if (!t || t.length > BILHETE_MAX || busy) return;
+    const sobra = t.match(BILHETE_VAR_RE);
+    if (sobra) { setErro("Ainda tem " + sobra[0] + " no texto: troca pela palavra."); return; }
+    if (it.teste) {
+      toast("Modo teste: nada foi gravado. Num aniversário de verdade, aqui o " +
+        "bilhete vai para o banco.", "aviso");
+      return;
+    }
+    setBusy(true); setErro("");
+    /* .select(): sem permissão o banco não dá erro, só devolve 0 linhas */
+    const r = await sb.from("bilhetes").upsert(
+      { aluno_id: it.aluno_id, tipo: "aniversario", exibir_em: it.data, texto: t },
+      { onConflict: "aluno_id,tipo,exibir_em" }).select("id, texto, atualizado_em");
+    setBusy(false);
+    if (r.error || !r.data || !r.data.length) {
+      setErro(r.error ? r.error.message : "O banco não confirmou a gravação.");
+      return;
+    }
+    const linha = r.data[0];
+    setExistente(linha); setTexto(linha.texto); setBase(linha.texto); setEditado(false);
+    onSalvo({ id: linha.id, aluno_id: it.aluno_id, exibir_em: it.data,
+              atualizado_em: linha.atualizado_em });
+    toast("Bilhete salvo ✓ · " + primeiroNome(it.aluno) + " recebe no dia " +
+      dBR(it.data).slice(0, 5) + ".");
+  }
+
+  async function apagar() {
+    if (!existente || it.teste || busy) return;
+    const ok = await confirmar({ titulo: "Apagar o bilhete?",
+      texto: "Sem bilhete, o App não mostra nada para " + primeiroNome(it.aluno) + ".",
+      ok: "Apagar", perigo: true });
+    if (!ok) return;
+    setBusy(true);
+    const r = await sb.from("bilhetes").delete().eq("id", existente.id).select("id");
+    setBusy(false);
+    if (r.error || !r.data || !r.data.length) {
+      setErro(r.error ? r.error.message : "O banco não deixou apagar."); return;
+    }
+    setExistente(null); setBase("");
+    onSalvo(null);
+    toast("Bilhete apagado.");
+  }
+
+  function copiar() {
+    try {
+      Promise.resolve(navigator.clipboard.writeText(texto.trim()))
+        .then(() => toast("Texto copiado ✓"), () => toast("Não deu para copiar.", "erro"));
+    } catch (e) { toast("Não deu para copiar.", "erro"); }
+  }
+
+  const wa = waNumero(it.telefone);
+  function abrirWhats() {
+    if (it.teste) {
+      toast("No teste o WhatsApp não abre. Num aniversário real ele abre a conversa " +
+        "do aluno já com o texto do bilhete.", "aviso");
+      return;
+    }
+    if (!wa) return;
+    window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(texto.trim()),
+      "_blank", "noopener");
+  }
+
+  const quando = it.dias === 0 ? "hoje"
+    : it.dias === 1 ? "amanhã, " + dBR(it.data).slice(0, 5)
+    : "em " + it.dias + " dias, " + dBR(it.data).slice(0, 5);
+  const t = texto.trim();
+  const sobra = t.match(BILHETE_VAR_RE);
+
+  return (
+    <>
+      <div className="drawer-bg" style={{ zIndex: 69 }} onClick={fecharSeguro} />
+      <div className="ed bl" role="dialog" aria-label={"Bilhete de aniversário de " + it.aluno}>
+        <div className="ed-h">
+          <button className="dr-x" onClick={fecharSeguro} aria-label="Fechar">×</button>
+          <h3>🎂 Bilhete de aniversário</h3>
+          <p>
+            <b>{it.aluno}</b> · {quando}
+            {it.anos ? " · faz " + it.anos + " anos" : " · idade não confere, revisa a data na ficha"}
+          </p>
+        </div>
+
+        <div className="ed-b">
+          {it.teste && (
+            <div className="bl-teste">
+              <b>Modo teste.</b> Aluno de mentira, nada é gravado e o WhatsApp não abre.
+              Mexe à vontade: modelos, texto, prévia. Num aniversário real é esta mesma
+              tela, só que salvando.
+              <br />
+              <button onClick={onEncerrarTeste}>Encerrar teste</button>
+            </div>
+          )}
+          {erro && <div className="err">{erro}</div>}
+
+          <div className={"bl-st" + (existente ? " ok" : "")}>
+            {it.teste ? "modo teste · nada é gravado"
+              : existente === undefined ? "carregando..."
+              : existente ? "✍️ bilhete pronto · salvo " + dHora(existente.atualizado_em) +
+                  (sujo ? " · com alteração não salva" : "")
+              : "sem bilhete ainda · sem ele o App não mostra nada"}
+          </div>
+
+          <div className="ed-lab">Modelo <i>clica para preencher · tudo editável</i></div>
+          <div className="bl-mods">
+            {BILHETE_MODELOS.map(m => {
+              const ok = bilheteModeloOk(m, vars);
+              const pouco = m.id === "dados" && treinos != null && treinos < BILHETE_MIN_TREINOS;
+              return (
+                <button key={m.id} type="button" disabled={!ok}
+                  className={"chip mini" + (modelo === m.id ? " on" : "")}
+                  title={!ok ? (m.precisa === "anos" ? "Sem idade confiável na ficha"
+                    : treinos === undefined ? "Contando os treinos..." : "Não consegui contar os treinos")
+                    : ""}
+                  onClick={() => escolher(m)}>
+                  {m.rot}{pouco && <i>poucos dados</i>}
+                </button>
+              );
+            })}
+          </div>
+          <div className="bl-info">
+            {treinos === undefined ? "contando treinos..."
+              : treinos === null ? "não consegui contar os treinos (o modelo 1 fica desligado)"
+              : treinos + (treinos === 1 ? " treino" : " treinos") +
+                " nos últimos 12 meses, pelo calendário de treinos"}
+          </div>
+
+          <div className="ed-lab">Texto <i>{t.length}/{BILHETE_MAX}</i></div>
+          <textarea className="bl-tx" rows={6} value={texto} maxLength={BILHETE_MAX}
+            onChange={e => { setTexto(e.target.value); setEditado(true); }}
+            placeholder="Escreve o bilhete ou escolhe um modelo acima" />
+          {sobra && (
+            <div className="bl-info" style={{ color: "var(--warn)" }}>
+              {sobra[0]} ainda está no texto: troca pela palavra antes de salvar.
+            </div>
+          )}
+
+          <div className="ed-lab">Prévia <i>o visual final é do App</i></div>
+          <div className="bl-prev">
+            <small>Bilhete do seu treinador</small>
+            {t || <span style={{ color: "var(--mut)" }}>(vazio)</span>}
+          </div>
+
+          <div className="bl-acs">
+            <button className="btn-sec" onClick={copiar} disabled={!t}>Copiar texto</button>
+            {it.dias === 0 && (wa || it.teste ? (
+              <button className="btn-sec" onClick={abrirWhats} disabled={!t}>
+                Abrir WhatsApp
+              </button>
+            ) : (
+              <span className="bl-info" style={{ alignSelf: "center", marginTop: 0 }}>
+                {it.telefone ? "telefone fora do padrão na ficha" : "sem telefone na ficha"}
+              </span>
+            ))}
+            {existente && (
+              <button className="btn-sec rm" onClick={apagar} disabled={busy}>Apagar bilhete</button>
+            )}
+          </div>
+
+          <div className="pl-hint" style={{ marginTop: 16 }}>
+            O aluno vê o bilhete ao abrir o App no dia do aniversário (ou até 2 dias
+            depois, se não abrir no dia). Antes disso o banco esconde: dá para
+            escrever com antecedência sem estragar a surpresa.
+          </div>
+        </div>
+
+        <div className="ed-f">
+          <button className="btn-sec" onClick={fecharSeguro}>Fechar</button>
+          <button onClick={salvar}
+            disabled={busy || !t || t.length > BILHETE_MAX || !!sobra || (!sujo && !it.teste && !!existente)}>
+            {busy ? "Salvando..." : it.teste ? "Salvar (teste)" : existente ? "Salvar alteração" : "Salvar bilhete"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---- datas de nascimento faltando (card vermelho do Início) ----
+   UPDATE só em alunos.nascimento, coluna que já existe: zero DDL. */
+function ModalNascimentos({ onFechar }) {
+  useEsc(true, onFechar);
+  const { semNascimento, recarregar, hoje } = usarAniv();
+  const { toast } = usarUI();
+  const [txt, setTxt]   = useState({});
+  const [busy, setBusy] = useState("");
+  const [erro, setErro] = useState("");
+  const lista = semNascimento || [];
+
+  async function salvar(a) {
+    const v = lerNascimento(txt[a.id], hoje);
+    if (!v.iso || busy) return;
+    setBusy(a.id); setErro("");
+    const r = await sb.from("alunos").update({ nascimento: v.iso })
+      .eq("id", a.id).select("id");
+    setBusy("");
+    if (r.error || !r.data || !r.data.length) {
+      setErro(a.nome + ": " + (r.error ? r.error.message
+        : "o banco não deixou alterar este aluno (permissão)."));
+      return;
+    }
+    toast(primeiroNome(a.nome) + " · " + dBR(v.iso) + " salvo ✓");
+    setTxt(m => { const n = { ...m }; delete n[a.id]; return n; });
+    await recarregar();
+  }
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={onFechar} />
+      <div className="drawer" style={{ width: "min(660px,96vw)" }}>
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar} aria-label="Fechar">×</button>
+          <h2>Datas de nascimento</h2>
+          <div className="meta">
+            {semNascimento === null ? "carregando..."
+              : lista.length + (lista.length === 1 ? " aluno ativo" : " alunos ativos") +
+                " sem data · aniversário e FC do cardio dependem dela"}
+          </div>
+        </div>
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+          {semNascimento !== null && lista.length === 0 ? (
+            <div className="sem-aluno">
+              <b>Tudo preenchido 🎉</b>
+              O card some do Início.
+            </div>
+          ) : lista.map(a => {
+            const v = lerNascimento(txt[a.id], hoje);
+            return (
+              <div className="ns-lin" key={a.id}>
+                <span className="ns-av">
+                  <FeedAvatar it={{ foto: a.foto_url, aluno: a.nome }} px={34} />
+                </span>
+                <span className="ns-nm" title={a.nome}>{a.nome}</span>
+                <input className="ns-in" inputMode="numeric" placeholder="dd/mm/aaaa"
+                  aria-label={"Data de nascimento de " + a.nome}
+                  value={txt[a.id] || ""}
+                  onChange={e => setTxt(m => ({ ...m, [a.id]: mascaraData(e.target.value) }))}
+                  onKeyDown={e => { if (e.key === "Enter") salvar(a); }} />
+                <span className={"ns-id" + (v.iso ? " ok" : v.erro ? " err" : "")}>
+                  {v.iso ? v.idade + " anos" : v.erro || ""}
+                </span>
+                <button className="btn-sec ns-bt" disabled={!v.iso || busy === a.id}
+                  onClick={() => salvar(a)}>
+                  {busy === a.id ? "..." : "Salvar"}
+                </button>
+              </div>
+            );
+          })}
+          <div className="pl-hint" style={{ marginTop: 14 }}>
+            Digita só os números (15031990 vira 15/03/1990). A idade aparece na hora
+            para pegar ano trocado; fora de 10 a 100 anos não salva. Inativos não
+            entram aqui: quando um aluno é reativado sem data, ele volta para a lista.
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -13985,10 +14728,12 @@ function PainelInicio() {
   const { itens, naoLidas, irAba } = usarFeed();
   const { setAlunoId } = usarAluno();
   const { toast } = usarUI();
+  const { semNascimento } = usarAniv();
   const [raw, setRaw]       = useState(null);
   const [erro, setErro]     = useState("");
   const [filtro, setFiltro] = useState("todas");
   const [aberto, setAberto] = useState(null);
+  const [nascAb, setNascAb] = useState(false);
   const feedRef = React.useRef(null);
 
   const carregar = useCallback(async () => {
@@ -14054,6 +14799,15 @@ function PainelInicio() {
               : "trocas da semana",
       ir: () => { if (irAba) irAba("trocas"); } }
   ];
+  /* vermelho e só existe enquanto houver aluno ativo sem data: o dado
+     alimenta o aniversário E a FC máxima do cardio. Zerou, o card some. */
+  if (semNascimento && semNascimento.length > 0) {
+    cards.push({ k: "nasc", n: semNascimento.length, cls: "alerta",
+      rot: semNascimento.length === 1 ? "aluno sem data de nascimento"
+                                      : "alunos sem data de nascimento",
+      det: "aniversário e FC do cardio dependem dela",
+      ir: () => setNascAb(true) });
+  }
 
   return (
     <div>
@@ -14063,7 +14817,7 @@ function PainelInicio() {
       )}
 
       <div className="in-sec">Precisa de você</div>
-      <div className="in-pend">
+      <div className={"in-pend" + (cards.length === 5 ? " c5" : "")}>
         {cards.map(c => (
           <button key={c.k} onClick={c.ir}
             className={"in-card" + (c.cls ? " " + c.cls : "") + (c.n ? " on" : "") +
@@ -14110,6 +14864,7 @@ function PainelInicio() {
         <DrawerAnamnese aluno={{ id: aberto.id, nome: aberto.nome }}
           modoInicial={aberto.modo || null} onFechar={() => setAberto(null)} />
       )}
+      {nascAb && <ModalNascimentos onFechar={() => setNascAb(false)} />}
 
       <div className="pl-hint" style={{ marginTop: 12 }}>
         Treino concluído e duração vêm de quando o aluno finaliza o treino no App;
@@ -16578,6 +17333,7 @@ function App() {
     <ProvedorUI>
     <ProvedorAluno>
     <ProvedorFeed irAba={setAba}>
+    <ProvedorAniv>
     <div>
       <div className="top">
         <Logo size={36} />
@@ -16622,6 +17378,7 @@ function App() {
         : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
     </div>
+    </ProvedorAniv>
     </ProvedorFeed>
     </ProvedorAluno>
     </ProvedorUI>
