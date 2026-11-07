@@ -16703,6 +16703,31 @@ function IconeCuidado({ size }) {
   );
 }
 
+/* Sessões concluídas da fase (pedido do Matheus, 06/11/2026: no lugar do
+   "vence dd/mm", que a coluna já diz). Conta linhas de `sessoes` (o App grava
+   1 por treino + dia ao FINALIZAR) de todos os treinos da fase, a fase toda.
+   Lida só quando a linha abre: o Início usa tcCarregarDados e não paga isso.
+   Sem filtro de treinador: passa pelo RLS, igual ao resto (multitenant ok).
+   Ainda conta sessão de cardio: falta saber a coluna do treino (ver brief). */
+async function tcSessoesDaFase(faseId) {
+  const t = await sb.from("treinos").select("id").eq("fase_id", faseId);
+  if (t.error) throw new Error("treinos: " + t.error.message);
+  const ids = (t.data || []).map(x => x.id);
+  let n = 0;
+  for (let i = 0; i < ids.length; i += LOTE) {
+    const r = await sb.from("sessoes").select("id", { count: "exact", head: true })
+      .in("treino_id", ids.slice(i, i + LOTE));
+    if (r.error) throw new Error("sessoes: " + r.error.message);
+    n += r.count || 0;
+  }
+  return n;
+}
+function tcRotuloSessoes(n) {
+  if (n == null) return "contando sessões…";
+  if (n === 0) return "nenhuma sessão concluída";
+  return n + (n === 1 ? " sessão concluída" : " sessões concluídas");
+}
+
 /* menu pequeno ancorado no botão; fecha com clique fora e Esc */
 function TcMenu({ aberto, onFechar, children, className }) {
   const ref = React.useRef(null);
@@ -16797,6 +16822,21 @@ function TcLinha({ it, semana, onSalvar, onRemover, onMover, onAbrirTreino, bloq
   const fechar = useCallback(() => setMenu(""), []);
   const venceDia = tcDiaDe(it.vence, semana);
 
+  /* sessões concluídas: busca a cada vez que a linha abre (fica fresco) e
+     mantém o número anterior na tela enquanto recarrega */
+  const [ses, setSes] = useState(null);   /* { fase, n } | { fase, erro } */
+  useEffect(() => {
+    if (!aberto || it.tipo !== "auto" || !it.fase_id) return;
+    let vivo = true;
+    tcSessoesDaFase(it.fase_id).then(
+      n => { if (vivo) setSes({ fase: it.fase_id, n }); },
+      e => { if (vivo) setSes({ fase: it.fase_id, erro: e.message }); });
+    return () => { vivo = false; };
+  }, [aberto, it.tipo, it.fase_id]);
+  const sesTxt = ses && ses.fase === it.fase_id
+    ? (ses.erro ? "sessões: não carregou" : tcRotuloSessoes(ses.n))
+    : tcRotuloSessoes(null);
+
   const salvarNota = () => {
     const v = nota.trim();
     if (v !== (it.nota || "")) onSalvar(it, { nota: v || null });
@@ -16890,7 +16930,11 @@ function TcLinha({ it, semana, onSalvar, onRemover, onMover, onAbrirTreino, bloq
                   onChange={v => onSalvar(it, { vence_em: v })} />
               </label>
             ) : (
-              <span className="tc-fase">{it.fase} · vence {dBR(it.vence)}</span>
+              <span className="tc-fase"
+                title={(ses && ses.erro ? ses.erro + "\n" : "") +
+                  "Sessões finalizadas no App, de todos os treinos da fase.\nFase vai até " + dBR(it.vence)}>
+                {it.fase} · {sesTxt}
+              </span>
             )}
             <button className={"btn-sec cr-mini" + (it.incerto ? " tc-on" : "")}
               disabled={bloqueado}
