@@ -981,6 +981,11 @@
   .pl-sit.futura{background:#1b2427;color:var(--mut)}
   .pl-sit.encerrada{background:#241a12;color:var(--warn)}
   .pl-hint{font-size:11px;color:var(--mut);margin-top:10px;line-height:1.6}
+  .pl-tog{padding:6px 11px;margin:0;cursor:pointer;gap:8px;user-select:none}
+  .pl-tog b{font-size:12px;font-weight:600}
+  .pl-seg{background:#1b2427;border-color:#2c3a3d;color:var(--txt);display:flex;
+    align-items:center;gap:12px;flex-wrap:wrap}
+  .pl-seg button{width:auto;padding:6px 12px;font-size:12px;margin:0}
   .pl-x{color:var(--warn);font-weight:600}
   @media (max-width: 900px){
     .pl-grid{grid-template-columns:1fr;border-radius:10px}
@@ -1602,6 +1607,8 @@
   .pa-f.encerrada::before{border-color:#4a3a28}
   .pa-f .n{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut)}
   .pa-f .nm{font-size:14px;font-weight:600;margin:1px 0 3px}
+  .pa-f .pa-ii{margin-top:3px;color:var(--mut)}
+  .pa-f .pa-ii b{font-weight:600;color:#a9b6b8;margin-right:4px}
   .pa-f.ativa .nm{color:var(--accent)}
   .pa-f.encerrada .nm{color:#a9b6b8}
   .pa-f .dt{font-size:12px;color:var(--mut);display:flex;gap:8px;align-items:center;
@@ -8149,21 +8156,184 @@ function obsAuto(nome, dataII) {
   return '(teremos a fase "' + n + ' II" - ' + dBR(dISO(dataII)) + ")";
 }
 
-/* a partir do início da fase 1 e da duração, calcula as 4 fases.
-   regra observada nos planejamentos reais:
-   fase II = início + duração ; próxima fase = fase II + duração  */
-function calcularDatas(inicioISO, semanas) {
+/* ---------- Fases I e II (regra do ecossistema, 08/11/2026) ----------
+   Um aluno nunca tem duas fases no mesmo dia. A trava mora no banco
+   (fases_sem_sobreposicao, erro 23P01) e a cascata de datas também
+   (reprogramar_fase). O front só chama e mostra: NÃO recalcular cascata aqui.
+
+   Cada bloco do planejamento é a fase I + a fase II logo depois, colada.
+   A grade e o PNG mostram só as I (4 colunas); a II aparece no aviso
+   automático da observação da I, que acompanha a data real da II. */
+
+/* "Fase de Definição I" -> "Fase de Definição II"; sem " I" no fim, + " II" */
+function nomeFaseII(nome) {
+  const n = String(nome || "").trim();
+  if (!n) return "";
+  return /\sI$/.test(n) ? n + "I" : n + " II";
+}
+
+/* fases de UM planejamento -> blocos [{ cab, ii }], na ordem.
+   A II é a fase logo depois da I com o mesmo template_id (e nome que não
+   termina em " I"). Sem template, vale o nome terminar em " II".
+   Regra copiada no brief do App: mudou aqui, muda lá. */
+function agruparBlocos(fases) {
+  const ord = [...(fases || [])].sort((a, b) =>
+    ((a.posicao ?? 1e9) - (b.posicao ?? 1e9)) ||
+    String(a.inicio || "").localeCompare(String(b.inicio || "")));
+  const out = [];
+  for (const f of ord) {
+    const ult = out[out.length - 1];
+    const nome = String(f.nome || "").trim();
+    const ehII = !!ult && !ult.ii && (f.template_id
+      ? f.template_id === ult.cab.template_id && !/\sI$/.test(nome)
+      : !ult.cab.template_id && /\sII$/.test(nome));
+    if (ehII) ult.ii = f; else out.push({ cab: f, ii: null });
+  }
+  return out;
+}
+
+/* gerador: blocos colados, sem buraco. I = [cur, cur+dur-1]; a II começa no
+   dia seguinte com a mesma duração; o bloco seguinte, no dia seguinte ao fim
+   da II. comII[i] diz se o bloco i tem II. */
+function calcularBlocos(inicioISO, semanas, n, comII) {
   if (!inicioISO) return [];
   const dur = (semanas || 6) * 7;
   const out = [];
   let cur = parseISO(inicioISO);
-  for (let i = 0; i < 4; i++) {
-    const fim = addDias(cur, dur - 1);
-    const faseII = proxSegunda(addDias(cur, dur));
-    out.push({ inicio: dISO(cur), fim: dISO(fim), faseII });
-    cur = proxSegunda(addDias(faseII, dur));
+  for (let i = 0; i < n; i++) {
+    const cab = { inicio: dISO(cur), fim: dISO(addDias(cur, dur - 1)) };
+    cur = addDias(cur, dur);
+    let ii = null;
+    if (comII && comII[i]) {
+      ii = { inicio: dISO(cur), fim: dISO(addDias(cur, dur - 1)) };
+      cur = addDias(cur, dur);
+    }
+    out.push({ cab, ii });
   }
   return out;
+}
+
+/* o aviso "(teremos a fase X II - dd/mm/aa)" dentro da observação da I */
+const RX_OBS_II = /\(teremos a fase "[^"]*" - \d{2}\/\d{2}\/\d{2}\)/;
+
+/* refaz o aviso que JÁ existe com o nome e a data atuais; sem aviso, o texto
+   fica como está (se você apagou o aviso, ele não volta sozinho) */
+function obsComII(obs, nome, iniII) {
+  const o = String(obs || "");
+  if (!iniII || !RX_OBS_II.test(o)) return o;
+  const novo = obsAuto(nome, parseISO(iniII));
+  if (novo) return o.replace(RX_OBS_II, novo);
+  return o.replace(RX_OBS_II, m => m.replace(/\d{2}\/\d{2}\/\d{2}/, dBR(iniII)));
+}
+
+/* gerador: põe o aviso no começo (ou refaz o que já tem) sem apagar o resto
+   do que você escreveu. Bloco sem II: o aviso sai. */
+function obsGerada(obs, nome, iniII) {
+  const o = String(obs || "").trim();
+  if (!iniII) {
+    return o.replace(RX_OBS_II, "").replace(/^\s*\n/, "").trim();
+  }
+  if (RX_OBS_II.test(o)) return obsComII(o, nome, iniII);
+  const auto = obsAuto(nome, parseISO(iniII));
+  if (!auto) return o;
+  return o ? auto + "\n" + o : auto;
+}
+
+/* depois da cascata do banco: em cada bloco com II, o aviso da I acompanha a
+   data real da II. Devolve [{ id, observacao }] só do que mudou. */
+function obsParaAtualizar(fasesAluno) {
+  const porPlano = new Map();
+  for (const f of fasesAluno || []) {
+    if (!f || !f.planejamento_id) continue;
+    if (!porPlano.has(f.planejamento_id)) porPlano.set(f.planejamento_id, []);
+    porPlano.get(f.planejamento_id).push(f);
+  }
+  const out = [];
+  for (const lista of porPlano.values()) {
+    for (const b of agruparBlocos(lista)) {
+      if (!b.ii || !b.ii.inicio || !b.cab.id) continue;
+      const antes = String(b.cab.observacao || "");
+      const nova = obsComII(antes, b.cab.nome, b.ii.inicio);
+      if (nova !== antes) out.push({ id: b.cab.id, observacao: nova });
+    }
+  }
+  return out;
+}
+
+/* grava o que obsParaAtualizar achou; update de campo único, sem datas */
+async function gravarObsII(fasesAluno) {
+  const muda = obsParaAtualizar(fasesAluno);
+  for (const m of muda) {
+    const r = await sb.from("fases").update({ observacao: m.observacao }).eq("id", m.id);
+    if (r.error) console.warn("[fases] aviso da II", r.error);
+  }
+  return muda;
+}
+
+/* aplica as observações regravadas numa lista local de fases */
+function comObs(lista, muda) {
+  if (!muda || !muda.length) return lista;
+  const m = new Map(muda.map(x => [x.id, x.observacao]));
+  return lista.map(f => m.has(f.id) ? { ...f, observacao: m.get(f.id) } : f);
+}
+
+/* toda gravação de inicio/fim de fase que JÁ existe passa por aqui.
+   security invoker: o RLS de quem chama vale. Não passa treinador nem tenant. */
+async function reprogramarFase(id, inicio, fim) {
+  const { data, error } = await sb.rpc("reprogramar_fase", {
+    p_fase_id: id, p_inicio: inicio, p_fim: fim
+  });
+  return { data: Array.isArray(data) ? data : null, error: error || null };
+}
+
+/* 23P01 = trava de sobreposição; P0001 = recusa da função, já em português */
+function msgErroFase(error, nomeFase) {
+  if (!error) return "";
+  if (error.code === "23P01") {
+    return (nomeFase ? 'A fase "' + nomeFase + '"' : "Essa fase") +
+      " cai em cima de outra fase do aluno. Ajuste as datas.";
+  }
+  if (error.code === "P0001" && error.message) return error.message;
+  console.warn("[fases]", error);
+  return "Não deu para salvar a fase. Tenta de novo.";
+}
+
+/* antes (Map id -> fase) x depois (linhas): quantas fases a função empurrou */
+function resumoEmpurradas(antes, depois, ignorar) {
+  const mov = [];
+  for (const f of depois || []) {
+    const a = antes && antes.get(f.id);
+    if (!a || (ignorar && ignorar.has(f.id))) continue;
+    if (a.inicio && f.inicio && a.inicio !== f.inicio) {
+      mov.push(Math.round((parseISO(f.inicio) - parseISO(a.inicio)) / 864e5));
+    }
+  }
+  if (!mov.length) return "";
+  const n = mov.length;
+  const dias = d => d + (Math.abs(d) === 1 ? " dia" : " dias");
+  const mn = Math.min(...mov), mx = Math.max(...mov);
+  return n + (n === 1 ? " fase seguinte empurrada " : " fases seguintes empurradas ") +
+    (mn === mx ? dias(mn) : "de " + mn + " a " + dias(mx)) + ".";
+}
+
+/* primeiro dia livre do aluno: dia seguinte ao fim da última fase, ou hoje */
+function inicioLivre(fases, hojeISO) {
+  const fims = (fases || []).map(f => f && f.fim).filter(Boolean).sort();
+  const ult = fims[fims.length - 1];
+  if (!ult || ult < hojeISO) return hojeISO;
+  return dISO(addDias(parseISO(ult), 1));
+}
+
+/* intervalos inclusivos nas duas pontas, igual à trava do banco */
+const sobrepoe = (a, b) => !!(a.inicio && a.fim && b.inicio && b.fim &&
+  a.inicio <= b.fim && b.inicio <= a.fim);
+
+const PL_LS_II = "idealis.planejamento.criarII";
+function lerCriarII() {
+  try { return localStorage.getItem(PL_LS_II) !== "0"; } catch (e) { return true; }
+}
+function gravarCriarII(v) {
+  try { localStorage.setItem(PL_LS_II, v ? "1" : "0"); } catch (e) { /* sem storage */ }
 }
 
 /* fases.id nao tem default no banco — o UUID e gerado no cliente,
@@ -8186,7 +8356,77 @@ function novoUUID() {
 
 function faseVazia(pos) {
   return { posicao: pos, template_id: "", nome: "", inicio: "", fim: "",
-           objetivo: "", metodos: "", observacao: "" };
+           objetivo: "", metodos: "", observacao: "", ii: null };
+}
+
+/* linha do banco -> fase do formulário do Planejamento */
+function faseDaLinha(r) {
+  return {
+    id: r.id, posicao: r.posicao, template_id: r.template_id || "", nome: r.nome || "",
+    inicio: r.inicio || "", fim: r.fim || "", objetivo: r.objetivo || "",
+    metodos: r.metodos || "", observacao: r.observacao || ""
+  };
+}
+
+/* a II segue a I (nome; modelo + objetivo + métodos) enquanto for igual a
+   ela. Mexeu na II por fora, ela fica independente: isso protege as II que
+   você criou na mão e entraram no planejamento. */
+function espelhoII(cab, ii) {
+  return {
+    espNome: String(ii.nome || "").trim() === nomeFaseII(cab.nome),
+    espConteudo: (cab.template_id || "") === (ii.template_id || "") &&
+      (cab.objetivo || "") === (ii.objetivo || "") &&
+      (cab.metodos || "") === (ii.metodos || "")
+  };
+}
+
+/* aplica na II espelhada o que mudou na I. O nome só vai junto se o conteúdo
+   também for: II com métodos ajustados na mão não vira "Fase de Nova II"
+   carregando o modelo da fase antiga */
+function espelhar(novo, velho) {
+  if (!novo.ii) return novo;
+  const ii = { ...novo.ii };
+  if (ii.espNome && ii.espConteudo && novo.nome !== velho.nome) ii.nome = nomeFaseII(novo.nome);
+  if (ii.espConteudo) {
+    ii.template_id = novo.template_id; ii.objetivo = novo.objetivo; ii.metodos = novo.metodos;
+  }
+  return { ...novo, ii };
+}
+
+/* II nova, copiada da I: modelo, objetivo e métodos. Observação não. */
+function iiDaCab(cab, inicio, fim) {
+  return { template_id: cab.template_id, nome: nomeFaseII(cab.nome),
+           objetivo: cab.objetivo, metodos: cab.metodos, observacao: "",
+           inicio, fim, espNome: true, espConteudo: true };
+}
+
+/* planejamento na tela -> lista final para o banco, na ordem I, II, I, II...
+   posicao sequencial pela data. Fase sem nome ou sem início fica de fora,
+   igual sempre foi. criarII cria a II colada de bloco NOVO que ainda não tem
+   (quando você salva sem passar pelo Gerar datas). */
+function montarPlano(fases, duracaoSemanas, criarII) {
+  const dur = (duracaoSemanas || 6) * 7;
+  const fimDe = ini => dISO(addDias(parseISO(ini), dur - 1));
+  const out = [];
+  fases.forEach((f, bloco) => {
+    if (!f.nome || !f.inicio) return;
+    const fim = f.fim || fimDe(f.inicio);
+    let ii = f.ii && f.ii.nome && f.ii.inicio ? { ...f.ii, fim: f.ii.fim || fimDe(f.ii.inicio) } : null;
+    if (!ii && !f.id && criarII) {
+      const i2 = dISO(addDias(parseISO(fim), 1));
+      ii = iiDaCab(f, i2, fimDe(i2));
+    }
+    /* II que ainda não está no banco: põe o aviso na I se faltar. II que já
+       existe: só refaz o aviso que já está lá (apagou, não volta) */
+    const iiNova = !!ii && !ii.id;
+    const observacao = ii
+      ? (iiNova ? obsGerada(f.observacao, f.nome, ii.inicio) : obsComII(f.observacao, f.nome, ii.inicio))
+      : f.observacao;
+    out.push({ ...f, fim, observacao, ii: undefined, _bloco: bloco, _ehII: false });
+    if (ii) out.push({ ...ii, _bloco: bloco, _ehII: true });
+  });
+  out.forEach((x, k) => { x.posicao = k + 1; });
+  return out;
 }
 
 /* desenha o planejamento num canvas (fundo preto, para o Photoshop) */
@@ -8200,7 +8440,10 @@ function desenharPlanejamento(plan, fases, aluno) {
 
   const F = (px, peso) => (peso || 700) + " " + px + "px Sora, system-ui, sans-serif";
   const padL = 26, colLab = 132, gap = 12;
-  const colW = (W - padL * 2 - colLab - gap * 3) / 4;
+  /* 4 colunas (as fases I). Plano com mais blocos estreita as colunas em
+     vez de cortar a última. */
+  const nCol = Math.max(4, fases.length);
+  const colW = (W - padL * 2 - colLab - gap * (nCol - 1)) / nCol;
   const cx = i => padL + colLab + i * (colW + gap) + colW / 2;
 
   /* quebra texto respeitando as quebras de linha originais */
@@ -8279,27 +8522,37 @@ function desenharPlanejamento(plan, fases, aluno) {
 
 function PlanejamentoAluno({ onEditarTemplate }) {
   const { alunoId: sel, alunos } = usarAluno();
-  const { toast } = usarUI();
+  const { toast, confirmar } = usarUI();
   /* templates, categorias e técnicas vêm do catálogo compartilhado: o que
      você muda na Biblioteca aparece aqui sem recarregar a página */
   const catF = usarCatalogoFases();
   const tpls = catF.tpls, cats = catF.cats;
   const [plan, setPlan]       = useState(null);
+  /* uma entrada por bloco: a fase I (o que a grade mostra) + .ii escondida */
   const [fases, setFases]     = useState([1, 2, 3, 4].map(faseVazia));
   const [erro, setErro]       = useState("");
   const [aviso, setAviso]     = useState("");
   const [busy, setBusy]       = useState(false);
   const [sujo, setSujo]       = useState(false);
+  const [criarII, setCriarII] = useState(lerCriarII);
+  const [sugSeg, setSugSeg]   = useState("");
+  /* fases como vieram do banco (id -> linha). O salvar compara com isso para
+     saber que datas mudaram e precisam passar pela reprogramar_fase */
+  const orig = React.useRef(new Map());
 
-  const carregar = useCallback(async (alunoId) => {
+  /* pid: depois de salvar, recarrega ESTE plano (dois planos com a mesma
+     data de emissão deixariam o "mais recente" ambíguo) */
+  const carregar = useCallback(async (alunoId, pid) => {
     if (!alunoId) return;
-    setErro(""); setAviso(""); setSujo(false);
-    const { data, error } = await sb.from("planejamentos")
-      .select("*").eq("aluno_id", alunoId)
-      .order("data_emissao", { ascending: false }).limit(1);
+    setErro(""); setAviso(""); setSujo(false); setSugSeg("");
+    let q = sb.from("planejamentos").select("*");
+    q = pid ? q.eq("id", pid)
+            : q.eq("aluno_id", alunoId).order("data_emissao", { ascending: false }).limit(1);
+    const { data, error } = await q;
     if (error) { setErro(error.message); return; }
     const p = (data && data[0]) || null;
     if (!p) {
+      orig.current = new Map();
       setPlan({ aluno_id: alunoId, titulo: "Planejamento de Periodização",
                 data_emissao: dISO(new Date()), duracao_semanas: 6 });
       setFases([1, 2, 3, 4].map(faseVazia));
@@ -8308,33 +8561,36 @@ function PlanejamentoAluno({ onEditarTemplate }) {
     setPlan(p);
     const f = await sb.from("fases").select("*")
       .eq("planejamento_id", p.id).order("posicao");
-    const mapa = new Map((f.data || []).map(r => [r.posicao, r]));
-    setFases([1, 2, 3, 4].map(i => {
-      const r = mapa.get(i);
-      return r ? {
-        id: r.id, posicao: i, template_id: r.template_id || "", nome: r.nome || "",
-        inicio: r.inicio || "", fim: r.fim || "", objetivo: r.objetivo || "",
-        metodos: r.metodos || "", observacao: r.observacao || ""
-      } : faseVazia(i);
-    }));
+    if (f.error) { setErro(f.error.message); return; }
+    const linhas = f.data || [];
+    orig.current = new Map(linhas.map(r => [r.id, r]));
+    /* posicao agora conta I e II (1 a 8). A grade mostra a I de cada bloco */
+    const cabs = agruparBlocos(linhas).map(b => {
+      const cab = faseDaLinha(b.cab);
+      if (!b.ii) return { ...cab, ii: null };
+      const ii = faseDaLinha(b.ii);
+      return { ...cab, ii: { ...ii, ...espelhoII(cab, ii) } };
+    });
+    while (cabs.length < 4) cabs.push(faseVazia(cabs.length + 1));
+    setFases(cabs);
   }, []);
 
   useEffect(() => { carregar(sel); }, [sel, carregar]);
 
   function mudarFase(i, campo, valor) {
-    setFases(fs => fs.map((f, k) => k === i ? { ...f, [campo]: valor } : f));
+    setFases(fs => fs.map((f, k) => k === i ? espelhar({ ...f, [campo]: valor }, f) : f));
     setSujo(true);
   }
 
-  /* aplica o template: nome, objetivo e métodos */
+  /* aplica o template: nome, objetivo e métodos (a II espelhada vai junto) */
   function aplicarTemplate(i, tid) {
     const t = tpls.find(x => x.id === tid);
     setFases(fs => fs.map((f, k) => {
       if (k !== i) return f;
-      if (!t) return { ...f, template_id: "" };
-      return { ...f, template_id: tid,
+      if (!t) return espelhar({ ...f, template_id: "" }, f);
+      return espelhar({ ...f, template_id: tid,
         nome: "Fase de " + t.nome + " I",
-        objetivo: t.objetivo, metodos: t.metodos };
+        objetivo: t.objetivo, metodos: t.metodos }, f);
     }));
     setSujo(true);
   }
@@ -8346,37 +8602,181 @@ function PlanejamentoAluno({ onEditarTemplate }) {
     mudarFase(i, "metodos", novo);
   }
 
-  /* recalcula as 4 datas a partir do início da fase 1 */
-  function gerarDatas() {
-    const base = fases[0].inicio;
+  function trocarCriarII(v) { setCriarII(v); gravarCriarII(v); }
+
+  /* gerador: a partir do início da Fase 1, cada bloco ganha a I e (com a
+     opção ligada) a II, tudo colado. II já salva no banco fica sempre: a
+     opção só decide se cria as que faltam. */
+  async function gerarDatas(baseForcada) {
+    const base = baseForcada || fases[0].inicio;
     if (!base) { setErro("Preenche a data de início da Fase 1 primeiro."); return; }
+    if (!baseForcada && fases.some(f => f.id || (f.ii && f.ii.id))) {
+      const ok = await confirmar({
+        titulo: "Recalcular todas as datas?",
+        texto: "Gerar datas refaz as datas de todas as fases a partir do início da Fase 1, " +
+               "inclusive as que já começaram. Nada vai pro banco antes de você salvar.",
+        ok: "Recalcular"
+      });
+      if (!ok) return;
+    }
     const dur = (plan && plan.duracao_semanas) || 6;
-    const calc = calcularDatas(base, dur);
-    setFases(fs => fs.map((f, i) => ({
-      ...f,
-      inicio: calc[i].inicio,
-      fim: calc[i].fim,
-      observacao: obsAuto(f.nome, calc[i].faseII) || f.observacao
-    })));
+    const comII = fases.map(f => !!(f.ii && f.ii.id) || criarII);
+    const calc = calcularBlocos(base, dur, fases.length, comII);
+    setFases(fs => fs.map((f, i) => {
+      const c = calc[i];
+      const ii = c.ii
+        ? (f.ii ? { ...f.ii, inicio: c.ii.inicio, fim: c.ii.fim } : iiDaCab(f, c.ii.inicio, c.ii.fim))
+        : null;
+      return { ...f, inicio: c.cab.inicio, fim: c.cab.fim, ii,
+               observacao: obsGerada(f.observacao, f.nome, ii && ii.inicio) };
+    }));
     setSujo(true); setErro("");
-    setAviso("Datas e observações geradas. Ajusta o que quiser antes de salvar.");
+    const seg = parseISO(base).getDay() === 1 ? "" : dISO(proxSegunda(parseISO(base)));
+    setSugSeg(seg);
+    const nII = comII.filter(Boolean).length;
+    setAviso("Datas geradas, fases coladas" + (nII ? ", com a fase II em " + nII +
+      (nII === 1 ? " bloco" : " blocos") : ", sem fase II") +
+      ". Ajusta o que quiser antes de salvar.");
   }
 
+  function comecarNaSegunda() {
+    if (!sugSeg) return;
+    const s = sugSeg;
+    setFases(fs => fs.map((f, k) => k === 0 ? { ...f, inicio: s } : f));
+    gerarDatas(s);
+  }
+
+  /* plano novo em branco. O anterior fica no banco; se o novo cair em cima
+     dele, o salvar mostra o conflito e você decide */
+  async function novoPlanejamento() {
+    if (sujo) {
+      const ok = await confirmar({ titulo: "Descartar o que não foi salvo?",
+        texto: "Você mexeu neste planejamento e não salvou.", ok: "Descartar", perigo: true });
+      if (!ok) return;
+    }
+    const { data } = await sb.from("fases").select("fim").eq("aluno_id", sel);
+    orig.current = new Map();
+    setPlan({ aluno_id: sel,
+      titulo: (plan && plan.titulo) || "Planejamento de Periodização",
+      data_emissao: dISO(new Date()),
+      duracao_semanas: (plan && plan.duracao_semanas) || 6 });
+    const vazias = [1, 2, 3, 4].map(faseVazia);
+    vazias[0].inicio = inicioLivre(data || [], dISO(new Date()));
+    setFases(vazias);
+    setSujo(false); setErro(""); setSugSeg("");
+    setAviso("Planejamento novo em branco, começando no primeiro dia livre do aluno. " +
+      "O anterior continua salvo.");
+  }
+
+  /* fases novas que caem em cima de fases que NÃO são deste plano (o plano
+     anterior, uma avulsa). Mostra o que vai acontecer com cada uma:
+     começou antes -> encerra na véspera; começa depois -> apagada; com
+     sessão montada -> não dá, você ajusta as datas. */
+  async function resolverConflitos(novas, idsDoPlano) {
+    const r = await sb.from("fases").select("id, nome, inicio, fim, planejamento_id, observacao")
+      .eq("aluno_id", sel);
+    if (r.error) throw new Error(r.error.message);
+    const outras = (r.data || []).filter(f => !idsDoPlano.has(f.id));
+    const choques = outras.map(o => {
+      const em = novas.filter(n => sobrepoe(n, o));
+      if (!em.length) return null;
+      const corte = em.map(n => n.inicio).sort()[0];
+      return { f: o, corte };
+    }).filter(Boolean);
+    if (!choques.length) return { ok: true, acoes: [] };
+
+    const ids = choques.map(c => c.f.id);
+    const t = await sb.from("treinos").select("fase_id").in("fase_id", ids);
+    if (t.error) throw new Error(t.error.message);
+    const nSes = new Map();
+    for (const x of t.data || []) nSes.set(x.fase_id, (nSes.get(x.fase_id) || 0) + 1);
+
+    const acoes = choques.map(({ f, corte }) => {
+      if (f.inicio < corte) {
+        return { f, tipo: "encerrar", fim: dISO(addDias(parseISO(corte), -1)) };
+      }
+      const n = nSes.get(f.id) || 0;
+      return n ? { f, tipo: "trava", n } : { f, tipo: "apagar" };
+    });
+    const trava = acoes.some(a => a.tipo === "trava");
+    const linha = a => (
+      <span key={a.f.id} style={{ display: "block", marginBottom: 4 }}>
+        <b style={{ color: "var(--txt)" }}>{a.f.nome}</b>
+        {" (" + dBR(a.f.inicio) + " a " + dBR(a.f.fim) + "): "}
+        {a.tipo === "encerrar" ? "encerra em " + dBR(a.fim)
+          : a.tipo === "apagar" ? "apagada"
+          : "tem " + a.n + (a.n === 1 ? " sessão montada" : " sessões montadas") + ", não dá para apagar"}
+      </span>
+    );
+    const ok = await confirmar({
+      titulo: "O plano cai em cima de outras fases do aluno",
+      texto: <>{acoes.map(linha)}</>,
+      alerta: trava ? "Tem fase com sessão montada no caminho. Ajuste as datas do plano ou " +
+        "mova as sessões antes de salvar." : "",
+      ok: trava ? "Vou ajustar" : "Resolver e salvar",
+      cancelar: trava ? "Fechar" : "Cancelar",
+      perigo: !trava && acoes.some(a => a.tipo === "apagar")
+    });
+    return { ok: ok && !trava, acoes };
+  }
+
+  /* Ordem do salvar (não trocar):
+     1. planejamento
+     2. conflitos com fases de fora do plano (se você mandou resolver)
+     3. datas que mudaram em fases JÁ salvas: só pela reprogramar_fase, uma
+        por vez, da mais antiga para a mais nova. A função empurra as seguintes
+     4. resto dos campos das fases salvas: update SEM inicio/fim (mandar as
+        datas antigas desfaria a cascata)
+     5. fases novas (insert); o banco recusa com 23P01 se cair em cima
+     6. aviso da II acompanha a data real da II depois de tudo
+     Não tem rollback de cascata no cliente: se algo falhar no meio, recarrego
+     do banco e aviso. */
   async function salvar() {
     if (!sel) return;
-    const faltando = fases.filter(f => f.nome && !f.inicio);
-    if (faltando.length) {
-      setErro("Fase " + faltando[0].posicao + " tem nome mas está sem data de início.");
+    const iFalta = fases.findIndex(f => f.nome && !f.inicio);
+    if (iFalta >= 0) {
+      setErro("Fase " + (iFalta + 1) + " tem nome mas está sem data de início.");
       return;
     }
+    const iInv = fases.findIndex(f => f.inicio && f.fim && f.inicio > f.fim);
+    if (iInv >= 0) {
+      setErro("Fase " + (iInv + 1) + ": o início está depois do fim (" + dBR(fases[iInv].fim) +
+        "). Gera as datas de novo ou ajusta o início.");
+      return;
+    }
+    const dur = (plan && plan.duracao_semanas) || 6;
+    const lista = montarPlano(fases, dur, criarII);
+    /* o plano em si não pode ter fase em cima de fase: barra antes de gravar
+       qualquer coisa (o banco recusaria no meio e ficaria metade salvo) */
+    const ord = [...lista].sort((a, b) => a.inicio.localeCompare(b.inicio));
+    for (let k = 1; k < ord.length; k++) {
+      if (sobrepoe(ord[k - 1], ord[k])) {
+        setErro('A fase "' + ord[k].nome + '" cai em cima da fase "' + ord[k - 1].nome +
+          '" (até ' + dBR(ord[k - 1].fim) + "). Clica em Gerar datas ou ajusta o início.");
+        return;
+      }
+    }
+    const salvas = lista.filter(x => x.id);
+    const novas  = lista.filter(x => !x.id);
+    const idsDoPlano = new Set([...orig.current.keys(), ...salvas.map(x => x.id)]);
+
     setBusy(true); setErro("");
+    let pid = plan && plan.id;
+    let gravou = false;
     try {
-      let pid = plan && plan.id;
+      let acoes = [];
+      if (novas.length) {
+        const c = await resolverConflitos(novas, idsDoPlano);
+        if (!c.ok) { setBusy(false); return; }
+        acoes = c.acoes;
+      }
+
+      /* 1. planejamento */
       const corpo = {
         aluno_id: sel,
         titulo: (plan && plan.titulo) || "Planejamento de Periodização",
         data_emissao: (plan && plan.data_emissao) || dISO(new Date()),
-        duracao_semanas: (plan && plan.duracao_semanas) || 6
+        duracao_semanas: dur
       };
       if (pid) {
         const u = await sb.from("planejamentos")
@@ -8388,32 +8788,93 @@ function PlanejamentoAluno({ onEditarTemplate }) {
         pid = ins.data.id;
         setPlan(p => ({ ...(p || {}), ...corpo, id: pid }));
       }
+      gravou = true;
 
-      for (const f of fases) {
-        if (!f.nome || !f.inicio) continue;
-        const dur = (plan && plan.duracao_semanas) || 6;
-        const fim = f.fim || dISO(addDias(parseISO(f.inicio), dur * 7 - 1));
-        const linha = {
-          aluno_id: sel, planejamento_id: pid, posicao: f.posicao,
-          template_id: f.template_id || null, nome: f.nome,
-          inicio: f.inicio, fim,
-          objetivo: f.objetivo || null, metodos: f.metodos || null,
-          observacao: f.observacao || null
-        };
-        if (f.id) {
-          const u = await sb.from("fases").update(linha).eq("id", f.id);
-          if (u.error) throw new Error(u.error.message);
-        } else {
-          const novo = novoUUID();
-          const ins = await sb.from("fases").insert({ id: novo, ...linha });
-          if (ins.error) throw new Error(ins.error.message);
-          setFases(fs => fs.map(y => y.posicao === f.posicao ? { ...y, id: novo } : y));
+      /* foto de TODAS as fases do aluno antes das datas, para o feedback */
+      const fa = await sb.from("fases").select("id, nome, inicio, fim").eq("aluno_id", sel);
+      const antes = new Map((fa.data || []).map(f => [f.id, f]));
+      const mexidas = new Set();
+      let depois = null;
+
+      /* 2. conflitos: encerrar na véspera (pela função) e apagar */
+      for (const a of acoes.filter(x => x.tipo === "encerrar")) {
+        const r = await reprogramarFase(a.f.id, a.f.inicio, a.fim);
+        if (r.error) throw new Error(msgErroFase(r.error, a.f.nome));
+        mexidas.add(a.f.id); depois = r.data || depois;
+        /* a II dela vai ser apagada (ou já não existe): o aviso da II sai */
+        if (RX_OBS_II.test(a.f.observacao || "")) {
+          const u = await sb.from("fases")
+            .update({ observacao: obsGerada(a.f.observacao, a.f.nome, null) || null }).eq("id", a.f.id);
+          if (u.error) console.warn("[fases] aviso da II", u.error);
         }
       }
-      setSujo(false);
-      setAviso("Planejamento salvo. As fases já aparecem no App do aluno.");
-      await carregar(sel);
-    } catch (e) { setErro(e.message); }
+      for (const a of acoes.filter(x => x.tipo === "apagar")) {
+        const r = await sb.from("fases").delete().eq("id", a.f.id);
+        if (r.error) throw new Error(msgErroFase(r.error, a.f.nome));
+        mexidas.add(a.f.id);
+      }
+
+      /* 3. datas das fases salvas, da mais antiga para a mais nova */
+      const datas = salvas.filter(x => {
+        const o = orig.current.get(x.id);
+        return !o || o.inicio !== x.inicio || o.fim !== x.fim;
+      }).sort((a, b) => {
+        const oa = (orig.current.get(a.id) || a).inicio || "";
+        const ob = (orig.current.get(b.id) || b).inicio || "";
+        return oa.localeCompare(ob);
+      });
+      for (const x of datas) {
+        const r = await reprogramarFase(x.id, x.inicio, x.fim);
+        if (r.error) throw new Error(msgErroFase(r.error, x.nome));
+        mexidas.add(x.id); depois = r.data || depois;
+      }
+
+      /* 4. campos sem data. Posição que sobe vai de trás para frente */
+      const camposDe = x => ({
+        planejamento_id: pid, posicao: x.posicao, template_id: x.template_id || null,
+        nome: x.nome, objetivo: x.objetivo || null, metodos: x.metodos || null,
+        observacao: x.observacao || null
+      });
+      const mudou = x => {
+        const o = orig.current.get(x.id);
+        if (!o) return true;
+        const n = camposDe(x);
+        return Object.keys(n).some(k => (o[k] ?? null) !== (n[k] ?? null));
+      };
+      const upd = salvas.filter(mudou).sort((a, b) => b.posicao - a.posicao);
+      for (const x of upd) {
+        const u = await sb.from("fases").update(camposDe(x)).eq("id", x.id);
+        if (u.error) throw new Error(msgErroFase(u.error, x.nome));
+      }
+
+      /* 5. fases novas, na ordem */
+      let nIIs = 0;
+      for (const x of novas) {
+        const ins = await sb.from("fases").insert({
+          id: novoUUID(), aluno_id: sel, ...camposDe(x), inicio: x.inicio, fim: x.fim
+        });
+        if (ins.error) throw new Error(msgErroFase(ins.error, x.nome));
+        if (x._ehII) nIIs++;
+      }
+
+      /* 6. aviso da II com a data real (a cascata pode ter empurrado a II) */
+      const fin = await sb.from("fases").select("*").eq("aluno_id", sel);
+      if (!fin.error) await gravarObsII(fin.data || []);
+      const emp = depois ? resumoEmpurradas(antes, fin.error ? depois : fin.data, mexidas) : "";
+
+      await carregar(sel, pid);
+      setAviso("Planejamento salvo. As fases já aparecem no App do aluno." +
+        (nIIs ? " " + nIIs + (nIIs === 1 ? " fase II criada." : " fases II criadas.") : "") +
+        (acoes.length ? " Conflitos com o plano anterior resolvidos." : "") +
+        (emp ? " " + emp : ""));
+    } catch (e) {
+      if (gravou) {
+        await carregar(sel, pid);
+        setErro(e.message + " Parte do planejamento pode ter sido salva: a tela mostra o que está no banco agora.");
+      } else {
+        setErro(e.message);
+      }
+    }
     setBusy(false);
   }
 
@@ -8462,15 +8923,38 @@ function PlanejamentoAluno({ onEditarTemplate }) {
           style={{ minWidth: 130 }}>
           {[4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n} semanas</option>)}
         </select>
-        <button className="btn-sec" onClick={gerarDatas}>Gerar datas</button>
+        <div className={"ed-tog pl-tog" + (criarII ? " on" : "")} role="switch"
+          aria-checked={criarII} tabIndex={0}
+          title="O Gerar datas cria a fase II colada depois de cada fase I"
+          onClick={() => trocarCriarII(!criarII)}
+          onKeyDown={e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); trocarCriarII(!criarII); } }}>
+          <div className="sw"><i /></div>
+          <b>criar a fase II</b>
+        </div>
+        <button className="btn-sec" onClick={() => gerarDatas()}>Gerar datas</button>
         <button onClick={salvar} disabled={busy || !sujo}>
           {busy ? "Salvando..." : "Salvar"}
         </button>
         <button className="btn-sec" onClick={baixarPng}>Baixar PNG</button>
+        {plan && plan.id && (
+          <button className="btn-sec" onClick={novoPlanejamento} disabled={busy}
+            title="Começa um planejamento em branco. O atual continua salvo.">
+            Novo planejamento
+          </button>
+        )}
       </div>
 
       {erro && <div className="err">{erro}</div>}
       {aviso && <div className="ok-msg">{aviso}</div>}
+      {sugSeg && fases[0].inicio && (
+        <div className="err pl-seg">
+          A Fase 1 começa numa {["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"][parseISO(fases[0].inicio).getDay()]},
+          então todas as trocas caem nesse dia da semana.
+          <button className="btn-sec" onClick={comecarNaSegunda}>
+            Começar na segunda {dBR(sugSeg).slice(0, 5)}
+          </button>
+        </div>
+      )}
       {temX && (
         <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24", color: "#f0a35e" }}>
           ⚠️ Existe <b>«x»</b> em algum campo — é placeholder do template. Substitui antes de exportar.
@@ -8489,7 +8973,8 @@ function PlanejamentoAluno({ onEditarTemplate }) {
         <div className="aln">{nomeAluno}</div>
       </div>
 
-      <div className="pl-grid" style={{ display: sel ? "" : "none" }}>
+      <div className="pl-grid" style={{ display: sel ? "" : "none",
+        ...(fases.length > 4 ? { gridTemplateColumns: "92px repeat(" + fases.length + ",minmax(0,1fr))" } : {}) }}>
         <div className="pl-lab" />
         {fases.map((f, i) => (
           <div className={"pl-cel " + (i % 2 ? "cb2" : "ca")} key={"h" + i}>
@@ -8555,12 +9040,15 @@ function PlanejamentoAluno({ onEditarTemplate }) {
       </div>
 
       <div className="pl-hint">
-        Preenche a data da <b>Fase 1</b> e clica em <b>Gerar datas</b> — as outras três e as
-        observações da "Fase II" saem sozinhas, sempre em segunda-feira. Tudo continua editável.
+        Preenche a data da <b>Fase 1</b> e clica em <b>Gerar datas</b>: as outras fases saem
+        coladas, sem buraco. Com <b>criar a fase II</b> ligado, cada fase I ganha a sua II logo
+        depois, com o mesmo modelo, objetivo e métodos, e o aviso dela vai para as Observações.
+        A grade e o PNG mostram só as fases I. Tudo continua editável.
         <br />
         Salvar cria as fases direto na tabela do App: o aluno passa a ver o planejamento por lá.
+        Mudou data de fase já salva? O banco empurra as fases seguintes e o aviso da II acompanha.
         <br />
-        Os chips embaixo do template são as <b>técnicas sugeridas</b> da Biblioteca de fases —
+        Os chips embaixo do template são as <b>técnicas sugeridas</b> da Biblioteca de fases:
         clica num chip para pôr a técnica no texto de Métodos. Eles não saem no PNG nem no App.
         O <b>✎</b> abre o template na Biblioteca.
       </div>
@@ -9692,14 +10180,27 @@ function PainelPlanejamentoAluno({ aluno, onIr }) {
   if (!d) return <div className="msg">Buscando...</div>;
 
   const hoje = dISO(new Date());
+  /* igual à grade do Planejamento: 4 blocos, a fase I no card e a II numa
+     linha embaixo (posicao agora conta I e II) */
   const doPlano = d.plan
-    ? [1, 2, 3, 4].map(pos =>
-        d.fases.find(f => f.planejamento_id === d.plan.id && f.posicao === pos) ||
-        { vaga: true, posicao: pos, id: "vaga" + pos })
+    ? agruparBlocos(d.fases.filter(f => f.planejamento_id === d.plan.id))
     : [];
+  while (d.plan && doPlano.length < 4) {
+    doPlano.push({ cab: { vaga: true, id: "vaga" + doPlano.length }, ii: null });
+  }
   const avulsas = d.fases.filter(f => !f.planejamento_id);
 
-  function cartao(f, rotulo) {
+  function linhaII(ii) {
+    const st = situacaoFase(ii, hoje);
+    return (
+      <div className="dt pa-ii">
+        <b>{nomeCurtoFase(ii.nome) || "Fase II"}</b> {dBR(ii.inicio)} → {dBR(ii.fim)}
+        <span className={"pl-sit " + st}>{st}</span>
+      </div>
+    );
+  }
+
+  function cartao(f, rotulo, ii) {
     if (f.vaga) {
       return (
         <div className="pa-f vaga" key={f.id}>
@@ -9708,12 +10209,14 @@ function PainelPlanejamentoAluno({ aluno, onIr }) {
         </div>
       );
     }
+    /* o ponto da linha do tempo segue o bloco: I encerrada + II ativa = ativa */
     const st = situacaoFase(f, hoje);
+    const stBloco = ii && st === "encerrada" ? situacaoFase(ii, hoje) : st;
     const rest = st === "ativa" && f.fim
       ? Math.round((parseISO(f.fim) - parseISO(hoje)) / 864e5) : null;
     const tt = tecnicasDoTemplate(templateDaFase(f, cat.tpls), cat.tecs);
     return (
-      <div className={"pa-f " + st} key={f.id}>
+      <div className={"pa-f " + stBloco} key={f.id}>
         <div className="n">{rotulo}</div>
         <div className="nm">{f.nome}</div>
         <div className="dt">
@@ -9722,6 +10225,7 @@ function PainelPlanejamentoAluno({ aluno, onIr }) {
             {st}{rest !== null ? " · " + (rest <= 0 ? "vence hoje" : "faltam " + rest + "d") : ""}
           </span>
         </div>
+        {ii && linhaII(ii)}
         {f.objetivo && <div className="ob">{f.objetivo}</div>}
         {tt.length > 0 && (
           <div className="tqs">{tt.map(t => <ChipTecnica key={t.id} t={t} />)}</div>
@@ -9749,7 +10253,7 @@ function PainelPlanejamentoAluno({ aluno, onIr }) {
         </button>
       </div>
 
-      {doPlano.map(f => cartao(f, "Fase " + f.posicao))}
+      {doPlano.map((b, i) => cartao(b.cab, "Fase " + (i + 1), b.ii))}
 
       {avulsas.length > 0 && (
         <>
@@ -11194,14 +11698,17 @@ function SeletorSessoes({ alunoDest, faseDest, nomesDestino, onFechar, onPronto 
    Fase criada aqui NÃO entra no planejamento: planejamento_id e posicao ficam
    null, então ela não aparece na grade de 4 colunas do Planejamento nem
    embaralha as posições de lá. É a fase extra, fora da periodização. */
-function DrawerNovaFase({ aluno, onFechar, onCriada }) {
+function DrawerNovaFase({ aluno, fases, onFechar, onCriada }) {
   useEsc(true, onFechar);
   const [tpls, setTpls]   = useState([]);
   const [cats, setCats]   = useState([]);
   const [tpl, setTpl]     = useState("");
   const [nome, setNome]   = useState("");
-  const [ini, setIni]     = useState(dISO(new Date()));
-  const [fim, setFim]     = useState(dISO(addDias(new Date(), 41)));
+  /* um aluno nunca tem duas fases no mesmo dia: começa no primeiro dia livre
+     (dia seguinte ao fim da última fase dele, ou hoje) */
+  const [ini, setIni]     = useState(() => inicioLivre(fases, dISO(new Date())));
+  const [fim, setFim]     = useState(() =>
+    dISO(addDias(parseISO(inicioLivre(fases, dISO(new Date()))), 41)));
   const [sem, setSem]     = useState(6);
   const [obj, setObj]     = useState("");
   const [met, setMet]     = useState("");
@@ -11249,7 +11756,7 @@ function DrawerNovaFase({ aluno, onFechar, onCriada }) {
       template_id: tpl || null, planejamento_id: null, posicao: null
     };
     const r = await sb.from("fases").insert(linha);
-    if (r.error) { setErro(r.error.message); setBusy(false); return; }
+    if (r.error) { setErro(msgErroFase(r.error)); setBusy(false); return; }
     onCriada(linha, copiar);
   }
 
@@ -11266,7 +11773,8 @@ function DrawerNovaFase({ aluno, onFechar, onCriada }) {
           <h3>Nova fase</h3>
           <p>
             Fase avulsa de <b>{aluno.nome}</b>, fora do planejamento de
-            periodização. Ela aparece aqui e no App do aluno.
+            periodização. Ela aparece aqui e no App do aluno, e não pode cair
+            em cima de outra fase dele.
           </p>
         </div>
 
@@ -11419,7 +11927,7 @@ function mtFaseInfo(f, hoje) {
   return { st, total, semanas, pct: 0, num: "—", lab: "sem datas", topo: "Fase sem datas" };
 }
 
-/* as fases do mesmo planejamento, na ordem das 4 posições */
+/* as fases do mesmo planejamento, na ordem de posicao (I e II: 1 a 8) */
 function mtPlano(fases, f) {
   if (!f || !f.planejamento_id) return [];
   return (fases || []).filter(x => x.planejamento_id === f.planejamento_id)
@@ -12152,28 +12660,45 @@ function PainelMontagem() {
   }
 
   /* Ajustar prazo é a operação mais frequente: as datas ficam no próprio card
-     da fase, sem modal. Update de campo ÚNICO: mandar o objeto inteiro
-     sobrescreveria nome, objetivo e métodos com o que estiver em memória.
+     da fase, sem modal. Desde 08/11/2026 passa pela reprogramar_fase: ela grava
+     as duas datas e empurra as fases seguintes que colidirem (esticar a fase
+     porque o aluno perdeu semana leva tudo que vem depois junto). O retorno
+     traz TODAS as fases do aluno: substitui a lista local, sem cascata aqui.
      Otimista com rollback. */
   async function mudarDataFase(f, campo, valor) {
-    if (!valor) return;
+    if (!valor || valor === f[campo]) return;
     if (campo === "inicio" && f.fim && valor > f.fim) {
       toast("Início não pode ser depois do fim.", "erro"); return;
     }
     if (campo === "fim" && f.inicio && valor < f.inicio) {
       toast("Fim não pode ser antes do início.", "erro"); return;
     }
-    const antes = f[campo];
+    const ini = campo === "inicio" ? valor : f.inicio;
+    const fim = campo === "fim" ? valor : f.fim;
+    if (!ini || !fim) {
+      toast("Essa fase está sem início ou sem fim. Preenche as duas datas.", "erro"); return;
+    }
+    const antesDe = f[campo];
+    const antes = new Map(fases.map(x => [x.id, x]));
     setFases(fs => fs.map(x => x.id === f.id ? { ...x, [campo]: valor } : x));
-    const r = await sb.from("fases").update({ [campo]: valor }).eq("id", f.id);
+    const r = await reprogramarFase(f.id, ini, fim);
     if (r.error) {
-      setFases(fs => fs.map(x => x.id === f.id ? { ...x, [campo]: antes } : x));
-      toast(r.error.message, "erro"); return;
+      setFases(fs => fs.map(x => x.id === f.id ? { ...x, [campo]: antesDe } : x));
+      toast(msgErroFase(r.error, f.nome), "erro"); return;
+    }
+    let lista = r.data
+      ? [...r.data].sort((a, b) => String(b.inicio || "").localeCompare(String(a.inicio || "")))
+      : null;
+    if (lista) {
+      /* o aviso "(teremos a fase X II - data)" da I acompanha a II empurrada */
+      lista = comObs(lista, await gravarObsII(lista));
+      setFases(lista);
     }
     /* a data pode ter mudado a fase de aba (ex: virou encerrada) */
-    const nova = { ...f, [campo]: valor };
+    const nova = (lista && lista.find(x => x.id === f.id)) || { ...f, [campo]: valor };
     setAbaF(MT_ABA_DE[situacaoFase(nova, hoje)] || aba);
-    toast("Data atualizada ✓");
+    const emp = lista ? resumoEmpurradas(antes, lista, new Set([f.id])) : "";
+    toast("Data atualizada ✓" + (emp ? " " + emp : ""));
   }
 
   /* fase nova entra na lista sem recarregar tudo e já abre selecionada */
@@ -12545,8 +13070,13 @@ function PainelMontagem() {
   function cardFase() {
     if (!faseObj || !info) return null;
     const f = faseObj;
-    const posPlano = f.planejamento_id && f.posicao
-      ? "planejamento · fase " + f.posicao + (plano.length ? " de " + Math.max(plano.length, 4) : "")
+    /* numeração dos blocos, igual à grade do Planejamento: "fase 2 de 4 · II" */
+    const blocosPl = f.planejamento_id ? agruparBlocos(plano) : [];
+    const bi = blocosPl.findIndex(b => b.cab.id === f.id || (b.ii && b.ii.id === f.id));
+    const posPlano = f.planejamento_id && bi >= 0
+      ? "planejamento · fase " + (bi + 1) + " de " + Math.max(blocosPl.length, 4) +
+        (blocosPl[bi].ii ? (blocosPl[bi].ii.id === f.id ? " · II" : " · I") : "")
+      : f.planejamento_id ? "planejamento"
       : "fase avulsa · fora do planejamento";
     return (
       <section className={"tw-hero " + info.st}>
@@ -12744,7 +13274,7 @@ function PainelMontagem() {
       ) : sesFoco ? sessaoAmpliada(sesFoco) : visaoGeral()}
 
       {novaFase && alunoObj && (
-        <DrawerNovaFase aluno={alunoObj}
+        <DrawerNovaFase aluno={alunoObj} fases={fases}
           onFechar={() => setNovaFase(false)}
           onCriada={aposCriarFase} />
       )}
