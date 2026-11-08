@@ -14286,117 +14286,354 @@ function tonelagemDe(logs) {
   return Math.round(volume);
 }
 
-/* lista VERBATIM do App. A ORDEM importa: desempate do sort estável */
+/* lista e sorteio VERBATIM do App (lote_comparacoes_2000x, nov/2026).
+   Sem a linha window.EQ_ATUAL do App: aqui o "Copiar para compartilhar"
+   recebe a comparação da tela pelo onEq do CardVolume. */
+/* ===== TANGIBILIDADE DO VOLUME =====
+   "19,6 toneladas" não diz nada ao cérebro. A comparação transforma o número
+   em brincadeira, e o exagero é proposital: "1.240 cérebros humanos" diverte
+   mais que "2 ônibus". Cada item: kg aproximado (fontes públicas, não usar
+   para mais nada), singular já com artigo, plural, emoji e tema. O tema só
+   serve para a sequência variar de assunto. */
+const EQ_MAX_VEZES=2000;   // o objeto entra se o volume couber nele de 1x a 2000x
 const EQUIVALENTES=[
-  // ---- leves: cotidiano ----
-  {kg:2,     sing:'um coelho',              plur:'coelhos',              ico:'🐇'},
-  {kg:2,     sing:'um notebook',            plur:'notebooks',            ico:'💻'},
-  {kg:2.5,   sing:'uma galinha',            plur:'galinhas',             ico:'🐓'},
-  {kg:3,     sing:'um tijolo',              plur:'tijolos',              ico:'🧱'},
-  {kg:4,     sing:'um gato',                plur:'gatos',                ico:'🐈'},
-  {kg:5,     sing:'um saco de arroz de 5kg',plur:'sacos de arroz de 5kg',ico:'🍚'},
-  {kg:5,     sing:'um ganso',               plur:'gansos',               ico:'🦆'},
-  {kg:5,     sing:'uma abóbora',            plur:'abóboras',             ico:'🎃'},
-  {kg:6,     sing:'uma bola de treino 6kg', plur:'bolas de treino 6kg',  ico:'⚫'},
-  {kg:8,     sing:'uma melancia',           plur:'melancias',            ico:'🍉'},
-  {kg:10,    sing:'uma mochila cheia',      plur:'mochilas cheias',      ico:'🎒'},
-  {kg:10,    sing:'uma anilha de 10kg',     plur:'anilhas de 10kg',      ico:'🥏'},
-  {kg:10,    sing:'um pneu de carro',       plur:'pneus de carro',       ico:'🛞'},
-  {kg:12,    sing:'uma bicicleta',          plur:'bicicletas',           ico:'🚲'},
-  {kg:12,    sing:'uma tábua de madeira',   plur:'tábuas de madeira',    ico:'🪵'},
-  {kg:15,    sing:'um cachorro de porte médio', plur:'cachorros de porte médio', ico:'🐕'},
-  {kg:15,    sing:'uma cadeira de escritório',  plur:'cadeiras de escritório',  ico:'🪑'},
-  {kg:15,    sing:'um patinete elétrico',   plur:'patinetes elétricos',  ico:'🛴'},
-  {kg:16,    sing:'um kettlebell de 16kg',  plur:'kettlebells de 16kg',  ico:'🎽'},
-  {kg:18,    sing:'uma criança de 5 anos',  plur:'crianças de 5 anos',   ico:'🧒'},
-  {kg:20,    sing:'um galão de água de 20L',plur:'galões de água de 20L',ico:'🧴'},
-  {kg:20,    sing:'uma anilha de 20kg',     plur:'anilhas de 20kg',      ico:'🏋️'},
-  {kg:20,    sing:'uma barra olímpica',     plur:'barras olímpicas',     ico:'🏋️‍♂️'},
-  {kg:25,    sing:'um saco de batata',      plur:'sacos de batata',      ico:'🥔'},
-  {kg:35,    sing:'uma porta de madeira',   plur:'portas de madeira',    ico:'🚪'},
-  {kg:40,    sing:'um carrinho de mercado cheio', plur:'carrinhos de mercado cheios', ico:'🛒'},
-  {kg:50,    sing:'um saco de cimento',     plur:'sacos de cimento',     ico:'🧱'},
-  {kg:50,    sing:'uma cabra',              plur:'cabras',               ico:'🐐'},
-  {kg:60,    sing:'uma pessoa adulta',      plur:'pessoas adultas',      ico:'🧍'},
-  {kg:60,    sing:'um barril de chope',     plur:'barris de chope',      ico:'🍺'},
-  {kg:60,    sing:'uma saca de café',       plur:'sacas de café',        ico:'☕'},
-  {kg:70,    sing:'uma máquina de lavar',   plur:'máquinas de lavar',    ico:'🧺'},
-  {kg:80,    sing:'um sofá de 3 lugares',   plur:'sofás de 3 lugares',   ico:'🛋️'},
-  {kg:80,    sing:'um cervo',               plur:'cervos',               ico:'🦌'},
-  {kg:100,   sing:'uma geladeira',          plur:'geladeiras',           ico:'🧊'},
-  {kg:110,   sing:'um porco adulto',        plur:'porcos adultos',       ico:'🐖'},
-  {kg:120,   sing:'uma scooter',            plur:'scooters',             ico:'🛵'},
-  // ---- médios ----
-  {kg:180,   sing:'um gorila',              plur:'gorilas',              ico:'🦍'},
-  {kg:200,   sing:'um golfinho',            plur:'golfinhos',            ico:'🐬'},
-  {kg:200,   sing:'um tambor de 200L cheio',plur:'tambores de 200L cheios', ico:'🛢️'},
-  {kg:250,   sing:'uma moto grande',        plur:'motos grandes',        ico:'🏍️'},
-  {kg:250,   sing:'uma âncora de barco',    plur:'âncoras de barco',     ico:'⚓'},
-  {kg:250,   sing:'um piano de parede',     plur:'pianos de parede',     ico:'🎸'},
-  {kg:300,   sing:'um jacaré-açu',          plur:'jacarés-açu',          ico:'🐊'},
-  {kg:300,   sing:'uma foca',               plur:'focas',                ico:'🦭'},
-  {kg:300,   sing:'uma estátua de bronze',  plur:'estátuas de bronze',   ico:'🏺'},
-  {kg:400,   sing:'um urso pardo',          plur:'ursos pardos',         ico:'🐻'},
-  {kg:450,   sing:'um crocodilo',           plur:'crocodilos',           ico:'🐊'},
-  {kg:500,   sing:'um piano de cauda',      plur:'pianos de cauda',      ico:'🎹'},
-  {kg:600,   sing:'um cavalo',              plur:'cavalos',              ico:'🐎'},
-  {kg:600,   sing:'um camelo',              plur:'camelos',              ico:'🐫'},
-  {kg:700,   sing:'um boi',                 plur:'bois',                 ico:'🐂'},
-  {kg:800,   sing:'um sino de igreja',      plur:'sinos de igreja',      ico:'🔔'},
-  {kg:900,   sing:'um bisão',               plur:'bisões',               ico:'🦬'},
-  {kg:950,   sing:'um carro popular',       plur:'carros populares',     ico:'🚗'},
-  // ---- pesados ----
-  {kg:1200,  sing:'uma girafa',             plur:'girafas',              ico:'🦒'},
-  {kg:1200,  sing:'um avião pequeno',       plur:'aviões pequenos',      ico:'✈️'},
-  {kg:1400,  sing:'uma vaca leiteira',      plur:'vacas leiteiras',      ico:'🐄'},
-  {kg:1500,  sing:'um helicóptero leve',    plur:'helicópteros leves',   ico:'🚁'},
-  {kg:1800,  sing:'um SUV',                 plur:'SUVs',                 ico:'🚙'},
-  {kg:2300,  sing:'um rinoceronte',         plur:'rinocerontes',         ico:'🦏'},
-  {kg:2500,  sing:'um hipopótamo',          plur:'hipopótamos',          ico:'🦛'},
-  {kg:2800,  sing:'uma van de carga',       plur:'vans de carga',        ico:'🚐'},
-  {kg:3500,  sing:'um trator pequeno',      plur:'tratores pequenos',    ico:'🚜'},
-  {kg:5000,  sing:'um elefante africano',   plur:'elefantes africanos',  ico:'🐘'},
-  {kg:5500,  sing:'uma orca',               plur:'orcas',                ico:'🐳'},
-  {kg:5500,  sing:'uma cápsula espacial',   plur:'cápsulas espaciais',   ico:'🚀'},
-  {kg:8000,  sing:'um tiranossauro',        plur:'tiranossauros',        ico:'🦕'},
-  {kg:12000, sing:'um ônibus urbano',       plur:'ônibus urbanos',       ico:'🚌'},
-  {kg:30000, sing:'uma carreta carregada',  plur:'carretas carregadas',  ico:'🚛'},
-  {kg:150000,sing:'uma baleia-azul',        plur:'baleias-azuis',        ico:'🐋'},
+  // ---- peso baixo: até 149 kg ----
+  {kg:0.2, sing:'um celular', plur:'celulares', ico:'📱', t:'tech'},
+  {kg:0.5, sing:'um esquilo', plur:'esquilos', ico:'🐿️', t:'bicho'},
+  {kg:0.5, sing:'uma marmita', plur:'marmitas', ico:'🍱', t:'comida'},
+  {kg:0.5, sing:'um abacate', plur:'abacates', ico:'🥑', t:'comida'},
+  {kg:0.5, sing:'um violino', plur:'violinos', ico:'🎻', t:'musica'},
+  {kg:0.8, sing:'um ouriço', plur:'ouriços', ico:'🦔', t:'bicho'},
+  {kg:0.9, sing:'um pote de whey', plur:'potes de whey', ico:'🥤', t:'treino'},
+  {kg:1, sing:'um porquinho-da-índia', plur:'porquinhos-da-índia', ico:'🐹', t:'bicho'},
+  {kg:1, sing:'uma lagosta', plur:'lagostas', ico:'🦞', t:'bicho'},
+  {kg:1, sing:'um pacote de feijão de 1kg', plur:'pacotes de feijão de 1kg', ico:'🫘', t:'comida'},
+  {kg:1, sing:'uma caixa de leite', plur:'caixas de leite', ico:'🥛', t:'comida'},
+  {kg:1, sing:'uma pizza grande', plur:'pizzas grandes', ico:'🍕', t:'comida'},
+  {kg:1, sing:'um pudim', plur:'pudins', ico:'🍮', t:'comida'},
+  {kg:1, sing:'um abacaxi', plur:'abacaxis', ico:'🍍', t:'comida'},
+  {kg:1, sing:'um queijo minas', plur:'queijos minas', ico:'🧀', t:'comida'},
+  {kg:1, sing:'um trompete', plur:'trompetes', ico:'🎺', t:'musica'},
+  {kg:1.1, sing:'um pote de sorvete de 2L', plur:'potes de sorvete de 2L', ico:'🍨', t:'comida'},
+  {kg:1.2, sing:'uma peça de picanha', plur:'peças de picanha', ico:'🥩', t:'comida'},
+  {kg:1.2, sing:'uma garrafa de vinho', plur:'garrafas de vinho', ico:'🍷', t:'comida'},
+  {kg:1.3, sing:'uma arara-azul', plur:'araras-azuis', ico:'🦜', t:'bicho'},
+  {kg:1.4, sing:'um cérebro humano', plur:'cérebros humanos', ico:'🧠', t:'gente'},
+  {kg:1.4, sing:'um ovo de avestruz', plur:'ovos de avestruz', ico:'🥚', t:'bicho'},
+  {kg:1.5, sing:'uma coruja', plur:'corujas', ico:'🦉', t:'bicho'},
+  {kg:1.5, sing:'um coco', plur:'cocos', ico:'🥥', t:'comida'},
+  {kg:1.5, sing:'um frango assado', plur:'frangos assados', ico:'🍗', t:'comida'},
+  {kg:1.5, sing:'uma câmera profissional', plur:'câmeras profissionais', ico:'📷', t:'tech'},
+  {kg:1.8, sing:'uma cartela de 30 ovos', plur:'cartelas de 30 ovos', ico:'🥚', t:'comida'},
+  {kg:2, sing:'um coelho', plur:'coelhos', ico:'🐇', t:'bicho'},
+  {kg:2, sing:'um notebook', plur:'notebooks', ico:'💻', t:'tech'},
+  {kg:2, sing:'uma penca de bananas', plur:'pencas de bananas', ico:'🍌', t:'comida'},
+  {kg:2, sing:'um tacho de brigadeiro', plur:'tachos de brigadeiro', ico:'🍫', t:'comida'},
+  {kg:2, sing:'um bolo de aniversário', plur:'bolos de aniversário', ico:'🎂', t:'comida'},
+  {kg:2, sing:'um violão', plur:'violões', ico:'🎸', t:'musica'},
+  {kg:2, sing:'um par de patins', plur:'pares de patins', ico:'🛼', t:'treino'},
+  {kg:2.5, sing:'uma galinha', plur:'galinhas', ico:'🐔', t:'bicho'},
+  {kg:2.5, sing:'um skate', plur:'skates', ico:'🛹', t:'treino'},
+  {kg:2.5, sing:'um saco com 50 pães franceses', plur:'sacos com 50 pães franceses', ico:'🥖', t:'comida'},
+  {kg:3, sing:'um tijolo', plur:'tijolos', ico:'🧱', t:'obra'},
+  {kg:3, sing:'um pato', plur:'patos', ico:'🦆', t:'bicho'},
+  {kg:3, sing:'um galo', plur:'galos', ico:'🐓', t:'bicho'},
+  {kg:3, sing:'um flamingo', plur:'flamingos', ico:'🦩', t:'bicho'},
+  {kg:3, sing:'um macaco-prego', plur:'macacos-prego', ico:'🐵', t:'bicho'},
+  {kg:3, sing:'uma prancha de surfe', plur:'pranchas de surfe', ico:'🏄', t:'treino'},
+  {kg:3, sing:'uma cadeira de praia', plur:'cadeiras de praia', ico:'🏖️', t:'casa'},
+  {kg:3, sing:'um saxofone', plur:'saxofones', ico:'🎷', t:'musica'},
+  {kg:4, sing:'um gato', plur:'gatos', ico:'🐈', t:'bicho'},
+  {kg:4, sing:'um guarda-sol', plur:'guarda-sóis', ico:'⛱️', t:'casa'},
+  {kg:4, sing:'um videogame', plur:'videogames', ico:'🎮', t:'tech'},
+  {kg:5, sing:'um saco de arroz de 5kg', plur:'sacos de arroz de 5kg', ico:'🍚', t:'comida'},
+  {kg:5, sing:'uma abóbora', plur:'abóboras', ico:'🎃', t:'comida'},
+  {kg:5, sing:'uma preguiça', plur:'preguiças', ico:'🦥', t:'bicho'},
+  {kg:5, sing:'um pavão', plur:'pavões', ico:'🦚', t:'bicho'},
+  {kg:5, sing:'um caranguejo-rei', plur:'caranguejos-rei', ico:'🦀', t:'bicho'},
+  {kg:6, sing:'uma bola de treino 6kg', plur:'bolas de treino 6kg', ico:'⚫', t:'treino'},
+  {kg:6, sing:'uma raposa', plur:'raposas', ico:'🦊', t:'bicho'},
+  {kg:6, sing:'um poodle', plur:'poodles', ico:'🐩', t:'bicho'},
+  {kg:6, sing:'um surdo de samba', plur:'surdos de samba', ico:'🪘', t:'musica'},
+  {kg:6.1, sing:'um troféu da Copa do Mundo', plur:'troféus da Copa do Mundo', ico:'🏆', t:'treino'},
+  {kg:7, sing:'uma harpia', plur:'harpias', ico:'🦅', t:'bicho'},
+  {kg:7, sing:'um guaxinim', plur:'guaxinins', ico:'🦝', t:'bicho'},
+  {kg:7, sing:'um gato gordo', plur:'gatos gordos', ico:'🐈‍⬛', t:'bicho'},
+  {kg:7, sing:'um pernil de porco', plur:'pernis de porco', ico:'🍖', t:'comida'},
+  {kg:7, sing:'uma bola de boliche', plur:'bolas de boliche', ico:'🎳', t:'treino'},
+  {kg:8, sing:'uma melancia', plur:'melancias', ico:'🍉', t:'comida'},
+  {kg:8, sing:'uma impressora', plur:'impressoras', ico:'🖨️', t:'tech'},
+  {kg:8, sing:'uma máquina de costura', plur:'máquinas de costura', ico:'🧵', t:'casa'},
+  {kg:9, sing:'um coala', plur:'coalas', ico:'🐨', t:'bicho'},
+  {kg:10, sing:'uma mochila cheia', plur:'mochilas cheias', ico:'🎒', t:'casa'},
+  {kg:10, sing:'uma anilha de 10kg', plur:'anilhas de 10kg', ico:'🥏', t:'treino'},
+  {kg:10, sing:'um pneu de carro', plur:'pneus de carro', ico:'🛞', t:'veiculo'},
+  {kg:10, sing:'um cisne', plur:'cisnes', ico:'🦢', t:'bicho'},
+  {kg:10, sing:'um peru', plur:'perus', ico:'🦃', t:'bicho'},
+  {kg:10, sing:'um balde de açaí de 10L', plur:'baldes de açaí de 10L', ico:'🫐', t:'comida'},
+  {kg:10, sing:'uma escada', plur:'escadas', ico:'🪜', t:'casa'},
+  {kg:10, sing:'um balde cheio de água', plur:'baldes cheios de água', ico:'🪣', t:'casa'},
+  {kg:10, sing:'um extintor de incêndio', plur:'extintores de incêndio', ico:'🧯', t:'casa'},
+  {kg:10, sing:'uma sanfona', plur:'sanfonas', ico:'🪗', t:'musica'},
+  {kg:10, sing:'um contrabaixo', plur:'contrabaixos', ico:'🎻', t:'musica'},
+  {kg:12, sing:'uma bicicleta', plur:'bicicletas', ico:'🚲', t:'veiculo'},
+  {kg:12, sing:'uma tábua de madeira', plur:'tábuas de madeira', ico:'🪵', t:'obra'},
+  {kg:12, sing:'um texugo', plur:'texugos', ico:'🦡', t:'bicho'},
+  {kg:12, sing:'um computador gamer', plur:'computadores gamer', ico:'🖥️', t:'tech'},
+  {kg:12, sing:'uma corda naval', plur:'cordas navais', ico:'🪢', t:'treino'},
+  {kg:12.4, sing:'uma barra de ouro', plur:'barras de ouro', ico:'🪙', t:'obra'},
+  {kg:15, sing:'um cachorro de porte médio', plur:'cachorros de porte médio', ico:'🐕', t:'bicho'},
+  {kg:15, sing:'uma cadeira de escritório', plur:'cadeiras de escritório', ico:'🪑', t:'casa'},
+  {kg:15, sing:'um patinete elétrico', plur:'patinetes elétricos', ico:'🛴', t:'veiculo'},
+  {kg:15, sing:'um polvo gigante', plur:'polvos gigantes', ico:'🐙', t:'bicho'},
+  {kg:15, sing:'um dodô', plur:'dodôs', ico:'🦤', t:'bicho'},
+  {kg:15, sing:'um caldeirão de feijoada', plur:'caldeirões de feijoada', ico:'🍲', t:'comida'},
+  {kg:15, sing:'uma TV de 55 polegadas', plur:'TVs de 55 polegadas', ico:'📺', t:'tech'},
+  {kg:15, sing:'uma caixa de mudança', plur:'caixas de mudança', ico:'📦', t:'casa'},
+  {kg:15, sing:'uma bateria de carro', plur:'baterias de carro', ico:'🔋', t:'veiculo'},
+  {kg:15, sing:'um saco de ração de 15kg', plur:'sacos de ração de 15kg', ico:'🦴', t:'casa'},
+  {kg:15, sing:'uma árvore de Natal', plur:'árvores de Natal', ico:'🎄', t:'casa'},
+  {kg:16, sing:'um kettlebell de 16kg', plur:'kettlebells de 16kg', ico:'🏋️‍♀️', t:'treino'},
+  {kg:18, sing:'uma criança de 5 anos', plur:'crianças de 5 anos', ico:'🧒', t:'gente'},
+  {kg:20, sing:'um galão de água de 20L', plur:'galões de água de 20L', ico:'💧', t:'casa'},
+  {kg:20, sing:'uma anilha de 20kg', plur:'anilhas de 20kg', ico:'🏋️', t:'treino'},
+  {kg:20, sing:'uma barra olímpica', plur:'barras olímpicas', ico:'🏋️‍♂️', t:'treino'},
+  {kg:20, sing:'um leitão', plur:'leitões', ico:'🐷', t:'agro'},
+  {kg:20, sing:'uma caixa de som', plur:'caixas de som', ico:'🔊', t:'musica'},
+  {kg:20, sing:'um vaso de planta grande', plur:'vasos de planta grandes', ico:'🪴', t:'casa'},
+  {kg:23, sing:'uma mala de viagem cheia', plur:'malas de viagem cheias', ico:'🧳', t:'casa'},
+  {kg:25, sing:'um saco de batata', plur:'sacos de batata', ico:'🥔', t:'comida'},
+  {kg:25, sing:'um fardo de feno', plur:'fardos de feno', ico:'🌾', t:'agro'},
+  {kg:25, sing:'um caiaque', plur:'caiaques', ico:'🛶', t:'veiculo'},
+  {kg:26, sing:'um remo ergométrico', plur:'remos ergométricos', ico:'🚣', t:'treino'},
+  {kg:28, sing:'um botijão de gás cheio', plur:'botijões de gás cheios', ico:'🔥', t:'casa'},
+  {kg:30, sing:'um labrador', plur:'labradores', ico:'🦮', t:'bicho'},
+  {kg:30, sing:'um pinguim-imperador', plur:'pinguins-imperadores', ico:'🐧', t:'bicho'},
+  {kg:30, sing:'um fogão de 4 bocas', plur:'fogões de 4 bocas', ico:'🍳', t:'casa'},
+  {kg:35, sing:'uma porta de madeira', plur:'portas de madeira', ico:'🚪', t:'casa'},
+  {kg:35, sing:'um pastor-alemão', plur:'pastores-alemães', ico:'🐕‍🦺', t:'bicho'},
+  {kg:35, sing:'um saco de pancada', plur:'sacos de pancada', ico:'🥊', t:'treino'},
+  {kg:35, sing:'um vaso sanitário', plur:'vasos sanitários', ico:'🚽', t:'casa'},
+  {kg:38, sing:'uma roda de queijo parmesão', plur:'rodas de queijo parmesão', ico:'🧀', t:'comida'},
+  {kg:40, sing:'um carrinho de mercado cheio', plur:'carrinhos de mercado cheios', ico:'🛒', t:'casa'},
+  {kg:40, sing:'um bezerro', plur:'bezerros', ico:'🐮', t:'agro'},
+  {kg:40, sing:'um lobo', plur:'lobos', ico:'🐺', t:'bicho'},
+  {kg:40, sing:'uma caixa de laranjas', plur:'caixas de laranjas', ico:'🍊', t:'agro'},
+  {kg:40, sing:'um aparelho de ar-condicionado', plur:'aparelhos de ar-condicionado', ico:'❄️', t:'casa'},
+  {kg:40, sing:'uma mesa de jantar', plur:'mesas de jantar', ico:'🍽️', t:'casa'},
+  {kg:40, sing:'uma bateria completa', plur:'baterias completas', ico:'🥁', t:'musica'},
+  {kg:40, sing:'um lustre de cristal', plur:'lustres de cristal', ico:'💡', t:'casa'},
+  {kg:40, sing:'um espeto de churrasco grego', plur:'espetos de churrasco grego', ico:'🥙', t:'comida'},
+  {kg:45, sing:'uma colmeia cheia de mel', plur:'colmeias cheias de mel', ico:'🐝', t:'agro'},
+  {kg:50, sing:'um saco de cimento', plur:'sacos de cimento', ico:'🏗️', t:'obra'},
+  {kg:50, sing:'uma cabra', plur:'cabras', ico:'🐐', t:'bicho'},
+  {kg:50, sing:'um canguru', plur:'cangurus', ico:'🦘', t:'bicho'},
+  {kg:50, sing:'uma capivara', plur:'capivaras', ico:'🦫', t:'bicho'},
+  {kg:50, sing:'um chimpanzé', plur:'chimpanzés', ico:'🐒', t:'bicho'},
+  {kg:50, sing:'uma bike de spinning', plur:'bikes de spinning', ico:'🚴', t:'treino'},
+  {kg:58, sing:'uma Enciclopédia Britânica completa', plur:'Enciclopédias Britânicas completas', ico:'📚', t:'casa'},
+  {kg:60, sing:'um barril de chope', plur:'barris de chope', ico:'🍺', t:'comida'},
+  {kg:60, sing:'uma saca de café', plur:'sacas de café', ico:'☕', t:'agro'},
+  {kg:60, sing:'uma saca de soja', plur:'sacas de soja', ico:'🌱', t:'agro'},
+  {kg:60, sing:'uma saca de milho', plur:'sacas de milho', ico:'🌽', t:'agro'},
+  {kg:60, sing:'uma ovelha', plur:'ovelhas', ico:'🐑', t:'agro'},
+  {kg:60, sing:'uma cama de casal', plur:'camas de casal', ico:'🛏️', t:'casa'},
+  {kg:70, sing:'uma pessoa adulta', plur:'pessoas adultas', ico:'🧍', t:'gente'},
+  {kg:70, sing:'uma máquina de lavar', plur:'máquinas de lavar', ico:'🧺', t:'casa'},
+  {kg:70, sing:'uma sucuri', plur:'sucuris', ico:'🐍', t:'bicho'},
+  {kg:70, sing:'um relógio de pêndulo', plur:'relógios de pêndulo', ico:'🕰️', t:'casa'},
+  {kg:70, sing:'um robô humanoide', plur:'robôs humanoides', ico:'🤖', t:'tech'},
+  {kg:75, sing:'um são-bernardo', plur:'são-bernardos', ico:'🐶', t:'bicho'},
+  {kg:75, sing:'um kart', plur:'karts', ico:'🏁', t:'veiculo'},
+  {kg:80, sing:'um sofá de 3 lugares', plur:'sofás de 3 lugares', ico:'🛋️', t:'casa'},
+  {kg:80, sing:'um cervo', plur:'cervos', ico:'🦌', t:'bicho'},
+  {kg:80, sing:'um orangotango', plur:'orangotangos', ico:'🦧', t:'bicho'},
+  {kg:80, sing:'um dragão-de-komodo', plur:'dragões-de-komodo', ico:'🦎', t:'bicho'},
+  {kg:80, sing:'um carrinho de pipoca', plur:'carrinhos de pipoca', ico:'🍿', t:'comida'},
+  {kg:90, sing:'um javali', plur:'javalis', ico:'🐗', t:'bicho'},
+  {kg:100, sing:'uma geladeira', plur:'geladeiras', ico:'🧊', t:'casa'},
+  {kg:100, sing:'uma onça-pintada', plur:'onças-pintadas', ico:'🐆', t:'bicho'},
+  {kg:100, sing:'um pirarucu', plur:'pirarucus', ico:'🐠', t:'bicho'},
+  {kg:100, sing:'um filhote de elefante', plur:'filhotes de elefante', ico:'🐘', t:'bicho'},
+  {kg:100, sing:'uma mesa de pingue-pongue', plur:'mesas de pingue-pongue', ico:'🏓', t:'treino'},
+  {kg:100, sing:'uma bigorna', plur:'bigornas', ico:'⚒️', t:'obra'},
+  {kg:110, sing:'um porco adulto', plur:'porcos adultos', ico:'🐖', t:'agro'},
+  {kg:110, sing:'um panda-gigante', plur:'pandas-gigantes', ico:'🐼', t:'bicho'},
+  {kg:115, sing:'um jogador de futebol americano', plur:'jogadores de futebol americano', ico:'🏈', t:'gente'},
+  {kg:120, sing:'uma scooter', plur:'scooters', ico:'🛵', t:'veiculo'},
+  {kg:120, sing:'uma máquina de fliperama', plur:'máquinas de fliperama', ico:'🕹️', t:'tech'},
+  {kg:140, sing:'uma lhama', plur:'lhamas', ico:'🦙', t:'bicho'},
+  // ---- peso médio: 150 kg a 999 kg ----
+  {kg:150, sing:'um boto-cor-de-rosa', plur:'botos-cor-de-rosa', ico:'🐬', t:'bicho'},
+  {kg:150, sing:'uma tartaruga-marinha', plur:'tartarugas-marinhas', ico:'🐢', t:'bicho'},
+  {kg:150, sing:'um lutador de sumô', plur:'lutadores de sumô', ico:'🤼', t:'gente'},
+  {kg:150, sing:'um motor de carro', plur:'motores de carro', ico:'⚙️', t:'veiculo'},
+  {kg:180, sing:'um gorila', plur:'gorilas', ico:'🦍', t:'bicho'},
+  {kg:180, sing:'um coração de baleia-azul', plur:'corações de baleia-azul', ico:'❤️', t:'bicho'},
+  {kg:180, sing:'uma esteira de academia', plur:'esteiras de academia', ico:'🏃', t:'treino'},
+  {kg:190, sing:'um leão', plur:'leões', ico:'🦁', t:'bicho'},
+  {kg:200, sing:'um golfinho', plur:'golfinhos', ico:'🐬', t:'bicho'},
+  {kg:200, sing:'um tambor de 200L cheio', plur:'tambores de 200L cheios', ico:'🛢️', t:'obra'},
+  {kg:200, sing:'um pônei', plur:'pôneis', ico:'🐴', t:'bicho'},
+  {kg:200, sing:'um pneu de trator', plur:'pneus de trator', ico:'🛞', t:'treino'},
+  {kg:210, sing:'um trenó de bobsled', plur:'trenós de bobsled', ico:'🛷', t:'treino'},
+  {kg:220, sing:'um tigre', plur:'tigres', ico:'🐅', t:'bicho'},
+  {kg:220, sing:'uma família de 4 pessoas', plur:'famílias de 4 pessoas', ico:'👨‍👩‍👧‍👦', t:'gente'},
+  {kg:250, sing:'uma moto grande', plur:'motos grandes', ico:'🏍️', t:'veiculo'},
+  {kg:250, sing:'uma âncora de barco', plur:'âncoras de barco', ico:'⚓', t:'obra'},
+  {kg:250, sing:'um piano de parede', plur:'pianos de parede', ico:'🎹', t:'musica'},
+  {kg:250, sing:'um atum-azul', plur:'atuns-azuis', ico:'🐟', t:'bicho'},
+  {kg:275, sing:'uma lula gigante', plur:'lulas gigantes', ico:'🦑', t:'bicho'},
+  {kg:300, sing:'um jacaré-açu', plur:'jacarés-açu', ico:'🐊', t:'bicho'},
+  {kg:300, sing:'uma foca', plur:'focas', ico:'🦭', t:'bicho'},
+  {kg:300, sing:'uma estátua de bronze', plur:'estátuas de bronze', ico:'🗿', t:'famoso'},
+  {kg:300, sing:'uma banheira cheia', plur:'banheiras cheias', ico:'🛁', t:'casa'},
+  {kg:300, sing:'um cofre', plur:'cofres', ico:'🔐', t:'casa'},
+  {kg:350, sing:'uma zebra', plur:'zebras', ico:'🦓', t:'bicho'},
+  {kg:350, sing:'um jet ski', plur:'jet skis', ico:'🚤', t:'veiculo'},
+  {kg:350, sing:'um aparelho de leg press', plur:'aparelhos de leg press', ico:'🦵', t:'treino'},
+  {kg:400, sing:'um urso pardo', plur:'ursos pardos', ico:'🐻', t:'bicho'},
+  {kg:400, sing:'uma mesa de sinuca', plur:'mesas de sinuca', ico:'🎱', t:'treino'},
+  {kg:400, sing:'um carrinho de golfe', plur:'carrinhos de golfe', ico:'⛳', t:'veiculo'},
+  {kg:400, sing:'um caixa eletrônico', plur:'caixas eletrônicos', ico:'🏧', t:'tech'},
+  {kg:400, sing:'um rolo de feno', plur:'rolos de feno', ico:'🌾', t:'agro'},
+  {kg:450, sing:'um crocodilo', plur:'crocodilos', ico:'🐊', t:'bicho'},
+  {kg:450, sing:'um urso-polar', plur:'ursos-polares', ico:'🐻‍❄️', t:'bicho'},
+  {kg:500, sing:'um piano de cauda', plur:'pianos de cauda', ico:'🎹', t:'musica'},
+  {kg:500, sing:'um balão de ar quente', plur:'balões de ar quente', ico:'🎈', t:'veiculo'},
+  {kg:500, sing:'um satélite pequeno', plur:'satélites pequenos', ico:'🛰️', t:'tech'},
+  {kg:500, sing:'um pedregulho', plur:'pedregulhos', ico:'🪨', t:'natureza'},
+  {kg:540, sing:'um time de vôlei', plur:'times de vôlei', ico:'🏐', t:'gente'},
+  {kg:600, sing:'um cavalo', plur:'cavalos', ico:'🐎', t:'bicho'},
+  {kg:600, sing:'um camelo', plur:'camelos', ico:'🐫', t:'bicho'},
+  {kg:650, sing:'uma vaca leiteira', plur:'vacas leiteiras', ico:'🐄', t:'agro'},
+  {kg:700, sing:'um boi', plur:'bois', ico:'🐂', t:'agro'},
+  {kg:800, sing:'um sino de igreja', plur:'sinos de igreja', ico:'🔔', t:'obra'},
+  {kg:800, sing:'um búfalo', plur:'búfalos', ico:'🐃', t:'agro'},
+  {kg:800, sing:'um Fusca', plur:'Fuscas', ico:'🚘', t:'veiculo'},
+  {kg:800, sing:'um carro de Fórmula 1', plur:'carros de Fórmula 1', ico:'🏎️', t:'veiculo'},
+  {kg:825, sing:'um time de futebol inteiro', plur:'times de futebol inteiros', ico:'⚽', t:'gente'},
+  {kg:900, sing:'um bisão', plur:'bisões', ico:'🦬', t:'bicho'},
+  {kg:950, sing:'um carro popular', plur:'carros populares', ico:'🚗', t:'veiculo'},
+  // ---- peso alto: 1 tonelada ou mais ----
+  {kg:1000, sing:'um peixe-lua', plur:'peixes-lua', ico:'🐡', t:'bicho'},
+  {kg:1000, sing:'uma caixa d’água de 1.000L cheia', plur:'caixas d’água de 1.000L cheias', ico:'💦', t:'casa'},
+  {kg:1025, sing:'um robô explorador de Marte', plur:'robôs exploradores de Marte', ico:'🤖', t:'tech'},
+  {kg:1100, sing:'um tubarão-branco', plur:'tubarões-brancos', ico:'🦈', t:'bicho'},
+  {kg:1200, sing:'uma girafa', plur:'girafas', ico:'🦒', t:'bicho'},
+  {kg:1200, sing:'um avião pequeno', plur:'aviões pequenos', ico:'🛩️', t:'veiculo'},
+  {kg:1200, sing:'uma Kombi', plur:'Kombis', ico:'🚐', t:'veiculo'},
+  {kg:1247, sing:'uma abóbora gigante recordista', plur:'abóboras gigantes recordistas', ico:'🎃', t:'agro'},
+  {kg:1300, sing:'um táxi', plur:'táxis', ico:'🚕', t:'veiculo'},
+  {kg:1500, sing:'um helicóptero leve', plur:'helicópteros leves', ico:'🚁', t:'veiculo'},
+  {kg:1800, sing:'um SUV', plur:'SUVs', ico:'🚙', t:'veiculo'},
+  {kg:2000, sing:'um cacto gigante', plur:'cactos gigantes', ico:'🌵', t:'natureza'},
+  {kg:2200, sing:'uma picape', plur:'picapes', ico:'🛻', t:'veiculo'},
+  {kg:2300, sing:'um rinoceronte', plur:'rinocerontes', ico:'🦏', t:'bicho'},
+  {kg:2500, sing:'um hipopótamo', plur:'hipopótamos', ico:'🦛', t:'bicho'},
+  {kg:2500, sing:'um filhote de baleia-azul', plur:'filhotes de baleia-azul', ico:'🐋', t:'bicho'},
+  {kg:2500, sing:'um elefante-marinho', plur:'elefantes-marinhos', ico:'🦭', t:'bicho'},
+  {kg:2700, sing:'uma língua de baleia-azul', plur:'línguas de baleia-azul', ico:'👅', t:'bicho'},
+  {kg:2800, sing:'uma van de carga', plur:'vans de carga', ico:'🚚', t:'veiculo'},
+  {kg:3000, sing:'uma lancha', plur:'lanchas', ico:'🚤', t:'veiculo'},
+  {kg:3500, sing:'um trator pequeno', plur:'tratores pequenos', ico:'🚜', t:'agro'},
+  {kg:4000, sing:'uma ambulância', plur:'ambulâncias', ico:'🚑', t:'veiculo'},
+  {kg:5000, sing:'um elefante africano', plur:'elefantes africanos', ico:'🐘', t:'bicho'},
+  {kg:5000, sing:'um veleiro', plur:'veleiros', ico:'⛵', t:'veiculo'},
+  {kg:5000, sing:'uma árvore grande', plur:'árvores grandes', ico:'🌳', t:'natureza'},
+  {kg:5360, sing:'um meteorito de Bendegó', plur:'meteoritos de Bendegó', ico:'☄️', t:'famoso'},
+  {kg:5500, sing:'uma orca', plur:'orcas', ico:'🐳', t:'bicho'},
+  {kg:5500, sing:'uma cápsula espacial', plur:'cápsulas espaciais', ico:'🚀', t:'tech'},
+  {kg:6000, sing:'um mamute', plur:'mamutes', ico:'🦣', t:'bicho'},
+  {kg:8000, sing:'um tiranossauro', plur:'tiranossauros', ico:'🦖', t:'bicho'},
+  {kg:8000, sing:'uma turbina de Boeing 777', plur:'turbinas de Boeing 777', ico:'⚙️', t:'tech'},
+  {kg:11000, sing:'um telescópio Hubble', plur:'telescópios Hubble', ico:'🔭', t:'famoso'},
+  {kg:12000, sing:'um ônibus urbano', plur:'ônibus urbanos', ico:'🚌', t:'veiculo'},
+  {kg:13700, sing:'um sino do Big Ben', plur:'sinos do Big Ben', ico:'🔔', t:'famoso'},
+  {kg:15000, sing:'um brontossauro', plur:'brontossauros', ico:'🦕', t:'bicho'},
+  {kg:15000, sing:'um caminhão de bombeiros', plur:'caminhões de bombeiros', ico:'🚒', t:'veiculo'},
+  {kg:15000, sing:'uma colheitadeira', plur:'colheitadeiras', ico:'🌾', t:'agro'},
+  {kg:15500, sing:'uma âncora de transatlântico', plur:'âncoras de transatlântico', ico:'⚓', t:'famoso'},
+  {kg:18000, sing:'um ônibus de viagem', plur:'ônibus de viagem', ico:'🚍', t:'veiculo'},
+  {kg:20000, sing:'um tubarão-baleia', plur:'tubarões-baleia', ico:'🦈', t:'bicho'},
+  {kg:20000, sing:'um carro alegórico', plur:'carros alegóricos', ico:'🎭', t:'famoso'},
+  {kg:21000, sing:'uma bateria de escola de samba inteira', plur:'baterias de escola de samba inteiras', ico:'🪘', t:'gente'},
+  {kg:27000, sing:'um computador ENIAC', plur:'computadores ENIAC', ico:'💾', t:'tech'},
+  {kg:28000, sing:'um contêiner carregado', plur:'contêineres carregados', ico:'📦', t:'obra'},
+  {kg:30000, sing:'uma carreta carregada', plur:'carretas carregadas', ico:'🚛', t:'veiculo'},
+  {kg:30000, sing:'uma baleia-jubarte', plur:'baleias-jubarte', ico:'🐋', t:'bicho'},
+  {kg:30000, sing:'um trio elétrico', plur:'trios elétricos', ico:'🎶', t:'musica'},
+  {kg:35000, sing:'um vagão de metrô', plur:'vagões de metrô', ico:'🚇', t:'veiculo'},
+  {kg:41000, sing:'um Boeing 737', plur:'Boeings 737', ico:'✈️', t:'veiculo'},
+  {kg:50000, sing:'um megalodonte', plur:'megalodontes', ico:'🦈', t:'bicho'},
+  {kg:120000, sing:'um vagão de minério carregado', plur:'vagões de minério carregados', ico:'🚃', t:'obra'},
+  {kg:130000, sing:'uma locomotiva', plur:'locomotivas', ico:'🚂', t:'veiculo'},
+  {kg:150000, sing:'uma baleia-azul', plur:'baleias-azuis', ico:'🐋', t:'bicho'},
+  {kg:210000, sing:'um trem de metrô de 6 vagões', plur:'trens de metrô de 6 vagões', ico:'🚆', t:'veiculo'},
+  {kg:225000, sing:'uma Estátua da Liberdade', plur:'Estátuas da Liberdade', ico:'🗽', t:'famoso'},
+  {kg:420000, sing:'uma Estação Espacial Internacional', plur:'Estações Espaciais Internacionais', ico:'🛰️', t:'famoso'},
+  {kg:500000, sing:'uma nuvem', plur:'nuvens', ico:'☁️', t:'natureza'},
+  {kg:575000, sing:'um Airbus A380 lotado', plur:'Airbus A380 lotados', ico:'✈️', t:'veiculo'},
+  {kg:635000, sing:'um Cristo Redentor', plur:'Cristos Redentores', ico:'🇧🇷', t:'famoso'},
+  {kg:700000, sing:'um trem-bala', plur:'trens-bala', ico:'🚄', t:'veiculo'},
+  {kg:1000000, sing:'uma sequoia-gigante', plur:'sequoias-gigantes', ico:'🌲', t:'natureza'},
+  {kg:2500000, sing:'uma piscina olímpica cheia', plur:'piscinas olímpicas cheias', ico:'🏊', t:'famoso'},
+  {kg:2900000, sing:'um foguete Saturno V', plur:'foguetes Saturno V', ico:'🚀', t:'famoso'},
+  {kg:10100000, sing:'uma Torre Eiffel', plur:'Torres Eiffel', ico:'🗼', t:'famoso'},
+  {kg:52000000, sing:'um Titanic', plur:'Titanics', ico:'🚢', t:'famoso'},
+  {kg:100000000, sing:'um navio de cruzeiro', plur:'navios de cruzeiro', ico:'🛳️', t:'veiculo'},
 ];
-
-function embaralharCom(lista, semente){
-  const a=lista.slice(); let x=semente||1;
-  for(let i=a.length-1;i>0;i--){
-    x=(x*1103515245+12345)&0x7fffffff;      // LCG
-    const j=x%(i+1);
-    const t=a[i]; a[i]=a[j]; a[j]=t;
-  }
-  return a;
+/* sorteio com semente (mulberry32): a ordem fica parada enquanto a tela está
+   aberta (re-render não troca a comparação debaixo do olho do aluno), mas
+   cada abertura da tela sorteia uma semente nova. */
+function eqRng(semente){
+  let a=(semente>>>0)||1;
+  return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; };
 }
-function equivalencias(kg){
-  if(!kg || kg<2) return [];
-  // n entre 1 e 300 (n NÃO arredondado no filtro)
-  const bons=EQUIVALENTES.filter(e=>{ const n=kg/e.kg; return n>=1 && n<=300; });
-  const base=(bons.length?bons:[EQUIVALENTES[0]]).map(e=>{
-    const n=Math.round(kg/e.kg);                         // arredondamento: Math.round
-    return {n, texto:(n===1?e.sing:(n+' '+e.plur)), ico:e.ico};
-  });
-  // menor n primeiro (= maior objeto que cabe). Sort estável: empate mantém a ordem da lista.
-  const ordenada=base.slice().sort((a,b)=>a.n-b.n);
-  // dia = dias desde 1970 da data LOCAL (YYYY-MM-DD) tratada como UTC
-  // (no App é todayISO(); aqui dISO(new Date()) dá a mesma data local)
-  const dia=Math.floor(Date.parse(dISO(new Date())+'T00:00:00Z')/86400000);
-  const resto=embaralharCom(ordenada.slice(1), dia*7919 + Math.round(kg));
-  return [ordenada[0]].concat(resto).filter(Boolean);
+const fmtEqN=(n)=>n.toLocaleString('pt-BR');            // 1847 -> "1.847"
+const eqFaixa=(n)=>n<10?0:(n<100?1:(n<1000?2:3));        // 1-9 | 10-99 | 100-999 | 1000+
+function equivalencias(kg, semente){
+  if(!kg || kg<=0) return [];
+  const rnd = semente==null ? Math.random : eqRng(semente);
+  const base=[];
+  for(const e of EQUIVALENTES){
+    const r=kg/e.kg;
+    if(r<1 || r>EQ_MAX_VEZES) continue;
+    const n=Math.round(r);
+    base.push({n, texto:(n===1?e.sing:(fmtEqN(n)+' '+e.plur)), ico:e.ico, t:e.t, f:eqFaixa(n)});
+  }
+  // embaralha tudo, inclusive a primeira
+  for(let i=base.length-1;i>0;i--){
+    const j=Math.floor(rnd()*(i+1)); const x=base[i]; base[i]=base[j]; base[j]=x;
+  }
+  // diversifica: a próxima evita repetir o emoji, o tema e a faixa de exagero
+  // da anterior. Se não houver, relaxa a regra aos poucos.
+  const out=[];
+  while(base.length){
+    const u=out[out.length-1]; let k=0;
+    if(u){
+      k=base.findIndex(o=>o.ico!==u.ico && o.t!==u.t && o.f!==u.f);
+      if(k<0) k=base.findIndex(o=>o.ico!==u.ico && o.t!==u.t);
+      if(k<0) k=base.findIndex(o=>o.ico!==u.ico);
+      if(k<0) k=0;
+    }
+    out.push(base.splice(k,1)[0]);
+  }
+  return out;
 }
 
 const fmtVol=(kg)=> kg>=1000 ? (kg/1000).toFixed(1).replace('.',',')+' toneladas' : kg+' kg';
 
-function CardVolume({kg, destaque}){
-  const eqs=equivalencias(kg);
+function CardVolume({kg, destaque, onEq}){
+  // semente sorteada uma vez por montagem: a ordem fica parada com a tela aberta
+  const [semente]=useState(()=>Math.floor(Math.random()*2147483647));
+  const eqs=useMemo(()=>equivalencias(kg,semente),[kg,semente]);
   const [i,setI]=useState(0);
   const v=fmtVol(kg).split(' ');
-  const eq=eqs[i];
+  const eq=eqs.length ? eqs[i%eqs.length] : null;   // protege quando a lista encolhe
+  // avisa o pai qual comparação está na tela (frase de compartilhar usa a MESMA)
+  useEffect(()=>{ if(onEq) onEq(eq); },[eq,onEq]);
   // repetir o emoji só até 8: acima disso vira parede ilegível
   const icones = eq ? (eq.n<=8 ? eq.ico.repeat(eq.n) : eq.ico) : '';
   return (<div className={'pgcard'+(destaque?' destaque':'')+(eqs.length>1?' clicavel':'')}
@@ -14406,7 +14643,7 @@ function CardVolume({kg, destaque}){
     <div className="pgformula">carga × repetições × séries</div>
     {eq && <div className="pgequiv">
       <span className={'peico'+(eq.n<=8&&eq.n>1?' multi':'')}>
-        {icones}{eq.n>8 && <em> ×{eq.n}</em>}
+        {icones}{eq.n>8 && <em> ×{fmtEqN(eq.n)}</em>}
       </span>
       <span className="petxt">{eq.texto}</span>
       {eqs.length>1 && <span className="pemais">toque para outra comparação</span>}
@@ -14730,6 +14967,8 @@ function PainelInicio() {
   const { toast } = usarUI();
   const { semNascimento } = usarAniv();
   const [raw, setRaw]       = useState(null);
+  const eqTelaRef = React.useRef(null);
+  const marcarEq = useCallback(eq => { eqTelaRef.current = eq; }, []);
   const [erro, setErro]     = useState("");
   const [filtro, setFiltro] = useState("todas");
   const [aberto, setAberto] = useState(null);
@@ -14773,7 +15012,7 @@ function PainelInicio() {
 
   function copiarFrase() {
     if (!m) return;
-    const eq = equivalencias(m.kg)[0];
+    const eq = eqTelaRef.current;   /* a comparação que está no card agora */
     navigator.clipboard.writeText("Nesta semana, os alunos da consultoria Idealis já levantaram " +
       fmtVol(m.kg) + (eq ? " — o equivalente a " + eq.texto + " " + eq.ico : "") + " 💪");
     toast("Frase copiada.");
@@ -14842,7 +15081,7 @@ function PainelInicio() {
       {!m ? <div className="fd-vz">Somando a semana...</div> : (
         <div className="tn-app">
           <div className="pgtopo">
-            <CardVolume key={m.kg} kg={m.kg} destaque />
+            <CardVolume key={m.kg} kg={m.kg} destaque onEq={marcarEq} />
             <div className="pgcard">
               <div className="pgnum">{m.concluidos}</div>
               <div className="pglab">treinos concluídos</div>
