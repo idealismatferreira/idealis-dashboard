@@ -2075,6 +2075,143 @@
   .cd-pf-barras span{flex:1 1 0;min-width:3px;border-radius:2px 2px 0 0}
   .cd-pf-rod{display:flex;justify-content:space-between;font-size:10px;
     color:var(--mut);margin-top:5px}
+  /* ============ ADMINISTRATIVO (09/11/2026) ============
+     Financeiro e retenção. Cores dos gráficos validadas (CVD e contraste)
+     contra o fundo dos cards; texto sempre nas cores de texto, nunca na
+     cor da série. Tudo escopado em .fn* para não vazar. */
+  .fn-banner{display:block;width:100%;text-align:left;background:#20260c;
+    border:1px solid #4d5a10;color:var(--txt);font-weight:400;font-size:13px;
+    border-radius:10px;padding:11px 14px;margin-bottom:14px;line-height:1.45}
+  .fn-banner b{color:var(--marca);font-size:15px;margin-right:2px}
+  .fn-banner:hover{border-color:var(--marca);filter:none}
+  .fn-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}
+  .fn-kpi{background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:13px 15px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .fn-kpi span{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut)}
+  .fn-kpi b{font-size:23px;font-weight:700;line-height:1.15;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .fn-kpi b i{font-style:normal;font-size:12px;font-weight:500;color:var(--mut);margin-left:2px}
+  .fn-kpi em{font-style:normal;font-size:10.5px;color:var(--mut);line-height:1.4}
+  .fn-kpi.al{--luz:var(--status-alerta);
+    background-image:radial-gradient(120% 130% at 0% 0%,
+      color-mix(in srgb,var(--luz) var(--luz-forca),transparent),transparent 60%)}
+  .fn-grafs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}
+  .fn-graf,.fn-box{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px 12px;min-width:0}
+  .fn-box{margin-bottom:12px}
+  .fn-gt{font-size:13px;font-weight:600;margin-bottom:4px;display:flex;gap:8px;
+    align-items:baseline;flex-wrap:wrap}
+  .fn-gt i{font-style:normal;font-weight:400;font-size:10.5px;color:var(--mut)}
+  .fn-leg{display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;color:var(--mut);margin:2px 0 6px}
+  .fn-leg span{display:inline-flex;align-items:center;gap:5px}
+  .fn-leg i{display:inline-block;width:9px;height:9px;border-radius:2px}
+  .fn-leg i.ln{width:14px;height:0;border-top:2px solid;border-radius:0;background:none!important}
+  .fn-tip{background:#0f1719;border:1px solid #243336;border-radius:8px;padding:8px 10px;
+    font-size:11.5px;min-width:190px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+  .fn-tip b{display:block;font-size:11px;color:var(--mut);font-weight:500;margin-bottom:5px}
+  .fn-tip div{display:flex;align-items:center;gap:6px;padding:1px 0;color:var(--txt)}
+  .fn-tip div i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+  .fn-tip div span{margin-left:auto;padding-left:12px;font-variant-numeric:tabular-nums}
+  .fn-vz{font-size:12px;color:var(--mut);line-height:1.55;padding:18px 4px}
+  .fn-sub{font-size:11.5px;color:var(--mut);line-height:1.5;margin:-2px 0 10px}
+  .fn-tit{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .fn-tit b{font-size:14px}
+  .fn-tit > i{font-style:normal;font-size:11px;color:var(--mut);background:var(--bg);
+    border:1px solid var(--line);border-radius:10px;padding:1px 8px}
+  .fn-tit .busca-alunos{margin:0;max-width:240px}
+  .fn-tab{display:flex;flex-direction:column}
+  .fn-tr{display:grid;grid-template-columns:1.6fr .7fr 1fr .9fr 1fr 1fr;gap:10px;
+    align-items:center;width:100%;text-align:left;background:none;border:none;
+    border-top:1px solid #182224;border-radius:0;padding:9px 4px;color:var(--txt);
+    font-weight:400;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .fn-tr.c6{grid-template-columns:1.6fr .9fr .9fr .9fr .8fr 1fr}
+  .fn-tr span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fn-tr i{font-style:normal;color:var(--warn)}
+  button.fn-tr{cursor:pointer}
+  button.fn-tr:hover{background:#0f2124;filter:none}
+  .fn-tr.h{border-top:none;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);padding-top:2px}
+  .fn-tr.tot{font-weight:600;border-top:1px solid var(--line)}
+  .fn-val{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);
+    border-radius:8px;padding:0 0 0 11px;margin-bottom:12px}
+  .fn-val:focus-within{border-color:var(--accent)}
+  .fn-val span{font-size:13px;color:var(--mut)}
+  .fn-val input{border:none;margin:0;padding:10px 11px 10px 2px;background:transparent;
+    font-variant-numeric:tabular-nums}
+  .fn-val.mini{margin:0}
+  .fn-val.mini input{padding:7px 9px 7px 2px;font-size:13px}
+  .fn-sel{width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--line);
+    border-radius:8px;color:var(--txt);font-size:13px;font-family:inherit;margin-bottom:12px}
+  .fn-sel.mini{width:auto;margin:0;padding:6px 9px;font-size:11.5px}
+  .fn-sv{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;
+    border-top:1px solid #182224}
+  .fn-sv .fn-sel{margin:0;padding:7px 9px;width:auto;flex:0 0 auto;max-width:170px}
+  .fn-sv .fn-val.mini{width:128px;flex:0 0 auto}
+  .fn-sv .fn-desc{flex-basis:100%;margin:0}
+  .fn-sv-n{flex:1 1 190px;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fn-sv-n i{font-style:normal;font-size:10.5px;color:var(--mut);margin-left:8px}
+  .fn-sv-err{flex-basis:100%;font-size:11.5px;color:#f5a3a3}
+  .fn-val em{font-style:normal;font-size:11px;color:var(--mut);padding-right:11px;white-space:nowrap}
+  .fn-desc{font-size:11px;color:var(--accent);margin:-6px 0 12px}
+  .fn-desc.acima{color:var(--warn)}
+  .fn-total{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;
+    color:var(--mut);border-top:1px dashed var(--line);padding:9px 2px 2px;margin-bottom:12px}
+  .fn-total b{font-size:16px;color:var(--txt);font-variant-numeric:tabular-nums}
+  .fn-gr{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:14px 0 2px}
+  .fn-pl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;
+    border-top:1px solid #182224;font-size:12.5px}
+  .fn-pl span{color:var(--mut)}
+  .fn-pl.off{opacity:.55}
+  .fn-pl-ed{border-top:1px solid var(--line);padding-top:12px;margin-top:6px}
+  .fn-hist{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:9px 0;
+    border-top:1px solid #182224;font-size:12px}
+  .fn-hist b{grid-row:span 2;font-size:14px;font-variant-numeric:tabular-nums}
+  .fn-hist b i{font-style:normal;font-size:10px;color:var(--mut);font-weight:400}
+  .fn-hist span{color:var(--txt)}
+  .fn-hist em{font-style:normal;font-size:11px;color:var(--mut)}
+  .fn-hist.ab b{color:var(--accent)}
+  .fn-aviso{font-size:11.5px;color:var(--mut);line-height:1.5;padding:9px 11px;
+    border:1px dashed var(--line);border-radius:8px}
+  .fn-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:61;
+    width:min(480px,94vw);max-height:92vh;overflow-y:auto;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:20px 22px 18px;
+    box-shadow:0 18px 50px rgba(0,0,0,.6)}
+  .fn-modal h3{font-size:17px;margin:0 0 8px}
+  .fn-modal p{font-size:13px;color:var(--mut);line-height:1.6;margin:0 0 12px}
+  .fn-modal p b{color:var(--txt)}
+  .fn-modal .conf-al{margin-bottom:12px}
+  .fn-modal .conf-bt{margin-top:16px}
+  .fn-link{display:block;width:auto;margin:12px auto 0;padding:2px 4px;background:none;
+    border:none;color:var(--mut);font-size:11.5px;font-weight:400;
+    text-decoration:underline;text-underline-offset:3px}
+  .fn-link:hover{color:var(--txt);filter:none}
+  .fn-link.in{display:inline;margin:0;padding:0;color:var(--warn);font-size:inherit}
+  .fn-bars{display:flex;flex-direction:column;gap:7px;padding:4px 0}
+  .fn-bar{display:grid;grid-template-columns:minmax(0,1.2fr) 2fr auto;gap:10px;align-items:center;font-size:12px}
+  .fn-bar-r{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fn-bar-t{height:10px;background:#0f1517;border-radius:4px;overflow:hidden}
+  .fn-bar-t i{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0;min-width:2px}
+  .fn-bar-v{color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .fn-coorte{display:flex;flex-direction:column;gap:3px;font-size:11.5px;overflow-x:auto}
+  .fn-co-h,.fn-co-l{display:grid;grid-template-columns:56px 30px repeat(6,minmax(38px,1fr));gap:3px;align-items:center}
+  .fn-co-h span{font-size:10px;color:var(--mut);text-align:center}
+  .fn-co-h span:first-child,.fn-co-l span:first-child{text-align:left}
+  .fn-co-l span{text-align:center;font-variant-numeric:tabular-nums}
+  .fn-co-c{padding:6px 0;border-radius:4px;color:var(--txt)}
+  @media (max-width: 900px){
+    .fn-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .fn-grafs{grid-template-columns:minmax(0,1fr)}
+    .fn-tr{grid-template-columns:1.4fr .6fr 1fr 1fr}
+    .fn-tr span:nth-child(5),.fn-tr span:nth-child(6){display:none}
+    .fn-tr.c6{grid-template-columns:1.5fr .9fr .9fr}
+    .fn-tr.c6 span:nth-child(3),.fn-tr.c6 span:nth-child(5),.fn-tr.c6 span:nth-child(6){display:none}
+  }
+  @media (max-width: 560px){
+    .fn-sv-n{flex-basis:100%}
+    .fn-kpi b{font-size:19px}
+  }
+  .in-pend.c6{grid-template-columns:repeat(3,minmax(0,1fr))}
+  @media (max-width: 900px){ .in-pend.c6{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  .fn-novo{border:1px dashed var(--line);border-radius:10px;padding:2px 14px 12px;margin-top:14px}
 </style>
 </head>
 <body>
@@ -2269,6 +2406,10 @@ function PainelAlunos() {
   const [novo, setNovo] = useState(false);
   const [mods, setMods] = useState([]);
   const [busca, setBusca] = useState("");
+  /* inativar = saída (motivo + data); reativar = contrato novo. Os dois
+     fecham/abrem o financeiro no banco, numa transação só */
+  const [saidaDe, setSaidaDe]     = useState(null);
+  const [retornoDe, setRetornoDe] = useState(null);
   /* modo Acompanhamento: mesmo filtro e mesma busca, outra visão da lista.
      Lembra a última escolha neste navegador. Atalho do Início chega por
      pedidoAlunos (lido uma vez e apagado). */
@@ -2312,11 +2453,11 @@ function PainelAlunos() {
     await carregar();
   }
 
-  async function mudarStatus(aluno, novo) {
-    const { error } = await sb.from("alunos")
-      .update({ status: novo }).eq("id", aluno.id);
-    if (error) { setErro(error.message); return; }
-    await carregar();
+  /* o formato (Plus/Gold/Avulso) não mexe no financeiro: o plano mora
+     só na aba Admin. Inativar e reativar, sim: viram modais. */
+  function mudarStatus(aluno, novo) {
+    setErro("");
+    if (novo === "inativo") setSaidaDe(aluno); else setRetornoDe(aluno);
   }
 
   const visiveis = (alunos || [])
@@ -2444,6 +2585,14 @@ function PainelAlunos() {
       {novo && (
         <ModalNovoAluno onFechar={() => setNovo(false)}
           onCriado={async () => { setNovo(false); await carregar(); }} />
+      )}
+      {saidaDe && (
+        <ModalSaida aluno={saidaDe} onFechar={() => setSaidaDe(null)}
+          onFeito={async () => { setSaidaDe(null); await carregar(); }} />
+      )}
+      {retornoDe && (
+        <ModalRetorno aluno={retornoDe} onFechar={() => setRetornoDe(null)}
+          onFeito={async () => { setRetornoDe(null); await carregar(); }} />
       )}
       {migrar && <PainelMigracao onFechar={() => { setMigrar(false); carregar(); }} />}
       {importar && (
@@ -5855,16 +6004,26 @@ function ModalNovoAluno({ onFechar, onCriado }) {
   const [erro, setErro]   = useState("");
   const [busy, setBusy]   = useState(false);
   const [dupes, setDupes] = useState([]);
+  /* financeiro: null = SQL ainda não rodou (a seção nem aparece).
+     O plano vem sugerido pelo formato até você mexer nele. */
+  const [fin, setFin]     = useState(null);
+  const [fv, setFv]       = useState(FIN_V_VAZIO);
+  const [fvMexeu, setFvMexeu] = useState(false);
 
   useEffect(() => {
     Promise.all([
-      sb.from("modalidades").select("id, nome").eq("ativa", true).order("ordem"),
-      sb.from("academias").select("id, nome").eq("ativa", true).order("nome")
-    ]).then(([m, a]) => {
+      sb.from("modalidades").select("id, nome, familia").eq("ativa", true).order("ordem"),
+      sb.from("academias").select("id, nome").eq("ativa", true).order("nome"),
+      finCarregarTabelas().catch(() => ({ falta: true }))
+    ]).then(([m, a, f]) => {
       if (!m.error) setMods(m.data || []);
       if (!a.error) setAcs(a.data || []);
+      if (!f.falta) setFin(f);
     });
   }, []);
+  useEffect(() => {
+    if (fin && !fvMexeu) setFv(v => ({ ...v, plano: finPlanoSugerido(modId, mods, fin.planos) }));
+  }, [fin, modId, mods, fvMexeu]);
 
   /* avisa se já existe alguém com nome parecido, antes de duplicar */
   useEffect(() => {
@@ -5882,6 +6041,9 @@ function ModalNovoAluno({ onFechar, onCriado }) {
 
   async function criar() {
     if (!nome.trim()) { setErro("O nome é obrigatório."); return; }
+    /* valor só é salvo se você digitou algum; se digitou, tem que estar completo */
+    const finR = fin && (fv.c.trim() || fv.a.trim()) ? finArgsValores(fv, fin.planos) : null;
+    if (finR && finR.erro) { setErro(finR.erro); return; }
     if (criarAcesso) {
       if (!email.trim()) { setErro("Para criar o login, o e-mail é obrigatório."); return; }
       if (senha.length < 6) { setErro("A senha precisa ter ao menos 6 caracteres."); return; }
@@ -5916,6 +6078,16 @@ function ModalNovoAluno({ onFechar, onCriado }) {
         if (en.error) throw new Error(en.error.message);
       }
 
+      /* valor é opcional: sem ele o aluno aparece em "sem valor" na aba
+         Administrativo. Falhar aqui não desfaz a ficha (igual ao login). */
+      let avisoFin = "";
+      if (finR) {
+        const fc = await sb.rpc("fin_salvar_contrato", { p_aluno: alunoId, p_data: hojeFuso(),
+          ...finR.args, p_base: false, p_obs: null });
+        if (fc.error) avisoFin = " Valor NÃO salvo (" + finMsgErro(fc.error) +
+          "): preencha na aba Admin.";
+      }
+
       let extra = "";
       if (criarAcesso) {
         const r = await criarLogin(alunoId, email, senha);
@@ -5929,7 +6101,8 @@ function ModalNovoAluno({ onFechar, onCriado }) {
           : " Login criado.";
       }
       toast(nome.trim() + " criado(a)" +
-        (validas.length ? " com " + validas.length + " entrada(s)." : ".") + extra);
+        (validas.length ? " com " + validas.length + " entrada(s)." : ".") + extra + avisoFin,
+        avisoFin ? "aviso" : undefined);
       onCriado(alunoId);
     } catch (e) { setErro(e.message); }
     setBusy(false);
@@ -5993,6 +6166,16 @@ function ModalNovoAluno({ onFechar, onCriado }) {
                 onClick={() => setModId(modId === m.id ? "" : m.id)}>{m.nome}</button>
             ))}
           </div>
+
+          {fin && (
+            <div className="fn-novo">
+              <FinValores planos={fin.planos} precos={fin.precos} v={fv}
+                setV={x => { setFvMexeu(true); setFv(x); }} />
+              <div className="ed-cnt">
+                financeiro · opcional · entra como aluno novo hoje (dá para preencher depois na aba Admin)
+              </div>
+            </div>
+          )}
 
           <div className="ed-lab">Academia</div>
           <Combobox opcoes={acs.map(a => ({ value: a.id, label: a.nome }))}
@@ -15503,6 +15686,9 @@ function PainelInicio() {
   const [filtro, setFiltro] = useState("todas");
   const [aberto, setAberto] = useState(null);
   const [nascAb, setNascAb] = useState(false);
+  /* financeiro: ativos sem valor cadastrado (null = SQL ainda não rodou) */
+  const [semValor, setSemValor] = useState(null);
+  useEffect(() => { finContarSemValor().then(setSemValor); }, []);
   const feedRef = React.useRef(null);
 
   const carregar = useCallback(async () => {
@@ -15577,6 +15763,13 @@ function PainelInicio() {
       det: "aniversário e FC do cardio dependem dela",
       ir: () => setNascAb(true) });
   }
+  /* some sozinho quando todo ativo tiver valor cadastrado */
+  if (semValor > 0) {
+    cards.push({ k: "fin", n: semValor,
+      rot: semValor === 1 ? "aluno ativo sem valor" : "alunos ativos sem valor",
+      det: "MRR, churn e LTV só contam quem tem valor",
+      ir: () => { pedidoAdmin = "semValor"; if (irAba) irAba("admin"); } });
+  }
 
   return (
     <div>
@@ -15586,7 +15779,7 @@ function PainelInicio() {
       )}
 
       <div className="in-sec">Precisa de você</div>
-      <div className={"in-pend" + (cards.length === 5 ? " c5" : "")}>
+      <div className={"in-pend" + (cards.length === 5 ? " c5" : cards.length === 6 ? " c6" : "")}>
         {cards.map(c => (
           <button key={c.k} onClick={c.ir}
             className={"in-card" + (c.cls ? " " + c.cls : "") + (c.n ? " on" : "") +
@@ -17165,13 +17358,1576 @@ function PainelAparelhos() {
   );
 }
 
+/* ---------- Administrativo: motor das métricas ----------
+   Funções puras: recebem os contratos (vw_fin_contratos) e devolvem números.
+   A Dashboard calcula, o banco só guarda (mesma divisão do resto do sistema).
+
+   Modelo (fechado com o Matheus em 09/11/2026):
+   - contrato = período em que um aluno paga, num PLANO (Consultoria, Híbrido,
+     Presencial). O formato de acompanhamento (Plus/Gold/Avulso) não entra:
+     é como ele acompanha, não o que o aluno compra.
+   - valor = consultoria + aulas (o plano diz quais cobra; Híbrido cobra os 2).
+     A consultoria pode vir de um ciclo (Mensal/Trimestral/Semestral) com
+     desconto livre: `desc` = tabela − pago, só para mostrar.
+     Intervalo meio-aberto [inicio, fim): no dia `fim` ele já não conta.
+   - encerramento 'saida' = desistência. Toda inativação é saída, inclusive
+     "pausa" (decisão do Matheus: pausa costuma ser desistência disfarçada).
+   - encerramento 'alteracao' = trocou valor/plano/ciclo: fecha um e abre
+     outro no mesmo dia. NÃO é churn (Híbrido que larga as aulas = redução).
+   - base_inicial = quem já era aluno quando o sistema começou. O início real
+     é desconhecido: entra como saldo de abertura, conta no churn e no MRR,
+     mas fica FORA da curva de permanência e das coortes (tempo truncado à
+     esquerda: misturar enviesaria a permanência para baixo).
+   - Valores em centavos (inteiro). Datas 'AAAA-MM-DD' no fuso da consultoria.
+
+   Duas réguas de churn, cada uma no seu lugar:
+   - churn do mês = saídas ÷ ativos no início do mês (a conta de mercado).
+   - churn médio = saídas ÷ alunos-mês observados (taxa por pessoa-tempo,
+     como incidência em epidemiologia). Não distorce em mês parcial e dá
+     intervalo de confiança (Poisson, aproximação de Byar). É dela que sai
+     a vida média esperada e o LTV.
+   Multitenant: nada aqui sabe de tenant. O RLS já entrega só as linhas do
+   tenant; o motor só soma o que recebeu. */
+const FIN_DIAS_MES = 30.4375;
+const FIN_AMOSTRA_MIN = 20;   /* abaixo disso, % de churn vira "amostra pequena" */
+const FIN_KM_MIN = 5;         /* espelhos mínimos para desenhar a curva */
+const FIN_COORTE_MESES = 6;
+
+function finDia(iso, n) { const d = parseISO(iso); d.setDate(d.getDate() + n); return dISO(d); }
+function finMesSeg(ym) {
+  let [a, m] = ym.split("-").map(Number);
+  m += 1; if (m > 12) { m = 1; a += 1; }
+  return a + "-" + String(m).padStart(2, "0");
+}
+function finSomaMeses(iso, k) {
+  /* mesmo dia k meses depois; 31/01 + 1 = 28/02 (último dia, sem pular mês) */
+  const [a, m, d] = iso.slice(0, 10).split("-").map(Number);
+  const t = (m - 1) + k, a2 = a + Math.floor(t / 12), m2 = (t % 12 + 12) % 12;
+  const ult = new Date(a2, m2 + 1, 0).getDate();
+  return a2 + "-" + String(m2 + 1).padStart(2, "0") + "-" + String(Math.min(d, ult)).padStart(2, "0");
+}
+function finDiasMes(ym) { const [a, m] = ym.split("-").map(Number); return new Date(a, m, 0).getDate(); }
+function finEntre(a, b) { return Math.round((parseISO(b) - parseISO(a)) / 864e5); }
+/* dias de [a1,b1) ∩ [a2,b2); b = null é aberto */
+function finSobrepoe(a1, b1, a2, b2) {
+  const ini = a1 > a2 ? a1 : a2;
+  const fim = b1 == null ? b2 : (b2 == null ? b1 : (b1 < b2 ? b1 : b2));
+  if (fim == null) return null;
+  return fim > ini ? finEntre(ini, fim) : 0;
+}
+function finSeg(c) { return c.seg || "Sem plano"; }
+
+/* IC 95% de uma taxa de Poisson (k eventos em t unidades) — Byar */
+function finIcPoisson(k, t) {
+  if (!(t > 0)) return null;
+  const z = 1.959964;
+  const lo = k === 0 ? 0 : k * Math.pow(1 - 1 / (9 * k) - z / (3 * Math.sqrt(k)), 3);
+  const k1 = k + 1;
+  const hi = k1 * Math.pow(1 - 1 / (9 * k1) + z / (3 * Math.sqrt(k1)), 3);
+  return { taxa: k / t, lo: lo / t, hi: hi / t };
+}
+
+/* liga cada contrato ao anterior/seguinte da mesma "vida" de aluno:
+   alteração fecha um e abre outro no MESMO dia */
+function finEncadear(lista) {
+  const porAluno = new Map();
+  for (const c of lista) {
+    if (!porAluno.has(c.aluno_id)) porAluno.set(c.aluno_id, []);
+    porAluno.get(c.aluno_id).push(c);
+  }
+  const ant = new Map(), seg = new Map(), tipoIni = new Map();
+  for (const cs of porAluno.values()) {
+    cs.sort((x, y) => x.inicio < y.inicio ? -1 : x.inicio > y.inicio ? 1 :
+      String(x.criado_em || "").localeCompare(String(y.criado_em || "")));
+    for (let i = 0; i < cs.length; i++) {
+      const c = cs[i];
+      const p = cs.slice(0, i).reverse().find(x => x.encerramento === "alteracao" &&
+        x.fim === c.inicio && !seg.has(x.id));
+      if (p) { ant.set(c.id, p); seg.set(p.id, c); tipoIni.set(c.id, "alteracao"); }
+      else if (c.base_inicial) tipoIni.set(c.id, "base");
+      else tipoIni.set(c.id, cs.slice(0, i).some(x => x.inicio <= c.inicio) ? "retorno" : "novo");
+    }
+  }
+  return { ant, seg, tipoIni };
+}
+
+/* "vidas": sequência contínua de contratos de um aluno, do primeiro dia
+   até a saída (ou até hoje, censurada). Segmento = formato de ENTRADA. */
+function finVidas(lista, enc, hoje) {
+  const vidas = [];
+  for (const c of lista) {
+    if (enc.ant.has(c.id)) continue;            /* não é começo de vida */
+    let u = c;
+    while (enc.seg.has(u.id)) u = enc.seg.get(u.id);
+    const saiu = u.encerramento === "saida" ||
+      (u.encerramento === "alteracao" && !enc.seg.has(u.id));
+    const fim = saiu ? u.fim : null;
+    vidas.push({
+      aluno_id: c.aluno_id, seg: finSeg(c), base: !!c.base_inicial,
+      inicio: c.inicio, fim, saiu,
+      dias: Math.max(0, finEntre(c.inicio, saiu ? u.fim : finDia(hoje, 1)))
+    });
+  }
+  return vidas;
+}
+
+/* Kaplan-Meier em dias; devolve S(t) amostrado mês a mês */
+function finKaplanMeier(vidas, meses) {
+  const v = vidas.filter(x => !x.base);
+  if (v.length < FIN_KM_MIN) return { n: v.length, pontos: [], mediana: null, insuf: true };
+  const tempos = [...new Set(v.filter(x => x.saiu).map(x => x.dias))].sort((a, b) => a - b);
+  let s = 1;
+  const degraus = [{ dia: 0, s: 1 }];
+  for (const t of tempos) {
+    const risco = v.filter(x => x.dias >= t).length;
+    const d = v.filter(x => x.saiu && x.dias === t).length;
+    if (risco > 0) { s *= (1 - d / risco); degraus.push({ dia: t, s }); }
+  }
+  const sEm = dia => { let r = 1; for (const g of degraus) if (g.dia <= dia) r = g.s; return r; };
+  const maxObs = Math.max(...v.map(x => x.dias));
+  const pontos = [];
+  for (let k = 0; k <= meses; k++) {
+    const dia = Math.round(k * FIN_DIAS_MES);
+    if (dia > maxObs && k > 0) break;           /* sem extrapolar além do observado */
+    pontos.push({ mes: k, s: sEm(dia), risco: v.filter(x => x.dias >= dia).length });
+  }
+  const med = degraus.find(g => g.s <= 0.5);
+  return { n: v.length, saidas: v.filter(x => x.saiu).length, pontos,
+    mediana: med ? med.dia / FIN_DIAS_MES : null, insuf: false };
+}
+
+/* coortes por mês de entrada (só alunos novos), retenção em M1..M6 */
+function finCoortes(vidas, hoje) {
+  const grupos = new Map();
+  for (const x of vidas) {
+    if (x.base) continue;
+    const ym = x.inicio.slice(0, 7);
+    if (!grupos.has(ym)) grupos.set(ym, []);
+    grupos.get(ym).push(x);
+  }
+  const amanha = finDia(hoje, 1);
+  return [...grupos.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1).map(([ym, vs]) => {
+    const fimMes = finDia(finMesSeg(ym) + "-01", -1);
+    const cel = [];
+    for (let k = 1; k <= FIN_COORTE_MESES; k++) {
+      /* só mostra quando TODO mundo da coorte já completou k meses */
+      if (finSomaMeses(fimMes, k) >= amanha) { cel.push(null); continue; }
+      const vivos = vs.filter(x => { const t = finSomaMeses(x.inicio, k);
+        return !x.saiu || x.fim > t; }).length;
+      cel.push(vivos / vs.length);
+    }
+    return { mes: ym, n: vs.length, cel };
+  });
+}
+
+/* tudo de uma vez, para um segmento (null = todos os formatos) */
+function finMetricas(contratos, hoje, segmento) {
+  const todos = (contratos || []).filter(c => c && c.inicio);
+  const vazio = { vazio: true, meses: [], kpi: null, km: null, coortes: [],
+    motivos: [], mix: [], goLive: null };
+  if (!todos.length) return vazio;
+
+  const enc = finEncadear(todos);
+  const dentro = c => segmento == null || finSeg(c) === segmento;
+  const lista = todos.filter(dentro);
+  const amanha = finDia(hoje, 1);
+  /* início dos dados: o dia em que a base inicial foi registrada */
+  const bases = todos.filter(c => c.base_inicial).map(c => c.inicio).sort();
+  const goLive = bases.length ? bases[0] : todos.map(c => c.inicio).sort()[0];
+  const ativoEm = (c, corte) =>               /* ativo logo antes de `corte` */
+    (c.base_inicial || c.inicio < corte) && (c.fim == null || c.fim >= corte);
+
+  /* ---- série mensal ---- */
+  const meses = [];
+  for (let ym = goLive.slice(0, 7); ym <= hoje.slice(0, 7); ym = finMesSeg(ym)) {
+    const d0 = ym + "-01", dN = finMesSeg(ym) + "-01";
+    const corte = dN < amanha ? dN : amanha;
+    const parcial = dN > amanha;
+    const m = { mes: ym, parcial, abertN: 0, abertV: 0, fechN: 0, fechV: 0,
+      novosN: 0, novosV: 0, retN: 0, retV: 0, saidasN: 0, saidasV: 0,
+      expV: 0, contrV: 0, tInN: 0, tInV: 0, tOutN: 0, tOutV: 0,
+      receita: 0, projecao: 0, receitaC: 0, receitaA: 0, projecaoC: 0, projecaoA: 0 };
+    const dm = finDiasMes(ym);
+    for (const c of lista) {
+      if (ativoEm(c, d0)) { m.abertN++; m.abertV += c.valor; }
+      if (ativoEm(c, corte)) { m.fechN++; m.fechV += c.valor; }
+      /* começos (base não é evento: é saldo de abertura) */
+      if (!c.base_inicial && c.inicio >= d0 && c.inicio < corte) {
+        const t = enc.tipoIni.get(c.id);
+        if (t === "novo") { m.novosN++; m.novosV += c.valor; }
+        else if (t === "retorno") { m.retN++; m.retV += c.valor; }
+        else if (t === "alteracao") {
+          const p = enc.ant.get(c.id);
+          if (!dentro(p)) { m.tInN++; m.tInV += c.valor; }
+          else { const dlt = c.valor - p.valor;
+            if (dlt > 0) m.expV += dlt; else m.contrV -= dlt; }
+        }
+      }
+      /* fins */
+      if (c.fim != null && c.fim >= d0 && c.fim < corte) {
+        const n = c.encerramento === "alteracao" ? enc.seg.get(c.id) : null;
+        if (n) { if (!dentro(n)) { m.tOutN++; m.tOutV += c.valor; } }
+        else { m.saidasN++; m.saidasV += c.valor; }
+      }
+      /* receita reconhecida, proporcional aos dias do mês */
+      const dd = finSobrepoe(c.inicio, c.fim, d0, corte);
+      const vC = c.vC == null ? c.valor : c.vC, vA = c.vA == null ? 0 : c.vA;
+      m.receita += c.valor * dd / dm;
+      m.receitaC += vC * dd / dm; m.receitaA += vA * dd / dm;
+      if (parcial) {
+        const dp = finSobrepoe(c.inicio, c.fim, d0, dN);
+        m.projecao += c.valor * dp / dm;
+        m.projecaoC += vC * dp / dm; m.projecaoA += vA * dp / dm;
+      }
+    }
+    if (!parcial) { m.projecao = m.receita; m.projecaoC = m.receitaC; m.projecaoA = m.receitaA; }
+    m.churn = m.abertN > 0 ? m.saidasN / m.abertN : null;
+    m.churnV = m.abertV > 0 ? (m.saidasV + m.contrV) / m.abertV : null;
+    m.pequena = m.abertN < FIN_AMOSTRA_MIN;
+    meses.push(m);
+  }
+  /* média móvel de 3 meses: soma de saídas ÷ soma de bases (não média de %) */
+  meses.forEach((m, i) => {
+    const j = meses.slice(Math.max(0, i - 2), i + 1);
+    const b = j.reduce((s, x) => s + x.abertN, 0);
+    m.churn3 = b > 0 ? j.reduce((s, x) => s + x.saidasN, 0) / b : null;
+  });
+
+  /* ---- agora ---- */
+  const ativos = lista.filter(c => ativoEm(c, amanha));
+  const mrr = ativos.reduce((s, c) => s + c.valor, 0);
+  const mrrA = ativos.reduce((s, c) => s + (c.vA || 0), 0);
+  const comDesc = ativos.filter(c => (c.desc || 0) > 0);
+  const ticket = ativos.length ? mrr / ativos.length : null;
+
+  /* pessoa-tempo desde o início dos dados, em alunos-mês */
+  let expo = 0;
+  for (const c of lista) {
+    const ini = c.inicio > goLive ? c.inicio : goLive;
+    const d = finSobrepoe(ini, c.fim, ini, amanha);
+    expo += (d || 0) / FIN_DIAS_MES;
+  }
+  const saidasTot = meses.reduce((s, m) => s + m.saidasN, 0);
+  const ic = finIcPoisson(saidasTot, expo);
+  const diasObs = finEntre(goLive, amanha);
+  const ltvOk = ic && diasObs >= 90 && saidasTot >= 3;
+  const vida = ltvOk && ic.taxa > 0 ? 1 / ic.taxa : null;
+  const ano = hoje.slice(0, 4);
+  const receitaAno = meses.filter(m => m.mes.startsWith(ano)).reduce((s, m) => s + m.receita, 0);
+  const atual = meses[meses.length - 1];
+  const anterior = meses.length > 1 ? meses[meses.length - 2] : null;
+
+  const kpi = {
+    mrr, arr: mrr * 12, ativos: ativos.length, ticket, mrrC: mrr - mrrA, mrrA,
+    desconto: comDesc.reduce((s, c) => s + c.desc, 0), nDesconto: comDesc.length,
+    mrrDelta: atual ? mrr - atual.abertV : null,
+    churnMes: atual ? atual.churn : null, saidasMes: atual ? atual.saidasN : 0,
+    baseMes: atual ? atual.abertN : 0,
+    churnAnterior: anterior ? anterior.churn : null,
+    churnMedio: ic ? ic.taxa : null, churnIc: ic, expo, saidasTot,
+    vidaMeses: vida,
+    vidaIc: ltvOk && ic.hi > 0 ? [1 / ic.hi, ic.lo > 0 ? 1 / ic.lo : null] : null,
+    ltv: vida != null && ticket != null ? ticket * vida : null,
+    ltvMotivo: ltvOk ? null : diasObs < 90
+      ? "precisa de 3 meses de dados (faltam " + (90 - diasObs) + " dias)"
+      : "precisa de pelo menos 3 saídas registradas",
+    receitaAno, diasObs, pequena: ativos.length < FIN_AMOSTRA_MIN
+  };
+
+  /* ---- permanência e coortes ---- */
+  const vidas = finVidas(todos, enc, hoje).filter(x => segmento == null || x.seg === segmento);
+  const km = finKaplanMeier(vidas, 12);
+  const coortes = finCoortes(vidas, hoje);
+
+  /* ---- motivos de saída e mix de planos ---- */
+  const mot = new Map();
+  for (const c of lista) if (c.encerramento === "saida") {
+    const k = c.motivo || "Sem motivo";
+    mot.set(k, (mot.get(k) || 0) + 1);
+  }
+  const motivos = [...mot.entries()].map(([motivo, n]) => ({ motivo, n }))
+    .sort((a, b) => b.n - a.n);
+  const mx = new Map();
+  for (const c of ativos) {
+    /* `mix` vem pronto de quem chama (ex.: ciclo da consultoria); null = fora */
+    const k = c.mix !== undefined ? c.mix : (c.plano_nome || "Sem plano");
+    if (k == null) continue;
+    if (!mx.has(k)) mx.set(k, { plano: k, n: 0, mrr: 0 });
+    const g = mx.get(k); g.n++; g.mrr += c.valor;
+  }
+  const mix = [...mx.values()].sort((a, b) => b.mrr - a.mrr);
+
+  return { vazio: false, goLive, meses, kpi, km, coortes, motivos, mix };
+}
+
+/* um resumo por formato, para comparar lado a lado */
+function finPorSegmento(contratos, hoje) {
+  const segs = [...new Set((contratos || []).map(finSeg))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  return segs.map(s => ({ seg: s, m: finMetricas(contratos, hoje, s) }));
+}
+
+/* contrato aberto de cada aluno (no máximo um: índice único no banco) */
+function finAbertoPorAluno(contratos) {
+  const m = new Map();
+  for (const c of contratos || []) if (c.fim == null) m.set(c.aluno_id, c);
+  return m;
+}
+
+const finBRL = (centavos, casas) => {
+  if (centavos == null || !isFinite(centavos)) return "—";
+  const c = casas == null ? 0 : casas;
+  return (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL",
+    minimumFractionDigits: c, maximumFractionDigits: c });
+};
+const finPct = (x, casas) => x == null || !isFinite(x) ? "—"
+  : (x * 100).toLocaleString("pt-BR", { minimumFractionDigits: casas == null ? 1 : casas,
+      maximumFractionDigits: casas == null ? 1 : casas }) + "%";
+/* "180,00" / "180" / "R$ 1.234,5" -> centavos */
+function finCentavos(txt) {
+  const s = String(txt == null ? "" : txt).replace(/[^\d,.\-]/g, "");
+  if (!s) return null;
+  let n;
+  if (s.includes(",")) n = Number(s.replace(/\./g, "").replace(",", "."));
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) n = Number(s.replace(/\./g, ""));  /* 1.500 */
+  else n = Number(s);
+  if (!isFinite(n) || n < 0) return null;
+  return Math.round(n * 100);
+}
+/* centavos -> texto do campo: 15000 -> "150", 15050 -> "150,50" (sem milhar) */
+const finTxtValor = c => c == null ? "" : (c % 100 ? (c / 100).toFixed(2) : String(c / 100)).replace(".", ",");
+const finMesRot = ym => {
+  const nomes = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+  const [a, m] = ym.split("-");
+  return nomes[Number(m) - 1] + "/" + a.slice(2);
+};
+
+/* ---------- Administrativo: dados, modais e a aba ----------
+   PLANO (Consultoria / Híbrido / Presencial) = o que o aluno compra. Mora só
+   aqui no Admin; o formato de acompanhamento (Plus/Gold/Avulso) continua na
+   aba Alunos e não mexe no financeiro.
+   Escreve SEMPRE por RPC (fin_*): fechar um contrato e abrir outro, ou
+   inativar e registrar a saída, acontece numa transação só no banco.
+   Se o SQL ainda não rodou, a aba explica e o Inativar/Reativar da lista
+   de Alunos volta a só trocar o status (como era antes). */
+const FIN_MOTIVOS = ["Financeiro", "Falta de tempo", "Pausa", "Lesão ou saúde",
+  "Mudou de cidade ou academia", "Insatisfação", "Parou de responder", "Outro"];
+/* paleta validada (dataviz) contra o fundo dos cards #131a1c */
+const FIN_COR = { consultoria: "#3987e5", aulas: "#199e70", mrr: "#d95926", entradas: "#3987e5",
+  exp: "#199e70", contr: "#9085e9", saidas: "#e66767", media: "#89a0a3", km: "#3987e5" };
+let pedidoAdmin = null;   /* atalho do Início: abre a aba já em "sem valor" */
+
+const finSemObjeto = msg => /(fin_|contratos|planos|precos)/.test(msg || "") &&
+  /(does not exist|not find|schema cache|42P01|42883|PGRST202|PGRST205)/i.test(msg || "");
+function finMsgErro(error) {
+  const m = (error && error.message) || String(error || "");
+  const c = error && error.code;
+  if (c === "23P01" || /contratos_sem_sobrepor/.test(m))
+    return "Já existe um contrato desse aluno nesse período. Confere as datas.";
+  if (c === "23505" || /contratos_um_aberto/.test(m))
+    return "Esse aluno já tem um contrato aberto.";
+  if (c === "42501" || /row-level security|permission denied/i.test(m))
+    return "Sem permissão para o financeiro (só o dono da consultoria).";
+  return m;   /* P0001 das funções fin_* já vem em português */
+}
+
+async function finPaginar(montar) {
+  const tam = 1000;
+  let de = 0, tudo = [];
+  for (;;) {
+    const r = await montar().range(de, de + tam - 1);
+    if (r.error) return { data: null, error: r.error };
+    tudo = tudo.concat(r.data || []);
+    if (!r.data || r.data.length < tam) return { data: tudo, error: null };
+    de += tam;
+  }
+}
+
+/* linha da view -> o que o motor e as telas usam */
+function finContrato(r) {
+  const vC = Number(r.consultoria_centavos) || 0, vA = Number(r.aulas_centavos) || 0;
+  const tC = r.consultoria_tabela_centavos == null ? null : Number(r.consultoria_tabela_centavos);
+  const tA = r.aulas_tabela_centavos == null ? null : Number(r.aulas_tabela_centavos);
+  const ciclo = vC > 0 || r.cobra_consultoria ? (r.consultoria_ciclo_nome || "Personalizado") : null;
+  return { ...r, vC, vA, valor: vC + vA, seg: r.plano_nome || "Sem plano",
+    desc: (tC != null ? tC - vC : 0) + (tA != null ? tA - vA : 0),
+    ciclo, mix: ciclo };
+}
+
+async function finCarregar() {
+  const [c, p, pr, a, m] = await Promise.all([
+    finPaginar(() => sb.from("vw_fin_contratos").select("*").order("inicio").order("id")),
+    sb.from("planos").select("*").order("ordem").order("nome"),
+    sb.from("precos").select("*").order("parte").order("ordem").order("meses"),
+    finPaginar(() => sb.from("alunos")
+      .select("id, nome, status, modalidade_id, criado_em, foto_url").order("id")),
+    sb.from("modalidades").select("*").order("ordem")
+  ]);
+  if ([c, p, pr].some(x => x.error && finSemObjeto(x.error.message))) return { falta: true };
+  const e = [c, p, pr, a].find(x => x.error);
+  if (e) throw new Error(e.error.message);
+  return { contratos: (c.data || []).map(finContrato), planos: p.data || [], precos: pr.data || [],
+    alunos: a.data || [], mods: m.error ? [] : (m.data || []) };
+}
+/* planos + preços para os modais (sem o resto) */
+async function finCarregarTabelas() {
+  const [p, pr] = await Promise.all([
+    sb.from("planos").select("*").order("ordem").order("nome"),
+    sb.from("precos").select("*").order("parte").order("ordem").order("meses")
+  ]);
+  if ([p, pr].some(x => x.error && finSemObjeto(x.error.message))) return { falta: true };
+  const e = [p, pr].find(x => x.error);
+  if (e) throw new Error(e.error.message);
+  return { planos: p.data || [], precos: pr.data || [] };
+}
+
+/* dia em que a base inicial foi registrada; null = ainda não começou */
+function finGoLive(contratos) {
+  const b = (contratos || []).filter(c => c.base_inicial).map(c => c.inicio).sort();
+  return b.length ? b[0] : null;
+}
+/* aluno sem valor: quem já era aluno no início entra como base, na data
+   do início; quem foi criado depois entra como novo, na data da ficha */
+function finInicioPadrao(aluno, goLive, hoje) {
+  const criado = aluno && aluno.criado_em ? hojeFuso(new Date(aluno.criado_em)) : null;
+  if (!goLive) return { inicio: hoje, base: true };
+  if (!criado || criado < goLive) return { inicio: goLive, base: true };
+  return { inicio: criado > hoje ? hoje : criado, base: false };
+}
+const finAchar = (lista, id) => (lista || []).find(p => p.id === id) || null;
+/* plano sugerido pelo formato: família Presencial -> plano só de aulas;
+   o resto -> plano só de consultoria. É só sugestão: dá para trocar. */
+function finPlanoSugerido(modalidadeId, mods, planos) {
+  const ativos = (planos || []).filter(p => p.ativo !== false);
+  const m = finAchar(mods, modalidadeId);
+  const pres = m && /presencial/i.test(m.familia || "");
+  const alvo = ativos.find(p => pres ? (p.cobra_aulas && !p.cobra_consultoria)
+    : (p.cobra_consultoria && !p.cobra_aulas));
+  return (alvo || ativos[0] || {}).id || "";
+}
+function finSegmentos(planos, contratos) {
+  const ordem = new Map((planos || []).map(p => [p.nome, p.ordem == null ? 999 : p.ordem]));
+  const usados = new Set((contratos || []).map(finSeg));
+  return [...usados].sort((a, b) => ((ordem.has(a) ? ordem.get(a) : 1000) -
+    (ordem.has(b) ? ordem.get(b) : 1000)) || a.localeCompare(b, "pt-BR"));
+}
+const finEixoR = v => { const r = Math.abs(v / 100), s = v < 0 ? "−" : "";
+  return s + (r >= 1000 ? "R$ " + (r / 1000).toFixed(r % 1000 ? 1 : 0).replace(".", ",") + "k"
+    : "R$ " + Math.round(r)); };
+
+/* ---- valores de um contrato: estado da tela <-> argumentos da RPC ---- */
+const FIN_V_VAZIO = { plano: "", cp: "", c: "", ap: "", a: "" };
+function finValoresDe(ct) {
+  if (!ct) return { ...FIN_V_VAZIO };
+  return { plano: ct.plano_id || "", cp: ct.consultoria_preco_id || "",
+    c: ct.cobra_consultoria || ct.vC ? finTxtValor(ct.vC) : "",
+    ap: ct.aulas_preco_id || "", a: ct.cobra_aulas || ct.vA ? finTxtValor(ct.vA) : "" };
+}
+/* devolve { args } ou { erro } */
+function finArgsValores(v, planos) {
+  const pl = finAchar(planos, v.plano);
+  if (!pl) return { erro: "Escolha o plano." };
+  const c = pl.cobra_consultoria ? finCentavos(v.c) : null;
+  const a = pl.cobra_aulas ? finCentavos(v.a) : null;
+  if (pl.cobra_consultoria && c == null) return { erro: "Informe o valor da consultoria (pode ser 0)." };
+  if (pl.cobra_aulas && a == null) return { erro: "Informe o valor das aulas (pode ser 0)." };
+  return { args: { p_plano: pl.id,
+    p_consultoria: c, p_consultoria_preco: pl.cobra_consultoria ? (v.cp || null) : null,
+    p_aulas: a, p_aulas_preco: pl.cobra_aulas ? (v.ap || null) : null } };
+}
+function finTotalV(v, planos) {
+  const pl = finAchar(planos, v.plano);
+  if (!pl) return null;
+  return (pl.cobra_consultoria ? finCentavos(v.c) || 0 : 0) + (pl.cobra_aulas ? finCentavos(v.a) || 0 : 0);
+}
+
+function FinDesc({ precos, preco, valor }) {
+  const p = finAchar(precos, preco), c = finCentavos(valor);
+  if (!p || c == null || c === p.valor_mensal_centavos) return null;
+  const d = p.valor_mensal_centavos - c;
+  return <div className={"fn-desc" + (d < 0 ? " acima" : "")}>
+    {d > 0 ? "desconto de " + finBRL(d, 2) + " sobre a tabela (" + finPct(d / p.valor_mensal_centavos, 0) + ")"
+      : finBRL(-d, 2) + " acima da tabela"}</div>;
+}
+
+/* ---- plano + valores (Novo aluno, Reativar, gaveta do contrato) ---- */
+function FinValores({ planos, precos, v, setV, autoFoco }) {
+  const set = o => setV({ ...v, ...o });
+  const pls = (planos || []).filter(p => p.ativo !== false || p.id === v.plano);
+  const pl = finAchar(planos, v.plano);
+  const ciclos = (precos || []).filter(p => p.parte === "consultoria" && (p.ativo !== false || p.id === v.cp));
+  const pacotes = (precos || []).filter(p => p.parte === "aulas" && (p.ativo !== false || p.id === v.ap));
+  const total = finTotalV(v, planos);
+  return (
+    <>
+      <div className="ed-lab">Plano</div>
+      <div className="chips">
+        {pls.map(p => (
+          <button key={p.id} type="button" className={"chip mini" + (v.plano === p.id ? " on" : "")}
+            onClick={() => set({ plano: p.id })}>{p.nome}</button>
+        ))}
+      </div>
+      {pl && pl.cobra_consultoria && (
+        <>
+          <div className="ed-lab">Consultoria {ciclos.length > 0 && <i>ciclo preenche o valor; dá para dar desconto</i>}</div>
+          {ciclos.length > 0 && (
+            <div className="chips" style={{ marginBottom: 8 }}>
+              {ciclos.map(p => (
+                <button key={p.id} type="button" className={"chip mini" + (v.cp === p.id ? " on" : "")}
+                  onClick={() => set({ cp: p.id, c: finTxtValor(p.valor_mensal_centavos) })}>
+                  {p.nome} · {finBRL(p.valor_mensal_centavos)}</button>
+              ))}
+              <button type="button" className={"chip mini" + (!v.cp ? " on" : "")}
+                onClick={() => set({ cp: "" })}>Personalizado</button>
+            </div>
+          )}
+          <div className="fn-val">
+            <span>R$</span>
+            <input inputMode="decimal" value={v.c} placeholder="0,00" autoFocus={autoFoco}
+              aria-label="Valor da consultoria por mês" onChange={e => set({ c: e.target.value })} />
+            <em>/mês</em>
+          </div>
+          <FinDesc precos={precos} preco={v.cp} valor={v.c} />
+        </>
+      )}
+      {pl && pl.cobra_aulas && (
+        <>
+          <div className="ed-lab">Aulas presenciais</div>
+          {pacotes.length > 0 && (
+            <div className="chips" style={{ marginBottom: 8 }}>
+              {pacotes.map(p => (
+                <button key={p.id} type="button" className={"chip mini" + (v.ap === p.id ? " on" : "")}
+                  onClick={() => set({ ap: p.id, a: finTxtValor(p.valor_mensal_centavos) })}>
+                  {p.nome} · {finBRL(p.valor_mensal_centavos)}</button>
+              ))}
+              <button type="button" className={"chip mini" + (!v.ap ? " on" : "")}
+                onClick={() => set({ ap: "" })}>Personalizado</button>
+            </div>
+          )}
+          <div className="fn-val">
+            <span>R$</span>
+            <input inputMode="decimal" value={v.a} placeholder="0,00"
+              autoFocus={autoFoco && !pl.cobra_consultoria}
+              aria-label="Valor das aulas por mês" onChange={e => set({ a: e.target.value })} />
+            <em>/mês</em>
+          </div>
+          <FinDesc precos={precos} preco={v.ap} valor={v.a} />
+        </>
+      )}
+      {pl && pl.cobra_consultoria && pl.cobra_aulas && (
+        <div className="fn-total">Total por mês <b>{finBRL(total, 2)}</b></div>
+      )}
+    </>
+  );
+}
+
+/* ---- inativar = saída. Toda saída é desistência, inclusive pausa ---- */
+function ModalSaida({ aluno, onFechar, onFeito }) {
+  const { toast } = usarUI();
+  const hoje = hojeFuso();
+  const [aberto, setAberto] = useState(undefined);
+  const [falta, setFalta]   = useState(false);
+  const [data, setData]     = useState(hoje);
+  const [motivo, setMotivo] = useState("");
+  const [obs, setObs]       = useState("");
+  const [erro, setErro]     = useState("");
+  const [busy, setBusy]     = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    sb.from("vw_fin_contratos").select("*").eq("aluno_id", aluno.id).is("fim", null)
+      .maybeSingle().then(r => {
+        if (!vivo) return;
+        if (r.error) {
+          if (finSemObjeto(r.error.message)) setFalta(true); else setErro(r.error.message);
+          setAberto(null); return;
+        }
+        setAberto(r.data ? finContrato(r.data) : null);
+      });
+    return () => { vivo = false; };
+  }, [aluno.id]);
+
+  async function soStatus() {
+    const { error } = await sb.from("alunos").update({ status: "inativo" }).eq("id", aluno.id);
+    if (error) throw new Error(error.message);
+  }
+  async function confirmar() {
+    if (aberto && !motivo) { setErro("Escolhe o motivo: é ele que mostra por que os alunos saem."); return; }
+    setBusy(true); setErro("");
+    try {
+      if (falta) await soStatus();
+      else {
+        const { error } = await sb.rpc("fin_encerrar_aluno", { p_aluno: aluno.id,
+          p_data: data, p_motivo: motivo || null, p_obs: obs.trim() || null });
+        if (error) {
+          if (!finSemObjeto(error.message)) throw new Error(finMsgErro(error));
+          await soStatus();
+        }
+      }
+      toast(aluno.nome + " inativado(a)" + (aberto ? " · saída registrada." : "."));
+      onFeito();
+    } catch (e) { setErro(e.message); setBusy(false); }
+  }
+
+  return (
+    <>
+      <div className="drawer-bg" style={{ zIndex: 60 }} onClick={busy ? undefined : onFechar} />
+      <div className="fn-modal" role="dialog" aria-label={"Inativar " + aluno.nome}>
+        <h3>Inativar {aluno.nome}</h3>
+        {aberto === undefined ? <p>Conferindo o contrato...</p> : falta ? (
+          <p>O financeiro ainda não foi ativado no banco: por enquanto só troca o status.</p>
+        ) : aberto ? (
+          <p>Conta como <b>desistência</b> no churn (pausa também). Sai do faturamento a
+            partir da data abaixo. Hoje: {aberto.plano_nome} · {finBRL(aberto.valor, 2)}/mês
+            desde {dBR(aberto.inicio)}.</p>
+        ) : (
+          <div className="conf-al">⚠️ Sem valor cadastrado: a saída não entra nas métricas.
+            Se quiser que conte, cadastre o valor na aba Admin antes.</div>
+        )}
+        {erro && <div className="err">{erro}</div>}
+        {aberto && !falta && (
+          <>
+            <div className="ed-lab">Data da saída</div>
+            <SeletorData value={data} onChange={setData} min={aberto.inicio} max={hoje} />
+            <div className="ed-lab">Motivo</div>
+            <div className="chips">
+              {FIN_MOTIVOS.map(m => (
+                <button key={m} type="button" className={"chip mini" + (motivo === m ? " on" : "")}
+                  onClick={() => setMotivo(m)}>{m}</button>
+              ))}
+            </div>
+            <div className="ed-lab">Observação <i>opcional</i></div>
+            <input value={obs} onChange={e => setObs(e.target.value)} maxLength={300}
+              placeholder="ex.: volta em março, foi para outra cidade..." />
+          </>
+        )}
+        <div className="conf-bt">
+          <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+          <button className="perigo" onClick={confirmar} disabled={busy || aberto === undefined}>
+            {busy ? "Salvando..." : "Inativar"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---- reativar = contrato novo (conta como retorno, não como aluno novo) ---- */
+function ModalRetorno({ aluno, onFechar, onFeito }) {
+  const { toast } = usarUI();
+  const hoje = hojeFuso();
+  const [d, setD]         = useState(null);
+  const [falta, setFalta] = useState(false);
+  const [v, setV]         = useState(FIN_V_VAZIO);
+  const [data, setData]   = useState(hoje);
+  const [erro, setErro]   = useState("");
+  const [busy, setBusy]   = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      try {
+        const [tb, u, m] = await Promise.all([
+          finCarregarTabelas(),
+          sb.from("vw_fin_contratos").select("*").eq("aluno_id", aluno.id)
+            .order("inicio", { ascending: false }).limit(1),
+          sb.from("modalidades").select("id, familia")
+        ]);
+        if (!vivo) return;
+        if (tb.falta || (u.error && finSemObjeto(u.error.message))) {
+          setFalta(true); setD({ planos: [], precos: [], ultimo: null }); return;
+        }
+        if (u.error) throw new Error(u.error.message);
+        const ultimo = (u.data || [])[0] ? finContrato(u.data[0]) : null;
+        setD({ ...tb, ultimo });
+        setV(ultimo ? finValoresDe(ultimo)
+          : { ...FIN_V_VAZIO, plano: finPlanoSugerido(aluno.modalidade_id, m.data || [], tb.planos) });
+      } catch (e) { if (vivo) { setErro(e.message); setD({ planos: [], precos: [], ultimo: null }); } }
+    })();
+    return () => { vivo = false; };
+  }, [aluno.id]);
+
+  async function soStatus() {
+    const { error } = await sb.from("alunos").update({ status: "ativo" }).eq("id", aluno.id);
+    if (error) throw new Error(error.message);
+  }
+  async function confirmar(semValor) {
+    setBusy(true); setErro("");
+    try {
+      if (falta || semValor) await soStatus();
+      else {
+        const r = finArgsValores(v, d.planos);
+        if (r.erro) { setErro(r.erro); setBusy(false); return; }
+        const { error } = await sb.rpc("fin_reativar_aluno", { p_aluno: aluno.id, p_data: data,
+          ...r.args, p_obs: null });
+        if (error) {
+          if (!finSemObjeto(error.message)) throw new Error(finMsgErro(error));
+          await soStatus();
+        }
+      }
+      toast(aluno.nome + " reativado(a)" + (falta || semValor ? "." : " · retorno registrado."));
+      onFeito();
+    } catch (e) { setErro(e.message); setBusy(false); }
+  }
+
+  const minData = d && d.ultimo && d.ultimo.fim ? d.ultimo.fim : undefined;
+  return (
+    <>
+      <div className="drawer-bg" style={{ zIndex: 60 }} onClick={busy ? undefined : onFechar} />
+      <div className="fn-modal" role="dialog" aria-label={"Reativar " + aluno.nome}>
+        <h3>Reativar {aluno.nome}</h3>
+        {d === null ? <p>Buscando o último contrato...</p> : falta ? (
+          <p>O financeiro ainda não foi ativado no banco: por enquanto só troca o status.</p>
+        ) : (
+          <>
+            <p>Entra como <b>retorno</b> (não como aluno novo) a partir da data abaixo.
+              {d.ultimo ? " Antes: " + d.ultimo.plano_nome + " · " + finBRL(d.ultimo.valor, 2) +
+                "/mês" + (d.ultimo.fim ? ", saiu em " + dBR(d.ultimo.fim) : "") + "." : ""}</p>
+            <FinValores planos={d.planos} precos={d.precos} v={v} setV={setV} />
+            <div className="ed-lab">Volta a partir de</div>
+            <SeletorData value={data} onChange={setData} min={minData} max={hoje} />
+          </>
+        )}
+        {erro && <div className="err" style={{ marginTop: 12 }}>{erro}</div>}
+        <div className="conf-bt">
+          <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+          <button onClick={() => confirmar(false)} disabled={busy || d === null}>
+            {busy ? "Salvando..." : "Reativar"}
+          </button>
+        </div>
+        {!falta && d !== null && (
+          <button className="fn-link" onClick={() => confirmar(true)} disabled={busy}>
+            reativar sem valor agora (preencho depois)
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ---- gaveta do contrato: mudar plano/valores e ver o histórico ---- */
+function DrawerContrato({ aluno, contratos, planos, precos, mods, goLive, onFechar, onSalvo, onSaida }) {
+  const { toast } = usarUI();
+  const hoje = hojeFuso();
+  const hist = (contratos || []).filter(c => c.aluno_id === aluno.id)
+    .sort((x, y) => x.inicio < y.inicio ? 1 : x.inicio > y.inicio ? -1 : 0);
+  const ab = hist.find(c => c.fim == null) || null;
+  const pad = ab ? null : finInicioPadrao(aluno, goLive, hoje);
+  const [v, setV]       = useState(() => ab ? finValoresDe(ab)
+    : { ...FIN_V_VAZIO, plano: finPlanoSugerido(aluno.modalidade_id, mods, planos) });
+  const [data, setData] = useState(ab ? hoje : pad.inicio);
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function salvar() {
+    const r = finArgsValores(v, planos);
+    if (r.erro) { setErro(r.erro); return; }
+    setBusy(true); setErro("");
+    const { error } = await sb.rpc("fin_salvar_contrato", { p_aluno: aluno.id, p_data: data,
+      ...r.args, p_base: ab ? false : pad.base, p_obs: null });
+    if (error) { setErro(finMsgErro(error)); setBusy(false); return; }
+    toast(ab ? (data === ab.inicio ? "Contrato corrigido." : "Nova condição a partir de " + dBR(data) + ".")
+      : "Valor cadastrado.");
+    onSalvo();
+  }
+
+  const aviso = !ab ? (pad.base
+      ? "Entra na base inicial: já era aluno quando o financeiro começou (" + dBR(pad.inicio) + ")."
+      : "Entra como aluno novo a partir de " + dBR(data) + ".")
+    : data === ab.inicio ? "Mesma data de início: corrige o contrato atual, sem gerar histórico."
+    : "Fecha a condição atual em " + dBR(data) + " e abre a nova no mesmo dia. Não conta como saída.";
+  const partes = c => [c.vC ? "consultoria " + finBRL(c.vC, 2) + (c.ciclo ? " (" + c.ciclo + ")" : "") : "",
+    c.vA ? "aulas " + finBRL(c.vA, 2) : ""].filter(Boolean).join(" + ");
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={busy ? undefined : onFechar} />
+      <div className="drawer" style={{ width: "min(560px,96vw)" }}>
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar}>×</button>
+          <h2>{aluno.nome}</h2>
+          <div className="meta">
+            {ab ? ab.plano_nome + " · " + finBRL(ab.valor, 2) + "/mês · desde " + dBR(ab.inicio)
+              : "sem valor cadastrado"}
+          </div>
+        </div>
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+          <FinValores planos={planos} precos={precos} v={v} setV={setV} autoFoco={!ab} />
+          {ab && (
+            <>
+              <div className="ed-lab">Vale a partir de</div>
+              <SeletorData value={data} onChange={setData} min={ab.inicio} max={hoje} />
+            </>
+          )}
+          <div className="fn-aviso">{aviso}</div>
+          <div className="acoes" style={{ marginTop: 14 }}>
+            <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar"}</button>
+            {ab && aluno.status === "ativo" && (
+              <button className="btn-sec" onClick={() => onSaida(aluno)} disabled={busy}>
+                Registrar saída
+              </button>
+            )}
+          </div>
+
+          {hist.length > 0 && <div className="ed-lab" style={{ marginTop: 26 }}>Histórico</div>}
+          {hist.map(c => (
+            <div key={c.id} className={"fn-hist" + (c.fim == null ? " ab" : "")}>
+              <b>{finBRL(c.valor, 2)}<i>/mês</i></b>
+              <span>{c.plano_nome} · {partes(c) || "R$ 0"}{c.base_inicial ? " · base inicial" : ""}</span>
+              <em>{dBR(c.inicio)} → {c.fim ? dBR(c.fim) : "hoje"}
+                {c.encerramento === "saida" ? " · saída: " + (c.motivo || "sem motivo")
+                  : c.encerramento === "alteracao" ? " · mudou a condição" : ""}
+                {c.desc > 0 ? " · desconto " + finBRL(c.desc, 2) : ""}</em>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---- alunos ativos sem valor: preenchimento rápido ---- */
+function FinSemValor({ lista, planos, precos, mods, goLive, onSalvo }) {
+  const { toast } = usarUI();
+  const hoje = hojeFuso();
+  const sugerido = a => ({ ...FIN_V_VAZIO, plano: finPlanoSugerido(a.modalidade_id, mods, planos) });
+  const [linhas, setLinhas] = useState({});
+  const [busy, setBusy]     = useState(false);
+  const [erros, setErros]   = useState({});
+  const plAtivos = (planos || []).filter(p => p.ativo !== false);
+  const ciclos = (precos || []).filter(p => p.parte === "consultoria" && p.ativo !== false);
+  const pacotes = (precos || []).filter(p => p.parte === "aulas" && p.ativo !== false);
+  const nomeMod = id => { const m = finAchar(mods, id); return m ? m.nome : "sem formato"; };
+  const lin = a => linhas[a.id] || sugerido(a);
+  const mudar = (a, o) => setLinhas(l => ({ ...l, [a.id]: { ...lin(a), ...o } }));
+
+  function cicloTodos(pid) {
+    const p = finAchar(precos, pid);
+    if (!p) return;
+    setLinhas(l => {
+      const n = { ...l };
+      for (const a of lista) {
+        const x = n[a.id] || sugerido(a), pl = finAchar(planos, x.plano);
+        if (pl && pl.cobra_consultoria && !x.c) n[a.id] = { ...x, cp: p.id, c: finTxtValor(p.valor_mensal_centavos) };
+      }
+      return n;
+    });
+  }
+  async function salvar(alvos) {
+    setBusy(true);
+    const novos = { ...erros };
+    let ok = 0, gl = goLive;
+    for (const a of alvos) {
+      const r = finArgsValores(lin(a), planos);
+      if (r.erro) continue;
+      const pad = finInicioPadrao(a, gl, hoje);
+      const { error } = await sb.rpc("fin_salvar_contrato", { p_aluno: a.id, p_data: pad.inicio,
+        ...r.args, p_base: pad.base, p_obs: null });
+      if (error) novos[a.id] = finMsgErro(error);
+      else { ok++; delete novos[a.id]; if (!gl) gl = pad.inicio; }
+    }
+    setErros(novos);
+    setBusy(false);
+    if (ok) { toast(ok + (ok === 1 ? " valor salvo." : " valores salvos.")); onSalvo(); }
+  }
+
+  const prontos = lista.filter(a => !finArgsValores(lin(a), planos).erro);
+  return (
+    <div className="fn-box" id="fn-sem-valor">
+      <div className="fn-tit">
+        <b>Alunos ativos sem valor</b><i>{lista.length}</i>
+        <span style={{ flex: 1 }} />
+        {ciclos.length > 0 && (
+          <select className="fn-sel mini" value="" onChange={e => cicloTodos(e.target.value)}
+            title="preenche a consultoria de quem ainda está em branco">
+            <option value="">Preencher consultoria com…</option>
+            {ciclos.map(p => <option key={p.id} value={p.id}>{p.nome} · {finBRL(p.valor_mensal_centavos)}</option>)}
+          </select>
+        )}
+        <button className="btn-sec cr-mini" disabled={busy || !prontos.length}
+          onClick={() => salvar(prontos)}>
+          {busy ? "Salvando..." : "Salvar " + prontos.length + " preenchido(s)"}
+        </button>
+      </div>
+      <div className="fn-sub">
+        {goLive ? "Quem já era aluno em " + dBR(goLive) + " entra como base inicial; quem chegou depois, como aluno novo."
+          : "O primeiro valor salvo marca o início do financeiro: quem está ativo hoje entra como base inicial."}
+        {" "}O plano vem sugerido pelo formato. Desconto: escolha o ciclo e digite o valor que ele paga.
+      </div>
+      {lista.map(a => {
+        const x = lin(a), pl = finAchar(planos, x.plano);
+        const salvavel = !finArgsValores(x, planos).erro;
+        return (
+          <div key={a.id} className="fn-sv">
+            <div className="fn-sv-n">{a.nome}<i>{nomeMod(a.modalidade_id)}</i></div>
+            <select className="fn-sel" value={x.plano} aria-label={"Plano de " + a.nome}
+              onChange={e => mudar(a, { plano: e.target.value })}>
+              {plAtivos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </select>
+            {pl && pl.cobra_consultoria && (
+              <>
+                <select className="fn-sel" value={x.cp} aria-label={"Ciclo de " + a.nome}
+                  onChange={e => { const p = finAchar(precos, e.target.value);
+                    mudar(a, { cp: e.target.value, c: p ? finTxtValor(p.valor_mensal_centavos) : x.c }); }}>
+                  <option value="">ciclo: personalizado</option>
+                  {ciclos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                </select>
+                <div className="fn-val mini" title="consultoria por mês">
+                  <span>R$</span>
+                  <input inputMode="decimal" value={x.c} placeholder="consultoria" aria-label={"Consultoria de " + a.nome}
+                    onChange={e => mudar(a, { c: e.target.value })} />
+                </div>
+              </>
+            )}
+            {pl && pl.cobra_aulas && (
+              <div className="fn-val mini" title="aulas por mês">
+                <span>R$</span>
+                <input inputMode="decimal" value={x.a} placeholder="aulas" aria-label={"Aulas de " + a.nome}
+                  onChange={e => mudar(a, { a: e.target.value, ap: "" })} />
+              </div>
+            )}
+            <button className="btn-sec cr-mini" disabled={busy || !salvavel}
+              onClick={() => salvar([a])}>Salvar</button>
+            {pl && pl.cobra_consultoria && <FinDesc precos={precos} preco={x.cp} valor={x.c} />}
+            {erros[a.id] && <div className="fn-sv-err">{erros[a.id]}</div>}
+          </div>
+        );
+      })}
+      {pacotes.length === 0 && plAtivos.some(p => p.cobra_aulas) && (
+        <div className="fn-sub" style={{ margin: "10px 0 0" }}>
+          Dica: cadastre pacotes de aula em Planos e preços para o valor das aulas também vir preenchido.</div>
+      )}
+    </div>
+  );
+}
+
+/* ---- planos (o que o aluno compra) e preços (o que vem preenchido) ---- */
+function FinPlanosPrecos({ planos, precos, onSalvo }) {
+  const { toast } = usarUI();
+  const [edP, setEdP]   = useState(null);
+  const [edR, setEdR]   = useState(null);
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function gravar(tabela, id, linha, extra) {
+    setBusy(true); setErro("");
+    const r = id ? await sb.from(tabela).update(linha).eq("id", id)
+      : await sb.from(tabela).insert({ ...linha, ...extra });
+    setBusy(false);
+    if (r.error) { setErro(finMsgErro(r.error)); return false; }
+    toast("Salvo."); onSalvo(); return true;
+  }
+  async function salvarPlano() {
+    if (!edP.nome.trim()) { setErro("Dá um nome ao plano."); return; }
+    if (!edP.cobra_consultoria && !edP.cobra_aulas) { setErro("O plano precisa cobrar consultoria, aulas ou os dois."); return; }
+    const ok = await gravar("planos", edP.id, { nome: edP.nome.trim(), cobra_consultoria: edP.cobra_consultoria,
+      cobra_aulas: edP.cobra_aulas, ativo: edP.ativo }, { ordem: (planos || []).length + 1 });
+    if (ok) setEdP(null);
+  }
+  async function salvarPreco() {
+    const v = finCentavos(edR.valor), meses = Number(edR.meses);
+    if (!edR.nome.trim()) { setErro("Dá um nome ao preço."); return; }
+    if (v == null) { setErro("Valor por mês inválido."); return; }
+    if (!(meses >= 1 && meses <= 36)) { setErro("Meses entre 1 e 36."); return; }
+    const ok = await gravar("precos", edR.id, { parte: edR.parte, nome: edR.nome.trim(), meses,
+      valor_mensal_centavos: v, ativo: edR.ativo }, { ordem: (precos || []).length + 1 });
+    if (ok) setEdR(null);
+  }
+  const cobra = p => [p.cobra_consultoria ? "consultoria" : "", p.cobra_aulas ? "aulas" : ""].filter(Boolean).join(" + ");
+  const chip = (on, rot, fn) => <button type="button" className={"chip mini" + (on ? " on" : "")} onClick={fn}>{rot}</button>;
+
+  return (
+    <div className="fn-box">
+      <div className="fn-tit"><b>Planos e preços</b><span style={{ flex: 1 }} />
+        <button className="btn-sec cr-mini" disabled={busy} onClick={() => { setErro(""); setEdR(null);
+          setEdP({ nome: "", cobra_consultoria: true, cobra_aulas: false, ativo: true }); }}>+ Plano</button>
+        <button className="btn-sec cr-mini" disabled={busy} onClick={() => { setErro(""); setEdP(null);
+          setEdR({ parte: "consultoria", nome: "", meses: 1, valor: "", ativo: true }); }}>+ Preço</button>
+      </div>
+      <div className="fn-sub">Plano é o que o aluno compra (e separa churn e retenção). Preço é o valor
+        que vem preenchido; mudar aqui não altera quem já tem contrato.</div>
+      {erro && <div className="err">{erro}</div>}
+
+      <div className="fn-gr">Planos</div>
+      {(planos || []).map(p => (
+        <div key={p.id} className={"fn-pl" + (p.ativo === false ? " off" : "")}>
+          <b>{p.nome}</b><span>cobra {cobra(p)}</span>
+          {p.ativo === false && <span className="st-tag">inativo</span>}
+          <span style={{ flex: 1 }} />
+          <button className="btn-sec cr-mini" onClick={() => { setErro(""); setEdR(null);
+            setEdP({ id: p.id, nome: p.nome, cobra_consultoria: p.cobra_consultoria,
+              cobra_aulas: p.cobra_aulas, ativo: p.ativo !== false }); }}>Editar</button>
+        </div>
+      ))}
+      {edP && (
+        <div className="fn-pl-ed">
+          <div className="nv-grid">
+            <div><div className="ed-lab">Nome</div>
+              <input value={edP.nome} onChange={e => setEdP({ ...edP, nome: e.target.value })}
+                placeholder="ex.: Turma" maxLength={40} /></div>
+            <div><div className="ed-lab">Cobra</div>
+              <div className="chips">
+                {chip(edP.cobra_consultoria, "Consultoria", () => setEdP({ ...edP, cobra_consultoria: !edP.cobra_consultoria }))}
+                {chip(edP.cobra_aulas, "Aulas", () => setEdP({ ...edP, cobra_aulas: !edP.cobra_aulas }))}
+              </div></div>
+            <div><div className="ed-lab">Situação</div>
+              <div className="chips">
+                {chip(edP.ativo, "Ativo", () => setEdP({ ...edP, ativo: true }))}
+                {chip(!edP.ativo, "Inativo", () => setEdP({ ...edP, ativo: false }))}
+              </div></div>
+          </div>
+          <div className="acoes" style={{ marginTop: 12 }}>
+            <button onClick={salvarPlano} disabled={busy}>{busy ? "Salvando..." : "Salvar plano"}</button>
+            <button className="btn-sec" onClick={() => setEdP(null)} disabled={busy}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {["consultoria", "aulas"].map(parte => (
+        <div key={parte}>
+          <div className="fn-gr">{parte === "consultoria" ? "Ciclos da consultoria" : "Pacotes de aula"}</div>
+          {(precos || []).filter(p => p.parte === parte).length === 0 && (
+            <div className="fn-sub" style={{ margin: "4px 0 6px" }}>nenhum ainda</div>
+          )}
+          {(precos || []).filter(p => p.parte === parte).map(p => (
+            <div key={p.id} className={"fn-pl" + (p.ativo === false ? " off" : "")}>
+              <b>{p.nome}</b>
+              <span>{p.meses === 1 ? "mensal" : p.meses + " meses"}</span>
+              <span>{finBRL(p.valor_mensal_centavos, 2)}/mês</span>
+              {p.ativo === false && <span className="st-tag">inativo</span>}
+              <span style={{ flex: 1 }} />
+              <button className="btn-sec cr-mini" onClick={() => { setErro(""); setEdP(null);
+                setEdR({ id: p.id, parte: p.parte, nome: p.nome, meses: p.meses,
+                  valor: finTxtValor(p.valor_mensal_centavos), ativo: p.ativo !== false }); }}>Editar</button>
+            </div>
+          ))}
+        </div>
+      ))}
+      {edR && (
+        <div className="fn-pl-ed">
+          <div className="nv-grid">
+            <div><div className="ed-lab">Parte</div>
+              <div className="chips">
+                {chip(edR.parte === "consultoria", "Consultoria", () => setEdR({ ...edR, parte: "consultoria" }))}
+                {chip(edR.parte === "aulas", "Aulas", () => setEdR({ ...edR, parte: "aulas" }))}
+              </div></div>
+            <div><div className="ed-lab">Nome</div>
+              <input value={edR.nome} onChange={e => setEdR({ ...edR, nome: e.target.value })}
+                placeholder={edR.parte === "aulas" ? "ex.: 2x por semana" : "ex.: Trimestral"} maxLength={40} /></div>
+            <div><div className="ed-lab">Ciclo (meses)</div>
+              <input type="number" min={1} max={36} value={edR.meses}
+                onChange={e => setEdR({ ...edR, meses: e.target.value })} /></div>
+            <div><div className="ed-lab">Valor por mês</div>
+              <div className="fn-val"><span>R$</span>
+                <input inputMode="decimal" value={edR.valor} placeholder="0,00"
+                  onChange={e => setEdR({ ...edR, valor: e.target.value })} /></div></div>
+            <div><div className="ed-lab">Situação</div>
+              <div className="chips">
+                {chip(edR.ativo, "Ativo", () => setEdR({ ...edR, ativo: true }))}
+                {chip(!edR.ativo, "Inativo", () => setEdR({ ...edR, ativo: false }))}
+              </div></div>
+          </div>
+          <div className="acoes" style={{ marginTop: 12 }}>
+            <button onClick={salvarPreco} disabled={busy}>{busy ? "Salvando..." : "Salvar preço"}</button>
+            <button className="btn-sec" onClick={() => setEdR(null)} disabled={busy}>Cancelar</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---- gráficos ---- */
+function FinTooltip({ active, payload, label, linhas }) {
+  if (!active || !payload || !payload.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="fn-tip">
+      <b>{label}{p.parcial ? " · até hoje" : ""}</b>
+      {linhas(p).filter(Boolean).map((l, i) => (
+        <div key={i}>{l.cor && <i style={{ background: l.cor }} />}{l.rot}<span>{l.val}</span></div>
+      ))}
+    </div>
+  );
+}
+function FinLegenda({ itens }) {
+  return (
+    <div className="fn-leg">
+      {itens.map(x => (
+        <span key={x.rot}><i className={x.linha ? "ln" : ""} style={{ background: x.cor,
+          borderColor: x.cor }} />{x.rot}</span>
+      ))}
+    </div>
+  );
+}
+function FinGraficos({ m }) {
+  const RC = window.Recharts;
+  if (!RC) return <div className="ac-diag">O Recharts vem de CDN e não respondeu: os números acima valem, os gráficos voltam ao recarregar com internet.</div>;
+  const { ResponsiveContainer, ComposedChart, BarChart, LineChart, Bar, Line, XAxis, YAxis,
+    Tooltip, CartesianGrid, ReferenceLine, Cell } = RC;
+  const serie = m.meses.map(x => ({
+    ...x, rot: finMesRot(x.mes),
+    barC: x.parcial ? x.projecaoC : x.receitaC, barA: x.parcial ? x.projecaoA : x.receitaA,
+    entradas: x.novosV + x.retV + x.tInV, exp: x.expV, contr: -x.contrV,
+    sai: -(x.saidasV + x.tOutV), entN: x.novosN + x.retN, saiN: -x.saidasN,
+    churnP: x.churn == null ? null : x.churn * 100, churn3P: x.churn3 == null ? null : x.churn3 * 100
+  }));
+  const temAulas = serie.some(x => x.receitaA > 0 || x.projecaoA > 0);
+  const eixo = { tick: { fill: "#7d9298", fontSize: 10.5 }, axisLine: false, tickLine: false };
+  const grade = <CartesianGrid stroke="#1b2427" vertical={false} />;
+  const pouco = serie.length < 2;
+  const km = m.km;
+  return (
+    <>
+      {pouco && <div className="fn-sub">Os gráficos ganham forma a partir do 2º mês de dados.</div>}
+      <div className="fn-grafs">
+        <div className="fn-graf">
+          <div className="fn-gt">Receita por mês<i>proporcional aos dias de contrato · mês atual = projeção</i></div>
+          <FinLegenda itens={[{ rot: "Consultoria", cor: FIN_COR.consultoria },
+            ...(temAulas ? [{ rot: "Aulas", cor: FIN_COR.aulas }] : []),
+            { rot: "MRR no fim do mês", cor: FIN_COR.mrr, linha: true }]} />
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              {grade}
+              <XAxis dataKey="rot" {...eixo} />
+              <YAxis width={68} tickFormatter={finEixoR} {...eixo} />
+              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+                { rot: "Consultoria", val: finBRL(p.receitaC), cor: FIN_COR.consultoria },
+                temAulas && { rot: "Aulas", val: finBRL(p.receitaA), cor: FIN_COR.aulas },
+                { rot: p.parcial ? "Receita até hoje" : "Receita do mês", val: finBRL(p.receita) },
+                p.parcial && { rot: "Projeção do mês", val: finBRL(p.projecao) },
+                { rot: "MRR", val: finBRL(p.fechV), cor: FIN_COR.mrr }]} />} />
+              <Bar dataKey="barC" stackId="r" fill={FIN_COR.consultoria} stroke="#131a1c" strokeWidth={1}
+                radius={temAulas ? 0 : [4, 4, 0, 0]} maxBarSize={34}>
+                {serie.map(x => <Cell key={x.mes} fillOpacity={x.parcial ? 0.45 : 1} />)}
+              </Bar>
+              {temAulas && (
+                <Bar dataKey="barA" stackId="r" fill={FIN_COR.aulas} stroke="#131a1c" strokeWidth={1}
+                  radius={[4, 4, 0, 0]} maxBarSize={34}>
+                  {serie.map(x => <Cell key={x.mes} fillOpacity={x.parcial ? 0.45 : 1} />)}
+                </Bar>
+              )}
+              <Line type="linear" dataKey="fechV" stroke={FIN_COR.mrr} strokeWidth={2}
+                dot={{ r: 4, fill: FIN_COR.mrr, stroke: "#131a1c", strokeWidth: 2 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="fn-graf">
+          <div className="fn-gt">Movimento do MRR<i>o que entrou e o que saiu por mês</i></div>
+          <FinLegenda itens={[{ rot: "Entradas", cor: FIN_COR.entradas }, { rot: "Aumento de valor", cor: FIN_COR.exp },
+            { rot: "Redução de valor", cor: FIN_COR.contr }, { rot: "Saídas", cor: FIN_COR.saidas }]} />
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={serie} stackOffset="sign" margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              {grade}
+              <XAxis dataKey="rot" {...eixo} />
+              <YAxis width={68} tickFormatter={finEixoR} {...eixo} />
+              <ReferenceLine y={0} stroke="#3d4d50" />
+              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+                { rot: "Alunos novos (" + p.novosN + ")", val: finBRL(p.novosV), cor: FIN_COR.entradas },
+                p.retN > 0 && { rot: "Retornos (" + p.retN + ")", val: finBRL(p.retV), cor: FIN_COR.entradas },
+                p.tInN > 0 && { rot: "Vieram de outro plano (" + p.tInN + ")", val: finBRL(p.tInV), cor: FIN_COR.entradas },
+                { rot: "Aumento de valor", val: finBRL(p.expV), cor: FIN_COR.exp },
+                { rot: "Redução de valor", val: "−" + finBRL(p.contrV), cor: FIN_COR.contr },
+                { rot: "Desistências (" + p.saidasN + ")", val: "−" + finBRL(p.saidasV), cor: FIN_COR.saidas },
+                p.tOutN > 0 && { rot: "Foram para outro plano (" + p.tOutN + ")", val: "−" + finBRL(p.tOutV), cor: FIN_COR.saidas },
+                { rot: "Saldo", val: finBRL(p.fechV - p.abertV) }]} />} />
+              <Bar dataKey="entradas" stackId="m" fill={FIN_COR.entradas} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
+              <Bar dataKey="exp" stackId="m" fill={FIN_COR.exp} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
+              <Bar dataKey="contr" stackId="m" fill={FIN_COR.contr} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
+              <Bar dataKey="sai" stackId="m" fill={FIN_COR.saidas} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="fn-graf">
+          <div className="fn-gt">Churn mensal<i>saídas ÷ ativos no início do mês</i></div>
+          <FinLegenda itens={[{ rot: "Churn do mês", cor: FIN_COR.saidas },
+            { rot: "Média de 3 meses", cor: FIN_COR.media, linha: true }]} />
+          <ResponsiveContainer width="100%" height={200}>
+            <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              {grade}
+              <XAxis dataKey="rot" {...eixo} />
+              <YAxis width={42} tickFormatter={v => Math.round(v) + "%"} allowDecimals={false} {...eixo} />
+              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+                { rot: "Churn", val: finPct(p.churn) + " · " + p.saidasN + " de " + p.abertN, cor: FIN_COR.saidas },
+                { rot: "Média 3 meses", val: finPct(p.churn3) },
+                p.pequena && { rot: "amostra pequena (menos de " + FIN_AMOSTRA_MIN + ")", val: "" }]} />} />
+              <Bar dataKey="churnP" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={34}>
+                {serie.map(x => <Cell key={x.mes} fillOpacity={x.parcial ? 0.45 : 1} />)}
+              </Bar>
+              <Line type="linear" dataKey="churn3P" stroke={FIN_COR.media} strokeWidth={2}
+                strokeDasharray="5 4" dot={false} connectNulls />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="fn-graf">
+          <div className="fn-gt">Entradas e saídas de alunos<i>novos + retornos × desistências</i></div>
+          <FinLegenda itens={[{ rot: "Entraram", cor: FIN_COR.entradas }, { rot: "Saíram", cor: FIN_COR.saidas }]} />
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={serie} stackOffset="sign" margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              {grade}
+              <XAxis dataKey="rot" {...eixo} />
+              <YAxis width={34} allowDecimals={false} tickFormatter={v => Math.abs(v)} {...eixo} />
+              <ReferenceLine y={0} stroke="#3d4d50" />
+              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+                { rot: "Novos", val: String(p.novosN), cor: FIN_COR.entradas },
+                { rot: "Retornos", val: String(p.retN), cor: FIN_COR.entradas },
+                { rot: "Desistências", val: String(p.saidasN), cor: FIN_COR.saidas },
+                { rot: "Ativos no fim", val: String(p.fechN) }]} />} />
+              <Bar dataKey="entN" stackId="a" fill={FIN_COR.entradas} radius={[4, 4, 0, 0]} maxBarSize={34} />
+              <Bar dataKey="saiN" stackId="a" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={34} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="fn-graf">
+          <div className="fn-gt">Permanência<i>Kaplan-Meier · só quem entrou depois de {dBR(m.goLive)}</i></div>
+          {km.insuf ? (
+            <div className="fn-vz">A curva aparece com {FIN_KM_MIN}+ alunos novos (hoje: {km.n}).
+              Quem já era aluno antes de {dBR(m.goLive)} fica de fora: o início real dele é
+              desconhecido e puxaria a permanência para baixo.</div>
+          ) : (
+            <>
+              <div className="fn-sub" style={{ margin: "0 0 4px" }}>
+                {km.n} alunos novos, {km.saidas} saída(s) · mediana: {km.mediana == null
+                  ? "ainda não atingida (mais da metade segue)" : km.mediana.toFixed(1).replace(".", ",") + " meses"}
+              </div>
+              <ResponsiveContainer width="100%" height={190}>
+                <LineChart data={km.pontos.map(p => ({ ...p, rot: "M" + p.mes, pct: p.s * 100 }))}
+                  margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  {grade}
+                  <XAxis dataKey="rot" {...eixo} />
+                  <YAxis width={42} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]}
+                    tickFormatter={v => v + "%"} {...eixo} />
+                  <ReferenceLine y={50} stroke="#3d4d50" strokeDasharray="3 3" />
+                  <Tooltip content={<FinTooltip linhas={p => [
+                    { rot: "Seguem depois de " + p.mes + " " + (p.mes === 1 ? "mês" : "meses"), val: finPct(p.s), cor: FIN_COR.km },
+                    { rot: "Ainda em observação", val: String(p.risco) }]} />} />
+                  <Line type="stepAfter" dataKey="pct" stroke={FIN_COR.km} strokeWidth={2}
+                    dot={{ r: 3.5, fill: FIN_COR.km, stroke: "#131a1c", strokeWidth: 2 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </>
+          )}
+        </div>
+
+        <div className="fn-graf">
+          <div className="fn-gt">Coortes<i>% que segue ativo N meses depois de entrar</i></div>
+          {!m.coortes.length ? (
+            <div className="fn-vz">Cada mês de entrada vira uma linha aqui, a partir dos alunos novos.</div>
+          ) : (
+            <div className="fn-coorte">
+              <div className="fn-co-h"><span>entrada</span><span>n</span>
+                {Array.from({ length: FIN_COORTE_MESES }, (_, k) => <span key={k}>M{k + 1}</span>)}</div>
+              {m.coortes.map(c => (
+                <div key={c.mes} className="fn-co-l">
+                  <span>{finMesRot(c.mes)}</span><span>{c.n}</span>
+                  {c.cel.map((v, k) => (
+                    <span key={k} className="fn-co-c" title={v == null ? "ainda não completou " + (k + 1) + " mês(es)" : finPct(v, 0)}
+                      style={v == null ? undefined : { background: "rgba(57,135,229," + (0.12 + v * 0.7).toFixed(2) + ")" }}>
+                      {v == null ? "·" : Math.round(v * 100) + "%"}</span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* barras simples em HTML: motivos e ciclos */
+function FinBarras({ itens, total, rotulo, valor }) {
+  const max = Math.max(1, ...itens.map(valor));
+  return (
+    <div className="fn-bars">
+      {itens.map(x => (
+        <div key={rotulo(x)} className="fn-bar">
+          <span className="fn-bar-r">{rotulo(x)}</span>
+          <span className="fn-bar-t"><i style={{ width: (valor(x) / max * 100) + "%" }} /></span>
+          <span className="fn-bar-v">{total(x)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* tabela de comparação (por plano ou por ciclo) */
+function FinComparar({ titulo, rot, linhas, onEscolher, nota }) {
+  return (
+    <div className="fn-box">
+      <div className="fn-tit"><b>{titulo}</b></div>
+      <div className="fn-tab">
+        <div className="fn-tr h"><span>{rot}</span><span>Ativos</span><span>MRR</span>
+          <span>Ticket</span><span>Churn médio</span><span>Vida média</span></div>
+        {linhas.map(({ seg: s, m: q }) => {
+          const Tag = onEscolher ? "button" : "div";
+          return (
+            <Tag key={s} className="fn-tr" onClick={onEscolher ? () => onEscolher(s) : undefined}>
+              <span>{s}</span><span>{q.kpi.ativos}</span><span>{finBRL(q.kpi.mrr)}</span>
+              <span>{finBRL(q.kpi.ticket)}</span>
+              <span>{q.kpi.expo >= 1 ? finPct(q.kpi.churnMedio) : "—"}
+                {q.kpi.ativos < FIN_AMOSTRA_MIN ? <i title="amostra pequena"> *</i> : null}</span>
+              <span>{q.kpi.vidaMeses == null ? "—" : q.kpi.vidaMeses.toFixed(1).replace(".", ",") + " m"}</span>
+            </Tag>
+          );
+        })}
+      </div>
+      <div className="fn-sub" style={{ margin: "8px 0 0" }}>* menos de {FIN_AMOSTRA_MIN} alunos: compare com
+        cautela, a diferença pode ser acaso.{nota ? " " + nota : ""}</div>
+    </div>
+  );
+}
+
+function PainelAdmin() {
+  const [d, setD]         = useState(null);
+  const [erro, setErro]   = useState("");
+  const [seg, setSeg]     = useState(null);
+  const [busca, setBusca] = useState("");
+  const [edit, setEdit]   = useState(null);
+  const [saida, setSaida] = useState(null);
+  const [hoje, setHoje]   = useState(() => hojeFuso());
+  const [ped] = useState(() => { const x = pedidoAdmin; pedidoAdmin = null; return x; });
+
+  const carregar = useCallback(async () => {
+    setHoje(hojeFuso());
+    try { setD(await finCarregar()); setErro(""); }
+    catch (e) { setErro(e.message); }
+  }, []);
+  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => {
+    if (ped !== "semValor" || !d || d.falta) return;
+    const t = setTimeout(() => { const el = document.getElementById("fn-sem-valor");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+    return () => clearTimeout(t);
+  }, [ped, d]);
+
+  const pronto = d && !d.falta;
+  const m = useMemo(() => pronto ? finMetricas(d.contratos, hoje, seg) : null, [d, hoje, seg]);
+  const comp = useMemo(() => pronto && seg == null
+    ? finPorSegmento(d.contratos, hoje).filter(x => !x.m.vazio) : [], [d, hoje, seg]);
+  /* ciclos: mesmo motor, recortando pelo ciclo da consultoria (quem não paga
+     consultoria fica em "—" e não aparece na tabela) */
+  const porCiclo = useMemo(() => {
+    if (!pronto) return [];
+    const base = seg == null ? d.contratos : d.contratos.filter(c => finSeg(c) === seg);
+    const cs = d.contratos.map(c => ({ ...c, seg: c.ciclo || "—" }));
+    const nomes = [...new Set(base.filter(c => c.ciclo).map(c => c.ciclo))];
+    return nomes.map(n => ({ seg: n, m: finMetricas(
+      seg == null ? cs : cs.filter((c, i) => finSeg(d.contratos[i]) === seg), hoje, n) }))
+      .filter(x => !x.m.vazio && x.m.kpi.ativos + x.m.kpi.saidasTot > 0)
+      .sort((a, b) => b.m.kpi.ativos - a.m.kpi.ativos);
+  }, [d, hoje, seg]);
+  const segs = useMemo(() => pronto ? finSegmentos(d.planos, d.contratos) : [], [d]);
+
+  if (erro) return <div className="err">{erro}</div>;
+  if (d === null) return <div className="msg">Somando o financeiro...</div>;
+  if (d.falta) return (
+    <div className="box">
+      <h2>Falta ativar o financeiro no banco</h2>
+      <p>A aba usa as tabelas planos, precos e contratos e as funções fin_*. Rode o SQL do
+        financeiro no Supabase (SQL Editor) e recarregue. Até lá, o Inativar e o Reativar
+        da aba Alunos continuam só trocando o status, como antes.</p>
+    </div>
+  );
+
+  const goLive = finGoLive(d.contratos);
+  const abertos = finAbertoPorAluno(d.contratos);
+  const alunoPor = new Map(d.alunos.map(a => [a.id, a]));
+  const semValor = d.alunos.filter(a => a.status === "ativo" && !abertos.has(a.id))
+    .sort((x, y) => String(x.nome).localeCompare(String(y.nome), "pt-BR"));
+  const incons = [...abertos.values()].filter(c => { const a = alunoPor.get(c.aluno_id);
+    return a && a.status !== "ativo"; });
+  const lista = [...abertos.values()]
+    .filter(c => seg == null || finSeg(c) === seg)
+    .filter(c => !busca.trim() || cbCasa((c.aluno_nome || "") + " " + (c.plano_nome || "") + " " + (c.ciclo || ""), busca))
+    .sort((x, y) => String(x.aluno_nome).localeCompare(String(y.aluno_nome), "pt-BR"));
+  const k = m && !m.vazio ? m.kpi : null;
+  const atual = m && !m.vazio ? m.meses[m.meses.length - 1] : null;
+  const abrirAluno = id => { const a = alunoPor.get(id); if (a) setEdit(a); };
+  const descLista = lista.filter(c => c.desc > 0);
+
+  return (
+    <div className="fn">
+      <div className="filtros">
+        <button className={"fbtn" + (seg == null ? " on" : "")} onClick={() => setSeg(null)}>Todos</button>
+        {segs.map(s => (
+          <button key={s} className={"fbtn" + (seg === s ? " on" : "")} onClick={() => setSeg(s)}>{s}</button>
+        ))}
+        <span style={{ flex: 1 }} />
+        {goLive && <span className="ed-cnt">dados desde {dBR(goLive)}</span>}
+      </div>
+
+      {semValor.length > 0 && (
+        <button className="fn-banner" onClick={() => {
+          const el = document.getElementById("fn-sem-valor");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }}>
+          <b>{semValor.length}</b> {semValor.length === 1 ? "aluno ativo sem valor" : "alunos ativos sem valor"}:
+          as métricas só contam quem tem valor cadastrado. Preencher ↓
+        </button>
+      )}
+      {incons.length > 0 && (
+        <div className="ac-diag">
+          {incons.length === 1 ? "1 aluno inativo" : incons.length + " alunos inativos"} ainda com
+          contrato aberto (status trocado fora da Dashboard): {incons.map((c, i) => (
+            <span key={c.id}>{i ? ", " : ""}<button className="fn-link in" onClick={() => {
+              const a = alunoPor.get(c.aluno_id); if (a) setSaida(a); }}>{c.aluno_nome}</button></span>
+          ))}. Registre a saída para o churn ficar certo.
+        </div>
+      )}
+
+      {!k ? (
+        <div className="box">
+          <h2>Comece pelos valores</h2>
+          <p>Cadastre o plano e quanto cada aluno ativo paga (lista abaixo). O primeiro valor salvo
+            marca o início dos dados: daí em diante, toda inativação vira saída e todo aluno novo vira entrada.</p>
+        </div>
+      ) : (
+        <>
+          <div className="fn-kpis">
+            <div className="fn-kpi">
+              <span>MRR</span><b>{finBRL(k.mrr)}</b>
+              <em>{k.mrrA > 0 ? "consultoria " + finBRL(k.mrrC) + " · aulas " + finBRL(k.mrrA)
+                : "receita recorrente por mês"}</em>
+            </div>
+            <div className="fn-kpi">
+              <span>Alunos pagantes</span><b>{k.ativos}</b>
+              <em>ticket médio {finBRL(k.ticket)}</em>
+            </div>
+            <div className="fn-kpi">
+              <span>Receita do mês</span><b>{finBRL(atual.receita)}</b>
+              <em>{atual.parcial ? "até hoje · projeção " + finBRL(atual.projecao) : "mês fechado"}</em>
+            </div>
+            <div className="fn-kpi">
+              <span>Receita no ano</span><b>{finBRL(k.receitaAno)}</b>
+              <em>ARR (MRR × 12): {finBRL(k.arr)}</em>
+            </div>
+            <div className={"fn-kpi" + (k.churnMes > 0 ? " al" : "")}>
+              <span>Churn do mês</span><b>{finPct(k.churnMes)}</b>
+              <em>{k.saidasMes} de {k.baseMes} ativos no início{atual.parcial ? " · até hoje" : ""}
+                {k.baseMes < FIN_AMOSTRA_MIN ? " · amostra pequena" : ""}</em>
+            </div>
+            <div className="fn-kpi">
+              <span>Churn médio</span><b>{k.expo >= 1 ? finPct(k.churnMedio) : "—"}<i>/mês</i></b>
+              <em>{k.expo >= 1 ? "IC 95% " + finPct(k.churnIc.lo) + " a " + finPct(k.churnIc.hi) +
+                " · " + k.saidasTot + " saída(s) em " + Math.round(k.expo) + " alunos-mês" : "juntando dados"}</em>
+            </div>
+            <div className="fn-kpi">
+              <span>Vida média esperada</span>
+              <b>{k.vidaMeses == null ? "—" : k.vidaMeses.toFixed(1).replace(".", ",")}<i>{k.vidaMeses == null ? "" : " meses"}</i></b>
+              <em>{k.vidaMeses == null ? k.ltvMotivo : "IC 95% " + k.vidaIc[0].toFixed(1).replace(".", ",") +
+                " a " + (k.vidaIc[1] == null ? "∞" : k.vidaIc[1].toFixed(1).replace(".", ",")) + " meses · 1 ÷ churn médio"}</em>
+            </div>
+            <div className="fn-kpi">
+              <span>LTV</span><b>{k.ltv == null ? "—" : finBRL(k.ltv)}</b>
+              <em>{k.ltv == null ? k.ltvMotivo : "ticket médio × vida média esperada"}</em>
+            </div>
+          </div>
+
+          <FinGraficos m={m} />
+
+          <div className="fn-grafs">
+            <div className="fn-graf">
+              <div className="fn-gt">Motivos de saída<i>desde {dBR(m.goLive)}</i></div>
+              {m.motivos.length ? <FinBarras itens={m.motivos} rotulo={x => x.motivo}
+                valor={x => x.n} total={x => x.n} />
+                : <div className="fn-vz">Nenhuma saída registrada ainda.</div>}
+            </div>
+            <div className="fn-graf">
+              <div className="fn-gt">Ciclos da consultoria<i>alunos ativos · MRR</i></div>
+              {m.mix.length ? <FinBarras itens={m.mix} rotulo={x => x.plano}
+                valor={x => x.mrr} total={x => x.n + " · " + finBRL(x.mrr)} />
+                : <div className="fn-vz">Ninguém pagando consultoria neste recorte.</div>}
+              {k.desconto > 0 && (
+                <div className="fn-sub" style={{ margin: "10px 0 0" }}>
+                  Descontos sobre a tabela: {finBRL(k.desconto)}/mês em {k.nDesconto} aluno(s).</div>
+              )}
+            </div>
+          </div>
+
+          {seg == null && comp.length > 1 && (
+            <FinComparar titulo="Por plano" rot="Plano" linhas={comp} onEscolher={setSeg} />
+          )}
+          {porCiclo.length > 1 && (
+            <FinComparar titulo={"Por ciclo da consultoria" + (seg ? " · " + seg : "")} rot="Ciclo" linhas={porCiclo}
+              nota="Ciclos longos já vêm pagos: parte da permanência maior é contrato, não satisfação." />
+          )}
+        </>
+      )}
+
+      {semValor.length > 0 && (
+        <FinSemValor lista={semValor} planos={d.planos} precos={d.precos} mods={d.mods}
+          goLive={goLive} onSalvo={carregar} />
+      )}
+
+      <div className="fn-box">
+        <div className="fn-tit"><b>Quanto cada aluno paga</b><i>{lista.length}</i>
+          <span style={{ flex: 1 }} />
+          <div className="busca-alunos">
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar aluno..." />
+            {busca && <button className="cb-lim" onClick={() => setBusca("")} title="Limpar">×</button>}
+          </div>
+        </div>
+        {lista.length === 0 ? <div className="fn-vz">Ninguém com valor cadastrado{seg ? " em " + seg : ""}.</div> : (
+          <div className="fn-tab">
+            <div className="fn-tr h c6"><span>Aluno</span><span>Plano</span><span>Ciclo</span>
+              <span>Valor/mês</span><span>Desconto</span><span>Desde</span></div>
+            {lista.map(c => (
+              <button key={c.id} className="fn-tr c6" onClick={() => abrirAluno(c.aluno_id)}>
+                <span>{c.aluno_nome}</span><span>{c.plano_nome}</span>
+                <span>{c.ciclo || "—"}</span>
+                <span title={c.vA ? "consultoria " + finBRL(c.vC, 2) + " + aulas " + finBRL(c.vA, 2) : undefined}>
+                  {finBRL(c.valor, 2)}</span>
+                <span>{c.desc > 0 ? finBRL(c.desc, 2) : "—"}</span>
+                <span>{dBR(c.inicio)}{c.base_inicial ? " · base" : ""}</span>
+              </button>
+            ))}
+            <div className="fn-tr tot c6"><span>Total</span><span /><span />
+              <span>{finBRL(lista.reduce((s, c) => s + c.valor, 0), 2)}</span>
+              <span>{descLista.length ? finBRL(descLista.reduce((s, c) => s + c.desc, 0), 2) : "—"}</span><span /></div>
+          </div>
+        )}
+      </div>
+
+      <FinPlanosPrecos planos={d.planos} precos={d.precos} onSalvo={carregar} />
+
+      {edit && (
+        <DrawerContrato aluno={edit} contratos={d.contratos} planos={d.planos} precos={d.precos}
+          mods={d.mods} goLive={goLive} onFechar={() => setEdit(null)}
+          onSalvo={() => { setEdit(null); carregar(); }}
+          onSaida={a => { setEdit(null); setSaida(a); }} />
+      )}
+      {saida && (
+        <ModalSaida aluno={saida} onFechar={() => setSaida(null)}
+          onFeito={() => { setSaida(null); carregar(); }} />
+      )}
+    </div>
+  );
+}
+
+/* contagem para o card do Início: ativos sem contrato aberto.
+   null = financeiro ainda não ativado (o card não aparece) */
+async function finContarSemValor() {
+  const [c, a] = await Promise.all([
+    finPaginar(() => sb.from("contratos").select("aluno_id").is("fim", null).order("aluno_id")),
+    finPaginar(() => sb.from("alunos").select("id").eq("status", "ativo").order("id"))
+  ]);
+  if (c.error || a.error) return null;
+  const com = new Set((c.data || []).map(x => x.aluno_id));
+  return (a.data || []).filter(x => !com.has(x.id)).length;
+}
+
 /* ---------- Backup ---------- */
 const TABELAS_BACKUP = [
   "alunos", "perfis", "treinos", "exercicios", "logs", "sessoes",
   "anamneses", "cardapio", "grupos_exibicao", "modalidades", "perguntas",
   "fases", "planejamentos", "fase_templates", "fase_categorias", "metodos",
   "equipamentos", "academias", "academia_equipamentos", "aluno_academias",
-  "anamnese_secoes", "ocorrencia_tipos", "anamnese_entradas"
+  "anamnese_secoes", "ocorrencia_tipos", "anamnese_entradas",
+  "planos", "contratos"
 ];
 
 function PainelBackup() {
@@ -17296,7 +19052,7 @@ function PainelBackup() {
 
 /* ---------- App ---------- */
 const ABAS_VALIDAS = ["inicio","alunos","volume","montagem","planejamento","trocas",
-                      "catalogo","aparelhos","acessos","backup"];
+                      "catalogo","aparelhos","acessos","admin","backup"];
 
 /* ---------- Calendário de Troca de Treino ----------
    Substitui a planilha de trocas. Regras fechadas com o Matheus (16/09/2026):
@@ -18174,6 +19930,8 @@ function App() {
           onClick={() => setAba("aparelhos")}>Aparelhos Geral</button>
         <button className={"tab" + (aba === "acessos" ? " on" : "")}
           onClick={() => setAba("acessos")}>Acessos</button>
+        <button className={"tab" + (aba === "admin" ? " on" : "")}
+          onClick={() => setAba("admin")}>Admin</button>
         <button className={"tab eng" + (aba === "backup" ? " on" : "")}
           title="Backup e exportação"
           onClick={() => setAba("backup")}>⚙</button>
@@ -18188,6 +19946,7 @@ function App() {
         : aba === "trocas" ? <PainelTrocas />
         : aba === "aparelhos" ? <PainelAparelhos />
         : aba === "acessos" ? <PainelAcessos />
+        : aba === "admin" ? <PainelAdmin />
         : aba === "backup" ? <PainelBackup />
         : <PainelCatalogo />}
     </div>
