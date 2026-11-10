@@ -1680,6 +1680,20 @@
   .tn-app .pgtopo{margin:0}
   .tn-app .pgcard.destaque{flex:1.7}
   .fd-tag.pc{background:#2a2418;color:var(--warn)}
+  /* desafio da fase (brief do App, 09/11/2026) */
+  .fd-tag.dsf{background:#2b2f10;color:var(--marca)}
+  .fd-it.off,.sn-it.off{opacity:.5}
+  .fd-it.off:hover,.sn-it.off:hover{opacity:.8}
+  .dsf-card{display:flex;gap:10px;align-items:flex-start;margin-top:12px;
+    padding:10px 12px;border:1px solid #3a4210;border-radius:10px;background:#12160a}
+  .dsf-card.ok{border-color:#1f3a24;background:#0d1a10}
+  .dsf-ic{font-size:18px;line-height:1.2}
+  .dsf-tx{flex:1;min-width:0;font-size:12.5px;line-height:1.45;color:var(--mut)}
+  .dsf-tx b{display:block;color:var(--txt);font-size:13.5px;font-weight:600}
+  .dsf-tx i{font-style:normal;font-size:11px;color:#6d8185}
+  .dsf-ac{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+  .dsf-ac button{width:auto}
+  .en-tag.app{background:#1a2230;color:#8fb4ff}
   /* ============ ALUNOS · modo Acompanhamento ============ */
   .al-modo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 16px}
   .fbtn.acomp{border-color:#4d5a10;color:var(--marca)}
@@ -4294,6 +4308,135 @@ function PainelDores({ aluno }) {
   );
 }
 
+/* ---------- Desafio da fase (ficha do aluno) ----------
+   Brief do App de 09/11/2026. Quem CRIA é só o aluno, no App. Aqui só se lê
+   e muda `status` (ativo <-> concluido). Nunca insert, nunca delete.
+   Qual mostrar (função pura, testada):
+   - trocado nunca aparece (foi substituído por outro);
+   - ativo antes de concluído (o que ainda pede ação vem primeiro);
+   - fase vigente, depois futura, depois sem fase (o App grava fase_id null
+     quando a próxima fase ainda não existia); fase encerrada não aparece;
+   - sem fase só até DSF_SEM_FASE_DIAS depois de escolhido, para não ficar
+     pendurado para sempre se a fase nunca for ligada a ele. */
+const DSF_SEM_FASE_DIAS = 90;
+const DSF_TIPO = { recorde: "Recorde", funcao: "Conforto no dia a dia",
+  execucao: "Execução", constancia: "Constância", outro: "Outro" };
+
+function escolherDesafio(desafios, fases, hojeISO) {
+  const fs = new Map((fases || []).map(f => [f.id, f]));
+  const limite = dISO(addDias(parseISO(hojeISO), -DSF_SEM_FASE_DIAS));
+  const cands = [];
+  for (const d of (desafios || [])) {
+    if (d.status !== "ativo" && d.status !== "concluido") continue;
+    let rank, fase = null;
+    if (d.fase_id && fs.has(d.fase_id)) {
+      fase = fs.get(d.fase_id);
+      const s = situacaoFase(fase, hojeISO);
+      if (s === "encerrada") continue;
+      rank = s === "ativa" ? 0 : 1;
+    } else {
+      /* sem fase (ou fase apagada): vale só por um tempo */
+      if (!d.dia || d.dia < limite) continue;
+      rank = 2;
+    }
+    cands.push({ d, fase, rank });
+  }
+  cands.sort((x, y) =>
+    ((x.d.status === "ativo" ? 0 : 1) - (y.d.status === "ativo" ? 0 : 1)) ||
+    (x.rank - y.rank) ||
+    (feedMs(y.d.criado_em) - feedMs(x.d.criado_em)));
+  return cands[0] || null;
+}
+
+function CardDesafio({ aluno, onDores }) {
+  const { toast, confirmar } = usarUI();
+  const [lista, setLista] = useState(null);
+  const [fases, setFases] = useState([]);
+  const [salv, setSalv]   = useState(false);
+  const hoje = dISO(new Date());
+
+  const carregar = useCallback(async () => {
+    const [d, f] = await Promise.all([
+      sb.from("desafios")
+        .select("id, aluno_id, fase_id, tipo, titulo, regiao, status, dia, criado_em, concluido_em")
+        .eq("aluno_id", aluno.id).order("criado_em", { ascending: false }).limit(50),
+      sb.from("fases").select("id, nome, inicio, fim").eq("aluno_id", aluno.id)
+    ]);
+    /* tabela fora do ar: a ficha abre igual, só sem o card */
+    if (d.error) { console.warn("[desafios]", d.error.message); setLista([]); return; }
+    setLista(d.data || []);
+    setFases(f.error ? [] : (f.data || []));
+  }, [aluno.id]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  const esc = lista ? escolherDesafio(lista, fases, hoje) : null;
+  if (!esc) return null;
+  const { d, fase } = esc;
+  const ok = d.status === "concluido";
+
+  async function mudar(novo) {
+    if (novo === "concluido") {
+      const sim = await confirmar({
+        titulo: "Desafio cumprido?", texto: d.titulo,
+        alerta: "Muda só o status. O aluno não recebe aviso e o sino não acende.",
+        ok: "Marcar como cumprido"
+      });
+      if (!sim) return;
+    }
+    setSalv(true);
+    const corpo = novo === "concluido"
+      ? { status: "concluido", concluido_em: new Date().toISOString() }
+      : { status: "ativo", concluido_em: null };
+    /* guarda no where: só mexe se o status ainda for o que a tela mostra */
+    const r = await sb.from("desafios").update(corpo)
+      .eq("id", d.id).eq("status", novo === "concluido" ? "ativo" : "concluido")
+      .select("id");
+    setSalv(false);
+    if (r.error) {
+      /* desfazer pode bater no índice 1-ativo-por-fase se o aluno já escolheu outro */
+      toast(/duplicate|unique|desafios_um_ativo/i.test(r.error.message)
+        ? "Não deu: o aluno já tem outro desafio ativo nessa fase."
+        : "Não salvou: " + r.error.message);
+      return;
+    }
+    if (!r.data || !r.data.length) toast("O desafio mudou no App. Recarreguei.");
+    else toast(novo === "concluido" ? "Desafio marcado como cumprido ✓" : "Voltou para ativo.");
+    await carregar();
+  }
+
+  const pra = fase ? fase.nome : "próxima fase";
+  const regiao = d.tipo === "funcao" && d.regiao ? dzNomeRegiao(d.regiao) : "";
+  return (
+    <div className={"dsf-card" + (ok ? " ok" : "")}>
+      <span className="dsf-ic">{ok ? "✅" : "🎯"}</span>
+      <div className="dsf-tx">
+        Desafio da fase · {DSF_TIPO[d.tipo] || d.tipo}
+        <b>{d.titulo}</b>
+        <i>
+          pra {pra} · escolhido {feedQuando(d.dia, hoje)}
+          {ok && d.concluido_em ? " · cumprido em " + dBR(feedDiaDe(d.concluido_em)) : ""}
+        </i>
+        <div className="dsf-ac">
+          {!ok && (
+            <button className="btn-sec cr-mini" disabled={salv}
+              onClick={() => mudar("concluido")}>Marcar como cumprido</button>
+          )}
+          {ok && (
+            <button className="btn-sec cr-mini" disabled={salv}
+              onClick={() => mudar("ativo")}>desfazer</button>
+          )}
+          {regiao && onDores && (
+            <button className="btn-sec cr-mini" onClick={onDores}>
+              Ver dor · {regiao}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
   useEsc(true, onFechar);
   const { setAlunoId } = usarAluno();
@@ -4532,6 +4675,7 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
             <button onClick={() => irPara("planejamento")}>Planejamento ↗</button>
             <button onClick={() => irPara("volume")}>Volume ↗</button>
           </div>
+          <CardDesafio aluno={aluno} onDores={() => setModo("dores")} />
         </div>
 
         <div className="dr-acoes">
@@ -6256,6 +6400,14 @@ function ModalNovoAluno({ onFechar, onCriado }) {
   );
 }
 
+/* região da entrada: o App grava o CÓDIGO do boneco (joelho_d, igual a
+   dores.regiao); a entrada manual grava texto livre ("joelho direito").
+   Só traduz o que for código conhecido; texto livre passa intacto. */
+function entRegiao(r) {
+  const s = String(r || "");
+  return dzTabelaNome()[s] ? dzNomeRegiao(s) : s;
+}
+
 /* ---------- Entradas segmentadas do aluno ---------- */
 function PainelEntradas({ aluno }) {
   const { toast, confirmar } = usarUI();
@@ -6403,14 +6555,16 @@ function PainelEntradas({ aluno }) {
                       : <span style={{ color: "var(--mut)", fontStyle: "italic" }}>
                           {e.escala || e.exercicio || "—"}
                         </span>}
-                    {(e.exercicio || e.tipo || e.regiao || (e.escala && e.texto)) && (
+                    {(e.exercicio || e.tipo || e.regiao || (e.escala && e.texto) ||
+                      e.origem === "app") && (
                       <span className="en-tags">
                         {e.escala && e.texto && <span className="en-tag es">{e.escala}</span>}
                         {e.exercicio && <span className="en-tag ex">{e.exercicio}</span>}
                         {e.tipo && <span className="en-tag"
                           style={{ background: (e.tipo_cor || "#333") + "22",
                                    color: e.tipo_cor || "var(--mut)" }}>{e.tipo}</span>}
-                        {e.regiao && <span className="en-tag rg">{e.regiao}</span>}
+                        {e.regiao && <span className="en-tag rg">{entRegiao(e.regiao)}</span>}
+                        {e.origem === "app" && <span className="en-tag app">veio do app</span>}
                       </span>
                     )}
                   </span>
@@ -12294,6 +12448,27 @@ function histAntesDa(h, inicio) {
   return { hs: Object.assign({}, h, { ultimo_feito: ultimoAntes || h.primeiro_feito }), ultimoAntes };
 }
 
+/* Seções da anamnese que são CONTEXTO, não alerta. O historico.js v1 transforma
+   TODA entrada que vem em row.anamnese num motivo do ⚠️. Desde 09/11/2026 o App
+   grava o desafio do aluno em Objetivos com cardapio_id ("Bater recorde: Leg 45")
+   e ele cairia no ⚠️ do próprio exercício que o aluno quer progredir.
+   Ponte igual à do histAntesDa: filtra os DADOS que entram na regra, sem mexer
+   na regra. Some quando o historico.js (ou a view) já excluir essas seções.
+   Multitenant: lista vira configuração do treinador, junto com HIST_CFG. */
+const HIST_SECOES_SEM_ALERTA = ["Obj"];
+function histSecaoSemAlerta(a) {
+  const s = normSec((a && (a.secao_id || a.secao)) || "");
+  if (!s) return false;
+  return HIST_SECOES_SEM_ALERTA.some(id => s === normSec(id) || s === normSec(nomeSecao(id)));
+}
+function histSemContexto(rows) {
+  return (rows || []).map(r => {
+    const an = r && r.anamnese;
+    if (!an || !an.length || !an.some(histSecaoSemAlerta)) return r;
+    return Object.assign({}, r, { anamnese: an.filter(a => !histSecaoSemAlerta(a)) });
+  });
+}
+
 /* tudo que a tela precisa de um exercício.
    ctx = { rows, alvoId, alvoInicio, exAnt, comSelo }. null = sem dado. */
 function histInfo(ctx, ex) {
@@ -12301,7 +12476,7 @@ function histInfo(ctx, ex) {
   if (!H || !ctx || !ctx.rows) return null;
   const e = histEx(ex);
   if (!e.nome && e.cardapioId == null) return null;
-  const h = H.juntar(ctx.rows, e);
+  const h = H.juntar(histSemContexto(ctx.rows), e);
   const { hs, ultimoAntes } = histAntesDa(h, ctx.alvoInicio);
   let selo = ctx.comSelo
     ? H.selo(hs, { alvoId: ctx.alvoId,
@@ -13779,7 +13954,15 @@ function PainelAcademiasAluno({ aluno }) {
 
    "Lida" mora no localStorage (marca-d'água em ms). Sem DDL, mas vale por
    navegador: outro computador começa do zero.
-   Relato EDITADO não acende o sino: relatos não tem atualizado_em. */
+   Relato EDITADO não acende o sino: relatos não tem atualizado_em.
+
+   Desafios (brief do App de 09/11/2026, tabela `desafios`, criada pelo App):
+   - 1 item por LINHA. Trocar de desafio = linha nova (acende de novo); a
+     antiga continua no feed esmaecida, com "trocou depois".
+   - `reg` = criado_em (relógio do servidor, forçado pelo gatilho);
+     `data` = dia (aparelho). Mesma regra das outras fontes.
+   - "Marcar como cumprido" é UPDATE: não mexe em criado_em, não acende.
+   - A Dashboard só lê e muda status. Nunca insere nem apaga desafio. */
 const FEED_DIAS     = 30;
 const FEED_DOR_MIN  = 1;
 const FEED_POLL_MS  = 60000;
@@ -13971,6 +14154,25 @@ function montarFeed(raw) {
     });
   }
 
+  /* desafio da próxima fase: 1 item por linha, trocado continua (esmaecido) */
+  const fs = new Map((raw.fases || []).map(f => [f.id, f]));
+  for (const d of (raw.desafios || [])) {
+    const titulo = String(d.titulo || "").trim();
+    if (!titulo) continue;
+    const fase = d.fase_id ? fs.get(d.fase_id) : null;
+    push({
+      key: "dsf:" + d.id, tipo: "desafio", desafio_id: d.id,
+      aluno_id: d.aluno_id, treino_id: null,
+      data: d.dia || feedDiaDe(d.criado_em),
+      reg: feedMs(d.criado_em) || feedMsDia(d.dia),
+      alvo: (fase && fase.nome) || "próxima fase", sub: "", texto: titulo,
+      status: d.status || "ativo", trocado: d.status === "trocado",
+      tag: d.status === "trocado" ? "trocou depois"
+         : d.status === "concluido" ? "cumprido ✓" : null,
+      cor: null
+    });
+  }
+
   out.sort((x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : y.reg - x.reg));
   return out;
 }
@@ -13986,6 +14188,7 @@ function feedFrase(it) {
     case "checkin":      return ["respondeu o check-in da ", it.alvo];
     case "avaliacao":    return ["respondeu o questionário de dor", it.alvo ? " · " + it.alvo : ""];
     case "redflag":      return ["marcou red flag: ", it.alvo];
+    case "desafio":      return ["escolheu um desafio pra ", it.alvo];
     case "treino":       return it.minutos != null ? ["treinou por ", fmtMin(it.minutos)]
                               : it.sessao ? ["concluiu o ", it.alvo]
                               : ["registrou séries no ", it.alvo];
@@ -14018,7 +14221,7 @@ async function carregarFeed() {
       return r.data || [];
     } catch (e) { falhas.push(nome + ": " + e.message); return []; }
   };
-  const [relatos, logs, semaforo, retro, checkins, avaliacoes, redflags, alunos] =
+  const [relatos, logs, semaforo, retro, checkins, avaliacoes, redflags, alunos, desafios] =
     await Promise.all([
       pega("relatos", sb.from("relatos")
         .select("id, aluno_id, treino_id, exercicio_id, exercicio_nome, data, texto, created_at")
@@ -14038,10 +14241,19 @@ async function carregarFeed() {
         .eq("status", "respondida").gte("respondida_em", corteTs)),
       pega("red_flags", sb.from("red_flags")
         .select("id, aluno_id, sinais, criado_em").gte("criado_em", corteTs)),
-      pega("alunos", sb.from("alunos").select("id, nome, foto_url"))
+      pega("alunos", sb.from("alunos").select("id, nome, foto_url")),
+      /* criado_em (servidor) e não dia: desafio que chegou hoje pela fila
+         offline com dia antigo não pode ficar de fora */
+      pega("desafios", sb.from("desafios")
+        .select("id, aluno_id, fase_id, tipo, titulo, regiao, status, dia, criado_em")
+        .gte("criado_em", corteTs).order("criado_em", { ascending: false }).limit(1000))
     ]);
 
-  let exercicios = [], treinos = [], dores = [];
+  let exercicios = [], treinos = [], dores = [], fases = [];
+  /* nome da fase do desafio: falhou, o item sai com "próxima fase" */
+  try {
+    fases = await feedPorIds("fases", "id, nome", desafios.map(d => d.fase_id));
+  } catch (e) { falhas.push(e.message); }
   try {
     exercicios = await feedPorIds("exercicios", "id, nome, treino_id",
       logs.map(l => l.exercicio_id));
@@ -14055,7 +14267,7 @@ async function carregarFeed() {
   } catch (e) { falhas.push(e.message); }
 
   const itens = montarFeed({ relatos, logs, semaforo, retro, checkins,
-    avaliacoes, redflags, alunos, exercicios, treinos, dores });
+    avaliacoes, redflags, alunos, exercicios, treinos, dores, desafios, fases });
   /* retrospectiva buscou 7 dias a mais (a data do filtro é a do treino
      avaliado, não a da resposta); corta aqui pela data exibida */
   return { itens: itens.filter(i => !i.data || i.data >= corte), falhas };
@@ -14166,7 +14378,7 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
   const ehObs = it.tipo === "relato_ex" || it.tipo === "relato_geral";
   return (
     <div className={"fd-it" + (aberto ? " ab" : "") + (piscar ? " pisca" : "") +
-        (it.cor ? " lz" : "")}
+        (it.cor ? " lz" : "") + (it.trocado ? " off" : "")}
       data-key={it.key} onClick={onClick}
       style={it.cor ? { "--luz": it.cor } : undefined}>
       <FeedAvatar it={it} px={40} />
@@ -14175,6 +14387,7 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
           <b>{it.aluno}</b>
           {nova && <span className="fd-nova">nova</span>}
           {FEED_TIPO_DOR.includes(it.tipo) && <span className="fd-tag">dor</span>}
+          {it.tipo === "desafio" && <span className="fd-tag dsf">🎯 desafio</span>}
           {it.tag && <span className="fd-tag pc">{it.tag}</span>}
         </div>
         <div className="fd-fr">
@@ -14300,13 +14513,15 @@ function SinoFeed() {
                 const [a, b] = feedFrase(it);
                 return (
                   <button key={it.key}
-                    className={"sn-it" + (it.reg > antes ? " nv" : "") + (it.cor ? " lz" : "")}
+                    className={"sn-it" + (it.reg > antes ? " nv" : "") + (it.cor ? " lz" : "") +
+                      (it.trocado ? " off" : "")}
                     style={it.cor ? { "--luz": it.cor } : undefined}
                     onClick={() => { setAberto(false); focar(it.key); }}>
                     <FeedAvatar it={it} px={30} />
                     <span className="sn-tx">
-                      <b>{it.aluno}</b> {a}<b>{b}</b>
-                      <i>{feedQuando(it.data, hoje)}</i>
+                      {it.tipo === "desafio" && "🎯 "}<b>{it.aluno}</b> {a}<b>{b}</b>
+                      {it.tipo === "desafio" && ": " + it.texto}
+                      <i>{feedQuando(it.data, hoje)}{it.tag ? " · " + it.tag : ""}</i>
                     </span>
                   </button>
                 );
