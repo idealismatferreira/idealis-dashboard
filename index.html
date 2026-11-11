@@ -2226,6 +2226,60 @@
   .in-pend.c6{grid-template-columns:repeat(3,minmax(0,1fr))}
   @media (max-width: 900px){ .in-pend.c6{grid-template-columns:repeat(2,minmax(0,1fr))} }
   .fn-novo{border:1px dashed var(--line);border-radius:10px;padding:2px 14px 12px;margin-top:14px}
+  /* v3: manchete, ⓘ, cascata e análise avançada */
+  .fn-manchete{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:12px;padding:14px 18px;margin-bottom:12px;display:flex;flex-wrap:wrap;
+    align-items:baseline;gap:6px 14px}
+  .fn-manchete p{margin:0;font-size:15.5px;line-height:1.5;flex:1 1 320px}
+  .fn-delta{font-size:12.5px;color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .fn-delta.up{color:#5fd39a}
+  .fn-delta.down{color:#f08a8a}
+  .fn-kpi-t{display:flex;align-items:center;gap:6px}
+  .fn-i{width:18px;height:18px;min-width:18px;padding:0;margin:0 0 0 auto;border-radius:50%;
+    background:none;border:1px solid var(--line);color:var(--mut);font-size:10.5px;
+    font-style:italic;font-weight:700;line-height:16px;font-family:Georgia,serif}
+  .fn-i:hover,.fn-i.on{border-color:var(--accent);color:var(--accent);filter:none}
+  .fn-info{font-size:11.5px;line-height:1.5;color:var(--txt);background:var(--bg);
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:6px}
+  .fn-larga{margin-bottom:12px}
+  .fn-avan{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:0 16px;margin-bottom:12px}
+  .fn-avan > summary{cursor:pointer;padding:14px 0;font-weight:600;font-size:14px;list-style:none}
+  .fn-avan > summary::-webkit-details-marker{display:none}
+  .fn-avan > summary::before{content:"▸";display:inline-block;width:16px;color:var(--mut)}
+  .fn-avan[open] > summary::before{content:"▾"}
+  .fn-avan > summary i{font-style:normal;font-weight:400;font-size:11px;color:var(--mut);margin-left:6px}
+  .fn-avan[open]{padding-bottom:4px}
+  .fn-avan .fn-graf,.fn-avan .fn-box{background:var(--bg)}
+  .fn-av-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:12px}
+  .fn-av-l{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+    display:flex;flex-direction:column;gap:2px}
+  .fn-av-l span{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--mut)}
+  .fn-av-l b{font-size:18px;font-variant-numeric:tabular-nums}
+  .fn-av-l em{font-style:normal;font-size:10.5px;color:var(--mut);line-height:1.4}
+  @media (max-width: 560px){ .fn-manchete p{font-size:14px} }
+  .fn-ext{display:flex;flex-direction:column;margin-top:6px}
+  .fn-ext-l{display:grid;grid-template-columns:minmax(0,1fr) minmax(60px,180px) 110px;gap:12px;
+    align-items:center;padding:9px 2px;border-top:1px solid #182224}
+  .fn-ext-l:first-child{border-top:none}
+  .fn-ext-l.tot{background:var(--bg);border-radius:8px;border-top:none;padding:10px 12px;margin:4px 0}
+  .fn-ext-l.tot .fn-ext-r{grid-column:1 / 3}
+  .fn-ext-l.zero{opacity:.55}
+  .fn-ext-r{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .fn-ext-r b{font-size:13px;font-weight:600}
+  .fn-ext-r i{font-style:normal;font-size:11px;color:var(--mut)}
+  .fn-ext-b{height:10px;background:#0f1517;border-radius:4px;overflow:hidden}
+  .fn-ext-b i{display:block;height:100%;border-radius:4px;min-width:0}
+  .fn-ext-v{text-align:right;font-variant-numeric:tabular-nums;font-size:13.5px;white-space:nowrap}
+  .fn-ext-l.tot .fn-ext-v{font-size:16px;font-weight:700}
+  .fn-ext-s{text-align:right;font-size:12px;color:var(--mut);padding:6px 2px 0}
+  .fn-ext-s.up{color:#5fd39a}
+  .fn-ext-s.down{color:#f08a8a}
+  @media (max-width: 560px){
+    .fn-ext-l{grid-template-columns:minmax(0,1fr) 92px;row-gap:5px}
+    .fn-ext-b{grid-column:1 / -1;grid-row:2}
+    .fn-ext-l.tot .fn-ext-r{grid-column:1}
+  }
 </style>
 </head>
 <body>
@@ -17761,8 +17815,23 @@ function finMetricas(contratos, hoje, segmento) {
     const m = { mes: ym, parcial, abertN: 0, abertV: 0, fechN: 0, fechV: 0,
       novosN: 0, novosV: 0, retN: 0, retV: 0, saidasN: 0, saidasV: 0,
       expV: 0, contrV: 0, tInN: 0, tInV: 0, tOutN: 0, tOutV: 0,
-      receita: 0, projecao: 0, receitaC: 0, receitaA: 0, projecaoC: 0, projecaoA: 0 };
-    const dm = finDiasMes(ym);
+      receita: 0, projecao: 0, receitaC: 0, receitaA: 0, projecaoC: 0, projecaoA: 0, fatN: 0 };
+    /* FATURAMENTO DO MÊS = mês cheio (decisão do Matheus, 10/11/2026): quem foi
+       aluno em algum dia do mês conta a mensalidade inteira, no valor do último
+       contrato dele no mês. Quem entrou dia 20 ou saiu dia 3 pagou o mês. */
+    const ultimo = new Map();
+    for (const c of todos) {
+      if (!((c.base_inicial || c.inicio < corte) && (c.fim == null || c.fim > d0))) continue;
+      const u = ultimo.get(c.aluno_id);
+      if (!u || c.inicio > u.inicio || (c.inicio === u.inicio &&
+          String(c.criado_em || "") > String(u.criado_em || ""))) ultimo.set(c.aluno_id, c);
+    }
+    for (const c of ultimo.values()) {
+      if (!dentro(c)) continue;
+      const vC = c.vC == null ? c.valor : c.vC, vA = c.vA == null ? 0 : c.vA;
+      m.receita += c.valor; m.receitaC += vC; m.receitaA += vA; m.fatN++;
+    }
+    m.projecao = m.receita; m.projecaoC = m.receitaC; m.projecaoA = m.receitaA;
     for (const c of lista) {
       if (ativoEm(c, d0)) { m.abertN++; m.abertV += c.valor; }
       if (ativoEm(c, corte)) { m.fechN++; m.fechV += c.valor; }
@@ -17784,18 +17853,7 @@ function finMetricas(contratos, hoje, segmento) {
         if (n) { if (!dentro(n)) { m.tOutN++; m.tOutV += c.valor; } }
         else { m.saidasN++; m.saidasV += c.valor; }
       }
-      /* receita reconhecida, proporcional aos dias do mês */
-      const dd = finSobrepoe(c.inicio, c.fim, d0, corte);
-      const vC = c.vC == null ? c.valor : c.vC, vA = c.vA == null ? 0 : c.vA;
-      m.receita += c.valor * dd / dm;
-      m.receitaC += vC * dd / dm; m.receitaA += vA * dd / dm;
-      if (parcial) {
-        const dp = finSobrepoe(c.inicio, c.fim, d0, dN);
-        m.projecao += c.valor * dp / dm;
-        m.projecaoC += vC * dp / dm; m.projecaoA += vA * dp / dm;
-      }
     }
-    if (!parcial) { m.projecao = m.receita; m.projecaoC = m.receitaC; m.projecaoA = m.receitaA; }
     m.churn = m.abertN > 0 ? m.saidasN / m.abertN : null;
     m.churnV = m.abertV > 0 ? (m.saidasV + m.contrV) / m.abertV : null;
     m.pequena = m.abertN < FIN_AMOSTRA_MIN;
@@ -17846,7 +17904,11 @@ function finMetricas(contratos, hoje, segmento) {
     ltvMotivo: ltvOk ? null : diasObs < 90
       ? "precisa de 3 meses de dados (faltam " + (90 - diasObs) + " dias)"
       : "precisa de pelo menos 3 saídas registradas",
-    receitaAno, diasObs, pequena: ativos.length < FIN_AMOSTRA_MIN
+    receitaAno, diasObs, pequena: ativos.length < FIN_AMOSTRA_MIN,
+    fatMes: atual ? atual.receita : 0, fatAnterior: anterior ? anterior.receita : null,
+    novosMes: atual ? atual.novosN + atual.retN : 0,
+    /* quando os números de permanência saem do "juntando dados" */
+    liberaEm: finDia(goLive, 90)
   };
 
   /* ---- permanência e coortes ---- */
@@ -18652,7 +18714,14 @@ function FinPlanosPrecos({ planos, precos, onSalvo }) {
   );
 }
 
-/* ---- gráficos ---- */
+/* ---- gráficos e leitura (v3, 10/11/2026: mistura "simples" + "manchete e cascata") ---- */
+const FIN_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
+  "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const finMesNome = ym => FIN_MESES[Number(ym.slice(5, 7)) - 1];
+const finCap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+const finMeses1 = x => x.toFixed(1).replace(".", ",");
+const FIN_COR_TOTAL = "#5f7478";
+
 function FinTooltip({ active, payload, label, linhas }) {
   if (!active || !payload || !payload.length) return null;
   const p = payload[0].payload;
@@ -18675,159 +18744,254 @@ function FinLegenda({ itens }) {
     </div>
   );
 }
-function FinGraficos({ m }) {
-  const RC = window.Recharts;
-  if (!RC) return <div className="ac-diag">O Recharts vem de CDN e não respondeu: os números acima valem, os gráficos voltam ao recarregar com internet.</div>;
-  const { ResponsiveContainer, ComposedChart, BarChart, LineChart, Bar, Line, XAxis, YAxis,
-    Tooltip, CartesianGrid, ReferenceLine, Cell } = RC;
-  const serie = m.meses.map(x => ({
-    ...x, rot: finMesRot(x.mes),
-    barC: x.parcial ? x.projecaoC : x.receitaC, barA: x.parcial ? x.projecaoA : x.receitaA,
-    entradas: x.novosV + x.retV + x.tInV, exp: x.expV, contr: -x.contrV,
-    sai: -(x.saidasV + x.tOutV), entN: x.novosN + x.retN, saiN: -x.saidasN,
-    churnP: x.churn == null ? null : x.churn * 100, churn3P: x.churn3 == null ? null : x.churn3 * 100
-  }));
-  const temAulas = serie.some(x => x.receitaA > 0 || x.projecaoA > 0);
-  const eixo = { tick: { fill: "#7d9298", fontSize: 10.5 }, axisLine: false, tickLine: false };
-  const grade = <CartesianGrid stroke="#1b2427" vertical={false} />;
-  const pouco = serie.length < 2;
-  const km = m.km;
+const finEixo = { tick: { fill: "#7d9298", fontSize: 10.5 }, axisLine: false, tickLine: false };
+
+/* card com ⓘ: a explicação abre embaixo do número (funciona no toque) */
+function FinCard({ rot, valor, unid, sub, sub2, info, alerta }) {
+  const [ab, setAb] = useState(false);
   return (
-    <>
-      {pouco && <div className="fn-sub">Os gráficos ganham forma a partir do 2º mês de dados.</div>}
-      <div className="fn-grafs">
-        <div className="fn-graf">
-          <div className="fn-gt">Receita por mês<i>proporcional aos dias de contrato · mês atual = projeção</i></div>
-          <FinLegenda itens={[{ rot: "Consultoria", cor: FIN_COR.consultoria },
-            ...(temAulas ? [{ rot: "Aulas", cor: FIN_COR.aulas }] : []),
-            { rot: "MRR no fim do mês", cor: FIN_COR.mrr, linha: true }]} />
-          <ResponsiveContainer width="100%" height={220}>
-            <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              {grade}
-              <XAxis dataKey="rot" {...eixo} />
-              <YAxis width={68} tickFormatter={finEixoR} {...eixo} />
-              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
-                { rot: "Consultoria", val: finBRL(p.receitaC), cor: FIN_COR.consultoria },
-                temAulas && { rot: "Aulas", val: finBRL(p.receitaA), cor: FIN_COR.aulas },
-                { rot: p.parcial ? "Receita até hoje" : "Receita do mês", val: finBRL(p.receita) },
-                p.parcial && { rot: "Projeção do mês", val: finBRL(p.projecao) },
-                { rot: "MRR", val: finBRL(p.fechV), cor: FIN_COR.mrr }]} />} />
-              <Bar dataKey="barC" stackId="r" fill={FIN_COR.consultoria} stroke="#131a1c" strokeWidth={1}
-                radius={temAulas ? 0 : [4, 4, 0, 0]} maxBarSize={34}>
-                {serie.map(x => <Cell key={x.mes} fillOpacity={x.parcial ? 0.45 : 1} />)}
-              </Bar>
-              {temAulas && (
-                <Bar dataKey="barA" stackId="r" fill={FIN_COR.aulas} stroke="#131a1c" strokeWidth={1}
-                  radius={[4, 4, 0, 0]} maxBarSize={34}>
+    <div className={"fn-kpi" + (alerta ? " al" : "")}>
+      <div className="fn-kpi-t"><span>{rot}</span>
+        <button type="button" className={"fn-i" + (ab ? " on" : "")} aria-expanded={ab}
+          aria-label={"O que é " + rot} onClick={() => setAb(!ab)}>i</button></div>
+      <b>{valor}{unid && <i>{unid}</i>}</b>
+      {sub && <em>{sub}</em>}
+      {sub2 && <em>{sub2}</em>}
+      {ab && <div className="fn-info">{info}</div>}
+    </div>
+  );
+}
+
+/* frase do topo: o resumo do mês em português */
+function finManchete(m, seg) {
+  const k = m.kpi, at = m.meses[m.meses.length - 1];
+  const mes = finMesNome(at.mes);
+  const quem = seg ? seg + " em " + mes : finCap(mes);
+  const partes = [quem + ": " + finBRL(k.fatMes) + " com " + at.fatN + (at.fatN === 1 ? " aluno pagante." : " alunos pagantes.")];
+  const ent = at.novosN + at.retN, sai = at.saidasN;
+  const ev = [];
+  if (ent) ev.push(ent + (ent === 1 ? " entrada" : " entradas"));
+  ev.push(sai ? sai + (sai === 1 ? " desistência" : " desistências") : "nenhuma desistência");
+  partes.push(finCap(ev.join(" e ")) + (at.parcial ? " até agora." : "."));
+  let delta = null;
+  if (k.fatAnterior != null) {
+    const d = k.fatMes - k.fatAnterior;
+    const ant = finMesNome(m.meses[m.meses.length - 2].mes);
+    delta = d === 0 ? { txt: "= mesmo faturamento de " + ant, cls: "" }
+      : { txt: (d > 0 ? "▲ " : "▼ ") + finBRL(Math.abs(d)) + " em relação a " + ant, cls: d > 0 ? "up" : "down" };
+  }
+  return { texto: partes.join(" "), delta };
+}
+
+/* extrato do mês: como o Faturamento mensal (MRR) saiu do dia 1 até hoje.
+   Em lista (não em gráfico): os movimentos são pequenos perto do total e
+   sumiriam numa barra que começa no zero. As barrinhas comparam só os movimentos. */
+function FinExtrato({ m }) {
+  const [sel, setSel] = useState(null);
+  const meses = m.meses;
+  const x = meses.find(q => q.mes === sel) || meses[meses.length - 1];
+  const lista = (n, s1, s2) => n ? n + " " + (n === 1 ? s1 : s2) : null;
+  const linhas = [
+    { rot: "Começou o mês", v: x.abertV, total: true, det: x.abertN + " alunos pagando no dia 1" },
+    { rot: "Entradas", v: x.novosV + x.retV + x.tInV, cor: FIN_COR.entradas,
+      det: [lista(x.novosN, "aluno novo", "alunos novos"), lista(x.retN, "retorno", "retornos"),
+        lista(x.tInN, "veio de outro plano", "vieram de outro plano")].filter(Boolean).join(" · ") || "ninguém entrou" },
+    { rot: "Aumentos de valor", v: x.expV, cor: FIN_COR.exp, det: "quem passou a pagar mais" },
+    { rot: "Reduções de valor", v: -x.contrV, cor: FIN_COR.contr, det: "quem passou a pagar menos (ex.: híbrido que largou as aulas)" },
+    { rot: "Desistências", v: -(x.saidasV + x.tOutV), cor: FIN_COR.saidas,
+      det: [lista(x.saidasN, "desistência", "desistências"), lista(x.tOutN, "foi para outro plano", "foram para outro plano")]
+        .filter(Boolean).join(" · ") || "ninguém saiu" },
+    { rot: x.parcial ? "Hoje" : "Terminou o mês", v: x.fechV, total: true, det: x.fechN + " alunos pagando" }
+  ];
+  const maxMov = Math.max(1, ...linhas.filter(l => !l.total).map(l => Math.abs(l.v)));
+  const saldo = x.fechV - x.abertV;
+  return (
+    <div className="fn-graf fn-larga">
+      <div className="fn-gt">Extrato do mês<i>como o Faturamento mensal (MRR) mudou em {finMesNome(x.mes)}</i>
+        {meses.length > 1 && (
+          <select className="fn-sel mini" style={{ marginLeft: "auto" }} value={x.mes}
+            aria-label="Mês do extrato" onChange={e => setSel(e.target.value)}>
+            {meses.map(q => <option key={q.mes} value={q.mes}>{finCap(finMesNome(q.mes))} {q.mes.slice(0, 4)}</option>)}
+          </select>
+        )}
+      </div>
+      <div className="fn-ext">
+        {linhas.map(l => (
+          <div key={l.rot} className={"fn-ext-l" + (l.total ? " tot" : "") + (!l.total && !l.v ? " zero" : "")}>
+            <div className="fn-ext-r"><b>{l.rot}</b><i>{l.det}</i></div>
+            {!l.total && (
+              <span className="fn-ext-b"><i style={{ width: (Math.abs(l.v) / maxMov * 100) + "%", background: l.cor }} /></span>
+            )}
+            <span className="fn-ext-v">{l.total ? finBRL(l.v) : !l.v ? "—" : (l.v > 0 ? "+ " : "− ") + finBRL(Math.abs(l.v))}</span>
+          </div>
+        ))}
+        <div className={"fn-ext-s " + (saldo > 0 ? "up" : saldo < 0 ? "down" : "")}>
+          Saldo do mês: {saldo === 0 ? "R$ 0" : (saldo > 0 ? "+ " : "− ") + finBRL(Math.abs(saldo))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* evolução mês a mês (só a partir do 2º mês) */
+function FinEvolucao({ m }) {
+  const RC = window.Recharts;
+  if (m.meses.length < 2) {
+    return (
+      <div className="fn-graf fn-larga">
+        <div className="fn-gt">Mês a mês</div>
+        <div className="fn-vz">A evolução do faturamento e dos alunos aparece a partir
+          de {finMesNome(finMesSeg(m.meses[0].mes))}, quando houver 2 meses para comparar.</div>
+      </div>
+    );
+  }
+  if (!RC) return <div className="ac-diag">O Recharts vem de CDN e não respondeu: os números acima valem, os gráficos voltam ao recarregar com internet.</div>;
+  const { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, LabelList } = RC;
+  const serie = m.meses.map(x => ({ ...x, rot: finMesRot(x.mes), entN: x.novosN + x.retN, saiN: -x.saidasN }));
+  const temAulas = serie.some(x => x.receitaA > 0);
+  const grade = <CartesianGrid stroke="#1b2427" vertical={false} />;
+  return (
+    <div className="fn-grafs">
+      <div className="fn-graf">
+        <div className="fn-gt">Faturamento do mês<i>mês cheio de quem foi aluno no mês</i></div>
+        <FinLegenda itens={[{ rot: "Consultoria", cor: FIN_COR.consultoria },
+          ...(temAulas ? [{ rot: "Aulas", cor: FIN_COR.aulas }] : [])]} />
+        <ResponsiveContainer width="100%" height={220}>
+          <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            {grade}
+            <XAxis dataKey="rot" {...finEixo} />
+            <YAxis width={64} tickFormatter={finEixoR} {...finEixo} />
+            <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+              { rot: "Consultoria", val: finBRL(p.receitaC), cor: FIN_COR.consultoria },
+              temAulas && { rot: "Aulas", val: finBRL(p.receitaA), cor: FIN_COR.aulas },
+              { rot: "Total", val: finBRL(p.receita) },
+              { rot: "Alunos pagantes", val: String(p.fatN) }]} />} />
+            <Bar dataKey="receitaC" stackId="r" fill={FIN_COR.consultoria} stroke="#131a1c" strokeWidth={1}
+              radius={temAulas ? 0 : [4, 4, 0, 0]} maxBarSize={34} />
+            {temAulas && <Bar dataKey="receitaA" stackId="r" fill={FIN_COR.aulas} stroke="#131a1c"
+              strokeWidth={1} radius={[4, 4, 0, 0]} maxBarSize={34} />}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="fn-graf">
+        <div className="fn-gt">Alunos<i>quem entrou e quem saiu · embaixo do mês, quantos ficaram</i></div>
+        <FinLegenda itens={[{ rot: "Entraram", cor: FIN_COR.entradas }, { rot: "Saíram", cor: FIN_COR.saidas }]} />
+        <ResponsiveContainer width="100%" height={230}>
+          <ComposedChart data={serie} stackOffset="sign" margin={{ top: 16, right: 8, left: 0, bottom: 8 }}>
+            {grade}
+            <XAxis dataKey="rot" axisLine={false} tickLine={false} interval={0} height={36}
+              tick={({ x, y, payload, index }) => (
+                <g transform={"translate(" + x + "," + y + ")"}>
+                  <text dy={10} textAnchor="middle" fill="#7d9298" fontSize={10.5}>{payload.value}</text>
+                  <text dy={24} textAnchor="middle" fill="#dbe6e8" fontSize={10.5}>{serie[index] ? serie[index].fechN + " ativos" : ""}</text>
+                </g>
+              )} />
+            <YAxis width={34} allowDecimals={false} tickFormatter={v => Math.abs(v)} {...finEixo} />
+            <ReferenceLine y={0} stroke="#3d4d50" />
+            <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+              { rot: "Novos", val: String(p.novosN), cor: FIN_COR.entradas },
+              { rot: "Retornos", val: String(p.retN), cor: FIN_COR.entradas },
+              { rot: "Desistências", val: String(p.saidasN), cor: FIN_COR.saidas },
+              { rot: "Ativos no fim", val: String(p.fechN) }]} />} />
+            <Bar dataKey="entN" stackId="a" fill={FIN_COR.entradas} radius={[4, 4, 0, 0]} maxBarSize={30}>
+              <LabelList dataKey="entN" position="top" style={{ fill: "#dbe6e8", fontSize: 10.5 }}
+                formatter={v => v ? "+" + v : ""} />
+            </Bar>
+            <Bar dataKey="saiN" stackId="a" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={30}>
+              <LabelList dataKey="saiN" position="top" style={{ fill: "#dbe6e8", fontSize: 10.5 }}
+                formatter={v => v ? "−" + Math.abs(v) : ""} />
+            </Bar>
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+/* análise avançada: estatística que só faz sentido com meses de dados */
+function FinAvancado({ m, porCiclo, seg }) {
+  const RC = window.Recharts;
+  const k = m.kpi, km = m.km;
+  const cedo = k.diasObs < 90;
+  const espera = cedo ? "aparece a partir de " + dBR(k.liberaEm) : "aparece depois da 3ª desistência registrada";
+  const linha = (rot, val, nota) => (
+    <div className="fn-av-l"><span>{rot}</span><b>{val}</b>{nota && <em>{nota}</em>}</div>
+  );
+  return (
+    <details className="fn-avan">
+      <summary>Análise avançada <i>projeções, churn médio, curva de permanência e coortes</i></summary>
+      <div className="fn-av-g">
+        {linha("Projeção de 12 meses (ARR)", finBRL(k.arr), "Faturamento mensal (MRR) de hoje × 12, se nada mudar")}
+        {linha("Faturado no ano", finBRL(k.receitaAno), "desde " + dBR(m.goLive))}
+        {linha("Churn médio por mês", cedo || k.saidasTot === 0 ? "—" : finPct(k.churnMedio),
+          cedo || k.saidasTot === 0 ? espera : "IC 95% " + finPct(k.churnIc.lo) + " a " + finPct(k.churnIc.hi) +
+            " · " + k.saidasTot + " desistência(s) em " + Math.round(k.expo) + " alunos-mês")}
+        {linha("Permanência média", k.vidaMeses == null ? "—" : finMeses1(k.vidaMeses) + " meses",
+          k.vidaMeses == null ? espera : "IC 95% " + finMeses1(k.vidaIc[0]) + " a " +
+            (k.vidaIc[1] == null ? "∞" : finMeses1(k.vidaIc[1])) + " meses · 1 ÷ churn médio")}
+        {linha("Quanto um aluno rende (LTV)", k.ltv == null ? "—" : finBRL(k.ltv),
+          k.ltv == null ? espera : "ticket médio × permanência média")}
+      </div>
+      {RC && m.meses.length >= 2 && (() => {
+        const { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Cell } = RC;
+        const serie = m.meses.map(x => ({ ...x, rot: finMesRot(x.mes),
+          churnP: x.churn == null ? null : x.churn * 100, churn3P: x.churn3 == null ? null : x.churn3 * 100 }));
+        return (
+          <div className="fn-graf" style={{ marginBottom: 12 }}>
+            <div className="fn-gt">Churn mensal<i>desistências ÷ alunos ativos no início do mês</i></div>
+            <FinLegenda itens={[{ rot: "Churn do mês", cor: FIN_COR.saidas },
+              { rot: "Média de 3 meses", cor: FIN_COR.media, linha: true }]} />
+            <ResponsiveContainer width="100%" height={190}>
+              <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid stroke="#1b2427" vertical={false} />
+                <XAxis dataKey="rot" {...finEixo} />
+                <YAxis width={42} tickFormatter={v => Math.round(v) + "%"} allowDecimals={false} {...finEixo} />
+                <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+                  { rot: "Churn", val: finPct(p.churn) + " · " + p.saidasN + " de " + p.abertN, cor: FIN_COR.saidas },
+                  { rot: "Média 3 meses", val: finPct(p.churn3) },
+                  p.pequena && { rot: "amostra pequena (menos de " + FIN_AMOSTRA_MIN + ")", val: "" }]} />} />
+                <Bar dataKey="churnP" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={34}>
                   {serie.map(x => <Cell key={x.mes} fillOpacity={x.parcial ? 0.45 : 1} />)}
                 </Bar>
-              )}
-              <Line type="linear" dataKey="fechV" stroke={FIN_COR.mrr} strokeWidth={2}
-                dot={{ r: 4, fill: FIN_COR.mrr, stroke: "#131a1c", strokeWidth: 2 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-
+                <Line type="linear" dataKey="churn3P" stroke={FIN_COR.media} strokeWidth={2}
+                  strokeDasharray="5 4" dot={false} connectNulls />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        );
+      })()}
+      <div className="fn-grafs">
         <div className="fn-graf">
-          <div className="fn-gt">Movimento do MRR<i>o que entrou e o que saiu por mês</i></div>
-          <FinLegenda itens={[{ rot: "Entradas", cor: FIN_COR.entradas }, { rot: "Aumento de valor", cor: FIN_COR.exp },
-            { rot: "Redução de valor", cor: FIN_COR.contr }, { rot: "Saídas", cor: FIN_COR.saidas }]} />
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={serie} stackOffset="sign" margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              {grade}
-              <XAxis dataKey="rot" {...eixo} />
-              <YAxis width={68} tickFormatter={finEixoR} {...eixo} />
-              <ReferenceLine y={0} stroke="#3d4d50" />
-              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
-                { rot: "Alunos novos (" + p.novosN + ")", val: finBRL(p.novosV), cor: FIN_COR.entradas },
-                p.retN > 0 && { rot: "Retornos (" + p.retN + ")", val: finBRL(p.retV), cor: FIN_COR.entradas },
-                p.tInN > 0 && { rot: "Vieram de outro plano (" + p.tInN + ")", val: finBRL(p.tInV), cor: FIN_COR.entradas },
-                { rot: "Aumento de valor", val: finBRL(p.expV), cor: FIN_COR.exp },
-                { rot: "Redução de valor", val: "−" + finBRL(p.contrV), cor: FIN_COR.contr },
-                { rot: "Desistências (" + p.saidasN + ")", val: "−" + finBRL(p.saidasV), cor: FIN_COR.saidas },
-                p.tOutN > 0 && { rot: "Foram para outro plano (" + p.tOutN + ")", val: "−" + finBRL(p.tOutV), cor: FIN_COR.saidas },
-                { rot: "Saldo", val: finBRL(p.fechV - p.abertV) }]} />} />
-              <Bar dataKey="entradas" stackId="m" fill={FIN_COR.entradas} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
-              <Bar dataKey="exp" stackId="m" fill={FIN_COR.exp} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
-              <Bar dataKey="contr" stackId="m" fill={FIN_COR.contr} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
-              <Bar dataKey="sai" stackId="m" fill={FIN_COR.saidas} stroke="#131a1c" strokeWidth={1} maxBarSize={34} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="fn-gt">Curva de permanência<i>Kaplan-Meier · só quem entrou depois de {dBR(m.goLive)}</i></div>
+          {km.insuf || !RC ? (
+            <div className="fn-vz">Aparece com {FIN_KM_MIN}+ alunos novos (hoje: {km.n}). Quem já era aluno
+              antes de {dBR(m.goLive)} fica de fora: o início real dele é desconhecido e puxaria a permanência para baixo.</div>
+          ) : (() => {
+            const { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } = RC;
+            return (
+              <>
+                <div className="fn-sub" style={{ margin: "0 0 4px" }}>
+                  {km.n} alunos novos, {km.saidas} desistência(s) · metade fica mais de: {km.mediana == null
+                    ? "ainda não dá para saber (mais da metade segue)" : finMeses1(km.mediana) + " meses"}
+                </div>
+                <ResponsiveContainer width="100%" height={190}>
+                  <LineChart data={km.pontos.map(p => ({ ...p, rot: "M" + p.mes, pct: p.s * 100 }))}
+                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid stroke="#1b2427" vertical={false} />
+                    <XAxis dataKey="rot" {...finEixo} />
+                    <YAxis width={42} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickFormatter={v => v + "%"} {...finEixo} />
+                    <ReferenceLine y={50} stroke="#3d4d50" strokeDasharray="3 3" />
+                    <Tooltip content={<FinTooltip linhas={p => [
+                      { rot: "Seguem depois de " + p.mes + " " + (p.mes === 1 ? "mês" : "meses"), val: finPct(p.s), cor: FIN_COR.km },
+                      { rot: "Ainda em observação", val: String(p.risco) }]} />} />
+                    <Line type="stepAfter" dataKey="pct" stroke={FIN_COR.km} strokeWidth={2}
+                      dot={{ r: 3.5, fill: FIN_COR.km, stroke: "#131a1c", strokeWidth: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </>
+            );
+          })()}
         </div>
-
-        <div className="fn-graf">
-          <div className="fn-gt">Churn mensal<i>saídas ÷ ativos no início do mês</i></div>
-          <FinLegenda itens={[{ rot: "Churn do mês", cor: FIN_COR.saidas },
-            { rot: "Média de 3 meses", cor: FIN_COR.media, linha: true }]} />
-          <ResponsiveContainer width="100%" height={200}>
-            <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              {grade}
-              <XAxis dataKey="rot" {...eixo} />
-              <YAxis width={42} tickFormatter={v => Math.round(v) + "%"} allowDecimals={false} {...eixo} />
-              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
-                { rot: "Churn", val: finPct(p.churn) + " · " + p.saidasN + " de " + p.abertN, cor: FIN_COR.saidas },
-                { rot: "Média 3 meses", val: finPct(p.churn3) },
-                p.pequena && { rot: "amostra pequena (menos de " + FIN_AMOSTRA_MIN + ")", val: "" }]} />} />
-              <Bar dataKey="churnP" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={34}>
-                {serie.map(x => <Cell key={x.mes} fillOpacity={x.parcial ? 0.45 : 1} />)}
-              </Bar>
-              <Line type="linear" dataKey="churn3P" stroke={FIN_COR.media} strokeWidth={2}
-                strokeDasharray="5 4" dot={false} connectNulls />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="fn-graf">
-          <div className="fn-gt">Entradas e saídas de alunos<i>novos + retornos × desistências</i></div>
-          <FinLegenda itens={[{ rot: "Entraram", cor: FIN_COR.entradas }, { rot: "Saíram", cor: FIN_COR.saidas }]} />
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={serie} stackOffset="sign" margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              {grade}
-              <XAxis dataKey="rot" {...eixo} />
-              <YAxis width={34} allowDecimals={false} tickFormatter={v => Math.abs(v)} {...eixo} />
-              <ReferenceLine y={0} stroke="#3d4d50" />
-              <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
-                { rot: "Novos", val: String(p.novosN), cor: FIN_COR.entradas },
-                { rot: "Retornos", val: String(p.retN), cor: FIN_COR.entradas },
-                { rot: "Desistências", val: String(p.saidasN), cor: FIN_COR.saidas },
-                { rot: "Ativos no fim", val: String(p.fechN) }]} />} />
-              <Bar dataKey="entN" stackId="a" fill={FIN_COR.entradas} radius={[4, 4, 0, 0]} maxBarSize={34} />
-              <Bar dataKey="saiN" stackId="a" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={34} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="fn-graf">
-          <div className="fn-gt">Permanência<i>Kaplan-Meier · só quem entrou depois de {dBR(m.goLive)}</i></div>
-          {km.insuf ? (
-            <div className="fn-vz">A curva aparece com {FIN_KM_MIN}+ alunos novos (hoje: {km.n}).
-              Quem já era aluno antes de {dBR(m.goLive)} fica de fora: o início real dele é
-              desconhecido e puxaria a permanência para baixo.</div>
-          ) : (
-            <>
-              <div className="fn-sub" style={{ margin: "0 0 4px" }}>
-                {km.n} alunos novos, {km.saidas} saída(s) · mediana: {km.mediana == null
-                  ? "ainda não atingida (mais da metade segue)" : km.mediana.toFixed(1).replace(".", ",") + " meses"}
-              </div>
-              <ResponsiveContainer width="100%" height={190}>
-                <LineChart data={km.pontos.map(p => ({ ...p, rot: "M" + p.mes, pct: p.s * 100 }))}
-                  margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  {grade}
-                  <XAxis dataKey="rot" {...eixo} />
-                  <YAxis width={42} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]}
-                    tickFormatter={v => v + "%"} {...eixo} />
-                  <ReferenceLine y={50} stroke="#3d4d50" strokeDasharray="3 3" />
-                  <Tooltip content={<FinTooltip linhas={p => [
-                    { rot: "Seguem depois de " + p.mes + " " + (p.mes === 1 ? "mês" : "meses"), val: finPct(p.s), cor: FIN_COR.km },
-                    { rot: "Ainda em observação", val: String(p.risco) }]} />} />
-                  <Line type="stepAfter" dataKey="pct" stroke={FIN_COR.km} strokeWidth={2}
-                    dot={{ r: 3.5, fill: FIN_COR.km, stroke: "#131a1c", strokeWidth: 2 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </>
-          )}
-        </div>
-
         <div className="fn-graf">
           <div className="fn-gt">Coortes<i>% que segue ativo N meses depois de entrar</i></div>
           {!m.coortes.length ? (
@@ -18835,12 +18999,12 @@ function FinGraficos({ m }) {
           ) : (
             <div className="fn-coorte">
               <div className="fn-co-h"><span>entrada</span><span>n</span>
-                {Array.from({ length: FIN_COORTE_MESES }, (_, k) => <span key={k}>M{k + 1}</span>)}</div>
+                {Array.from({ length: FIN_COORTE_MESES }, (_, i) => <span key={i}>M{i + 1}</span>)}</div>
               {m.coortes.map(c => (
                 <div key={c.mes} className="fn-co-l">
                   <span>{finMesRot(c.mes)}</span><span>{c.n}</span>
-                  {c.cel.map((v, k) => (
-                    <span key={k} className="fn-co-c" title={v == null ? "ainda não completou " + (k + 1) + " mês(es)" : finPct(v, 0)}
+                  {c.cel.map((v, i) => (
+                    <span key={i} className="fn-co-c" title={v == null ? "ainda não completou " + (i + 1) + " mês(es)" : finPct(v, 0)}
                       style={v == null ? undefined : { background: "rgba(57,135,229," + (0.12 + v * 0.7).toFixed(2) + ")" }}>
                       {v == null ? "·" : Math.round(v * 100) + "%"}</span>
                   ))}
@@ -18850,7 +19014,11 @@ function FinGraficos({ m }) {
           )}
         </div>
       </div>
-    </>
+      {porCiclo.length > 1 && (
+        <FinComparar titulo={"Por ciclo da consultoria" + (seg ? " · " + seg : "")} rot="Ciclo" linhas={porCiclo}
+          nota="Ciclos longos já vêm pagos: parte da permanência maior é contrato, não satisfação." />
+      )}
+    </details>
   );
 }
 
@@ -18877,14 +19045,14 @@ function FinComparar({ titulo, rot, linhas, onEscolher, nota }) {
       <div className="fn-tit"><b>{titulo}</b></div>
       <div className="fn-tab">
         <div className="fn-tr h"><span>{rot}</span><span>Ativos</span><span>MRR</span>
-          <span>Ticket</span><span>Churn médio</span><span>Vida média</span></div>
+          <span>Ticket</span><span>Churn médio</span><span>Permanência</span></div>
         {linhas.map(({ seg: s, m: q }) => {
           const Tag = onEscolher ? "button" : "div";
           return (
             <Tag key={s} className="fn-tr" onClick={onEscolher ? () => onEscolher(s) : undefined}>
               <span>{s}</span><span>{q.kpi.ativos}</span><span>{finBRL(q.kpi.mrr)}</span>
               <span>{finBRL(q.kpi.ticket)}</span>
-              <span>{q.kpi.expo >= 1 ? finPct(q.kpi.churnMedio) : "—"}
+              <span>{q.kpi.diasObs >= 90 && q.kpi.saidasTot > 0 ? finPct(q.kpi.churnMedio) : "—"}
                 {q.kpi.ativos < FIN_AMOSTRA_MIN ? <i title="amostra pequena"> *</i> : null}</span>
               <span>{q.kpi.vidaMeses == null ? "—" : q.kpi.vidaMeses.toFixed(1).replace(".", ",") + " m"}</span>
             </Tag>
@@ -19002,47 +19170,38 @@ function PainelAdmin() {
         </div>
       ) : (
         <>
+          {(() => { const mc = finManchete(m, seg); return (
+            <div className="fn-manchete">
+              <p>{mc.texto}</p>
+              {mc.delta && <span className={"fn-delta " + mc.delta.cls}>{mc.delta.txt}</span>}
+            </div>
+          ); })()}
+
           <div className="fn-kpis">
-            <div className="fn-kpi">
-              <span>MRR</span><b>{finBRL(k.mrr)}</b>
-              <em>{k.mrrA > 0 ? "consultoria " + finBRL(k.mrrC) + " · aulas " + finBRL(k.mrrA)
-                : "receita recorrente por mês"}</em>
-            </div>
-            <div className="fn-kpi">
-              <span>Alunos pagantes</span><b>{k.ativos}</b>
-              <em>ticket médio {finBRL(k.ticket)}</em>
-            </div>
-            <div className="fn-kpi">
-              <span>Receita do mês</span><b>{finBRL(atual.receita)}</b>
-              <em>{atual.parcial ? "até hoje · projeção " + finBRL(atual.projecao) : "mês fechado"}</em>
-            </div>
-            <div className="fn-kpi">
-              <span>Receita no ano</span><b>{finBRL(k.receitaAno)}</b>
-              <em>ARR (MRR × 12): {finBRL(k.arr)}</em>
-            </div>
-            <div className={"fn-kpi" + (k.churnMes > 0 ? " al" : "")}>
-              <span>Churn do mês</span><b>{finPct(k.churnMes)}</b>
-              <em>{k.saidasMes} de {k.baseMes} ativos no início{atual.parcial ? " · até hoje" : ""}
-                {k.baseMes < FIN_AMOSTRA_MIN ? " · amostra pequena" : ""}</em>
-            </div>
-            <div className="fn-kpi">
-              <span>Churn médio</span><b>{k.expo >= 1 ? finPct(k.churnMedio) : "—"}<i>/mês</i></b>
-              <em>{k.expo >= 1 ? "IC 95% " + finPct(k.churnIc.lo) + " a " + finPct(k.churnIc.hi) +
-                " · " + k.saidasTot + " saída(s) em " + Math.round(k.expo) + " alunos-mês" : "juntando dados"}</em>
-            </div>
-            <div className="fn-kpi">
-              <span>Vida média esperada</span>
-              <b>{k.vidaMeses == null ? "—" : k.vidaMeses.toFixed(1).replace(".", ",")}<i>{k.vidaMeses == null ? "" : " meses"}</i></b>
-              <em>{k.vidaMeses == null ? k.ltvMotivo : "IC 95% " + k.vidaIc[0].toFixed(1).replace(".", ",") +
-                " a " + (k.vidaIc[1] == null ? "∞" : k.vidaIc[1].toFixed(1).replace(".", ",")) + " meses · 1 ÷ churn médio"}</em>
-            </div>
-            <div className="fn-kpi">
-              <span>LTV</span><b>{k.ltv == null ? "—" : finBRL(k.ltv)}</b>
-              <em>{k.ltv == null ? k.ltvMotivo : "ticket médio × vida média esperada"}</em>
-            </div>
+            <FinCard rot={"Faturamento de " + finMesNome(atual.mes)} valor={finBRL(k.fatMes)}
+              sub={k.mrrA > 0 || atual.receitaA > 0 ? "consultoria " + finBRL(atual.receitaC) + " · aulas " + finBRL(atual.receitaA) : null}
+              sub2={k.fatMes !== k.mrr ? "Faturamento mensal (MRR) hoje: " + finBRL(k.mrr) : "igual ao Faturamento mensal (MRR)"}
+              info={"Soma das mensalidades de todo mundo que foi aluno em algum dia de " + finMesNome(atual.mes) +
+                ": quem entrou ou saiu no meio do mês conta o mês cheio. Trimestral e semestral entram pelo valor por mês. " +
+                "O Faturamento mensal (MRR, receita recorrente mensal) é a mesma soma só com quem está ativo hoje: quanto entra por mês se nada mudar."} />
+            <FinCard rot="Alunos pagantes" valor={String(k.ativos)} sub={"ticket médio " + finBRL(k.ticket)}
+              sub2={k.desconto > 0 ? "descontos: " + finBRL(k.desconto) + "/mês em " + k.nDesconto + " aluno(s)" : null}
+              info="Alunos ativos com valor cadastrado. Ticket médio = Faturamento mensal (MRR) ÷ alunos pagantes: quanto cada aluno paga, em média, por mês." />
+            <FinCard rot="Desistências do mês" valor={String(k.saidasMes)} alerta={k.saidasMes > 0}
+              unid={k.baseMes ? " · " + finPct(k.churnMes) : null}
+              sub={"churn: " + k.saidasMes + " de " + k.baseMes + " alunos do início do mês" + (atual.parcial ? " (até hoje)" : "")}
+              sub2={k.baseMes < FIN_AMOSTRA_MIN ? "amostra pequena: 1 saída já muda muito o %" : null}
+              info="Alunos inativados no mês (pausa conta). O churn é a porcentagem: desistências ÷ alunos que estavam ativos no dia 1. Mudança de plano ou de valor não conta como desistência." />
+            <FinCard rot="Permanência média" valor={k.vidaMeses == null ? "—" : finMeses1(k.vidaMeses)}
+              unid={k.vidaMeses == null ? null : " meses"}
+              sub={k.vidaMeses == null ? (k.diasObs < 90 ? "aparece a partir de " + dBR(k.liberaEm)
+                : "aparece depois da 3ª desistência registrada") : "Quanto um aluno rende (LTV): " + finBRL(k.ltv)}
+              sub2={k.vidaMeses == null ? "precisa de 3 meses de dados para não enganar" : null}
+              info="Quanto tempo, em média, um aluno fica pagando. Sai do ritmo de desistências; com poucas semanas de dados ele varia demais, por isso espera 3 meses. LTV (valor do aluno no tempo) = ticket médio × permanência média." />
           </div>
 
-          <FinGraficos m={m} />
+          <FinExtrato m={m} />
+          <FinEvolucao m={m} />
 
           <div className="fn-grafs">
             <div className="fn-graf">
@@ -19052,24 +19211,17 @@ function PainelAdmin() {
                 : <div className="fn-vz">Nenhuma saída registrada ainda.</div>}
             </div>
             <div className="fn-graf">
-              <div className="fn-gt">Ciclos da consultoria<i>alunos ativos · MRR</i></div>
+              <div className="fn-gt">Ciclos da consultoria<i>alunos ativos · quanto pagam por mês</i></div>
               {m.mix.length ? <FinBarras itens={m.mix} rotulo={x => x.plano}
                 valor={x => x.mrr} total={x => x.n + " · " + finBRL(x.mrr)} />
                 : <div className="fn-vz">Ninguém pagando consultoria neste recorte.</div>}
-              {k.desconto > 0 && (
-                <div className="fn-sub" style={{ margin: "10px 0 0" }}>
-                  Descontos sobre a tabela: {finBRL(k.desconto)}/mês em {k.nDesconto} aluno(s).</div>
-              )}
             </div>
           </div>
 
           {seg == null && comp.length > 1 && (
             <FinComparar titulo="Por plano" rot="Plano" linhas={comp} onEscolher={setSeg} />
           )}
-          {porCiclo.length > 1 && (
-            <FinComparar titulo={"Por ciclo da consultoria" + (seg ? " · " + seg : "")} rot="Ciclo" linhas={porCiclo}
-              nota="Ciclos longos já vêm pagos: parte da permanência maior é contrato, não satisfação." />
-          )}
+          <FinAvancado m={m} porCiclo={porCiclo} seg={seg} />
         </>
       )}
 
