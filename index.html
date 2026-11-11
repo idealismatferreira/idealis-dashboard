@@ -2514,6 +2514,293 @@
     .sn-pop{left:auto;right:0;top:calc(100% + 8px);width:min(380px,calc(100vw - 28px))}
     .main-in{padding:16px 14px calc(60px + env(safe-area-inset-bottom))}
   }
+  /* ===================================================================
+     ANAMNESE v2 (11/11/2026) — ficha e Novo aluno
+     Blocos com cor própria (só no ícone, no título do bloco e no destaque):
+     o cartão fica neutro para o texto ser o protagonista.
+     Multitenant: as 4 cores dos blocos são variáveis — um tenant troca aqui.
+     Tudo escopado em .an* para não vazar.
+     =================================================================== */
+  :root{--an-objetivo:var(--accent);--an-saude:#ff8f6b;--an-montagem:#a7e58c;
+    --an-coord:#a7e58c;--an-obs:#9fb2b5}
+
+  /* ---------- visão rápida ---------- */
+  .an-vr{margin-bottom:16px}
+  .an-vr-g1{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:10px}
+  .an-vr-g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));
+    gap:10px;margin-top:10px}
+  .an-vr-c{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:7px;min-width:0;
+    background:#131a1c;border:1px solid var(--line);border-radius:var(--raio,10px);
+    padding:12px 14px 13px;cursor:pointer;transition:border-color .15s,background-color .15s}
+  .an-vr-c:hover{border-color:var(--line2);background-color:var(--hover,#151d1f)}
+  .an-vr-c:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .an-vr-c.on{border-color:color-mix(in srgb,var(--an-c) 42%,var(--line));
+    background-image:radial-gradient(120% 130% at 0% 0%,
+      color-mix(in srgb,var(--an-c) 13%,transparent),transparent 62%)}
+  .an-vr-l{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:600;
+    letter-spacing:.07em;text-transform:uppercase;color:var(--mut);min-width:0}
+  .an-vr-l svg{width:14px;height:14px;flex-shrink:0;color:var(--an-c)}
+  .an-vr-l em{font-style:normal;font-weight:500;letter-spacing:0;text-transform:none;
+    color:#5f7477;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .an-vr-c p{margin:0;font-size:13.5px;line-height:1.45;color:var(--txt);
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .an-vr-c p.sm{font-size:12.5px;color:#c3cfd1;-webkit-line-clamp:2}
+  .an-vr-c p.vz{color:#5f7477;font-size:12.5px}
+  .an-vr-n{display:flex;align-items:baseline;gap:8px}
+  .an-vr-n b{font:600 26px/1 var(--num,inherit);font-variant-numeric:tabular-nums;
+    color:var(--an-c)}
+  .an-vr-n span{font-size:12px;color:var(--mut)}
+  .an-vr-pe{font-size:11.5px;color:var(--mut);margin-top:10px}
+
+  /* ---------- barra: busca · período · arquivadas · copiar ---------- */
+  .an-barra{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 0 2px;
+    border-top:1px solid var(--line)}
+  .an-busca{flex:1 1 240px;display:flex;align-items:center;gap:8px;height:36px;padding:0 6px 0 11px;
+    background:#0f1415;border:1px solid var(--line);border-radius:8px;color:var(--mut);min-width:0}
+  .an-busca:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,218,239,.14)}
+  .an-busca svg{width:15px;height:15px;flex-shrink:0}
+  .an-busca input{flex:1;min-width:0;height:100%;margin:0;padding:0;border:0;background:transparent;
+    font-size:13px;box-shadow:none}
+  .an-busca input:focus{border:0;box-shadow:none}
+  .an-busca button{width:24px;height:24px;padding:0;flex-shrink:0;background:transparent;
+    color:var(--mut);font-size:17px;font-weight:400;line-height:1;border-radius:6px}
+  .an-busca button:hover{background:var(--hover,#151d1f);color:var(--txt);filter:none}
+  .an-seg{display:inline-flex;gap:2px;height:36px;padding:3px;background:#0f1415;
+    border:1px solid var(--line);border-radius:8px}
+  .an-seg button{width:auto;height:100%;padding:0 11px;background:transparent;color:var(--mut);
+    font-size:12.5px;font-weight:500;border-radius:6px}
+  .an-seg button:hover{color:var(--txt);filter:none}
+  .an-seg button.on{background:#1f2b2d;color:var(--txt)}
+  .an-bt{width:auto;height:36px;display:inline-flex;align-items:center;gap:7px;padding:0 12px;
+    background:#131a1c;border:1px solid var(--line);color:var(--mut);font-size:12.5px;
+    font-weight:500;border-radius:8px}
+  .an-bt:hover{border-color:var(--line2);color:var(--txt);filter:none}
+  .an-bt.on{background:#1f2b2d;border-color:var(--line2);color:var(--txt)}
+
+  /* ---------- blocos ---------- */
+  .an-gr{margin-top:22px}
+  .an-gr-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--an-c)}
+  .an-gr-h svg{width:15px;height:15px;flex-shrink:0}
+  .an-gr-h b{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+  .an-gr-ln{flex:1;height:1px;background:var(--line)}
+  .an-gr-h i{font-style:normal;font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
+  .an-grade{display:grid;gap:10px}
+  .an-grade.c2{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
+  .an-grade.c2 > :last-child:nth-child(odd):not(:first-child){grid-column:1/-1}
+
+  /* bloco centralizado (Coordenação motora): um cartão, no meio, separado */
+  .an-gr.centro .an-gr-h{justify-content:center}
+  .an-gr.centro .an-gr-c{max-width:520px;margin:0 auto}
+  .an-gr.centro .an-vaz{justify-content:center}
+  .an-gr.centro .an-sec{border-color:color-mix(in srgb,var(--an-c) 30%,var(--line))}
+
+  /* ---------- cartão de seção ---------- */
+  .an-sec{background:#131a1c;border:1px solid var(--line);border-radius:var(--raio,10px);
+    padding:12px 14px 8px;min-width:0;scroll-margin:90px}
+  .an-sec.dest{border-color:color-mix(in srgb,var(--an-saude) 34%,var(--line));
+    background-image:radial-gradient(110% 120% at 0% 0%,
+      color-mix(in srgb,var(--an-saude) 9%,transparent),transparent 55%)}
+  .an-sec-h{display:flex;align-items:center;gap:10px;margin-bottom:8px;min-width:0}
+  .an-sec-ic{width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;border-radius:8px;color:var(--an-c);
+    background:color-mix(in srgb,var(--an-c) 13%,transparent)}
+  .an-sec-ic svg{width:16px;height:16px}
+  .an-sec-h b{font-size:13.5px;font-weight:600;line-height:1.25;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .an-n{font-style:normal;font-size:11px;font-weight:500;color:var(--mut);background:#1a2426;
+    border-radius:999px;padding:2px 7px;font-variant-numeric:tabular-nums;flex-shrink:0}
+  .an-mais{width:26px;height:26px;padding:0;margin-left:auto;flex-shrink:0;display:flex;
+    align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);
+    color:var(--mut);border-radius:7px;font-size:17px;font-weight:400;line-height:1}
+  .an-mais:hover{border-color:var(--an-c);color:var(--an-c);filter:none}
+
+  /* ---------- entrada ---------- */
+  .an-ent{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;
+    align-items:start;padding:8px 0;border-top:1px solid #182224;font-size:13.5px;line-height:1.5;
+    color:#aebdbf}
+  .an-ents > .an-ent:first-child{border-top:0;padding-top:2px}
+  .an-ent.rec{color:var(--txt)}
+  .an-ent.arq{opacity:.45}
+  .an-dt{font:500 11px/1 var(--num,inherit);font-variant-numeric:tabular-nums;color:var(--mut);
+    background:#0f1415;border:1px solid var(--line);border-radius:6px;padding:4px 6px;
+    margin-top:1px;white-space:nowrap}
+  .an-ent.rec .an-dt{color:var(--an-c);border-color:color-mix(in srgb,var(--an-c) 32%,var(--line))}
+  .an-dt.sem{color:#5f7477;font-family:inherit;font-size:10.5px}
+  .an-tx{min-width:0;overflow-wrap:anywhere}
+  .an-t{white-space:pre-line}
+  .an-l{margin-top:2px}
+  .an-tx > .an-t + .an-l{margin-top:6px}
+  .an-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .an-tx > .an-tags:first-child,.an-tx > .an-l:first-child{margin-top:2px}
+  .an-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;line-height:1;
+    padding:4px 7px;border-radius:6px;background:#16232a;color:var(--mut);white-space:nowrap;
+    font-weight:500}
+  .an-tag svg{width:11px;height:11px;flex-shrink:0}
+  .an-tag.ex{background:#0f2a2e;color:var(--accent)}
+  .an-tag.rg{background:#241a2e;color:#c9a6ff}
+  .an-tag.app{background:#1a2230;color:#8fb4ff}
+  .an-vz{color:#5f7477}
+  /* ferramentas por cima do fim da linha, só no hover: o texto usa a largura toda */
+  .an-ferr{position:absolute;right:-4px;top:4px;display:flex;gap:1px;padding:2px 2px 2px 14px;
+    opacity:0;pointer-events:none;transition:opacity .15s;border-radius:8px;
+    background:linear-gradient(90deg,transparent,#131a1c 14px)}
+  .an-ent:hover .an-ferr,.an-ent:focus-within .an-ferr{opacity:1;pointer-events:auto}
+  .an-ents > .an-ent:first-child .an-ferr{top:-2px}
+  .an-ferr button{width:26px;height:26px;padding:0;display:flex;align-items:center;
+    justify-content:center;background:transparent;border:1px solid transparent;color:var(--mut);
+    border-radius:6px}
+  .an-ferr button:hover{border-color:var(--line2);color:var(--txt);filter:none}
+  .an-ferr button.del:hover{color:var(--alert);border-color:color-mix(in srgb,var(--alert) 45%,transparent)}
+  .an-ferr svg{width:14px;height:14px}
+  @media (hover: none){
+    .an-ent{grid-template-columns:auto minmax(0,1fr) auto}
+    .an-ferr{position:static;opacity:1;pointer-events:auto;background:none;padding:0}
+  }
+  .an-ver{width:100%;margin-top:2px;padding:7px 0 4px;background:transparent;border:0;
+    border-top:1px dashed #1f2b2d;border-radius:0;color:var(--mut);font-size:12px;font-weight:500;
+    text-align:left}
+  .an-ver:hover{color:var(--an-c);filter:none}
+
+  /* frequência: números grandes, texto normal por baixo (copiar lê o texto) */
+  .an-freq{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+  .an-freq span{display:inline-flex;align-items:baseline;gap:5px;color:inherit}
+  .an-freq b{font:600 17px/1.1 var(--num,inherit);font-variant-numeric:tabular-nums;color:var(--txt)}
+  .an-freq span.ou{flex-basis:100%;font-size:13px}
+  .an-vr-c .an-freq b{font-size:15px}
+  .an-vr-c .an-freq{font-size:12px;color:#c3cfd1}
+  .an-prev{margin-top:10px;padding:8px 10px;border:1px dashed var(--line2);border-radius:8px;
+    font-size:12.5px;line-height:1.45;color:var(--txt)}
+  .an-prev span{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--mut);margin-bottom:3px}
+  .an-prev i{color:#5f7477}
+
+  /* slider de faixas (Tempo de treino) */
+  .an-sl{padding:2px 2px 0}
+  .an-sl-v{display:flex;align-items:center;gap:8px;min-height:28px;margin-bottom:8px}
+  .an-sl-v b{font:600 19px/1.1 var(--num,inherit);color:var(--txt);letter-spacing:-.01em}
+  .an-sl-v i{font-style:normal;font-size:12.5px;color:#5f7477}
+  .an-sl-x{width:24px;height:24px;padding:0;background:transparent;color:var(--mut);
+    font-size:16px;font-weight:400;line-height:1;border-radius:6px}
+  .an-sl-x:hover{background:var(--hover,#151d1f);color:var(--txt);filter:none}
+  .an-sl-tr{position:relative;height:28px;margin:0 11px;cursor:pointer;touch-action:none;
+    border-radius:14px;outline:none}
+  .an-sl-tr:focus-visible{box-shadow:0 0 0 2px var(--accent)}
+  .an-sl-base,.an-sl-fill{position:absolute;left:0;top:50%;height:6px;margin-top:-3px;border-radius:3px}
+  .an-sl-base{right:0;background:#22302f}
+  .an-sl-fill{background:var(--an-c,var(--accent))}
+  .an-sl-pt{position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
+    background:#2c3c3f;border:2px solid #131a1c}
+  .an-sl-pt.on{background:var(--an-c,var(--accent))}
+  .an-sl-th{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;
+    background:var(--txt);border:4px solid var(--an-c,var(--accent));
+    box-shadow:0 2px 8px rgba(0,0,0,.5);transition:left .12s ease}
+  .an-sl-tr:active .an-sl-th{transition:none}
+  .an-sl-rot{position:relative;height:30px;margin:6px 11px 0}
+  .an-sl-rot button{position:absolute;top:0;width:auto;transform:translateX(-50%);padding:4px 5px;
+    background:transparent;border:0;border-radius:6px;color:var(--mut);font-size:11px;
+    font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .an-sl-rot button.ini{transform:translateX(-11px)}
+  .an-sl-rot button.fim{transform:translateX(calc(-100% + 11px))}
+  .an-sl-rot button:hover{color:var(--txt);filter:none}
+  .an-sl-rot button.on{color:var(--an-c,var(--accent));font-weight:600}
+  /* faixa na ficha: régua neutra (tempo não é "bom" nem "ruim") */
+  .an-fx .an-esc-b i.on{background:var(--an-c,var(--accent))}
+  .an-fx em{font-style:normal;color:var(--mut);font-size:12px;margin-left:-3px}
+
+  /* nos cartões estreitos da visão rápida a régua encolhe e quebra a linha */
+  .an-vr-c .an-esc{flex-wrap:wrap;gap:5px 8px}
+  .an-vr-c .an-esc-b i{width:11px}
+  .an-vr-c .an-fx em{display:none}
+  .an-esc b{white-space:nowrap}
+
+  /* régua do autorrelato */
+  .an-esc{display:inline-flex;align-items:center;gap:8px;font-size:12.5px}
+  .an-esc-b{display:inline-flex;gap:3px}
+  .an-esc-b i{width:16px;height:6px;border-radius:2px;background:#243234}
+  .an-esc b{font-weight:600;color:var(--txt)}
+
+  /* seções vazias: atalhos, não cartões */
+  .an-vaz{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
+  .an-grade + .an-vaz{margin-top:10px}
+  .an-vaz > span{font-size:11px;color:var(--mut);margin-right:2px}
+  .an-vaz-bt{width:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 8px 5px 9px;
+    background:transparent;border:1px dashed var(--line2);color:var(--mut);font-size:12px;
+    font-weight:500;border-radius:7px}
+  .an-vaz-bt svg{width:13px;height:13px;color:var(--an-c);flex-shrink:0}
+  .an-vaz-bt i{font-style:normal;font-size:14px;line-height:1;opacity:.7}
+  .an-vaz-bt:hover{border-style:solid;border-color:var(--an-c);color:var(--txt);filter:none}
+
+  .an-novo{display:flex;flex-direction:column;gap:4px;padding:14px 16px;margin-bottom:4px;
+    background:#131a1c;border:1px dashed var(--line2);border-radius:var(--raio,10px)}
+  .an-novo b{font-size:14px;font-weight:600}
+  .an-novo span{font-size:12.5px;color:var(--mut);line-height:1.5}
+  .an-nada{margin-top:22px;padding:18px;text-align:center;font-size:13px;color:var(--mut);
+    border:1px dashed var(--line);border-radius:var(--raio,10px)}
+
+  /* textarea de texto livre (prosa, não código) */
+  textarea.an-ta{font-family:var(--ui,inherit);font-size:13.5px;line-height:1.5;min-height:78px}
+
+  /* modal de entrada */
+  .an-modal-h{display:flex;gap:12px;align-items:flex-start;margin-bottom:4px}
+  .an-modal-h .an-sec-ic{width:34px;height:34px;border-radius:9px}
+  .an-modal-h .an-sec-ic svg{width:18px;height:18px}
+  .an-modal-h h3{margin:0 0 3px}
+  .an-modal-h p{margin:0;font-size:12.5px}
+  .an-modal .ed-lab:first-of-type{margin-top:16px}
+
+  /* ---------- Novo aluno: anamnese inicial ---------- */
+  .an-ini{display:flex;flex-direction:column;gap:12px}
+  .an-ini-data{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;
+    color:var(--mut)}
+  .an-ini-data input{width:auto;margin:0;padding:7px 10px;font-size:13px}
+  .an-ini-data i{font-style:normal;font-size:11px;color:#5f7477}
+  .an-ini-gr{background:#0f1415;border:1px solid var(--line);border-radius:var(--raio,10px);
+    overflow:hidden}
+  .an-ini-gr.centro{width:100%;max-width:520px;align-self:center}
+  .an-ini-gr.centro .an-ini-gh{justify-content:center}
+  .an-ini-gh{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:11px;
+    font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--an-c);
+    background:#111819;border-bottom:1px solid var(--line)}
+  .an-ini-gh svg{width:14px;height:14px}
+  .an-ini-s + .an-ini-s{border-top:1px solid #182224}
+  .an-ini-sh{width:100%;display:flex;align-items:center;gap:11px;padding:9px 14px;
+    background:transparent;border:0;border-radius:0;color:var(--txt);text-align:left;
+    font-weight:400;font-size:13.5px}
+  .an-ini-sh:hover{background:var(--hover,#151d1f);filter:none}
+  .an-ini-st{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .an-ini-st b{font-size:13.5px;font-weight:600}
+  .an-ini-st i{font-style:normal;font-size:11.5px;color:var(--mut);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .an-ini-mais{width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;border:1px solid var(--line);border-radius:7px;color:var(--mut);
+    font-size:17px;line-height:1}
+  .an-ini-sh:hover .an-ini-mais,.an-ini-s.ab .an-ini-mais{border-color:var(--an-c);color:var(--an-c)}
+  .an-ini-s.cheia .an-ini-sh{padding-bottom:7px}
+  .an-ini-it{display:flex;align-items:flex-start;gap:6px;margin:0 14px 7px 53px;padding:2px 4px 2px 0;
+    background:#131a1c;border:1px solid var(--line);border-radius:8px}
+  .an-ini-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;padding:7px 10px;
+    background:transparent;border:0;border-radius:8px;color:var(--txt);text-align:left;
+    font-weight:400;font-size:13px;line-height:1.45;white-space:pre-line;overflow-wrap:anywhere}
+  .an-ini-tx:hover{filter:none;background:var(--hover,#151d1f)}
+  .an-ini-tx .an-tags{margin-top:5px}
+  .an-ini-tx > .an-tags:first-child{margin-top:0}
+  .an-ini-x{width:26px;height:26px;margin-top:4px;padding:0;flex-shrink:0;background:transparent;
+    color:var(--mut);font-size:17px;font-weight:400;line-height:1;border-radius:6px}
+  .an-ini-x:hover{color:var(--alert);background:#1d1416;filter:none}
+  .an-ini-comp{margin:2px 14px 12px 53px;padding:12px 13px;background:#131a1c;
+    border:1px solid color-mix(in srgb,var(--an-c) 45%,var(--line));border-radius:9px}
+  .an-ini-comp .ed-lab:first-child{margin-top:0}
+  .an-ini-acts{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .an-ini-acts .ed-cnt{flex:1 1 200px;line-height:1.5}
+  .an-ini-acts button{width:auto;padding:8px 14px;font-size:13px}
+  @media (max-width:640px){
+    .an-ini-it,.an-ini-comp{margin-left:14px}
+    .an-ini-st i{white-space:normal}
+  }
+
+  /* ficha: aba ativa marcada (a Anamnese é a primeira e o padrão) */
+  .dr-acoes .btn-sec.on{background:#131a1c;color:var(--txt);
+    box-shadow:inset 0 -2px 0 var(--accent)}
 </style>
 </head>
 <body>
@@ -3249,7 +3536,7 @@ async function gravarNoSheets(aluno, texto) {
 
 /* ---------- Anamnese ---------- */
 const SECOES_ANAMNESE = [
-  "Obj", "Diag", "Dor/Pat", "Tempo", "Dif. Exerc", "Pref. Treino", "Pref. Exerc",
+  "Obj", "Diag", "Dor/Pat", "Tempo", "Freq", "Dif. Exerc", "Pref. Treino", "Pref. Exerc",
   "Músc + responsivo", "Músc - responsivo", "Coord", "Obs Gerais",
   "Supl/Med", "Hist", "Outras Ativs"
 ];
@@ -3324,6 +3611,7 @@ const SECAO_NOME = {
   "Diag": "Diagnóstico",
   "Dor/Pat": "Dor / Patologia",
   "Tempo": "Tempo de treino",
+  "Freq": "Frequência de treino",
   "Dif. Exerc": "Dificuldade em exercícios",
   "Pref. Treino": "Preferências de treino",
   "Pref. Exerc": "Preferências de exercícios",
@@ -4747,8 +5035,9 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
   const [atual, setAtual]     = useState(undefined);
   const [hist, setHist]       = useState([]);
   /* "cardio" = Evolução de Carga já rolada até a seção Cardio (vem do feed) */
+  /* "auto" = sem modo pedido: decide depois de carregar (ver modoEf) */
   const [modo, setModo]       = useState(
-    modoInicial === "cardio" ? "evolucao" : (modoInicial || "secoes"));
+    modoInicial === "cardio" ? "evolucao" : (modoInicial || "auto"));
   const focoCardioRef         = React.useRef(modoInicial === "cardio");
   const [rascunho, setRasc]   = useState("");
   const [erro, setErro]       = useState("");
@@ -4896,6 +5185,14 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
   }
 
   const temEnt = !!(ents && ents.length);
+  /* sem modo pedido: quem tem entradas (ou não tem texto nenhum) abre na
+     Anamnese; só quem ainda tem texto NÃO migrado abre no Texto original */
+  const modoEf = modo !== "auto" ? modo
+    : (atual === undefined || ents === null) ? "carregando"
+    : (temEnt || !atual) ? "entradas" : "secoes";
+  const abaCls = m => "btn-sec" + (modoEf === m ? " on" : "");
+  const entAtivas = temEnt ? ents.filter(e => !e.arquivada) : [];
+  const ultEnt = entAtivas.map(e => e.data).filter(Boolean).sort().pop() || null;
 
   /* depois da migração, copiar SEMPRE vem das entradas — o texto
      original não acompanha as edições feitas por lá */
@@ -4966,6 +5263,9 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
           <h2>{aluno.nome}<BotaoLoginAluno aluno={aluno} /></h2>
           <div className="meta">
             {atual === undefined ? "carregando..."
+              : temEnt ? "anamnese com " + entAtivas.length +
+                  (entAtivas.length === 1 ? " registro" : " registros") +
+                  (ultEnt ? " · última entrada em " + dBR(ultEnt) : "")
               : atual === null ? "sem anamnese registrada"
               : "atualizada em " + new Date(atual.criado_em).toLocaleDateString("pt-BR") +
                 (hist.length > 1 ? " · " + hist.length + " versões" : "")}
@@ -4980,33 +5280,41 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
         </div>
 
         <div className="dr-acoes">
-          <button className="btn-sec" onClick={() => setModo("entradas")}>Entradas</button>
-          <button className="btn-sec" onClick={() => setModo("evolucao")}>
+          <button className={abaCls("entradas")} onClick={() => setModo("entradas")}>
+            Anamnese
+          </button>
+          <button className={abaCls("evolucao")} onClick={() => setModo("evolucao")}>
             Evolução de Carga
           </button>
-          <button className="btn-sec" onClick={() => setModo("planejamento")}>
+          <button className={abaCls("planejamento")} onClick={() => setModo("planejamento")}>
             Planejamento
           </button>
-          <button className="btn-sec" onClick={() => setModo("secoes")}>Texto original</button>
-          <button className="btn-sec" onClick={() => setModo("editar")}>
-            Editar{sujo ? " •" : ""}
-          </button>
-          <button className="btn-sec" onClick={() => setModo("correcoes")}>
+          {/* texto da planilha: só existe para quem tem anamnese em texto */}
+          {atual && (
+            <button className={abaCls("secoes")} onClick={() => setModo("secoes")}>
+              Texto original</button>
+          )}
+          {atual && (
+            <button className={abaCls("editar")} onClick={() => setModo("editar")}>
+              Editar{sujo ? " •" : ""}
+            </button>
+          )}
+          <button className={abaCls("correcoes")} onClick={() => setModo("correcoes")}>
             Correções{nvCorr ? " (" + nvCorr + ")" : ""}
           </button>
-          <button className="btn-sec" onClick={() => setModo("dores")}>Dores</button>
-          <button className="btn-sec" onClick={() => setModo("perguntas")}>
+          <button className={abaCls("dores")} onClick={() => setModo("dores")}>Dores</button>
+          <button className={abaCls("perguntas")} onClick={() => setModo("perguntas")}>
             Perguntas{aluno.perguntas_pendentes ? " (" + aluno.perguntas_pendentes + ")" : ""}
           </button>
-          <button className="btn-sec" onClick={() => setModo("academias")}>
+          <button className={abaCls("academias")} onClick={() => setModo("academias")}>
             Academias
           </button>
-          <button className="btn-sec" onClick={() => setModo("aparelhos")}>
+          <button className={abaCls("aparelhos")} onClick={() => setModo("aparelhos")}>
             Aparelhos
           </button>
-          <button className="btn-sec" onClick={() => setModo("colar")}>Colar nova</button>
+          <button className={abaCls("colar")} onClick={() => setModo("colar")}>Colar nova</button>
           {hist.length > 1 &&
-            <button className="btn-sec" onClick={() => setModo("hist")}>Histórico</button>}
+            <button className={abaCls("hist")} onClick={() => setModo("hist")}>Histórico</button>}
 
         </div>
 
@@ -5014,17 +5322,18 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
           {erro && <div className="err">{erro}</div>}
           {aviso && <div className="ok-msg">{aviso}</div>}
 
-          {temEnt && modo !== "entradas" && modo !== "hist" && modo !== "evolucao" &&
-            modo !== "planejamento" && (
+          {temEnt && (modoEf === "secoes" || modoEf === "editar" || modoEf === "colar") && (
             <div className="err" style={{ background: "#2a2418", borderColor: "#5c4a24",
               color: "#f0a35e" }}>
-              ⚠️ Este aluno já foi migrado. As <b>Entradas</b> são a fonte de verdade —
+              ⚠️ Este aluno já foi migrado. A aba <b>Anamnese</b> é a fonte de verdade —
               este texto é a foto de antes da migração e <b>não acompanha</b> as edições.
             </div>
           )}
 
-          {modo === "entradas" ? (
-            <PainelEntradas aluno={aluno} />
+          {modoEf === "carregando" ? (
+            <div className="msg">Carregando...</div>
+          ) : modoEf === "entradas" ? (
+            <PainelEntradas aluno={aluno} temTexto={!!atual} />
           ) : modo === "evolucao" ? (
             <PainelEvolucao aluno={aluno} focoCardio={focoCardioRef.current}
               onFocado={() => { focoCardioRef.current = false; }} />
@@ -6443,7 +6752,16 @@ function ModalNovoAluno({ onFechar, onCriado }) {
   const [modId, setModId] = useState("");
   const [acId, setAcId]   = useState("");
   const [obs, setObs]     = useState("");
-  const [texto, setTexto] = useState("");
+  /* anamnese inicial em entradas (sem texto corrido) */
+  const [anItens, setAnItens] = useState([]);
+  const [anComp, setAnComp]   = useState(null);
+  const [anData, setAnData]   = useState(() => dISO(new Date()));
+  const [anSecs, setAnSecs]   = useState(null);
+  const [anTipos, setAnTipos] = useState([]);
+  const [anCat, setAnCat]     = useState([]);
+  /* cada passo da criação roda uma vez só: se algo falhar depois da ficha,
+     "Concluir" retoma dali sem duplicar o aluno */
+  const passo = React.useRef({ aluno: null, academia: false, anamnese: false });
   const [criarAcesso, setCriarAcesso] = useState(false);
   const [senha, setSenha] = useState("");
   const [mods, setMods]   = useState([]);
@@ -6461,11 +6779,17 @@ function ModalNovoAluno({ onFechar, onCriado }) {
     Promise.all([
       sb.from("modalidades").select("id, nome, familia").eq("ativa", true).order("ordem"),
       sb.from("academias").select("id, nome").eq("ativa", true).order("nome"),
-      finCarregarTabelas().catch(() => ({ falta: true }))
-    ]).then(([m, a, f]) => {
+      finCarregarTabelas().catch(() => ({ falta: true })),
+      sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem"),
+      sb.from("ocorrencia_tipos").select("*").eq("ativo", true).order("ordem"),
+      sb.from("cardapio").select("id, exercicio").order("exercicio")
+    ]).then(([m, a, f, se, ti, ca]) => {
       if (!m.error) setMods(m.data || []);
       if (!a.error) setAcs(a.data || []);
       if (!f.falta) setFin(f);
+      setAnSecs(se.error ? [] : (se.data || []));
+      if (!ti.error) setAnTipos(ti.data || []);
+      if (!ca.error) setAnCat(ca.data || []);
     });
   }, []);
   useEffect(() => {
@@ -6483,9 +6807,6 @@ function ModalNovoAluno({ onFechar, onCriado }) {
     return () => clearTimeout(t);
   }, [nome]);
 
-  const prev = texto.trim() ? textoParaEntradas(texto) : [];
-  const validas = prev.filter(e => e.conhecida);
-
   async function criar() {
     if (!nome.trim()) { setErro("O nome é obrigatório."); return; }
     /* valor só é salvo se você digitou algum; se digitou, tem que estar completo */
@@ -6496,33 +6817,39 @@ function ModalNovoAluno({ onFechar, onCriado }) {
       if (senha.length < 6) { setErro("A senha precisa ter ao menos 6 caracteres."); return; }
     }
     setBusy(true); setErro("");
+    /* o item que ficou digitado no campo aberto também entra */
+    const anTodos = anJuntarPendente(anItens, anComp);
+    const P = passo.current;
     try {
-      const ins = await sb.from("alunos").insert({
-        nome: nome.trim(), status: "ativo",
-        modalidade_id: modId || null,
-        email: email.trim() || null,
-        telefone: tel.trim() || null,
-        nascimento: nasc || null,
-        sexo: sexo || null,
-        observacao: obs.trim() || null
-      }).select("id").single();
-      if (ins.error) throw new Error(ins.error.message);
-      const alunoId = ins.data.id;
+      if (!P.aluno) {
+        const ins = await sb.from("alunos").insert({
+          nome: nome.trim(), status: "ativo",
+          modalidade_id: modId || null,
+          email: email.trim() || null,
+          telefone: tel.trim() || null,
+          nascimento: nasc || null,
+          sexo: sexo || null,
+          observacao: obs.trim() || null
+        }).select("id").single();
+        if (ins.error) throw new Error(ins.error.message);
+        P.aluno = ins.data.id;
+      }
+      const alunoId = P.aluno;
 
-      if (acId) {
+      if (acId && !P.academia) {
         const v = await sb.from("aluno_academias")
           .insert({ aluno_id: alunoId, academia_id: acId, principal: true });
-        if (v.error) throw new Error(v.error.message);
+        if (v.error) throw new Error("Ficha criada, mas a academia não foi salva: " +
+          v.error.message + ". Clique em Concluir para tentar de novo.");
+        P.academia = true;
       }
 
-      if (validas.length) {
-        const linhas = validas.map(e => ({
-          aluno_id: alunoId, secao_id: e.secao_id, data: e.data,
-          data_texto: e.data_texto, texto: e.texto, escala: e.escala || null,
-          ordem: e.ordem, origem: "manual"
-        }));
-        const en = await sb.from("anamnese_entradas").insert(linhas);
-        if (en.error) throw new Error(en.error.message);
+      if (anTodos.length && !P.anamnese) {
+        const en = await sb.from("anamnese_entradas")
+          .insert(anLinhasIniciais(anTodos, alunoId, anData));
+        if (en.error) throw new Error("Ficha criada, mas a anamnese não foi salva: " +
+          en.error.message + ". Os itens continuam aqui — clique em Concluir para tentar de novo.");
+        P.anamnese = true;
       }
 
       /* valor é opcional: sem ele o aluno aparece em "sem valor" na aba
@@ -6548,7 +6875,8 @@ function ModalNovoAluno({ onFechar, onCriado }) {
           : " Login criado.";
       }
       toast(nome.trim() + " criado(a)" +
-        (validas.length ? " com " + validas.length + " entrada(s)." : ".") + extra + avisoFin,
+        (anTodos.length ? " com " + anTodos.length + " entrada(s) na anamnese." : ".") +
+        extra + avisoFin,
         avisoFin ? "aviso" : undefined);
       onCriado(alunoId);
     } catch (e) { setErro(e.message); }
@@ -6633,19 +6961,11 @@ function ModalNovoAluno({ onFechar, onCriado }) {
             placeholder="anotação sua, o aluno não vê" />
 
           <div className="ed-lab">
-            Anamnese inicial <i>opcional · cola o texto e vira entradas</i>
+            Anamnese inicial <i>opcional · cada item vira uma entrada da ficha</i>
           </div>
-          <textarea className="raw" style={{ minHeight: 130 }} value={texto}
-            onChange={e => setTexto(e.target.value)}
-            placeholder={"- Obj:\n" + hojeCurto() + ": objetivo do aluno\n- Dor/Pat:\n..."} />
-          {texto.trim() && (
-            <div className="ed-cnt" style={{ marginTop: 6 }}>
-              {validas.length} entrada(s) em{" "}
-              {[...new Set(validas.map(e => nomeSecao(e.secao_id)))].join(", ") || "—"}
-              {prev.length - validas.length > 0 &&
-                " · " + (prev.length - validas.length) + " fora do padrão (ignoradas)"}
-            </div>
-          )}
+          <AnamneseInicial secoes={anSecs} tipos={anTipos} cat={anCat}
+            itens={anItens} setItens={setAnItens} comp={anComp} setComp={setAnComp}
+            data={anData} setData={setAnData} />
 
           <div className="ed-lab">Acesso ao app</div>
           <div className={"ed-tog" + (criarAcesso ? " on" : "")}
@@ -6694,7 +7014,7 @@ function ModalNovoAluno({ onFechar, onCriado }) {
           <div className="conf-bt" style={{ marginTop: 16 }}>
             <button className="btn-sec" onClick={onFechar}>Cancelar</button>
             <button onClick={criar} disabled={busy || !nome.trim()}>
-              {busy ? "Criando..." : "Criar aluno"}
+              {busy ? "Criando..." : passo.current.aluno ? "Concluir" : "Criar aluno"}
             </button>
           </div>
         </div>
@@ -6711,8 +7031,667 @@ function entRegiao(r) {
   return dzTabelaNome()[s] ? dzNomeRegiao(s) : s;
 }
 
-/* ---------- Entradas segmentadas do aluno ---------- */
-function PainelEntradas({ aluno }) {
+/* ---------- Anamnese: apresentação (v2 · 11/11/2026) ----------
+   Os DADOS continuam em anamnese_secoes (nome, ordem, flags usa_*) e em
+   anamnese_entradas. Aqui mora só a APRESENTAÇÃO: em que bloco cada seção
+   aparece, o ícone, a dica de uma linha (o que se escreve ali) e o papel
+   dela na visão rápida.
+   Multitenant: se anamnese_secoes ganhar as colunas grupo / icone / dica /
+   papel, elas vencem este mapa (anSecMeta lê a linha do banco primeiro),
+   então cada tenant configura pelo banco sem mexer no código. Seção que o
+   mapa não conhece cai em "Outras seções", com ícone genérico. */
+const AN_GRUPOS = [
+  { id: "objetivo", nome: "Objetivo e histórico", ic: "alvo",   cor: "var(--an-objetivo)", cols: 2 },
+  { id: "saude",    nome: "Saúde e restrições",   ic: "cruz",   cor: "var(--an-saude)",    cols: 1 },
+  /* centro: bloco de um cartão só, centralizado e separado dos demais */
+  { id: "coord",    nome: "Coordenação motora",   ic: "mira",   cor: "var(--an-coord)",    cols: 1,
+    centro: true },
+  { id: "montagem", nome: "Para a montagem",      ic: "halter", cor: "var(--an-montagem)", cols: 2 },
+  { id: "obs",      nome: "Observações",          ic: "nota",   cor: "var(--an-obs)",      cols: 1 },
+  { id: "outras",   nome: "Outras seções",        ic: "nota",   cor: "var(--an-obs)",      cols: 2 }
+];
+/* faixas do formulário de entrada. [rótulo do botão, texto gravado na entrada] */
+const AN_TEMPO_OPCOES = [
+  ["Até 30 min",     "Disponível por treino: até 30 min"],
+  ["30 a 45 min",    "Disponível por treino: 30 a 45 min"],
+  ["45 a 60 min",    "Disponível por treino: 45 a 60 min"],
+  ["1h a 1h15",      "Disponível por treino: 1h a 1h15"],
+  ["1h15 a 1h30",    "Disponível por treino: 1h15 a 1h30"],
+  ["Mais de 1h30",   "Disponível por treino: mais de 1h30, se necessário"]
+];
+const AN_SEC_META = {
+  "Obj":               { grupo: "objetivo", ic: "alvo",      papel: "objetivo",
+                         dica: "O que o aluno quer alcançar e em quanto tempo" },
+  "Tempo":             { grupo: "montagem", ic: "relogio",   papel: "tempo", pos: 1,
+                         dica: "Quanto tempo tem disponível por treino",
+                         opcoes: AN_TEMPO_OPCOES, opcoesRotulo: "Tempo disponível por treino",
+                         marcas: ["até 30", "30–45", "45–60", "1h–1h15", "1h15–1h30", "+1h30"] },
+  "Freq":              { grupo: "montagem", ic: "cal",       papel: "freq",  pos: 2,
+                         campos: "freq",
+                         dica: "Vezes por semana: musculação, cardio e outros" },
+  "Hist":              { grupo: "objetivo", ic: "livro",
+                         dica: "Histórico de treino e de saúde que vale lembrar" },
+  "Outras Ativs":      { grupo: "objetivo", ic: "pulso",
+                         dica: "Esportes e atividades fora do treino, com frequência" },
+  "Dor/Pat":           { grupo: "saude",    ic: "raio",
+                         dica: "Onde dói, quando piora, intensidade e patologias" },
+  "Diag":              { grupo: "saude",    ic: "prancheta",
+                         dica: "Diagnósticos, exames e laudos" },
+  "Supl/Med":          { grupo: "saude",    ic: "pilula",
+                         dica: "O que toma hoje, com dose e horário" },
+  "Dif. Exerc":        { grupo: "montagem", ic: "alerta",    pos: 3,
+                         dica: "Exercícios com dificuldade ou que é melhor evitar" },
+  "Pref. Treino":      { grupo: "montagem", ic: "estrela",   pos: 4,
+                         dica: "Como gosta de treinar: duração, divisão, horário" },
+  "Pref. Exerc":       { grupo: "montagem", ic: "halter",    pos: 5,
+                         dica: "Exercícios que gosta (ou não gosta) de fazer" },
+  "Músc + responsivo": { grupo: "montagem", ic: "sobe",      papel: "mais",  pos: 6,
+                         dica: "Músculos que respondem bem ao treino" },
+  "Músc - responsivo": { grupo: "montagem", ic: "desce",     papel: "menos", pos: 7,
+                         dica: "Músculos que custam a responder" },
+  "Coord":             { grupo: "coord",    ic: "mira",
+                         dica: "Autorrelato do aluno e o que você observa na execução" },
+  "Obs Gerais":        { grupo: "obs",      ic: "nota",
+                         dica: "Qualquer outra informação relevante" }
+};
+function anSecMeta(s) {
+  const m = (s && AN_SEC_META[s.id]) || {};
+  return {
+    grupo: (s && s.grupo) || m.grupo || (s && s.destaque ? "saude" : "outras"),
+    ic:    (s && s.icone) || m.ic || "nota",
+    dica:  (s && s.dica)  || m.dica || "",
+    papel: (s && s.papel) || m.papel || null,
+    pos:    m.pos === undefined ? null : m.pos,     /* posição dentro do bloco */
+    opcoes: m.opcoes || null,                       /* faixas (slider) que preenchem o texto */
+    opcoesRotulo: m.opcoesRotulo || "Faixa",
+    marcas: m.marcas || null,                       /* rótulo curto embaixo de cada parada */
+    campos: m.campos || null                        /* formulário próprio ("freq") */
+  };
+}
+const anCorSecao = s => {
+  const g = AN_GRUPOS.find(x => x.id === anSecMeta(s).grupo);
+  return g ? g.cor : "var(--an-obs)";
+};
+
+/* blocos da ficha na ordem de AN_GRUPOS; dentro do bloco, a ordem do banco.
+   Grupo que o tenant inventou (fora da lista) cai em "Outras seções". */
+function anAgrupar(secoes) {
+  const por = new Map(AN_GRUPOS.map(g => [g.id, []]));
+  (secoes || []).forEach((s, i) => {
+    const g = anSecMeta(s).grupo;
+    (por.get(g) || por.get("outras")).push({ s, i });
+  });
+  /* dentro do bloco: posição da apresentação (pos) e, sem ela, a ordem do banco */
+  const chave = x => { const p = anSecMeta(x.s).pos; return p === null ? 1e6 + x.i : p; };
+  return AN_GRUPOS.map(g => ({ ...g,
+    secoes: por.get(g.id).sort((a, b) => chave(a) - chave(b)).map(x => x.s) }))
+    .filter(g => g.secoes.length);
+}
+
+/* índice da faixa que o texto da entrada representa (-1 = texto livre/vazio) */
+function anFaixaDe(meta, texto) {
+  if (!meta || !meta.opcoes) return -1;
+  return meta.opcoes.findIndex(([, t]) => t === texto);
+}
+
+/* ---- Frequência de treino: 3 campos que viram UM texto normal ----
+   "Musculação: 4x/semana · Cardio: 2x/semana · Outros: pilates 1x"
+   O texto é a fonte de verdade (copiar/IA leem direto); a tela só monta e
+   desmonta esse texto. Texto escrito à mão fora do padrão continua editável
+   como texto livre (ok = false). */
+const AN_VEZES = ["1x", "2x", "3x", "4x", "5x", "6x", "7x"];
+const AN_CARDIO = ["Não faz", ...AN_VEZES];
+function freqTexto({ musc, cardio, outros }) {
+  const p = [];
+  if (musc) p.push("Musculação: " + musc + "/semana");
+  if (cardio) p.push("Cardio: " + (cardio === "Não faz" ? "não faz" : cardio + "/semana"));
+  if (outros && outros.trim()) p.push("Outros: " + outros.replace(/^\s+/, ""));
+  return p.join(" · ");
+}
+function freqLer(txt) {
+  const r = { musc: null, cardio: null, outros: "", ok: true };
+  const t = String(txt || "");
+  if (!t.trim()) return r;
+  const partes = t.split(" · ");
+  for (let i = 0; i < partes.length; i++) {
+    const m = partes[i].match(/^\s*([^:]{4,12}):\s?(.*)$/);
+    const rot = m ? normAcc(m[1]) : "", val = m ? m[2] : "";
+    if (!["musculacao", "cardio", "outros"].includes(rot)) { r.ok = false; return r; }
+    if (rot === "outros") { r.outros = [val, ...partes.slice(i + 1)].join(" · "); break; }
+    const v = val.trim().match(/^([1-7]x)\/semana$/i);
+    if (rot === "musculacao") { if (!v) { r.ok = false; return r; } r.musc = v[1].toLowerCase(); }
+    else if (/^nao faz$/i.test(normAcc(val))) r.cardio = "Não faz";
+    else { if (!v) { r.ok = false; return r; } r.cardio = v[1].toLowerCase(); }
+  }
+  return r;
+}
+
+/* datadas da mais nova para a mais velha; sem data por último, na ordem
+   em que foram escritas (mesma regra da v1) */
+function anOrdenar(arr) {
+  return [...(arr || [])].sort((x, y) => {
+    if (!!x.data !== !!y.data) return x.data ? -1 : 1;
+    if (x.data && y.data && x.data !== y.data) return x.data < y.data ? 1 : -1;
+    return (x.ordem || 0) - (y.ordem || 0);
+  });
+}
+
+function anTextoBusca(e) {
+  return normAcc([e.texto, e.exercicio, e.tipo, e.regiao ? entRegiao(e.regiao) : "",
+    e.escala, e.data_texto].filter(Boolean).join(" "));
+}
+/* busca (todas as palavras, sem acento), período e arquivadas.
+   Sem data não dá para filtrar por período: fica, é mais seguro que esconder. */
+function anFiltrar(ents, { busca, meses, verArq, agora } = {}) {
+  const corte = meses ? (agora || Date.now()) - meses * 30.44 * 864e5 : null;
+  const toks = normAcc(busca || "").split(/\s+/).filter(Boolean);
+  return (ents || []).filter(e => {
+    if (e.arquivada && !verArq) return false;
+    if (corte && e.data && parseISO(e.data).getTime() < corte) return false;
+    if (toks.length) {
+      const t = anTextoBusca(e);
+      if (!toks.every(k => t.includes(k))) return false;
+    }
+    return true;
+  });
+}
+
+/* o que a visão rápida mostra. Só entradas não arquivadas. */
+function anResumo(secoes, ents) {
+  const S = secoes || [];
+  const ativas = (ents || []).filter(e => !e.arquivada);
+  const daSecao = id => anOrdenar(ativas.filter(e => e.secao_id === id));
+  const doPapel = p => {
+    const sec = S.find(x => anSecMeta(x).papel === p);
+    if (!sec) return null;
+    return { sec, e: daSecao(sec.id)[0] || null };
+  };
+  const dest = S.filter(s => s.destaque);
+  const al = anOrdenar(ativas.filter(e => dest.some(s => s.id === e.secao_id)));
+  /* "joelho_d" do App e "joelho direito" digitado viram uma região só */
+  const regioes = [];
+  for (const e of al) {
+    const r = e.regiao ? String(entRegiao(e.regiao)).trim() : "";
+    if (r && !regioes.some(x => normAcc(x) === normAcc(r))) regioes.push(r);
+  }
+  let escala = null;
+  for (const sec of S.filter(s => s.usa_escala)) {
+    const e = daSecao(sec.id).find(x => x.escala);
+    if (e) { escala = { sec, e }; break; }
+  }
+  const datas = ativas.map(e => e.data).filter(Boolean).sort();
+  return {
+    objetivo: doPapel("objetivo"), mais: doPapel("mais"), menos: doPapel("menos"),
+    tempo: doPapel("tempo"), freq: doPapel("freq"),
+    alertas: { n: al.length, regioes, nomes: dest.map(s => s.nome), ultima: al[0] || null },
+    escala,
+    total: ativas.length,
+    cheias: S.filter(s => ativas.some(e => e.secao_id === s.id)).length,
+    nSecoes: S.length,
+    ultima: datas.length ? datas[datas.length - 1] : null
+  };
+}
+
+/* mesma regra da v1: texto, autorrelato ou exercício — um basta */
+const anEntradaValida = v =>
+  !!(v && ((v.texto || "").trim() || v.escala || v.cardapio_id));
+
+const AN_IC = {
+  alvo: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12.01V12",
+  relogio: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2",
+  livro: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM20 17v4H6.5A2.5 2.5 0 0 1 4 19.5",
+  pulso: "M22 12h-4l-3 8-6-16-3 8H2",
+  raio: "M13 2 4 14h7l-1 8 9-12h-7z",
+  prancheta: "M9 3h6v4H9zM15 5h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3M12 11v6M9 14h6",
+  pilula: "M10.5 20.5a5 5 0 0 1-7-7l7-7a5 5 0 0 1 7 7zM7 10l7 7",
+  alerta: "M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17.01V17",
+  estrela: "m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z",
+  halter: "M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11",
+  sobe: "m22 7-8.5 8.5-5-5L2 17M16 7h6v6",
+  desce: "m22 17-8.5-8.5-5 5L2 7M16 17h6v-6",
+  mira: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM22 12h-4M6 12H2M12 6V2M12 22v-4",
+  nota: "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5",
+  cruz: "M9 3h6v6h6v6h-6v6H9v-6H3V9h6z",
+  cal: "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
+  pin: "M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
+  busca: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm10 2-4.3-4.3",
+  cel: "M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2",
+  lapis: "M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z",
+  arquivo: "M21 8v13H3V8M1 3h22v5H1zM10 12h4",
+  desfaz: "M3 7v6h6M3 13a9 9 0 1 0 3-7.7L3 8",
+  lixo: "M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
+};
+function IcoAn({ k }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d={AN_IC[k] || AN_IC.nota} />
+    </svg>
+  );
+}
+
+/* autorrelato como régua: "Razoável" = 3 de 5. Cor sobe de laranja a verde. */
+function anCorEscala(i, n) {
+  const f = n > 1 ? i / (n - 1) : 1;
+  return f < 0.3 ? "var(--int-forte)" : f < 0.7 ? "var(--int-moderado)" : "var(--int-leve)";
+}
+function MedidorEscala({ valor, opcoes }) {
+  const ops = opcoes && opcoes.length ? opcoes : ESCALAS;
+  const i = ops.findIndex(o => cbNorm(o) === cbNorm(valor));
+  if (i < 0) return <span className="an-tag">{valor}</span>;
+  const cor = anCorEscala(i, ops.length);
+  return (
+    <span className="an-esc" title={"Autorrelato: " + valor + " (" + (i + 1) +
+      " de " + ops.length + ")"}>
+      <span className="an-esc-b">
+        {ops.map((o, k) => <i key={k} style={k <= i ? { background: cor } : null} />)}
+      </span>
+      <b>{valor}</b>
+    </span>
+  );
+}
+
+/* Slider de faixas (Tempo de treino). Paradas fixas, com estado "não informado"
+   (-1) — por isso não é <input type=range>, que sempre tem um valor.
+   Arrastar, tocar na trilha ou no rótulo; teclado: setas, Home/End, Delete limpa,
+   Enter confirma (onEnter). */
+function SliderFaixas({ opcoes, marcas, i, onChange, rotulo, autoFocus, onEnter }) {
+  const ref = React.useRef(null);
+  const n = opcoes.length;
+  const pos = k => (n > 1 ? (k / (n - 1)) * 100 : 0);
+  useEffect(() => { if (autoFocus && ref.current) ref.current.focus(); }, []);
+  function pelaPosicao(x) {
+    const r = ref.current.getBoundingClientRect();
+    const f = Math.min(1, Math.max(0, (x - r.left) / (r.width || 1)));
+    return Math.round(f * (n - 1));
+  }
+  function apertar(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    ref.current.focus();
+    let ult = pelaPosicao(e.clientX);
+    onChange(ult);
+    const mover = ev => { const k = pelaPosicao(ev.clientX); if (k !== ult) { ult = k; onChange(k); } };
+    const soltar = () => {
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
+    };
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
+  }
+  function tecla(e) {
+    const k = e.key;
+    let nv = null;
+    if (k === "ArrowRight" || k === "ArrowUp") nv = i < 0 ? 0 : Math.min(n - 1, i + 1);
+    else if (k === "ArrowLeft" || k === "ArrowDown") nv = i < 0 ? 0 : Math.max(0, i - 1);
+    else if (k === "Home") nv = 0;
+    else if (k === "End") nv = n - 1;
+    else if (k === "Delete" || k === "Backspace") nv = -1;
+    else if (k === "Enter" && onEnter) { e.preventDefault(); onEnter(); return; }
+    if (nv === null) return;
+    e.preventDefault();
+    onChange(nv);
+  }
+  return (
+    <div className={"an-sl" + (i < 0 ? " vz" : "")}>
+      <div className="an-sl-v">
+        {i < 0 ? <i>não informado · arraste ou toque numa faixa</i> : <b>{opcoes[i][0]}</b>}
+        {i >= 0 && (
+          <button type="button" className="an-sl-x" title="Limpar" aria-label="Limpar"
+            onClick={() => onChange(-1)}>×</button>
+        )}
+      </div>
+      <div className="an-sl-tr" ref={ref} tabIndex={0} role="slider" aria-label={rotulo}
+        aria-valuemin={0} aria-valuemax={n - 1} aria-valuenow={i < 0 ? undefined : i}
+        aria-valuetext={i < 0 ? "não informado" : opcoes[i][0]}
+        onPointerDown={apertar} onKeyDown={tecla}>
+        <span className="an-sl-base" />
+        {i >= 0 && <span className="an-sl-fill" style={{ width: pos(i) + "%" }} />}
+        {opcoes.map((o, k) => (
+          <span key={k} className={"an-sl-pt" + (i >= 0 && k <= i ? " on" : "")}
+            style={{ left: pos(k) + "%" }} />
+        ))}
+        {i >= 0 && <span className="an-sl-th" style={{ left: pos(i) + "%" }} />}
+      </div>
+      <div className="an-sl-rot">
+        {opcoes.map((o, k) => (
+          <button type="button" key={k} tabIndex={-1}
+            className={(k === i ? "on" : "") + (k === 0 ? " ini" : k === n - 1 ? " fim" : "")}
+            style={{ left: pos(k) + "%" }} onClick={() => onChange(k === i ? -1 : k)}>
+            {(marcas && marcas[k]) || o[0]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Campos de UMA entrada, conforme as flags da seção (usa_exercicio, usa_tipo,
+   usa_escala, usa_regiao). O mesmo formulário serve à ficha e ao Novo aluno.
+   onEnter: Enter grava (Shift+Enter quebra linha). */
+function CamposEntrada({ sec, v, set, tipos, cat, comData, onEnter, autoFocus }) {
+  const up = p => set({ ...v, ...p });
+  const meta = anSecMeta(sec);
+  const dica = meta.dica;
+  const fq = meta.campos === "freq" ? freqLer(v.texto) : null;
+  const iFx = anFaixaDe(meta, v.texto);
+  const enter = onEnter ? (e => {
+    if (e.key === "Enter" && !e.shiftKey && !(e.nativeEvent && e.nativeEvent.isComposing)) {
+      e.preventDefault(); onEnter();
+    }
+  }) : undefined;
+  return (
+    <>
+      {comData && (
+        <>
+          <div className="ed-lab">Data</div>
+          <input type="date" value={v.data || ""}
+            onChange={e => up({ data: e.target.value })} style={{ marginBottom: 0 }} />
+          {!v.data && (
+            <input value={v.data_texto || ""}
+              onChange={e => up({ data_texto: e.target.value })}
+              placeholder="ou data solta (ex: 15/03)"
+              style={{ marginTop: 7, marginBottom: 0 }} />
+          )}
+        </>
+      )}
+
+      {sec.usa_exercicio && (
+        <>
+          <div className="ed-lab">Exercício</div>
+          <Combobox
+            opcoes={(cat || []).map(c => ({ value: String(c.id), label: c.exercicio }))}
+            value={v.cardapio_id ? String(v.cardapio_id) : ""}
+            onChange={x => up({ cardapio_id: x ? Number(x) : null })}
+            placeholder="Buscar no catálogo..." />
+        </>
+      )}
+
+      {sec.usa_tipo && (
+        <>
+          <div className="ed-lab">Tipo</div>
+          <div className="chips">
+            {(tipos || []).map(t => (
+              <button key={t.id} type="button"
+                className={"chip mini" + (v.tipo_id === t.id ? " on" : "")}
+                onClick={() => up({ tipo_id: v.tipo_id === t.id ? null : t.id })}
+                style={v.tipo_id === t.id
+                  ? { background: t.cor, borderColor: t.cor, color: "#04191c" } : {}}>
+                {t.nome}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {sec.usa_escala && (
+        <>
+          <div className="ed-lab">Autorrelato</div>
+          <div className="chips">
+            {(sec.escala_opcoes && sec.escala_opcoes.length ? sec.escala_opcoes : ESCALAS)
+              .map(o => (
+                <button key={o} type="button"
+                  className={"chip mini" + (v.escala === o ? " on" : "")}
+                  onClick={() => up({ escala: v.escala === o ? null : o })}>{o}</button>
+              ))}
+          </div>
+        </>
+      )}
+
+      {sec.usa_regiao && (
+        <>
+          <div className="ed-lab">Região</div>
+          <input value={v.regiao || ""}
+            onChange={e => up({ regiao: e.target.value })}
+            placeholder="ex: ombro direito, lombar"
+            style={{ marginBottom: 0 }} />
+        </>
+      )}
+
+      {meta.opcoes && (
+        <>
+          <div className="ed-lab">{meta.opcoesRotulo}</div>
+          <SliderFaixas opcoes={meta.opcoes} marcas={meta.marcas} i={iFx} rotulo={sec.nome}
+            autoFocus={autoFocus} onEnter={onEnter}
+            onChange={k => up({ texto: k < 0 ? "" : meta.opcoes[k][1] })} />
+        </>
+      )}
+
+      {fq && fq.ok ? (
+        <>
+          <div className="ed-lab">Musculação <i>vezes por semana</i></div>
+          <div className="chips">
+            {AN_VEZES.map(o => (
+              <button key={o} type="button" className={"chip mini" + (fq.musc === o ? " on" : "")}
+                onClick={() => up({ texto: freqTexto({ ...fq, musc: fq.musc === o ? null : o }) })}>
+                {o}</button>
+            ))}
+          </div>
+          <div className="ed-lab">Cardio <i>vezes por semana</i></div>
+          <div className="chips">
+            {AN_CARDIO.map(o => (
+              <button key={o} type="button" className={"chip mini" + (fq.cardio === o ? " on" : "")}
+                onClick={() => up({ texto: freqTexto({ ...fq, cardio: fq.cardio === o ? null : o }) })}>
+                {o}</button>
+            ))}
+          </div>
+          <div className="ed-lab">Outros <i>opcional</i></div>
+          <input value={fq.outros} autoFocus={autoFocus} onKeyDown={enter}
+            onChange={e => up({ texto: freqTexto({ ...fq, outros: e.target.value }) })}
+            placeholder="ex: pilates 1x, futebol aos sábados" style={{ marginBottom: 0 }} />
+          <div className="an-prev">
+            <span>vai ficar assim na anamnese</span>
+            {v.texto ? v.texto : <i>escolhe acima</i>}
+          </div>
+        </>
+      ) : meta.opcoes && iFx >= 0 ? (
+        <div className="an-prev">
+          <span>vai ficar assim na anamnese</span>{v.texto}
+        </div>
+      ) : (
+        <>
+          <div className="ed-lab">
+            {meta.opcoes ? "Ou escreve" : sec.usa_escala ? "Observação" : "Texto"}
+            {sec.usa_escala && <i>opcional</i>}
+            {meta.opcoes && <i>se não couber nas faixas</i>}
+            {fq && !fq.ok && <i>texto livre (fora do formato dos campos)</i>}
+          </div>
+          <textarea className="an-ta" value={v.texto || ""} rows={3}
+            autoFocus={autoFocus && !meta.opcoes}
+            onChange={e => up({ texto: e.target.value })}
+            onKeyDown={enter}
+            placeholder={sec.usa_escala ? "opcional — o autorrelato acima já basta"
+              : (dica || "O que aconteceu / o que observar")} />
+        </>
+      )}
+    </>
+  );
+}
+
+/* texto da entrada; a Frequência no formato dos campos vira números */
+function TextoEntrada({ e, s }) {
+  if (anSecMeta(s).campos === "freq") {
+    const f = freqLer(e.texto);
+    if (f.ok && (f.musc || f.cardio || f.outros.trim())) return (
+      <div className="an-freq">
+        {f.musc && <span><b>{f.musc}</b>musculação</span>}
+        {f.cardio && <span><b>{f.cardio === "Não faz" ? "—" : f.cardio}</b>
+          {f.cardio === "Não faz" ? "cardio: não faz" : "cardio"}</span>}
+        {f.outros.trim() && <span className="ou">Outros: {f.outros.trim()}</span>}
+      </div>
+    );
+  }
+  const meta = anSecMeta(s), k = anFaixaDe(meta, e.texto);
+  if (k >= 0) return (
+    <span className="an-esc an-fx" title={e.texto}>
+      <span className="an-esc-b">
+        {meta.opcoes.map((o, j) => <i key={j} className={j <= k ? "on" : ""} />)}
+      </span>
+      <b>{meta.opcoes[k][0]}</b><em>por treino</em>
+    </span>
+  );
+  return <div className="an-t">{e.texto}</div>;
+}
+
+/* uma linha da anamnese: data · texto · régua · etiquetas · ferramentas */
+function LinhaEntrada({ e, s, rec, onEditar, onArquivar, onApagar }) {
+  const temTags = e.exercicio || e.tipo || e.regiao || e.origem === "app";
+  return (
+    <div className={"an-ent" + (rec ? " rec" : "") + (e.arquivada ? " arq" : "")}>
+      <span className={"an-dt" + (e.data_texto ? "" : " sem")}>
+        {e.data_texto || "s/ data"}
+      </span>
+      <div className="an-tx">
+        {e.texto ? <TextoEntrada e={e} s={s} /> : null}
+        {e.escala && (
+          <div className="an-l"><MedidorEscala valor={e.escala} opcoes={s.escala_opcoes} /></div>
+        )}
+        {temTags && (
+          <div className="an-tags">
+            {e.exercicio && <span className="an-tag ex"><IcoAn k="halter" />{e.exercicio}</span>}
+            {e.regiao && <span className="an-tag rg"><IcoAn k="pin" />{entRegiao(e.regiao)}</span>}
+            {e.tipo && (
+              <span className="an-tag" style={{ background: (e.tipo_cor || "#333333") + "22",
+                color: e.tipo_cor || "var(--mut)" }}>{e.tipo}</span>
+            )}
+            {e.origem === "app" && <span className="an-tag app"><IcoAn k="cel" />veio do app</span>}
+          </div>
+        )}
+        {!e.texto && !e.escala && !temTags && <span className="an-vz">—</span>}
+      </div>
+      <span className="an-ferr">
+        <button type="button" onClick={onEditar} title="Editar" aria-label="Editar">
+          <IcoAn k="lapis" /></button>
+        <button type="button" onClick={onArquivar}
+          title={e.arquivada ? "Desarquivar" : "Arquivar"}
+          aria-label={e.arquivada ? "Desarquivar" : "Arquivar"}>
+          <IcoAn k={e.arquivada ? "desfaz" : "arquivo"} /></button>
+        <button type="button" className="del" onClick={onApagar} title="Apagar"
+          aria-label="Apagar"><IcoAn k="lixo" /></button>
+      </span>
+    </div>
+  );
+}
+
+function CartaoSecao({ s, itens, lim, recolher, onVer, onNova, onEditar, onArquivar, onApagar }) {
+  const meta = anSecMeta(s);
+  const vis = lim ? itens.slice(0, lim) : itens;
+  const resto = itens.length - vis.length;
+  return (
+    <div className={"an-sec" + (s.destaque ? " dest" : "")} data-sec={s.id}>
+      <div className="an-sec-h">
+        <span className="an-sec-ic"><IcoAn k={meta.ic} /></span>
+        <b title={meta.dica || undefined}>{s.nome}</b>
+        {itens.length > 1 && <i className="an-n">{itens.length}</i>}
+        <button type="button" className="an-mais" title={"Nova entrada em " + s.nome}
+          aria-label={"Nova entrada em " + s.nome} onClick={onNova}>+</button>
+      </div>
+      <div className="an-ents">
+        {vis.map((e, i) => (
+          <LinhaEntrada key={e.id} e={e} s={s} rec={i === 0}
+            onEditar={() => onEditar(e)} onArquivar={() => onArquivar(e)}
+            onApagar={() => onApagar(e)} />
+        ))}
+      </div>
+      {(resto > 0 || recolher) && (
+        <button type="button" className="an-ver" onClick={onVer}>
+          {resto > 0
+            ? "+ " + resto + (resto === 1 ? " registro anterior" : " registros anteriores")
+            : "mostrar menos"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* topo da anamnese: o que olhar antes de montar. Cada cartão leva à seção. */
+function AnVisaoRapida({ r, onIr }) {
+  const trecho = e => e ? (e.texto || e.exercicio || e.escala || "—") : "";
+  const ob = r.objetivo, al = r.alertas, es = r.escala;
+  const ir = id => id && onIr(id);
+  const peq = [r.mais, r.menos].filter(Boolean);
+  const tf = r.tempo || r.freq;
+  const tempoCurto = e => e ? String(e.texto || "").replace(/^Disponível por treino:\s*/i, "") : "";
+  return (
+    <div className="an-vr">
+      <div className="an-vr-g1">
+        {ob && (
+          <button type="button" className="an-vr-c" style={{ "--an-c": "var(--an-objetivo)" }}
+            onClick={() => ir(ob.sec.id)}>
+            <span className="an-vr-l"><IcoAn k="alvo" />{ob.sec.nome}
+              {ob.e && ob.e.data_texto && <em>{ob.e.data_texto}</em>}</span>
+            {ob.e ? <p>{trecho(ob.e)}</p> : <p className="vz">ainda não registrado</p>}
+          </button>
+        )}
+        <button type="button" className={"an-vr-c" + (al.n ? " on" : "")}
+          style={{ "--an-c": "var(--an-saude)" }}
+          onClick={() => ir(al.ultima && al.ultima.secao_id)}>
+          <span className="an-vr-l"><IcoAn k="raio" />Atenção
+            {al.nomes.length > 0 && <em>{al.nomes.join(" · ")}</em>}</span>
+          {al.n ? (
+            <>
+              <div className="an-vr-n">
+                <b>{al.n}</b>
+                <span>{al.n === 1 ? "registro" : "registros"} · último em{" "}
+                  {al.ultima.data_texto || "data não informada"}</span>
+              </div>
+              {al.regioes.length > 0 ? (
+                <div className="an-tags">
+                  {al.regioes.slice(0, 4).map(x => (
+                    <span className="an-tag rg" key={x}><IcoAn k="pin" />{x}</span>
+                  ))}
+                  {al.regioes.length > 4 && <span className="an-tag">+{al.regioes.length - 4}</span>}
+                </div>
+              ) : <p className="sm">{trecho(al.ultima)}</p>}
+            </>
+          ) : <p className="vz">nada registrado</p>}
+        </button>
+      </div>
+      {(es || tf || peq.length > 0) && (
+        <div className="an-vr-g2">
+          {tf && (
+            <button type="button" className="an-vr-c" style={{ "--an-c": "var(--an-montagem)" }}
+              onClick={() => ir((r.tempo || r.freq).sec.id)}>
+              <span className="an-vr-l"><IcoAn k="relogio" />Disponibilidade</span>
+              {r.tempo && r.tempo.e && (anFaixaDe(anSecMeta(r.tempo.sec), r.tempo.e.texto) >= 0
+                ? <TextoEntrada e={r.tempo.e} s={r.tempo.sec} />
+                : <p className="sm">{tempoCurto(r.tempo.e)}</p>)}
+              {r.freq && r.freq.e && <TextoEntrada e={r.freq.e} s={r.freq.sec} />}
+              {!(r.tempo && r.tempo.e) && !(r.freq && r.freq.e) && <p className="vz">—</p>}
+            </button>
+          )}
+          {es && (
+            <button type="button" className="an-vr-c" style={{ "--an-c": "var(--an-montagem)" }}
+              onClick={() => ir(es.sec.id)}>
+              <span className="an-vr-l"><IcoAn k={anSecMeta(es.sec).ic} />{es.sec.nome}</span>
+              <MedidorEscala valor={es.e.escala} opcoes={es.sec.escala_opcoes} />
+            </button>
+          )}
+          {peq.map(x => (
+            <button type="button" key={x.sec.id} className="an-vr-c"
+              style={{ "--an-c": "var(--an-montagem)" }} onClick={() => ir(x.sec.id)}>
+              <span className="an-vr-l"><IcoAn k={anSecMeta(x.sec).ic} />{x.sec.nome}</span>
+              {x.e ? <p className="sm">{trecho(x.e)}</p> : <p className="vz">—</p>}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="an-vr-pe">
+        {r.total} {r.total === 1 ? "registro" : "registros"} · {r.cheias} de {r.nSecoes}{" "}
+        seções preenchidas{r.ultima ? " · última entrada em " + dBR(r.ultima) : ""}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Anamnese do aluno (entradas segmentadas) ----------
+   v2 (11/11/2026): visão rápida no topo + blocos (Objetivo, Saúde, Montagem,
+   Observações) com um cartão por seção. Seção vazia não ocupa cartão: vira
+   atalho "+ seção" no rodapé do bloco. Leitura e gravação iguais à v1.
+   temTexto: o aluno tem anamnese em TEXTO ainda não migrada — aí uma entrada
+   solta esconderia o texto (a ficha passa a ler só as entradas), então segue
+   pedindo a migração. Sem texto nenhum, a anamnese já começa em entradas. */
+function PainelEntradas({ aluno, temTexto }) {
   const { toast, confirmar } = usarUI();
   const [secoes, setSecoes] = useState([]);
   const [tipos, setTipos]   = useState([]);
@@ -6721,6 +7700,10 @@ function PainelEntradas({ aluno }) {
   const [erro, setErro]     = useState("");
   const [edit, setEdit]     = useState(null);   // {id?} + campos
   const [verArq, setVerArq] = useState(false);
+  const [busca, setBusca]   = useState("");
+  const [meses, setMeses]   = useState(null);
+  const [abertas, setAbertas] = useState({});   // seção com o histórico todo à vista
+  const raiz = React.useRef(null);
 
   const carregar = useCallback(async () => {
     setErro("");
@@ -6746,8 +7729,7 @@ function PainelEntradas({ aluno }) {
     if (!edit) return;
     /* em seção de escala o autorrelato JÁ é a informação — texto vazio é válido.
        O mesmo vale quando você só quer registrar o exercício. */
-    const temConteudo = edit.texto.trim() || edit.escala || edit.cardapio_id;
-    if (!temConteudo) {
+    if (!anEntradaValida(edit)) {
       setErro("Preenche pelo menos o texto, o autorrelato ou o exercício.");
       return;
     }
@@ -6755,7 +7737,7 @@ function PainelEntradas({ aluno }) {
       aluno_id: aluno.id, secao_id: edit.secao_id,
       data: edit.data || null,
       data_texto: edit.data ? dBR(edit.data) : (edit.data_texto || null),
-      texto: edit.texto.trim(),   /* pode ser vazio quando há escala/exercício */
+      texto: (edit.texto || "").trim(),   /* pode ser vazio quando há escala/exercício */
       cardapio_id: edit.cardapio_id || null,
       tipo_id: edit.tipo_id || null,
       regiao: (edit.regiao || "").trim() || null,
@@ -6779,7 +7761,7 @@ function PainelEntradas({ aluno }) {
 
   async function apagar(e) {
     const ok = await confirmar({
-      titulo: "Apagar entrada?", texto: e.texto.slice(0, 90),
+      titulo: "Apagar entrada?", texto: (e.texto || e.escala || e.exercicio || "").slice(0, 90),
       alerta: "Não volta. Se for só para tirar da vista, use arquivar.",
       ok: "Apagar", perigo: true
     });
@@ -6789,25 +7771,27 @@ function PainelEntradas({ aluno }) {
     toast("Entrada apagada."); await carregar();
   }
 
-  function copiarTudo(meses, modo) {
-    const corpo = entradasParaTexto(secoes, ents || [], meses, modo);
-    const txt = modo === "planilha" ? corpo
-      : "ANAMNESE · " + aluno.nome + (meses ? "  (últimos " + meses + " meses)" : "") +
-        "\n" + "─".repeat(46) + "\n" + corpo;
-    navigator.clipboard.writeText(txt);
-    toast(meses ? "Copiado só o que é dos últimos " + meses + " meses."
-                : "Anamnese copiada.");
+  function copiarTudo(m) {
+    const corpo = entradasParaTexto(secoes, ents || [], m);
+    navigator.clipboard.writeText("ANAMNESE · " + aluno.nome +
+      (m ? "  (últimos " + m + " meses)" : "") + "\n" + "─".repeat(46) + "\n" + corpo);
+    toast(m ? "Copiado só o que é dos últimos " + m + " meses." : "Anamnese copiada.");
   }
 
-  const ordenar = arr => [...arr].sort((x, y) => {
-    if (!!x.data !== !!y.data) return x.data ? -1 : 1;
-    if (x.data && y.data) return x.data < y.data ? 1 : x.data > y.data ? -1 : 0;
-    return (x.ordem || 0) - (y.ordem || 0);
-  });
+  /* cartão da visão rápida -> rola até a seção e dá o pulso de chegada */
+  function irSecao(id) {
+    const el = raiz.current && Array.from(raiz.current.querySelectorAll("[data-sec]"))
+      .find(x => x.getAttribute("data-sec") === id);
+    if (!el) return;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    el.classList.remove("chegou"); void el.offsetWidth; el.classList.add("chegou");
+  }
 
-  if (ents === null) return <div className="msg">Carregando...</div>;
+  if (ents === null) return erro
+    ? <div className="err">{erro}</div>
+    : <div className="msg">Carregando...</div>;
 
-  if (!ents.length) return (
+  if (!ents.length && temTexto) return (
     <div className="sem-aluno">
       <b>Ainda não migrado</b>
       Este aluno ainda não tem entradas segmentadas.
@@ -6815,164 +7799,282 @@ function PainelEntradas({ aluno }) {
     </div>
   );
 
+  const LIM = 3;
+  const filtrando = !!busca.trim() || !!meses;
+  const vis = anFiltrar(ents, { busca, meses, verArq });
+  const doSec = id => anOrdenar(vis.filter(e => e.secao_id === id));
+  const grupos = anAgrupar(secoes);
+  const nArq = ents.filter(e => e.arquivada).length;
   const secEd = edit ? secoes.find(x => x.id === edit.secao_id) : null;
+  let achou = 0;
 
   return (
-    <div>
+    <div className="an" ref={raiz}>
       {erro && <div className="err">{erro}</div>}
-      <div className="acoes" style={{ marginBottom: 14 }}>
-        <button className="btn-sec ico" title="Copiar anamnese"
-          onClick={() => copiarTudo(null)}>
-          <IconeCopiar />
-        </button>
-        <button className="btn-sec" onClick={() => copiarTudo(12)}>
-          Copiar 12 meses
-        </button>
-        <button className="btn-sec" onClick={() => setVerArq(v => !v)}>
-          {verArq ? "Ocultar arquivadas" : "Ver arquivadas"}
-        </button>
-      </div>
 
-      {secoes.map(s => {
-        const itens = ordenar((ents || []).filter(e =>
-          e.secao_id === s.id && (verArq || !e.arquivada)));
-        return (
-          <div className={"sec-card" + (s.destaque ? " dor" : "") +
-                          (itens.length ? "" : " vazia")} key={s.id}>
-            <div className="sec-h">
-              <b>{s.nome}</b>
-              {itens.length > 1 && <i>{itens.length} entradas</i>}
-              <span style={{ flex: 1 }} />
-              <button className="sec-lapis" title={"Nova entrada em " + s.nome}
-                onClick={() => novaEntrada(s.id)}>+</button>
+      {ents.length > 0 ? (
+        <>
+          <AnVisaoRapida r={anResumo(secoes, ents)} onIr={irSecao} />
+          <div className="an-barra">
+            <label className="an-busca">
+              <IcoAn k="busca" />
+              <input value={busca} onChange={e => setBusca(e.target.value)}
+                placeholder="Buscar na anamnese (ex: joelho, agachamento)" />
+              {busca && <button type="button" title="Limpar busca"
+                onClick={() => setBusca("")}>×</button>}
+            </label>
+            <div className="an-seg" role="group" aria-label="Período">
+              <button type="button" className={!meses ? "on" : ""}
+                onClick={() => setMeses(null)}>Tudo</button>
+              <button type="button" className={meses === 12 ? "on" : ""}
+                onClick={() => setMeses(12)}>12 meses</button>
             </div>
-            {itens.length === 0
-              ? <div className="vazio-nota">—</div>
-              : itens.map(e => (
-                <div className={"ent en2" + (e.arquivada ? " arq" : "")} key={e.id}>
-                  <span className={"dt" + (e.data ? "" : " sem")}>
-                    {e.data_texto || "—"}
-                  </span>
-                  <span className="tx">
-                    {e.texto ? e.texto
-                      : <span style={{ color: "var(--mut)", fontStyle: "italic" }}>
-                          {e.escala || e.exercicio || "—"}
-                        </span>}
-                    {(e.exercicio || e.tipo || e.regiao || (e.escala && e.texto) ||
-                      e.origem === "app") && (
-                      <span className="en-tags">
-                        {e.escala && e.texto && <span className="en-tag es">{e.escala}</span>}
-                        {e.exercicio && <span className="en-tag ex">{e.exercicio}</span>}
-                        {e.tipo && <span className="en-tag"
-                          style={{ background: (e.tipo_cor || "#333") + "22",
-                                   color: e.tipo_cor || "var(--mut)" }}>{e.tipo}</span>}
-                        {e.regiao && <span className="en-tag rg">{entRegiao(e.regiao)}</span>}
-                        {e.origem === "app" && <span className="en-tag app">veio do app</span>}
-                      </span>
-                    )}
-                  </span>
-                  <span className="en-ferr">
-                    <button onClick={() => setEdit({ ...e })} title="Editar">✎</button>
-                    <button onClick={() => arquivar(e, !e.arquivada)}
-                      title={e.arquivada ? "Desarquivar" : "Arquivar"}>
-                      {e.arquivada ? "↩" : "▾"}
-                    </button>
-                    <button onClick={() => apagar(e)} title="Apagar">×</button>
-                  </span>
-                </div>
-              ))}
+            {nArq > 0 && (
+              <button type="button" className={"an-bt" + (verArq ? " on" : "")}
+                onClick={() => setVerArq(v => !v)}>
+                {verArq ? "Ocultar arquivadas" : "Arquivadas (" + nArq + ")"}
+              </button>
+            )}
+            <button type="button" className="an-bt ico" title={meses
+              ? "Copiar os últimos " + meses + " meses" : "Copiar anamnese"}
+              onClick={() => copiarTudo(meses)}>
+              <IconeCopiar />Copiar
+            </button>
           </div>
+        </>
+      ) : (
+        <div className="an-novo">
+          <b>Anamnese em branco</b>
+          <span>Comece pelos atalhos de cada bloco: cada item vira uma entrada datada,
+            e a ficha vai se montando sozinha.</span>
+        </div>
+      )}
+
+      {grupos.map(g => {
+        const cheias = g.secoes.filter(s => doSec(s.id).length);
+        const vazias = g.secoes.filter(s => !doSec(s.id).length);
+        achou += cheias.length;
+        if (filtrando && !cheias.length) return null;
+        const nG = cheias.reduce((a, s) => a + doSec(s.id).length, 0);
+        return (
+          <section key={g.id} className={"an-gr" + (g.centro ? " centro" : "")}
+            style={{ "--an-c": g.cor }}>
+            <header className="an-gr-h">
+              {g.centro && <span className="an-gr-ln" />}
+              <IcoAn k={g.ic} /><b>{g.nome}</b><span className="an-gr-ln" />
+              {!g.centro && nG > 0 && <i>{nG} {nG === 1 ? "registro" : "registros"}</i>}
+            </header>
+            <div className="an-gr-c">
+            {cheias.length > 0 && (
+              <div className={"an-grade" + (g.cols === 2 ? " c2" : "")}>
+                {cheias.map(s => {
+                  const itens = doSec(s.id);
+                  const aberta = !!abertas[s.id];
+                  return (
+                    <CartaoSecao key={s.id} s={s} itens={itens}
+                      lim={filtrando || aberta ? 0 : LIM}
+                      recolher={aberta && !filtrando && itens.length > LIM}
+                      onVer={() => setAbertas(a => ({ ...a, [s.id]: !a[s.id] }))}
+                      onNova={() => novaEntrada(s.id)}
+                      onEditar={e => setEdit({ ...e })}
+                      onArquivar={e => arquivar(e, !e.arquivada)}
+                      onApagar={apagar} />
+                  );
+                })}
+              </div>
+            )}
+            {!filtrando && vazias.length > 0 && (
+              <div className="an-vaz">
+                <span>{cheias.length ? "Sem registro" : "Nada registrado"}</span>
+                {vazias.map(s => (
+                  <button type="button" key={s.id} className="an-vaz-bt"
+                    title={anSecMeta(s).dica || ("Nova entrada em " + s.nome)}
+                    onClick={() => novaEntrada(s.id)}>
+                    <IcoAn k={anSecMeta(s).ic} />{s.nome}<i>+</i>
+                  </button>
+                ))}
+              </div>
+            )}
+            </div>
+          </section>
         );
       })}
+
+      {filtrando && achou === 0 && (
+        <div className="an-nada">
+          Nada encontrado{busca.trim() ? ' para "' + busca.trim() + '"' : ""}
+          {meses ? " nos últimos " + meses + " meses" : ""}.
+        </div>
+      )}
 
       {edit && secEd && (
         <>
           <div className="drawer-bg" style={{ zIndex: 88 }} onClick={() => setEdit(null)} />
-          <div className="conf" style={{ width: "min(520px,94vw)", zIndex: 89 }}>
-            <h3>{edit.id ? "Editar entrada" : "Nova entrada"} · {secEd.nome}</h3>
-
-            <div className="ed-lab">Data</div>
-            <input type="date" value={edit.data || ""}
-              onChange={e => setEdit({ ...edit, data: e.target.value })}
-              style={{ marginBottom: 0 }} />
-            {!edit.data && (
-              <input value={edit.data_texto || ""}
-                onChange={e => setEdit({ ...edit, data_texto: e.target.value })}
-                placeholder="ou data solta (ex: 15/03)"
-                style={{ marginTop: 7, marginBottom: 0 }} />
-            )}
-
-            {secEd.usa_exercicio && (
-              <>
-                <div className="ed-lab">Exercício</div>
-                <Combobox
-                  opcoes={cat.map(c => ({ value: String(c.id), label: c.exercicio }))}
-                  value={edit.cardapio_id ? String(edit.cardapio_id) : ""}
-                  onChange={v => setEdit({ ...edit, cardapio_id: v ? Number(v) : null })}
-                  placeholder="Buscar no catálogo..." />
-              </>
-            )}
-
-            {secEd.usa_tipo && (
-              <>
-                <div className="ed-lab">Tipo</div>
-                <div className="chips">
-                  {tipos.map(t => (
-                    <button key={t.id}
-                      className={"chip mini" + (edit.tipo_id === t.id ? " on" : "")}
-                      onClick={() => setEdit({ ...edit,
-                        tipo_id: edit.tipo_id === t.id ? null : t.id })}
-                      style={edit.tipo_id === t.id
-                        ? { background: t.cor, borderColor: t.cor, color: "#04191c" } : {}}>
-                      {t.nome}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {secEd.usa_escala && (
-              <>
-                <div className="ed-lab">Autorrelato</div>
-                <div className="chips">
-                  {(secEd.escala_opcoes || []).map(o => (
-                    <button key={o} className={"chip mini" + (edit.escala === o ? " on" : "")}
-                      onClick={() => setEdit({ ...edit,
-                        escala: edit.escala === o ? null : o })}>{o}</button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {secEd.usa_regiao && (
-              <>
-                <div className="ed-lab">Região</div>
-                <input value={edit.regiao || ""}
-                  onChange={e => setEdit({ ...edit, regiao: e.target.value })}
-                  placeholder="ex: ombro direito, lombar"
-                  style={{ marginBottom: 0 }} />
-              </>
-            )}
-
-            <div className="ed-lab">
-              {secEd.usa_escala ? "Observação" : "Texto"}
-              {secEd.usa_escala && <i>opcional</i>}
+          <div className="conf an-modal"
+            style={{ width: "min(540px,94vw)", zIndex: 89, "--an-c": anCorSecao(secEd) }}>
+            <div className="an-modal-h">
+              <span className="an-sec-ic"><IcoAn k={anSecMeta(secEd).ic} /></span>
+              <div>
+                <h3>{edit.id ? "Editar entrada" : "Nova entrada"} · {secEd.nome}</h3>
+                {anSecMeta(secEd).dica && <p>{anSecMeta(secEd).dica}</p>}
+              </div>
             </div>
-            <textarea value={edit.texto} rows={3}
-              onChange={e => setEdit({ ...edit, texto: e.target.value })}
-              placeholder={secEd.usa_escala
-                ? "opcional — o autorrelato acima já basta"
-                : "O que aconteceu / o que observar"} />
-
+            <CamposEntrada sec={secEd} v={edit} set={setEdit} tipos={tipos} cat={cat} comData />
             <div className="conf-bt" style={{ marginTop: 16 }}>
               <button className="btn-sec" onClick={() => setEdit(null)}>Cancelar</button>
-              <button onClick={salvar}
-                disabled={!(edit.texto.trim() || edit.escala || edit.cardapio_id)}>
-                Salvar</button>
+              <button onClick={salvar} disabled={!anEntradaValida(edit)}>Salvar</button>
             </div>
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+/* ---------- Anamnese inicial do Novo aluno ----------
+   Já nasce em ENTRADAS, sem texto corrido. Cada item vira uma entrada da
+   seção, todas com a data da anamnese. Nada é gravado aqui: o ModalNovoAluno
+   insere tudo depois de criar a ficha. O composer aberto (comp) mora no modal
+   para que "Criar aluno" leve junto o que ficou digitado e não foi adicionado. */
+const anRascVazio = id => ({ secao_id: id, texto: "", escala: null,
+  cardapio_id: null, tipo_id: null, regiao: "" });
+
+/* lista final = itens + o que está no composer (se válido). Editando um item
+   existente (comp.k), o composer substitui o item; vazio, o item fica como era. */
+function anJuntarPendente(itens, comp) {
+  if (!comp || !anEntradaValida(comp)) return itens;
+  if (comp.k) return itens.map(x => (x.k === comp.k ? comp : x));
+  return [...itens, comp];
+}
+
+/* linhas para anamnese_entradas — mesmas colunas que a ficha grava.
+   ordem: na sequência digitada, por seção (mesma data -> ordem decide). */
+function anLinhasIniciais(itens, alunoId, data) {
+  const ord = {};
+  return (itens || []).map(it => {
+    ord[it.secao_id] = (ord[it.secao_id] === undefined ? -1 : ord[it.secao_id]) + 1;
+    return {
+      aluno_id: alunoId, secao_id: it.secao_id,
+      data: data || null, data_texto: data ? dBR(data) : null,
+      texto: (it.texto || "").trim(),
+      escala: it.escala || null,
+      cardapio_id: it.cardapio_id || null,
+      tipo_id: it.tipo_id || null,
+      regiao: (it.regiao || "").trim() || null,
+      ordem: ord[it.secao_id], origem: "manual"
+    };
+  });
+}
+
+function AnamneseInicial({ secoes, tipos, cat, itens, setItens, comp, setComp, data, setData }) {
+  if (secoes === null) return <div className="ed-cnt">carregando seções...</div>;
+  if (!secoes.length) return (
+    <div className="ed-cnt">Nenhuma seção de anamnese ativa — dá para preencher depois na ficha.</div>
+  );
+  const grupos = anAgrupar(secoes);
+  const nomeEx = id => { const c = (cat || []).find(x => x.id === id); return c ? c.exercicio : ""; };
+  const nomeTipo = id => { const t = (tipos || []).find(x => x.id === id); return t ? t.nome : ""; };
+
+  /* nada digitado se perde: trocar de seção, fechar ou clicar em outro item
+     leva o que está no composer para a lista (se tiver conteúdo) */
+  function guardar() {
+    if (!anEntradaValida(comp)) return;
+    setItens(l => comp.k ? l.map(x => (x.k === comp.k ? comp : x))
+                         : [...l, { ...comp, k: Math.random().toString(36).slice(2) }]);
+  }
+  function adicionar() {
+    if (!anEntradaValida(comp)) return;
+    guardar();
+    setComp(anRascVazio(comp.secao_id));   /* segue aberto para o próximo item */
+  }
+  function abrir(id) {
+    guardar();
+    if (comp && comp.secao_id === id) { setComp(null); return; }
+    setComp(anRascVazio(id));
+  }
+  function editar(x) { guardar(); setComp({ ...x }); }
+  function fechar() { guardar(); setComp(null); }
+  function remover(k) {
+    setItens(l => l.filter(x => x.k !== k));
+    if (comp && comp.k === k) setComp(anRascVazio(comp.secao_id));
+  }
+
+  /* o composer abre no lugar do item em edição, ou no fim da seção (item novo) */
+  const composer = s => (
+    <div className="an-ini-comp">
+      <CamposEntrada sec={s} v={comp} set={setComp} tipos={tipos} cat={cat}
+        onEnter={adicionar} autoFocus />
+      <div className="an-ini-acts">
+        <span className="ed-cnt">Enter {comp.k ? "salva" : "adiciona"} · Shift+Enter quebra a linha</span>
+        <button type="button" className="btn-sec" onClick={fechar}
+          title="O que estiver digitado entra na lista">Fechar</button>
+        <button type="button" onClick={adicionar} disabled={!anEntradaValida(comp)}>
+          {comp.k ? "Salvar item" : "Adicionar"}</button>
+      </div>
+    </div>
+  );
+
+  const total = anJuntarPendente(itens, comp);
+  const nSecs = new Set(total.map(x => x.secao_id)).size;
+
+  return (
+    <div className="an-ini">
+      <div className="an-ini-data">
+        <span>Data da anamnese</span>
+        <input type="date" value={data} max={dISO(new Date())}
+          onChange={e => setData(e.target.value)} />
+        <i>vale para todos os itens</i>
+      </div>
+      {grupos.map(g => (
+        <div className={"an-ini-gr" + (g.centro ? " centro" : "")} key={g.id}
+          style={{ "--an-c": g.cor }}>
+          <div className="an-ini-gh"><IcoAn k={g.ic} />{g.nome}</div>
+          {g.secoes.map(s => {
+            const meta = anSecMeta(s);
+            const meus = itens.filter(x => x.secao_id === s.id);
+            const aqui = comp && comp.secao_id === s.id;
+            return (
+              <div key={s.id} className={"an-ini-s" + (aqui ? " ab" : "") +
+                (meus.length ? " cheia" : "")}>
+                <button type="button" className="an-ini-sh" onClick={() => abrir(s.id)}
+                  aria-expanded={!!aqui}>
+                  <span className="an-sec-ic"><IcoAn k={meta.ic} /></span>
+                  <span className="an-ini-st"><b>{s.nome}</b>{meta.dica && <i>{meta.dica}</i>}</span>
+                  {meus.length > 0 && <em className="an-n">{meus.length}</em>}
+                  <span className="an-ini-mais" aria-hidden="true">{aqui && !comp.k ? "−" : "+"}</span>
+                </button>
+                {meus.map(x => (comp && comp.k === x.k) ? (
+                  <React.Fragment key={x.k}>{composer(s)}</React.Fragment>
+                ) : (
+                  <div className="an-ini-it" key={x.k}>
+                    <button type="button" className="an-ini-tx" title="Editar este item"
+                      onClick={() => editar(x)}>
+                      {x.texto ? <span>{x.texto}</span> : null}
+                      {(x.escala || x.cardapio_id || x.tipo_id || x.regiao) && (
+                        <span className="an-tags">
+                          {x.escala && <MedidorEscala valor={x.escala} opcoes={s.escala_opcoes} />}
+                          {x.cardapio_id && <span className="an-tag ex"><IcoAn k="halter" />{nomeEx(x.cardapio_id)}</span>}
+                          {x.regiao && <span className="an-tag rg"><IcoAn k="pin" />{x.regiao}</span>}
+                          {x.tipo_id && <span className="an-tag">{nomeTipo(x.tipo_id)}</span>}
+                        </span>
+                      )}
+                    </button>
+                    <button type="button" className="an-ini-x" title="Tirar este item"
+                      aria-label="Tirar este item" onClick={() => remover(x.k)}>×</button>
+                  </div>
+                ))}
+                {aqui && !comp.k && composer(s)}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+      <div className="ed-cnt">
+        {total.length
+          ? total.length + (total.length === 1 ? " entrada" : " entradas") + " em " + nSecs +
+            (nSecs === 1 ? " seção" : " seções") + " · tudo com a data " + (data ? dBR(data) : "—")
+          : "nenhuma entrada ainda — é opcional, dá para preencher depois na ficha"}
+      </div>
     </div>
   );
 }
@@ -7052,7 +8154,10 @@ function entradasParaTexto(secoes, entradas, meses, modo) {
   };
 
   const L = [];
-  for (const sec of secoes) {
+  /* leitura (o que vai para a IA) segue a ordem dos blocos da tela;
+     planilha mantém a ordem do banco, igual à coluna da WTAN */
+  const ordem = planilha ? secoes : anAgrupar(secoes).flatMap(g => g.secoes);
+  for (const sec of ordem) {
     let itens = entradas.filter(e => e.secao_id === sec.id && !e.arquivada);
     if (corte) {
       /* sem data não dá para filtrar: mantém, é mais seguro que esconder */
@@ -17005,7 +18110,7 @@ function PainelObsSemana({ aluno, st, obs, revs, desde, hoje, onMarcar, onInseri
 
   function alternar(o) {
     if (obsNaAnamnese(o, revs)) {
-      toast("Já está na anamnese. Para desfazer, apaga a entrada na ficha (Entradas).", "aviso");
+      toast("Já está na anamnese. Para desfazer, apaga a entrada na ficha (aba Anamnese).", "aviso");
       return;
     }
     onMarcar(obsChaves(o), !obsRevisada(o, revs));
@@ -20526,9 +21631,13 @@ function PainelTrocas() {
    Um aluno escolhido vale para a dashboard inteira (CtxAluno). O chip mostra
    quem é em qualquer aba; o X desmarca; tocar no nome abre atalhos e a troca
    de aluno. Sem aluno, nas abas que precisam de um, o chip vira o seletor. */
-function AlunoFoco({ pede, irAba }) {
+function AlunoFoco({ pede, irAba, aba }) {
   const { alunoId, setAlunoId, alunos, aluno } = usarAluno();
   const [ab, setAb] = useState(false);
+  /* ficha aberta por cima da aba atual (ex.: consultar a anamnese montando o
+     treino). Fecha sozinha ao trocar de aba ou de aluno. */
+  const [ficha, setFicha] = useState(false);
+  useEffect(() => { setFicha(false); }, [aba, alunoId]);
   useEsc(ab, () => setAb(false));
   const ativos = alunos.filter(a => a.status === "ativo");
   const outros = alunos.filter(a => a.status !== "ativo");
@@ -20563,6 +21672,8 @@ function AlunoFoco({ pede, irAba }) {
           <span className="af-pop-bg" onClick={() => setAb(false)} />
           <div className="af-pop" role="menu">
             <div className="af-pop-sec">abrir em</div>
+            <button role="menuitem" onClick={() => { setAb(false); setFicha(true); }}>
+              Anamnese (ficha)</button>
             <button role="menuitem" onClick={() => ir("montagem")}>Treinos ↗</button>
             <button role="menuitem" onClick={() => ir("planejamento")}>Planejamento ↗</button>
             <button role="menuitem" onClick={() => ir("volume")}>Volume ↗</button>
@@ -20576,6 +21687,11 @@ function AlunoFoco({ pede, irAba }) {
           </div>
         </>
       )}
+      {/* portal: o topo é sticky com z-index próprio e prenderia a gaveta */}
+      {ficha && ReactDOM.createPortal(
+        <DrawerAnamnese aluno={aluno} modoInicial="entradas"
+          onFechar={() => setFicha(false)} />,
+        document.body)}
     </div>
   );
 }
@@ -20704,7 +21820,7 @@ function App() {
               {navGrupoDe(aba) && <><span>{navGrupoDe(aba)}</span><span aria-hidden="true">/</span></>}
               <b>{navRotuloDe(aba)}</b>
             </div>
-            <AlunoFoco pede={abaPedeAluno} irAba={setAba} />
+            <AlunoFoco pede={abaPedeAluno} irAba={setAba} aba={aba} />
           </div>
           <div className="top-dir">
             <SinoFeed />
