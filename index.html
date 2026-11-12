@@ -2894,6 +2894,17 @@
     .fl-ls{flex-wrap:wrap}
     .fl-ls .fn-sel{max-width:none;flex:1 1 auto}
   }
+  /* histórico manual + avulsas (12/11/2026) */
+  .fn-tr.c5h{grid-template-columns:1.4fr 1fr 1fr .9fr 1fr}
+  .fn-tr.c4a{grid-template-columns:.8fr 1.4fr 1.4fr 1fr auto;cursor:default}
+  .fn-tr.c4a:hover{background:none}
+  .fn-soav{margin-left:2px!important;font-size:11px!important}
+  @media (max-width: 900px){
+    .fn-tr.c5h{grid-template-columns:1.4fr 1fr 1fr}
+    .fn-tr.c5h span:nth-child(2),.fn-tr.c5h span:nth-child(3){display:none}
+    .fn-tr.c4a{grid-template-columns:.9fr 1.3fr 1fr auto}
+    .fn-tr.c4a span:nth-child(3){display:none}
+  }
 </style>
 </head>
 <body>
@@ -19286,7 +19297,50 @@ function finCoortes(vidas, hoje) {
 }
 
 /* tudo de uma vez, para um segmento (null = todos os formatos) */
-function finMetricas(contratos, hoje, segmento) {
+/* extras (só no recorte "Todos"; não têm plano):
+   - manual: [{ mes: "AAAA-MM-01", consultoria_centavos, aulas_centavos,
+     avulsos_centavos, alunos }] = histórico lançado à mão, só antes do mês de
+     início dos contratos (depois disso o mês vem dos contratos).
+   - avulsas: [{ dia, valor_centavos }] = pagamentos únicos, no mês em que caíram.
+   Os dois só mexem na série de FATURAMENTO (fat), no faturado no ano e na
+   comparação com o mês anterior. Churn, MRR, permanência e LTV não mudam. */
+function finSerieFat(meses, goLive, hoje, extras) {
+  const iniContratos = goLive.slice(0, 7);
+  const av = new Map();
+  for (const a of (extras && extras.avulsas) || []) {
+    if (!a || !a.dia || !(Number(a.valor_centavos) > 0) || a.dia > hoje) continue;
+    const k = a.dia.slice(0, 7);
+    av.set(k, (av.get(k) || 0) + Number(a.valor_centavos));
+  }
+  const man = new Map();
+  for (const x of (extras && extras.manual) || []) {
+    const k = String(x.mes || "").slice(0, 7);
+    if (k && k < iniContratos) man.set(k, x);
+  }
+  const porMes = new Map();
+  for (const m of meses) {
+    const v = av.get(m.mes) || 0;
+    porMes.set(m.mes, { mes: m.mes, receitaC: m.receitaC, receitaA: m.receitaA, receitaV: v,
+      receita: m.receita + v, fatN: m.fatN, manual: false, parcial: m.parcial });
+  }
+  const antigos = new Set([...man.keys(), ...[...av.keys()].filter(k => k < iniContratos)]);
+  for (const k of antigos) {
+    const x = man.get(k) || {};
+    const c = Number(x.consultoria_centavos) || 0, a = Number(x.aulas_centavos) || 0;
+    const v = (Number(x.avulsos_centavos) || 0) + (av.get(k) || 0);
+    porMes.set(k, { mes: k, receitaC: c, receitaA: a, receitaV: v, receita: c + a + v,
+      fatN: x.alunos == null ? null : Number(x.alunos), manual: true, parcial: false });
+  }
+  const chaves = [...porMes.keys()].sort();
+  if (!chaves.length) return [];
+  const out = [];
+  for (let ym = chaves[0]; ym <= chaves[chaves.length - 1]; ym = finMesSeg(ym))
+    out.push(porMes.get(ym) || { mes: ym, vazio: true, receitaC: null, receitaA: null,
+      receitaV: null, receita: null, fatN: null, manual: true, parcial: false });
+  return out;
+}
+
+function finMetricas(contratos, hoje, segmento, extras) {
   const todos = (contratos || []).filter(c => c && c.inicio);
   const vazio = { vazio: true, meses: [], kpi: null, km: null, coortes: [],
     motivos: [], mix: [], goLive: null };
@@ -19430,7 +19484,19 @@ function finMetricas(contratos, hoje, segmento) {
   }
   const mix = [...mx.values()].sort((a, b) => b.mrr - a.mrr);
 
-  return { vazio: false, goLive, meses, kpi, km, coortes, motivos, mix };
+  /* faturamento: contratos + (no "Todos") avulsas e histórico manual */
+  const fat = finSerieFat(meses, goLive, hoje, segmento == null ? extras : null);
+  const fAt = fat.length ? fat[fat.length - 1] : null;
+  const fAnt = fat.length > 1 && !fat[fat.length - 2].vazio ? fat[fat.length - 2] : null;
+  kpi.fatMes = fAt ? fAt.receita : 0;
+  kpi.avulsosMes = fAt ? fAt.receitaV : 0;
+  kpi.fatAnterior = fAnt ? fAnt.receita : null;
+  kpi.mesAnterior = fAnt ? fAnt.mes : null;
+  kpi.receitaAno = fat.filter(x => !x.vazio && x.mes.startsWith(hoje.slice(0, 4)))
+    .reduce((t, x) => t + x.receita, 0);
+  kpi.temManual = fat.some(x => x.manual && !x.vazio);
+
+  return { vazio: false, goLive, meses, fat, kpi, km, coortes, motivos, mix };
 }
 
 /* um resumo por formato, para comparar lado a lado */
@@ -19485,7 +19551,7 @@ const finMesRot = ym => {
 const FIN_MOTIVOS = ["Financeiro", "Falta de tempo", "Pausa", "Lesão ou saúde",
   "Mudou de cidade ou academia", "Insatisfação", "Parou de responder", "Outro"];
 /* paleta validada (dataviz) contra o fundo dos cards #131a1c */
-const FIN_COR = { consultoria: "#3987e5", aulas: "#199e70", mrr: "#d95926", entradas: "#3987e5",
+const FIN_COR = { consultoria: "#3987e5", aulas: "#199e70", avulsos: "#d95926", mrr: "#d95926", entradas: "#3987e5",
   exp: "#199e70", contr: "#9085e9", saidas: "#e66767", media: "#89a0a3", km: "#3987e5" };
 let pedidoAdmin = null;   /* atalho do Início: abre a aba já em "sem valor" */
 
@@ -19538,8 +19604,27 @@ async function finCarregar() {
   if ([c, p, pr].some(x => x.error && finSemObjeto(x.error.message))) return { falta: true };
   const e = [c, p, pr, a].find(x => x.error);
   if (e) throw new Error(e.error.message);
+  const ext = await finCarregarExtras();
   return { contratos: (c.data || []).map(finContrato), planos: p.data || [], precos: pr.data || [],
-    alunos: a.data || [], mods: m.error ? [] : (m.data || []) };
+    alunos: a.data || [], mods: m.error ? [] : (m.data || []), ...ext };
+}
+/* histórico manual, avulsas e "só avulso". Tabela que não existe -> null
+   (a aba esconde o bloco e avisa); outro erro sobe. */
+async function finCarregarExtras() {
+  const [h, v, s] = await Promise.all([
+    sb.from("faturamento_manual").select("*").order("mes"),
+    finPaginar(() => sb.from("receitas_avulsas").select("*").order("dia").order("id")),
+    sb.from("fin_so_avulso").select("aluno_id")
+  ]);
+  const ok = r => {
+    if (!r.error) return r.data || [];
+    if (/(faturamento_manual|receitas_avulsas|fin_so_avulso)/.test(r.error.message) &&
+        /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(r.error.message)) return null;
+    throw new Error(r.error.message);
+  };
+  const manual = ok(h), avulsas = ok(v), soAvulso = ok(s);
+  return { manual, avulsas: avulsas && avulsas.map(x => ({ ...x, valor_centavos: Number(x.valor_centavos) || 0 })),
+    soAvulso, extrasFalta: manual === null || avulsas === null || soAvulso === null };
 }
 /* planos + preços para os modais (sem o resto) */
 async function finCarregarTabelas() {
@@ -19964,7 +20049,7 @@ function DrawerContrato({ aluno, contratos, planos, precos, mods, goLive, onFech
 }
 
 /* ---- alunos ativos sem valor: preenchimento rápido ---- */
-function FinSemValor({ lista, planos, precos, mods, goLive, onSalvo }) {
+function FinSemValor({ lista, planos, precos, mods, goLive, onSalvo, podeSoAvulso }) {
   const { toast } = usarUI();
   const hoje = hojeFuso();
   const sugerido = a => ({ ...FIN_V_VAZIO, plano: finPlanoSugerido(a.modalidade_id, mods, planos) });
@@ -20008,6 +20093,15 @@ function FinSemValor({ lista, planos, precos, mods, goLive, onSalvo }) {
     if (ok) { toast(ok + (ok === 1 ? " valor salvo." : " valores salvos.")); onSalvo(); }
   }
 
+  /* só compra montagem avulsa: sai daqui (e do aviso do Início) sem contrato */
+  async function soAvulso(a) {
+    setBusy(true);
+    const r = await sb.from("fin_so_avulso").insert({ aluno_id: a.id });
+    setBusy(false);
+    if (r.error) { setErros(e => ({ ...e, [a.id]: finMsgErro(r.error) })); return; }
+    toast(a.nome + " marcado(a) como só avulso.");
+    onSalvo();
+  }
   const prontos = lista.filter(a => !finArgsValores(lin(a), planos).erro);
   return (
     <div className="fn-box" id="fn-sem-valor">
@@ -20065,6 +20159,10 @@ function FinSemValor({ lista, planos, precos, mods, goLive, onSalvo }) {
             )}
             <button className="btn-sec cr-mini" disabled={busy || !salvavel}
               onClick={() => salvar([a])}>Salvar</button>
+            {podeSoAvulso && (
+              <button className="fn-link in fn-soav" disabled={busy} title="Não paga mensalidade, só montagem avulsa"
+                onClick={() => soAvulso(a)}>só avulso</button>
+            )}
             {pl && pl.cobra_consultoria && <FinDesc precos={precos} preco={x.cp} valor={x.c} />}
             {erros[a.id] && <div className="fn-sv-err">{erros[a.id]}</div>}
           </div>
@@ -20276,7 +20374,7 @@ function finManchete(m, seg) {
   let delta = null;
   if (k.fatAnterior != null) {
     const d = k.fatMes - k.fatAnterior;
-    const ant = finMesNome(m.meses[m.meses.length - 2].mes);
+    const ant = finMesNome(k.mesAnterior || m.meses[m.meses.length - 2].mes);
     delta = d === 0 ? { txt: "= mesmo faturamento de " + ant, cls: "" }
       : { txt: (d > 0 ? "▲ " : "▼ ") + finBRL(Math.abs(d)) + " em relação a " + ant, cls: d > 0 ? "up" : "down" };
   }
@@ -20333,77 +20431,332 @@ function FinExtrato({ m }) {
   );
 }
 
-/* evolução mês a mês (só a partir do 2º mês) */
+/* evolução mês a mês: faturamento (com histórico manual e avulsas) e alunos */
 function FinEvolucao({ m }) {
   const RC = window.Recharts;
-  if (m.meses.length < 2) {
+  const fat = (m.fat && m.fat.length ? m.fat : m.meses).filter(Boolean);
+  const comDado = fat.filter(x => !x.vazio);
+  const prox = finMesNome(finMesSeg(m.meses[m.meses.length - 1].mes));
+  if (comDado.length < 2 && m.meses.length < 2) {
     return (
       <div className="fn-graf fn-larga">
         <div className="fn-gt">Mês a mês</div>
-        <div className="fn-vz">A evolução do faturamento e dos alunos aparece a partir
-          de {finMesNome(finMesSeg(m.meses[0].mes))}, quando houver 2 meses para comparar.</div>
+        <div className="fn-vz">A evolução do faturamento e dos alunos aparece a partir de {prox},
+          quando houver 2 meses para comparar. Para ver antes, lance meses anteriores em
+          "Histórico lançado à mão", mais abaixo.</div>
       </div>
     );
   }
   if (!RC) return <div className="ac-diag">O Recharts vem de CDN e não respondeu: os números acima valem, os gráficos voltam ao recarregar com internet.</div>;
-  const { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, LabelList } = RC;
+  const { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, LabelList, Cell } = RC;
+  const sf = fat.map(x => ({ ...x, rot: finMesRot(x.mes) + (x.manual && !x.vazio ? "*" : "") }));
+  const temAulas = sf.some(x => x.receitaA > 0), temAv = sf.some(x => x.receitaV > 0);
+  const temManual = sf.some(x => x.manual && !x.vazio);
   const serie = m.meses.map(x => ({ ...x, rot: finMesRot(x.mes), entN: x.novosN + x.retN, saiN: -x.saidasN }));
-  const temAulas = serie.some(x => x.receitaA > 0);
   const grade = <CartesianGrid stroke="#1b2427" vertical={false} />;
+  const pedacos = [["receitaC", FIN_COR.consultoria, true], ["receitaA", FIN_COR.aulas, temAulas],
+    ["receitaV", FIN_COR.avulsos, temAv]].filter(x => x[2]);
   return (
     <div className="fn-grafs">
       <div className="fn-graf">
-        <div className="fn-gt">Faturamento do mês<i>mês cheio de quem foi aluno no mês</i></div>
+        <div className="fn-gt">Faturamento do mês<i>mês cheio de quem foi aluno no mês + avulsas</i></div>
         <FinLegenda itens={[{ rot: "Consultoria", cor: FIN_COR.consultoria },
-          ...(temAulas ? [{ rot: "Aulas", cor: FIN_COR.aulas }] : [])]} />
-        <ResponsiveContainer width="100%" height={220}>
-          <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            {grade}
-            <XAxis dataKey="rot" {...finEixo} />
-            <YAxis width={64} tickFormatter={finEixoR} {...finEixo} />
-            <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
-              { rot: "Consultoria", val: finBRL(p.receitaC), cor: FIN_COR.consultoria },
-              temAulas && { rot: "Aulas", val: finBRL(p.receitaA), cor: FIN_COR.aulas },
-              { rot: "Total", val: finBRL(p.receita) },
-              { rot: "Alunos pagantes", val: String(p.fatN) }]} />} />
-            <Bar dataKey="receitaC" stackId="r" fill={FIN_COR.consultoria} stroke="#131a1c" strokeWidth={1}
-              radius={temAulas ? 0 : [4, 4, 0, 0]} maxBarSize={34} />
-            {temAulas && <Bar dataKey="receitaA" stackId="r" fill={FIN_COR.aulas} stroke="#131a1c"
-              strokeWidth={1} radius={[4, 4, 0, 0]} maxBarSize={34} />}
-          </ComposedChart>
-        </ResponsiveContainer>
+          ...(temAulas ? [{ rot: "Aulas", cor: FIN_COR.aulas }] : []),
+          ...(temAv ? [{ rot: "Avulsas", cor: FIN_COR.avulsos }] : [])]} />
+        {comDado.length < 2 ? (
+          <div className="fn-vz">Aparece a partir de {prox}, ou antes se você lançar meses anteriores
+            em "Histórico lançado à mão".</div>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={220}>
+              <ComposedChart data={sf} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                {grade}
+                <XAxis dataKey="rot" {...finEixo} />
+                <YAxis width={64} tickFormatter={finEixoR} {...finEixo} />
+                <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => p.vazio
+                  ? [{ rot: "mês não lançado", val: "" }] : [
+                  { rot: "Consultoria", val: finBRL(p.receitaC), cor: FIN_COR.consultoria },
+                  temAulas && { rot: "Aulas", val: finBRL(p.receitaA), cor: FIN_COR.aulas },
+                  temAv && { rot: "Avulsas", val: finBRL(p.receitaV), cor: FIN_COR.avulsos },
+                  { rot: "Total", val: finBRL(p.receita) },
+                  p.fatN != null && { rot: "Alunos pagantes", val: String(p.fatN) },
+                  p.manual && { rot: "lançado à mão", val: "" }]} />} />
+                {pedacos.map(([k, cor], i) => (
+                  <Bar key={k} dataKey={k} stackId="r" fill={cor} stroke="#131a1c" strokeWidth={1}
+                    radius={i === pedacos.length - 1 ? [4, 4, 0, 0] : 0} maxBarSize={34}>
+                    {sf.map(x => <Cell key={x.mes} fillOpacity={x.manual ? 0.5 : 1} />)}
+                  </Bar>
+                ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+            {temManual && <div className="fn-sub" style={{ margin: "4px 0 0" }}>* mês lançado à mão (barra mais clara)</div>}
+          </>
+        )}
       </div>
       <div className="fn-graf">
         <div className="fn-gt">Alunos<i>quem entrou e quem saiu · embaixo do mês, quantos ficaram</i></div>
-        <FinLegenda itens={[{ rot: "Entraram", cor: FIN_COR.entradas }, { rot: "Saíram", cor: FIN_COR.saidas }]} />
-        <ResponsiveContainer width="100%" height={230}>
-          <ComposedChart data={serie} stackOffset="sign" margin={{ top: 16, right: 8, left: 0, bottom: 8 }}>
-            {grade}
-            <XAxis dataKey="rot" axisLine={false} tickLine={false} interval={0} height={36}
-              tick={({ x, y, payload, index }) => (
-                <g transform={"translate(" + x + "," + y + ")"}>
-                  <text dy={10} textAnchor="middle" fill="#7d9298" fontSize={10.5}>{payload.value}</text>
-                  <text dy={24} textAnchor="middle" fill="#dbe6e8" fontSize={10.5}>{serie[index] ? serie[index].fechN + " ativos" : ""}</text>
-                </g>
-              )} />
-            <YAxis width={34} allowDecimals={false} tickFormatter={v => Math.abs(v)} {...finEixo} />
-            <ReferenceLine y={0} stroke="#3d4d50" />
-            <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
-              { rot: "Novos", val: String(p.novosN), cor: FIN_COR.entradas },
-              { rot: "Retornos", val: String(p.retN), cor: FIN_COR.entradas },
-              { rot: "Desistências", val: String(p.saidasN), cor: FIN_COR.saidas },
-              { rot: "Ativos no fim", val: String(p.fechN) }]} />} />
-            <Bar dataKey="entN" stackId="a" fill={FIN_COR.entradas} radius={[4, 4, 0, 0]} maxBarSize={30}>
-              <LabelList dataKey="entN" position="top" style={{ fill: "#dbe6e8", fontSize: 10.5 }}
-                formatter={v => v ? "+" + v : ""} />
-            </Bar>
-            <Bar dataKey="saiN" stackId="a" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={30}>
-              <LabelList dataKey="saiN" position="top" style={{ fill: "#dbe6e8", fontSize: 10.5 }}
-                formatter={v => v ? "−" + Math.abs(v) : ""} />
-            </Bar>
-          </ComposedChart>
-        </ResponsiveContainer>
+        {m.meses.length < 2 ? (
+          <div className="fn-vz">Aparece a partir de {prox}: entradas e saídas só existem desde que os
+            contratos começaram a ser registrados.</div>
+        ) : (
+          <>
+            <FinLegenda itens={[{ rot: "Entraram", cor: FIN_COR.entradas }, { rot: "Saíram", cor: FIN_COR.saidas }]} />
+            <ResponsiveContainer width="100%" height={230}>
+              <ComposedChart data={serie} stackOffset="sign" margin={{ top: 16, right: 8, left: 0, bottom: 8 }}>
+                {grade}
+                <XAxis dataKey="rot" axisLine={false} tickLine={false} interval={0} height={36}
+                  tick={({ x, y, payload, index }) => (
+                    <g transform={"translate(" + x + "," + y + ")"}>
+                      <text dy={10} textAnchor="middle" fill="#7d9298" fontSize={10.5}>{payload.value}</text>
+                      <text dy={24} textAnchor="middle" fill="#dbe6e8" fontSize={10.5}>{serie[index] ? serie[index].fechN + " ativos" : ""}</text>
+                    </g>
+                  )} />
+                <YAxis width={34} allowDecimals={false} tickFormatter={v => Math.abs(v)} {...finEixo} />
+                <ReferenceLine y={0} stroke="#3d4d50" />
+                <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => [
+                  { rot: "Novos", val: String(p.novosN), cor: FIN_COR.entradas },
+                  { rot: "Retornos", val: String(p.retN), cor: FIN_COR.entradas },
+                  { rot: "Desistências", val: String(p.saidasN), cor: FIN_COR.saidas },
+                  { rot: "Ativos no fim", val: String(p.fechN) }]} />} />
+                <Bar dataKey="entN" stackId="a" fill={FIN_COR.entradas} radius={[4, 4, 0, 0]} maxBarSize={30}>
+                  <LabelList dataKey="entN" position="top" style={{ fill: "#dbe6e8", fontSize: 10.5 }}
+                    formatter={v => v ? "+" + v : ""} />
+                </Bar>
+                <Bar dataKey="saiN" stackId="a" fill={FIN_COR.saidas} radius={[4, 4, 0, 0]} maxBarSize={30}>
+                  <LabelList dataKey="saiN" position="top" style={{ fill: "#dbe6e8", fontSize: 10.5 }}
+                    formatter={v => v ? "−" + Math.abs(v) : ""} />
+                </Bar>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+/* ---- histórico lançado à mão + montagens avulsas (12/11/2026) ----
+   Decisões do Matheus: histórico SÓ de faturamento (consultoria e aulas
+   separados, nº de alunos opcional, sem plano); montagem avulsa é pagamento
+   único (entra no faturamento do mês, fora do MRR e do churn); aluno que só
+   compra avulso pode sair da lista "sem valor". */
+function FinHistorico({ manual, goLive, onSalvo }) {
+  const { toast, confirmar } = usarUI();
+  const limite = goLive.slice(0, 7);
+  /* meses possíveis: até 36 antes do início dos contratos */
+  const opcoes = [];
+  for (let ym = limite, i = 0; i < 36; i++) {
+    let [a, mm] = ym.split("-").map(Number);
+    mm -= 1; if (mm < 1) { mm = 12; a -= 1; }
+    ym = a + "-" + String(mm).padStart(2, "0");
+    opcoes.push(ym);
+  }
+  const porMes = new Map((manual || []).map(x => [String(x.mes).slice(0, 7), x]));
+  const vazio = mes => ({ mes, c: "", a: "", v: "", n: "" });
+  const [ed, setEd]     = useState(null);
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+  const abrir = mes => {
+    const x = porMes.get(mes);
+    setErro("");
+    setEd(x ? { mes, c: finTxtValor(x.consultoria_centavos), a: finTxtValor(x.aulas_centavos),
+      v: x.avulsos_centavos ? finTxtValor(x.avulsos_centavos) : "", n: x.alunos == null ? "" : String(x.alunos),
+      id: x.id } : vazio(mes));
+  };
+  const proximo = opcoes.find(o => !porMes.has(o));
+
+  async function salvar() {
+    const c = ed.c.trim() ? finCentavos(ed.c) : 0, a = ed.a.trim() ? finCentavos(ed.a) : 0;
+    const v = ed.v.trim() ? finCentavos(ed.v) : 0;
+    const n = ed.n.trim() === "" ? null : Number(ed.n);
+    if (c == null || a == null || v == null) { setErro("Valor inválido."); return; }
+    if (c + a + v === 0) { setErro("Lance pelo menos um valor."); return; }
+    if (n != null && !(Number.isInteger(n) && n >= 0 && n <= 10000)) { setErro("Nº de alunos inválido."); return; }
+    setBusy(true); setErro("");
+    const linha = { mes: ed.mes + "-01", consultoria_centavos: c, aulas_centavos: a, avulsos_centavos: v, alunos: n };
+    const r = ed.id ? await sb.from("faturamento_manual").update(linha).eq("id", ed.id)
+      : await sb.from("faturamento_manual").insert(linha);
+    setBusy(false);
+    if (r.error) { setErro(/23505|duplicate/.test(r.error.code + r.error.message) ? "Esse mês já foi lançado." : finMsgErro(r.error)); return; }
+    toast(finCap(finMesNome(ed.mes)) + " lançado.");
+    setEd(null); onSalvo();
+  }
+  async function apagar() {
+    if (!(await confirmar({ titulo: "Apagar " + finMesNome(ed.mes) + " " + ed.mes.slice(0, 4) + "?",
+      texto: "Sai do gráfico de faturamento e do faturado no ano.", ok: "Apagar", perigo: true }))) return;
+    setBusy(true);
+    const r = await sb.from("faturamento_manual").delete().eq("id", ed.id);
+    setBusy(false);
+    if (r.error) { setErro(finMsgErro(r.error)); return; }
+    toast("Mês apagado."); setEd(null); onSalvo();
+  }
+
+  const lancados = [...porMes.keys()].sort().reverse();
+  return (
+    <div className="fn-box" id="fn-historico">
+      <div className="fn-tit"><b>Histórico lançado à mão</b><i>{lancados.length}</i>
+        <span style={{ flex: 1 }} />
+        {proximo && !ed && (
+          <button className="btn-sec cr-mini" onClick={() => abrir(proximo)}>+ Lançar mês</button>
+        )}
+      </div>
+      <div className="fn-sub">Faturamento dos meses antes de {finMesNome(limite)}/{limite.slice(2, 4)}, quando
+        os valores começaram a ser registrados aqui. Entra só no gráfico de faturamento e no faturado
+        no ano: churn e permanência precisam saber quem entrou e saiu, e um total não diz isso.</div>
+      {ed && (
+        <div className="fn-pl-ed" style={{ borderTop: "none", marginTop: 0 }}>
+          {erro && <div className="err">{erro}</div>}
+          <div className="nv-grid">
+            <div><div className="ed-lab">Mês</div>
+              <select className="fn-sel" value={ed.mes} disabled={!!ed.id}
+                onChange={e => abrir(e.target.value)}>
+                {opcoes.map(o => <option key={o} value={o}>{finCap(finMesNome(o))} {o.slice(0, 4)}
+                  {porMes.has(o) ? " · já lançado" : ""}</option>)}
+              </select></div>
+            <div><div className="ed-lab">Consultoria</div>
+              <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.c} placeholder="0,00"
+                aria-label="Consultoria no mês" onChange={e => setEd({ ...ed, c: e.target.value })} /></div></div>
+            <div><div className="ed-lab">Aulas</div>
+              <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.a} placeholder="0,00"
+                aria-label="Aulas no mês" onChange={e => setEd({ ...ed, a: e.target.value })} /></div></div>
+            <div><div className="ed-lab">Montagens avulsas <i>opcional</i></div>
+              <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.v} placeholder="0,00"
+                aria-label="Avulsas no mês" onChange={e => setEd({ ...ed, v: e.target.value })} /></div></div>
+            <div><div className="ed-lab">Alunos pagantes <i>opcional</i></div>
+              <input type="number" min={0} value={ed.n} placeholder="ex.: 52" aria-label="Alunos no mês"
+                onChange={e => setEd({ ...ed, n: e.target.value })} /></div>
+          </div>
+          <div className="acoes" style={{ marginTop: 4 }}>
+            <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar mês"}</button>
+            <button className="btn-sec" onClick={() => setEd(null)} disabled={busy}>Cancelar</button>
+            {ed.id && <button className="btn-sec" onClick={apagar} disabled={busy}>Apagar</button>}
+          </div>
+        </div>
+      )}
+      {lancados.length > 0 && (
+        <div className="fn-tab">
+          <div className="fn-tr h c5h"><span>Mês</span><span>Consultoria</span><span>Aulas</span>
+            <span>Avulsas</span><span>Total</span></div>
+          {lancados.map(k => { const x = porMes.get(k);
+            const tot = (x.consultoria_centavos || 0) + (x.aulas_centavos || 0) + (x.avulsos_centavos || 0);
+            return (
+              <button key={k} className="fn-tr c5h" onClick={() => abrir(k)}>
+                <span>{finCap(finMesNome(k))} {k.slice(0, 4)}{x.alunos != null ? " · " + x.alunos + " alunos" : ""}</span>
+                <span>{finBRL(x.consultoria_centavos)}</span><span>{finBRL(x.aulas_centavos)}</span>
+                <span>{x.avulsos_centavos ? finBRL(x.avulsos_centavos) : "—"}</span><span>{finBRL(tot)}</span>
+              </button>
+            ); })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FinAvulsas({ avulsas, soAvulso, alunos, onSalvo }) {
+  const { toast, confirmar } = usarUI();
+  const hoje = hojeFuso();
+  const novo = () => ({ aluno: "", nome: "", desc: "Montagem avulsa", dia: hoje, valor: "" });
+  const [ed, setEd]     = useState(null);
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [todas, setTodas] = useState(false);
+  const alunoPor = new Map((alunos || []).map(a => [a.id, a]));
+  const ordenados = [...(alunos || [])].sort((x, y) =>
+    (x.status === "ativo" ? 0 : 1) - (y.status === "ativo" ? 0 : 1) ||
+    String(x.nome).localeCompare(String(y.nome), "pt-BR"));
+
+  async function salvar() {
+    const v = finCentavos(ed.valor);
+    if (!(v > 0)) { setErro("Informe o valor."); return; }
+    if (!ed.aluno && !ed.nome.trim()) { setErro("Escolha o aluno ou escreva o nome."); return; }
+    if (!ed.desc.trim()) { setErro("Descreva o que foi vendido."); return; }
+    setBusy(true); setErro("");
+    const r = await sb.from("receitas_avulsas").insert({ aluno_id: ed.aluno || null,
+      nome_livre: ed.aluno ? null : ed.nome.trim(), descricao: ed.desc.trim(), dia: ed.dia, valor_centavos: v });
+    setBusy(false);
+    if (r.error) { setErro(finMsgErro(r.error)); return; }
+    toast("Avulsa lançada: " + finBRL(v, 2) + ".");
+    setEd(null); onSalvo();
+  }
+  async function apagar(x) {
+    if (!(await confirmar({ titulo: "Apagar este lançamento?", texto: x.descricao + " · " + finBRL(x.valor_centavos, 2) +
+      " · " + dBR(x.dia), ok: "Apagar", perigo: true }))) return;
+    const r = await sb.from("receitas_avulsas").delete().eq("id", x.id);
+    if (r.error) { setErro(finMsgErro(r.error)); return; }
+    toast("Lançamento apagado."); onSalvo();
+  }
+  async function tirarSoAvulso(id) {
+    const r = await sb.from("fin_so_avulso").delete().eq("aluno_id", id);
+    if (r.error) { setErro(finMsgErro(r.error)); return; }
+    toast("Voltou para a lista de sem valor."); onSalvo();
+  }
+
+  const lista = [...(avulsas || [])].sort((x, y) => x.dia < y.dia ? 1 : x.dia > y.dia ? -1 : 0);
+  const mostrar = todas ? lista : lista.slice(0, 8);
+  const mesAtual = hoje.slice(0, 7);
+  const totMes = lista.filter(x => x.dia.slice(0, 7) === mesAtual).reduce((t, x) => t + x.valor_centavos, 0);
+  const marcados = (soAvulso || []).map(s => alunoPor.get(s.aluno_id)).filter(Boolean);
+  const quem = x => x.aluno_id ? ((alunoPor.get(x.aluno_id) || {}).nome || "aluno apagado") : (x.nome_livre || "—");
+
+  return (
+    <div className="fn-box" id="fn-avulsas">
+      <div className="fn-tit"><b>Montagens avulsas</b><i>{finBRL(totMes)} em {finMesNome(mesAtual)}</i>
+        <span style={{ flex: 1 }} />
+        {!ed && <button className="btn-sec cr-mini" onClick={() => { setErro(""); setEd(novo()); }}>+ Lançar avulsa</button>}
+      </div>
+      <div className="fn-sub">Pagamento único, com valor livre. Entra no faturamento do mês em que foi pago;
+        fica fora do Faturamento mensal (MRR) e do churn, porque não se repete.</div>
+      {erro && !ed && <div className="err">{erro}</div>}
+      {ed && (
+        <div className="fn-pl-ed" style={{ borderTop: "none", marginTop: 0 }}>
+          {erro && <div className="err">{erro}</div>}
+          <div className="nv-grid">
+            <div><div className="ed-lab">Aluno</div>
+              <select className="fn-sel" value={ed.aluno} aria-label="Aluno da avulsa"
+                onChange={e => setEd({ ...ed, aluno: e.target.value })}>
+                <option value="">quem não tem ficha (escrever o nome)</option>
+                {ordenados.map(a => <option key={a.id} value={a.id}>{a.nome}{a.status === "ativo" ? "" : " (inativo)"}</option>)}
+              </select>
+              {!ed.aluno && <input value={ed.nome} maxLength={80} placeholder="Nome de quem comprou"
+                aria-label="Nome de quem comprou" onChange={e => setEd({ ...ed, nome: e.target.value })} />}</div>
+            <div><div className="ed-lab">O que foi</div>
+              <input value={ed.desc} maxLength={60} aria-label="Descrição"
+                onChange={e => setEd({ ...ed, desc: e.target.value })} /></div>
+            <div><div className="ed-lab">Valor</div>
+              <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.valor} placeholder="0,00"
+                autoFocus aria-label="Valor da avulsa" onChange={e => setEd({ ...ed, valor: e.target.value })} /></div></div>
+            <div><div className="ed-lab">Pago em</div>
+              <SeletorData value={ed.dia} onChange={dia => setEd({ ...ed, dia })} max={hoje} /></div>
+          </div>
+          <div className="acoes" style={{ marginTop: 8 }}>
+            <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Lançar"}</button>
+            <button className="btn-sec" onClick={() => setEd(null)} disabled={busy}>Cancelar</button>
+          </div>
+        </div>
+      )}
+      {mostrar.length > 0 && (
+        <div className="fn-tab">
+          {mostrar.map(x => (
+            <div key={x.id} className="fn-tr c4a">
+              <span>{dBR(x.dia)}</span><span>{quem(x)}</span><span>{x.descricao}</span>
+              <span>{finBRL(x.valor_centavos, 2)}</span>
+              <button className="fn-link in" aria-label="Apagar lançamento" onClick={() => apagar(x)}>apagar</button>
+            </div>
+          ))}
+          {lista.length > 8 && (
+            <button className="fn-link" onClick={() => setTodas(!todas)}>
+              {todas ? "mostrar menos" : "ver todos os " + lista.length + " lançamentos"}</button>
+          )}
+        </div>
+      )}
+      {marcados.length > 0 && (
+        <div className="fn-sub" style={{ margin: "12px 0 0" }}>
+          Só avulso (fora da lista de sem valor): {marcados.map((a, i) => (
+            <span key={a.id}>{i ? ", " : ""}{a.nome} <button className="fn-link in"
+              aria-label={"Tirar " + a.nome + " de só avulso"} onClick={() => tirarSoAvulso(a.id)}>(tirar)</button></span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -21694,7 +22047,8 @@ function PainelAdmin() {
   }, [ped, d]);
 
   const pronto = d && !d.falta;
-  const m = useMemo(() => pronto ? finMetricas(d.contratos, hoje, seg) : null, [d, hoje, seg]);
+  const m = useMemo(() => pronto ? finMetricas(d.contratos, hoje, seg,
+    { manual: d.manual || [], avulsas: d.avulsas || [] }) : null, [d, hoje, seg]);
   const comp = useMemo(() => pronto && seg == null
     ? finPorSegmento(d.contratos, hoje).filter(x => !x.m.vazio) : [], [d, hoje, seg]);
   /* ciclos: mesmo motor, recortando pelo ciclo da consultoria (quem não paga
@@ -21725,7 +22079,8 @@ function PainelAdmin() {
   const goLive = finGoLive(d.contratos);
   const abertos = finAbertoPorAluno(d.contratos);
   const alunoPor = new Map(d.alunos.map(a => [a.id, a]));
-  const semValor = d.alunos.filter(a => a.status === "ativo" && !abertos.has(a.id))
+  const soAv = new Set((d.soAvulso || []).map(x => x.aluno_id));
+  const semValor = d.alunos.filter(a => a.status === "ativo" && !abertos.has(a.id) && !soAv.has(a.id))
     .sort((x, y) => String(x.nome).localeCompare(String(y.nome), "pt-BR"));
   const incons = [...abertos.values()].filter(c => { const a = alunoPor.get(c.aluno_id);
     return a && a.status !== "ativo"; });
@@ -21793,10 +22148,13 @@ function PainelAdmin() {
 
           <div className="fn-kpis">
             <FinCard rot={"Faturamento de " + finMesNome(atual.mes)} valor={finBRL(k.fatMes)}
-              sub={k.mrrA > 0 || atual.receitaA > 0 ? "consultoria " + finBRL(atual.receitaC) + " · aulas " + finBRL(atual.receitaA) : null}
+              sub={[atual.receitaC || k.mrrA > 0 || atual.receitaA > 0 ? "consultoria " + finBRL(atual.receitaC) : null,
+                atual.receitaA > 0 || k.mrrA > 0 ? "aulas " + finBRL(atual.receitaA) : null,
+                k.avulsosMes > 0 ? "avulsas " + finBRL(k.avulsosMes) : null].filter(Boolean).join(" · ") || null}
               sub2={k.fatMes !== k.mrr ? "Faturamento mensal (MRR) hoje: " + finBRL(k.mrr) : "igual ao Faturamento mensal (MRR)"}
               info={"Soma das mensalidades de todo mundo que foi aluno em algum dia de " + finMesNome(atual.mes) +
                 ": quem entrou ou saiu no meio do mês conta o mês cheio. Trimestral e semestral entram pelo valor por mês. " +
+                "Montagens avulsas pagas no mês também entram aqui. " +
                 "O Faturamento mensal (MRR, receita recorrente mensal) é a mesma soma só com quem está ativo hoje: quanto entra por mês se nada mudar."} />
             <FinCard rot="Alunos pagantes" valor={String(k.ativos)} sub={"ticket médio " + finBRL(k.ticket)}
               sub2={k.desconto > 0 ? "descontos: " + finBRL(k.desconto) + "/mês em " + k.nDesconto + " aluno(s)" : null}
@@ -21841,7 +22199,7 @@ function PainelAdmin() {
 
       {semValor.length > 0 && (
         <FinSemValor lista={semValor} planos={d.planos} precos={d.precos} mods={d.mods}
-          goLive={goLive} onSalvo={carregar} />
+          goLive={goLive} onSalvo={carregar} podeSoAvulso={!d.extrasFalta} />
       )}
 
       <div className="fn-box">
@@ -21873,6 +22231,16 @@ function PainelAdmin() {
         )}
       </div>
 
+      {d.extrasFalta ? (
+        <div className="ac-diag">Para lançar montagens avulsas e o histórico de faturamento, rode o
+          SQL "financeiro-historico" no Supabase e recarregue.</div>
+      ) : (
+        <>
+          <FinAvulsas avulsas={d.avulsas} soAvulso={d.soAvulso} alunos={d.alunos} onSalvo={carregar} />
+          {goLive && <FinHistorico manual={d.manual} goLive={goLive} onSalvo={carregar} />}
+        </>
+      )}
+
       <FinPlanosPrecos planos={d.planos} precos={d.precos} onSalvo={carregar} />
 
       {edit && (
@@ -21898,6 +22266,8 @@ async function finContarSemValor() {
   ]);
   if (c.error || a.error) return null;
   const com = new Set((c.data || []).map(x => x.aluno_id));
+  const sa = await sb.from("fin_so_avulso").select("aluno_id");
+  if (!sa.error) for (const x of sa.data || []) com.add(x.aluno_id);
   return (a.data || []).filter(x => !com.has(x.id)).length;
 }
 
@@ -21908,7 +22278,8 @@ const TABELAS_BACKUP = [
   "fases", "planejamentos", "fase_templates", "fase_categorias", "metodos",
   "equipamentos", "academias", "academia_equipamentos", "aluno_academias",
   "anamnese_secoes", "ocorrencia_tipos", "anamnese_entradas",
-  "planos", "contratos", "fila_categorias", "fila_motivos", "fila"
+  "planos", "precos", "contratos", "faturamento_manual", "receitas_avulsas", "fin_so_avulso",
+  "fila_categorias", "fila_motivos", "fila"
 ];
 
 function PainelBackup() {
