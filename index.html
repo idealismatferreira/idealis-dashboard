@@ -2801,6 +2801,99 @@
   /* ficha: aba ativa marcada (a Anamnese é a primeira e o padrão) */
   .dr-acoes .btn-sec.on{background:#131a1c;color:var(--txt);
     box-shadow:inset 0 -2px 0 var(--accent)}
+  /* ============ FILA DE ALUNOS · Admin (11/11/2026) ============
+     Escopada em .fl-* e .fn-vistas. Etapas com cor + texto (nunca só cor). */
+  .fn-vistas{display:inline-flex;gap:2px;background:var(--bg);border:1px solid var(--line);
+    border-radius:10px;padding:3px;margin-bottom:14px;max-width:100%}
+  .fn-vistas button{width:auto;background:none;border:none;color:var(--mut);font-size:12.5px;
+    font-weight:600;padding:7px 16px;border-radius:7px;display:inline-flex;align-items:center;gap:7px}
+  .fn-vistas button:hover{color:var(--txt);filter:none}
+  .fn-vistas button.on{background:var(--card);color:var(--txt);box-shadow:0 0 0 1px var(--line)}
+  .fn-vistas b{background:var(--warn);color:#1a1206;font-size:10px;line-height:1.5;border-radius:9px;
+    padding:0 6px;min-width:18px;text-align:center}
+  .fl-topo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .fl-topo .busca-alunos{margin:0;flex:1 1 200px;max-width:300px}
+  .fl-add{width:auto;padding:9px 16px;font-size:13px}
+  .fl-filtros{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+  .fl-filtros .filtros{margin:0}
+  .fl-filtros .fbtn i{font-style:normal;opacity:.65;margin-left:6px;font-size:10.5px;font-variant-numeric:tabular-nums}
+  .fl-filtros .fbtn.on2{border-color:var(--accent);color:var(--txt)}
+  .fl-vagas{background:var(--card);border:1px dashed var(--line);border-radius:12px;
+    padding:12px 14px 6px;margin-bottom:14px}
+  .fl-vagas .fn-sub{margin:0 0 8px}
+  .fl-vagas .fn-link{margin:0 0 6px}
+  .fl-lista{display:flex;flex-direction:column}
+  .fl-it{position:relative;padding:11px 12px;border-top:1px solid #182224;cursor:pointer;
+    border-radius:8px;outline:none}
+  .fl-it.wa{padding-right:52px}
+  .fl-it:first-child{border-top-color:transparent}
+  .fl-it:hover,.fl-it:focus-visible{background:#0f2124}
+  .fl-it:focus-visible{box-shadow:0 0 0 1px var(--accent)}
+  .fl-it.venc{box-shadow:inset 3px 0 0 var(--warn)}
+  .fl-it.enc{opacity:.72}
+  .fl-l1{display:flex;align-items:center;gap:6px 7px;flex-wrap:wrap}
+  .fl-l1 b{font-size:13.5px;margin-right:3px}
+  .fl-tag{font-size:10.5px;color:var(--mut);border:1px solid var(--line);border-radius:10px;
+    padding:1px 8px;white-space:nowrap}
+  .fl-tag.pl{color:var(--accent);border-color:#0b4c53}
+  .fl-et{font-size:10.5px;border-radius:10px;padding:1px 8px;background:#182224;color:var(--txt);white-space:nowrap}
+  .fl-et.conversa{background:#132a3d;color:#8cc4ff}
+  .fl-et.fechou{background:#12301f;color:#6fdca5}
+  .fl-et.nao_fechou{background:#2d1618;color:#f5a3a3}
+  .fl-l2{display:flex;flex-wrap:wrap;gap:3px 14px;font-size:11.5px;color:var(--mut);margin-top:5px;line-height:1.45}
+  .fl-venc{color:var(--warn);font-weight:600}
+  .fl-cab{color:var(--accent);font-weight:600}
+  .fl-obs{font-size:11.5px;color:#a9babd;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fl-wa{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);color:#6fdca5;background:var(--bg)}
+  .fl-wa:hover,.fl-wa:focus-visible{border-color:#6fdca5;outline:none}
+  .fl-wa svg{width:17px;height:17px;display:block}
+  .fl-grade{display:grid;grid-template-columns:62px repeat(7,minmax(0,1fr));gap:4px;margin:2px 0 10px;max-width:520px}
+  .fl-grade button{width:auto;min-height:32px;padding:0;font-size:12px;font-weight:600;background:var(--bg);
+    border:1px solid var(--line);color:var(--mut);border-radius:6px}
+  .fl-grade button:hover{border-color:var(--accent);filter:none}
+  .fl-grade button.on{background:var(--accent);border-color:var(--accent);color:#04191c}
+  .fl-grade button.h{background:none;border:none;color:var(--mut);font-size:10.5px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.5px;min-height:24px}
+  .fl-grade button.h:hover{color:var(--txt)}
+  .fl-grade button.h.lin{text-align:left;text-transform:none;letter-spacing:0;font-size:11.5px}
+  .fl-disp-txt{margin:-4px 0 4px}
+  .fl-pc{display:flex;flex-direction:column;gap:8px}
+  .fl-pc > :first-child{max-width:220px}
+  .fl-aviso{background:#2a2418;border:1px solid #5c4a24;color:#f0a35e;border-radius:8px;
+    padding:9px 11px;font-size:12px;line-height:1.6;margin-top:8px}
+  .fl-aviso b{color:var(--txt)}
+  .fl-aviso button{width:auto;display:inline;padding:0;margin-left:8px;background:none;border:none;
+    color:var(--txt);text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:600}
+  .fl-fim{display:flex;gap:9px;margin-top:10px}
+  .fl-fim button{flex:1;padding:11px}
+  .fl-ok{background:#12301f;border:1px solid #1f6b41;color:#8ae8b6}
+  .fl-ok:hover{border-color:#6fdca5;filter:none}
+  .fl-fim-txt{font-size:11.5px;color:var(--mut);line-height:1.5;margin-top:8px}
+  .fl-listas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .fl-ls{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #182224}
+  .fl-ls input{margin:0;padding:7px 9px;font-size:12.5px;flex:1 1 auto;min-width:0}
+  .fl-ls .fn-sel{flex:0 0 auto;max-width:150px}
+  .fl-ls.off input{opacity:.5}
+  .fl-ls-bt{width:auto;background:none;border:none;padding:4px 2px;color:var(--mut);font-size:11.5px;
+    font-weight:400;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+  .fl-ls-bt:hover{color:var(--txt);filter:none}
+  .fl-ls.novo{border-top:1px dashed var(--line);margin-top:4px}
+  .fl-ls.novo .btn-sec{padding:7px 12px}
+  .fl-listas-box{margin-top:10px}
+  .sn-it.fl .sn-tx i{font-variant-numeric:tabular-nums}
+  @media (max-width: 900px){ .fl-listas{grid-template-columns:minmax(0,1fr)} }
+  @media (max-width: 560px){
+    .fl-grade{grid-template-columns:48px repeat(7,minmax(0,1fr));gap:3px}
+    .fl-grade button{min-height:34px;font-size:11px}
+    .fl-grade button.h.lin{font-size:10.5px}
+    .fn-vistas{display:flex}
+    .fn-vistas button{flex:1;justify-content:center;padding:8px 10px}
+    .fl-topo .busca-alunos{max-width:none}
+    .fl-ls{flex-wrap:wrap}
+    .fl-ls .fn-sel{max-width:none;flex:1 1 auto}
+  }
 </style>
 </head>
 <body>
@@ -6741,12 +6834,15 @@ function BotaoLoginAluno({ aluno }) {
 
 /* ---------- Novo aluno ---------- */
 /* Cria a FICHA. O login (Auth) é passo separado — ver aviso na tela. */
-function ModalNovoAluno({ onFechar, onCriado }) {
+function ModalNovoAluno({ onFechar, onCriado, inicial }) {
   const { toast } = usarUI();
   useEsc(true, onFechar);
-  const [nome, setNome]   = useState("");
+  /* inicial: veio da Fila (nome, tel, plano). O plano vale como escolha sua:
+     não é trocado pela sugestão do formato */
+  const ini = inicial || {};
+  const [nome, setNome]   = useState(ini.nome || "");
   const [email, setEmail] = useState("");
-  const [tel, setTel]     = useState("");
+  const [tel, setTel]     = useState(ini.tel || "");
   const [nasc, setNasc]   = useState("");
   const [sexo, setSexo]   = useState("");
   const [modId, setModId] = useState("");
@@ -6772,8 +6868,8 @@ function ModalNovoAluno({ onFechar, onCriado }) {
   /* financeiro: null = SQL ainda não rodou (a seção nem aparece).
      O plano vem sugerido pelo formato até você mexer nele. */
   const [fin, setFin]     = useState(null);
-  const [fv, setFv]       = useState(FIN_V_VAZIO);
-  const [fvMexeu, setFvMexeu] = useState(false);
+  const [fv, setFv]       = useState(() => ini.plano ? { ...FIN_V_VAZIO, plano: ini.plano } : FIN_V_VAZIO);
+  const [fvMexeu, setFvMexeu] = useState(!!ini.plano);
 
   useEffect(() => {
     Promise.all([
@@ -6890,7 +6986,9 @@ function ModalNovoAluno({ onFechar, onCriado }) {
         <div className="dr-top">
           <button className="dr-x" onClick={onFechar}>×</button>
           <h2>Novo aluno</h2>
-          <div className="meta">Cria a ficha. O login do app é um passo separado.</div>
+          <div className="meta">{inicial
+            ? "Veio da Fila: confira os dados e crie a ficha. Ela sai da fila como Fechou."
+            : "Cria a ficha. O login do app é um passo separado."}</div>
         </div>
         <div className="dr-body">
           {erro && <div className="err">{erro}</div>}
@@ -15841,6 +15939,9 @@ function SinoFeed() {
   const { itens, visto, naoLidas, marcarLidas, focar } = usarFeed();
   /* aniversários: itens calculados, "visto" por navegador (sem DDL) */
   const aniv = usarAniv();
+  /* fila: quem tem o próximo contato vencido (hoje ou atrasado) */
+  const fila = usarFila();
+  const [filaAntes, setFilaAntes] = useState(() => new Set());
   const [aberto, setAberto] = useState(false);
   const [antes, setAntes]   = useState(0);
   const [anivAntes, setAnivAntes] = useState(() => new Set());
@@ -15860,16 +15961,20 @@ function SinoFeed() {
     if (aberto) { setAberto(false); return; }
     setAntes(visto);
     setAnivAntes(new Set(aniv.vistos));
+    setFilaAntes(new Set(fila.vistos));
     setAberto(true);
     if (naoLidas) marcarLidas();
     if (aniv.naoVistos) aniv.marcarVistos();
+    if (fila.naoVistos) fila.marcarVistos();
   }
 
   const lista = (itens || []).slice(0, 20);
   const anivs = aniv.itens;
+  const filas = fila.itens;
   const novas = lista.filter(i => i.reg > antes).length +
-    anivs.filter(i => !anivAntes.has(i.key)).length;
-  const total = naoLidas + aniv.naoVistos;
+    anivs.filter(i => !anivAntes.has(i.key)).length +
+    filas.filter(i => !filaAntes.has(i.key)).length;
+  const total = naoLidas + aniv.naoVistos + fila.naoVistos;
 
   return (
     <div className="sn" ref={ref}>
@@ -15915,8 +16020,32 @@ function SinoFeed() {
                     </button>
                   );
                 })}
-                <div className="sn-sec"><span>Observações</span></div>
               </>
+            )}
+            {filas.length > 0 && (
+              <>
+                <div className="sn-sec"><span>Retomar contato · fila</span></div>
+                {filas.slice(0, 15).map(it => (
+                  <button key={it.key}
+                    className={"sn-it fl" + (filaAntes.has(it.key) ? "" : " nv")}
+                    onClick={() => { setAberto(false); fila.abrir(it.id); }}>
+                    <FeedAvatar it={it} px={30} />
+                    <span className="sn-tx">
+                      📞 Retomar contato com <b>{it.aluno}</b>
+                      <i>
+                        {it.dias === 0 ? "hoje" : "atrasado " + (-it.dias) + (it.dias === -1 ? " dia" : " dias")}
+                        {it.plano ? " · " + it.plano : ""}{it.cat ? " · " + it.cat : ""}
+                      </i>
+                    </span>
+                  </button>
+                ))}
+                {filas.length > 15 && (
+                  <div className="fd-vz">+{filas.length - 15} na Fila do Admin</div>
+                )}
+              </>
+            )}
+            {(anivs.length > 0 || filas.length > 0) && (
+              <div className="sn-sec"><span>Observações</span></div>
             )}
             {itens === null ? <div className="fd-vz">Carregando...</div>
              : lista.length === 0 ? <div className="fd-vz">Nada nos últimos {FEED_DIAS} dias.</div>
@@ -19656,7 +19785,7 @@ function ModalSaida({ aluno, onFechar, onFeito }) {
 }
 
 /* ---- reativar = contrato novo (conta como retorno, não como aluno novo) ---- */
-function ModalRetorno({ aluno, onFechar, onFeito }) {
+function ModalRetorno({ aluno, onFechar, onFeito, planoInicial }) {
   const { toast } = usarUI();
   const hoje = hojeFuso();
   const [d, setD]         = useState(null);
@@ -19683,8 +19812,10 @@ function ModalRetorno({ aluno, onFechar, onFeito }) {
         if (u.error) throw new Error(u.error.message);
         const ultimo = (u.data || [])[0] ? finContrato(u.data[0]) : null;
         setD({ ...tb, ultimo });
-        setV(ultimo ? finValoresDe(ultimo)
-          : { ...FIN_V_VAZIO, plano: finPlanoSugerido(aluno.modalidade_id, m.data || [], tb.planos) });
+        /* da Fila: volta no plano de interesse (os valores antigos ficam de partida) */
+        const pi = planoInicial && finAchar(tb.planos, planoInicial) ? planoInicial : null;
+        setV(ultimo ? { ...finValoresDe(ultimo), ...(pi ? { plano: pi } : {}) }
+          : { ...FIN_V_VAZIO, plano: pi || finPlanoSugerido(aluno.modalidade_id, m.data || [], tb.planos) });
       } catch (e) { if (vivo) { setErro(e.message); setD({ planos: [], precos: [], ultimo: null }); } }
     })();
     return () => { vivo = false; };
@@ -19749,15 +19880,17 @@ function ModalRetorno({ aluno, onFechar, onFeito }) {
 }
 
 /* ---- gaveta do contrato: mudar plano/valores e ver o histórico ---- */
-function DrawerContrato({ aluno, contratos, planos, precos, mods, goLive, onFechar, onSalvo, onSaida }) {
+function DrawerContrato({ aluno, contratos, planos, precos, mods, goLive, onFechar, onSalvo, onSaida, planoInicial }) {
   const { toast } = usarUI();
   const hoje = hojeFuso();
   const hist = (contratos || []).filter(c => c.aluno_id === aluno.id)
     .sort((x, y) => x.inicio < y.inicio ? 1 : x.inicio > y.inicio ? -1 : 0);
   const ab = hist.find(c => c.fim == null) || null;
   const pad = ab ? null : finInicioPadrao(aluno, goLive, hoje);
-  const [v, setV]       = useState(() => ab ? finValoresDe(ab)
-    : { ...FIN_V_VAZIO, plano: finPlanoSugerido(aluno.modalidade_id, mods, planos) });
+  /* planoInicial: veio da Fila (ex.: Consultoria querendo virar Híbrido) */
+  const pi = planoInicial && finAchar(planos, planoInicial) ? planoInicial : null;
+  const [v, setV]       = useState(() => ab ? { ...finValoresDe(ab), ...(pi ? { plano: pi } : {}) }
+    : { ...FIN_V_VAZIO, plano: pi || finPlanoSugerido(aluno.modalidade_id, mods, planos) });
   const [data, setData] = useState(ab ? hoje : pad.inicio);
   const [erro, setErro] = useState("");
   const [busy, setBusy] = useState(false);
@@ -19806,7 +19939,7 @@ function DrawerContrato({ aluno, contratos, planos, precos, mods, goLive, onFech
           <div className="fn-aviso">{aviso}</div>
           <div className="acoes" style={{ marginTop: 14 }}>
             <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar"}</button>
-            {ab && aluno.status === "ativo" && (
+            {ab && aluno.status === "ativo" && onSaida && (
               <button className="btn-sec" onClick={() => onSaida(aluno)} disabled={busy}>
                 Registrar saída
               </button>
@@ -20432,6 +20565,1099 @@ function FinComparar({ titulo, rot, linhas, onEscolher, nota }) {
   );
 }
 
+/* ============ FILA DE ALUNOS · Admin (11/11/2026) ============
+   Quem quer entrar (lead novo), voltar (ex-aluno) ou comprar mais (aluno
+   atual querendo mais aulas) e ainda não fechou. Decisões do Matheus:
+   - interesse = os planos do Admin (Consultoria / Híbrido / Presencial);
+   - categoria e motivo são listas editáveis (fila_categorias / fila_motivos).
+     O "vinculo" da categoria diz o que ela pede: pessoa nova, ficha inativa
+     (ex-aluno) ou ficha ativa (aluno atual);
+   - quem quer aulas guarda dia + período (seg-manha, qua-noite...), para
+     filtrar quem encaixa quando abrir vaga;
+   - "próximo contato" com aviso no sino no dia (e os atrasados);
+   - Fechou já converte: sem ficha -> Novo aluno preenchido; ficha inativa ->
+     Reativar (o financeiro conta como retorno); ficha ativa -> valor dele
+     (o aumento entra como expansão no MRR);
+   - "Não fechou" encerra. Para tentar de novo depois, a pessoa fica "Na
+     fila" com a data do próximo contato.
+   Multitenant: tudo vem filtrado por RLS (tenant + dono). Nenhum tenant no JS. */
+const FILA_ETAPAS = [["fila", "Na fila"], ["conversa", "Em conversa"],
+  ["fechou", "Fechou"], ["nao_fechou", "Não fechou"]];
+const FILA_ETAPA_ROT = Object.fromEntries(FILA_ETAPAS);
+const filaAberta = it => !!it && (it.etapa === "fila" || it.etapa === "conversa");
+const FILA_DIAS = [["seg", "Seg"], ["ter", "Ter"], ["qua", "Qua"], ["qui", "Qui"],
+  ["sex", "Sex"], ["sab", "Sáb"], ["dom", "Dom"]];
+const FILA_PERIODOS = [["manha", "Manhã"], ["tarde", "Tarde"], ["noite", "Noite"]];
+/* mesma lista do check do banco, na mesma ordem */
+const FILA_CODIGOS = FILA_DIAS.flatMap(([d]) => FILA_PERIODOS.map(([p]) => d + "-" + p));
+const FILA_VINCULOS = [["lead", "Pessoa nova"], ["ex_aluno", "Ex-aluno (ficha inativa)"],
+  ["aluno_atual", "Aluno atual (ficha ativa)"]];
+const FILA_ATALHOS = [["Amanhã", 1], ["3 dias", 3], ["1 semana", 7], ["2 semanas", 14],
+  ["1 mês", 30], ["3 meses", 90]];
+const FILA_AMOSTRA_MIN = 10;      /* abaixo disso a taxa de fechamento vem com aviso */
+const FILA_POLL_MS     = 300000;  /* sino: mesma cadência dos aniversários */
+const FILA_LS_VISTOS   = "idealis_fila_vistos_v1";
+const FILA_LS_VISTA    = "idealis_admin_vista_v1";
+
+/* telefone: só dígitos (o banco recusa máscara). null = vazio */
+function filaTel(t) {
+  const d = String(t == null ? "" : t).replace(/\D/g, "");
+  return d || null;
+}
+function filaTelValido(t) {
+  const d = filaTel(t);
+  return !d || (d.length >= 8 && d.length <= 15);
+}
+/* 5511987654321 -> (11) 98765-4321 (o resto passa como veio) */
+function filaTelBR(t) {
+  let d = filaTel(t);
+  if (!d) return "";
+  if ((d.length === 12 || d.length === 13) && d.startsWith("55")) d = d.slice(2);
+  if (d.length === 11) return "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7);
+  if (d.length === 10) return "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6);
+  return d;
+}
+
+/* dias de hoje até a data (negativo = atrasado). null = sem data */
+function filaDiasAte(iso, hoje) {
+  if (!iso) return null;
+  return Math.round((parseISO(iso) - parseISO(hoje)) / 86400000);
+}
+function filaQuando(iso, hoje) {
+  const n = filaDiasAte(iso, hoje);
+  if (n == null) return "sem data";
+  if (n === 0) return "hoje";
+  if (n === 1) return "amanhã";
+  if (n === -1) return "ontem";
+  if (n < 0) return "há " + (-n) + " dias";
+  if (n < 7) return "em " + n + " dias";
+  return dBR(iso);
+}
+/* dias entre entrar na fila e hoje (ou o dia em que encerrou) */
+function filaDiasNaFila(it, hoje) {
+  const ini = it.criado_em ? hojeFuso(new Date(it.criado_em)) : hoje;
+  const fim = it.encerrado_em || hoje;
+  return Math.max(0, Math.round((parseISO(fim) - parseISO(ini)) / 86400000));
+}
+
+/* disponibilidade ---------------------------------------------------- */
+function filaDispNorm(lista) {
+  const s = new Set(lista || []);
+  return FILA_CODIGOS.filter(c => s.has(c));
+}
+/* ["seg-manha","qua-manha","sex-noite"] -> "Manhã: seg, qua · Noite: sex" */
+function filaDispTexto(lista) {
+  const s = new Set(lista || []);
+  const partes = [];
+  for (const [p, rp] of FILA_PERIODOS) {
+    const dias = FILA_DIAS.filter(([d]) => s.has(d + "-" + p)).map(([d]) => d);
+    if (!dias.length) continue;
+    const txt = dias.length === 7 ? "todo dia"
+      : dias.join(",") === "seg,ter,qua,qui,sex" ? "seg a sex"
+      : dias.map(d => FILA_DIAS.find(x => x[0] === d)[1].toLowerCase()).join(", ");
+    partes.push(rp + ": " + txt);
+  }
+  return partes.join(" · ");
+}
+/* em quantas das vagas marcadas a pessoa encaixa (null = sem filtro) */
+function filaEncaixa(it, vagas) {
+  if (!vagas || !vagas.size) return null;
+  const d = new Set(it.disponibilidade || []);
+  let n = 0;
+  vagas.forEach(v => { if (d.has(v)) n++; });
+  return n;
+}
+
+/* filtros: { plano, cat, vista: "abertas"|"fechou"|"nao_fechou"|"todas",
+   vagas: Set, busca }. nomeDe: nome atual da ficha (ou o da fila) */
+function filaFiltrar(itens, f, nomeDe) {
+  const q = String(f.busca || "").trim();
+  return (itens || []).filter(it => {
+    if (f.plano && it.plano_id !== f.plano) return false;
+    if (f.cat && it.categoria_id !== f.cat) return false;
+    if (f.vista === "abertas" && !filaAberta(it)) return false;
+    if ((f.vista === "fechou" || f.vista === "nao_fechou") && it.etapa !== f.vista) return false;
+    if (f.vagas && f.vagas.size && !filaEncaixa(it, f.vagas)) return false;
+    if (q && !cbCasa((nomeDe ? nomeDe(it) : it.nome) + " " + (it.obs || "") + " " +
+      (it.telefone || ""), q)) return false;
+    return true;
+  });
+}
+
+/* ordem: abertas antes das encerradas. Com vaga marcada, quem encaixa em mais
+   vagas sobe. Entre as abertas: contato vencido (o mais antigo antes), depois
+   datas futuras, depois sem data (quem espera há mais tempo antes).
+   Encerradas: a mais recente antes. */
+function filaOrdenar(itens, hoje, vagas) {
+  const peso = it => {
+    if (!filaAberta(it)) return 3;
+    const n = filaDiasAte(it.proximo_contato, hoje);
+    return n == null ? 2 : n <= 0 ? 0 : 1;
+  };
+  return [...(itens || [])].sort((a, b) => {
+    const fa = filaAberta(a) ? 0 : 1, fb = filaAberta(b) ? 0 : 1;
+    if (fa !== fb) return fa - fb;
+    if (vagas && vagas.size) {
+      const d = filaEncaixa(b, vagas) - filaEncaixa(a, vagas);
+      if (d) return d;
+    }
+    const pa = peso(a), pb = peso(b);
+    if (pa !== pb) return pa - pb;
+    if (pa <= 1) {
+      const c = String(a.proximo_contato).localeCompare(String(b.proximo_contato));
+      if (c) return c;
+    }
+    if (pa === 3) {
+      const c = String(b.encerrado_em || "").localeCompare(String(a.encerrado_em || ""));
+      if (c) return c;
+    }
+    return String(a.criado_em || "").localeCompare(String(b.criado_em || "")) ||
+      String(a.nome).localeCompare(String(b.nome), "pt-BR");
+  });
+}
+
+/* números do topo. Tempo até fechar = MEDIANA (dias entre entrar na fila e
+   fechar): poucos casos muito longos não puxam o número, como puxariam a média */
+function filaResumo(itens, hoje) {
+  const todos = itens || [];
+  const ab = todos.filter(filaAberta);
+  const venc = ab.filter(it => it.proximo_contato && it.proximo_contato <= hoje);
+  const fech = todos.filter(it => it.etapa === "fechou");
+  const nf = todos.filter(it => it.etapa === "nao_fechou");
+  const enc = fech.length + nf.length;
+  const dias = fech.map(it => filaDiasNaFila(it, hoje)).sort((a, b) => a - b);
+  const meio = dias.length >> 1;
+  const mediana = !dias.length ? null
+    : dias.length % 2 ? dias[meio] : (dias[meio - 1] + dias[meio]) / 2;
+  return {
+    abertas: ab.length, conversa: ab.filter(it => it.etapa === "conversa").length,
+    retomar: venc.length, atrasadas: venc.filter(it => it.proximo_contato < hoje).length,
+    semData: ab.filter(it => !it.proximo_contato).length,
+    fechou: fech.length, naoFechou: nf.length, encerradas: enc,
+    taxa: enc ? fech.length / enc : null, amostraPequena: enc < FILA_AMOSTRA_MIN,
+    medianaDias: mediana
+  };
+}
+
+/* o que trava: motivos de quem está aberto + de quem não fechou (quem fechou
+   sai da conta, mesmo que o motivo antigo tenha ficado gravado) */
+function filaMotivos(itens, motivos) {
+  const nome = new Map((motivos || []).map(m => [m.id, m.nome]));
+  const c = new Map();
+  for (const it of itens || []) {
+    if (!it.motivo_id || it.etapa === "fechou") continue;
+    const k = nome.get(it.motivo_id) || "—";
+    c.set(k, (c.get(k) || 0) + 1);
+  }
+  return [...c].map(([motivo, n]) => ({ motivo, n }))
+    .sort((a, b) => b.n - a.n || a.motivo.localeCompare(b.motivo, "pt-BR"));
+}
+function filaContar(itens, campo) {
+  const m = new Map();
+  (itens || []).forEach(it => m.set(it[campo], (m.get(it[campo]) || 0) + 1));
+  return m;
+}
+
+/* o que "Fechou" abre. Vale o estado REAL da ficha, não a categoria: se o
+   ex-aluno já foi reativado por outro caminho, abre o valor dele. Ficha
+   ligada que não carregou: só marca (nunca cria um aluno duplicado). */
+function filaAcaoFechar(it, aluno) {
+  if (!it.aluno_id) return "novo";
+  if (!aluno) return "marcar";
+  return aluno.status === "ativo" ? "valor" : "reativar";
+}
+
+/* última saída registrada no financeiro (para o ex-aluno) */
+function filaUltimaSaida(contratos, alunoId) {
+  const s = (contratos || [])
+    .filter(c => c.aluno_id === alunoId && c.encerramento === "saida" && c.fim)
+    .sort((a, b) => String(b.fim).localeCompare(String(a.fim)))[0];
+  return s ? { fim: s.fim, motivo: s.motivo || null, plano: s.plano_nome || null } : null;
+}
+
+/* nome parecido: na base de alunos (pode ser ex-aluno) e na própria fila */
+function filaParecidos(nome, alunos, fila, ignorarId) {
+  const n = String(nome || "").trim();
+  if (n.length < 3) return { alunos: [], fila: [] };
+  return {
+    alunos: (alunos || []).filter(a => cbCasa(a.nome, n)).slice(0, 3),
+    fila: (fila || []).filter(f => f.id !== ignorarId && filaAberta(f) && cbCasa(f.nome, n)).slice(0, 3)
+  };
+}
+
+/* rascunho da gaveta -> linha do banco. Devolve { linha } ou { erro } */
+function filaLinha(r, cats, planos, alunoPor) {
+  const cat = (cats || []).find(c => c.id === r.categoria_id);
+  if (!cat) return { erro: "Escolha a categoria." };
+  const pl = (planos || []).find(p => p.id === r.plano_id);
+  if (!pl) return { erro: "Escolha o interesse (plano)." };
+  let nome = String(r.nome || "").trim(), aluno_id = null;
+  /* lead que já fechou continua ligado à ficha que nasceu dele */
+  const ficha = r.aluno_id && alunoPor ? alunoPor.get(r.aluno_id) : null;
+  if (cat.vinculo !== "lead" && !ficha) return { erro: cat.vinculo === "ex_aluno"
+    ? "Escolha o ex-aluno na lista." : "Escolha o aluno na lista." };
+  if (ficha) { aluno_id = ficha.id; nome = String(ficha.nome || "").trim(); }
+  if (!nome) return { erro: "O nome é obrigatório." };
+  if (!filaTelValido(r.telefone)) return { erro: "O telefone tem número de dígitos estranho. Confere?" };
+  const etapa = r.etapa || "fila";
+  if (etapa === "nao_fechou" && !r.motivo_id) return { erro: "Escolha o motivo de não ter fechado." };
+  return { linha: {
+    nome: nome.slice(0, 120), aluno_id, telefone: filaTel(r.telefone),
+    plano_id: pl.id, categoria_id: cat.id, etapa, motivo_id: r.motivo_id || null,
+    disponibilidade: pl.cobra_aulas ? filaDispNorm(r.disponibilidade) : [],
+    proximo_contato: filaAberta({ etapa }) ? (r.proximo_contato || null) : null,
+    obs: String(r.obs || "").trim().slice(0, 1000) || null
+  } };
+}
+
+/* erros do banco em português */
+const filaSemObjeto = msg => /fila/.test(msg || "") &&
+  /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(msg || "");
+function filaMsgErro(error) {
+  const m = (error && error.message) || String(error || "");
+  const c = error && error.code;
+  if (/fila_aluno_aberto_uq/.test(m)) return "Essa ficha já está aberta na fila.";
+  if (/_nome_uq/.test(m)) return "Já existe um item com esse nome na lista.";
+  if (/fila_nao_fechou_tem_motivo/.test(m)) return "Escolha o motivo de não ter fechado.";
+  if (/fila_telefone_check/.test(m)) return "Telefone inválido.";
+  if (c === "42501" || /row-level security|permission denied/i.test(m))
+    return "Sem permissão para a fila (só o dono da consultoria).";
+  if (c === "23503") return "Algum item escolhido não existe mais. Recarregue a página.";
+  return m;
+}
+
+/* sino: abertos com contato vencido. A chave leva a data: se você remarcar,
+   o novo dia acende o sino de novo */
+function filaSinoItens(linhas, hoje, nomePlano, nomeCat) {
+  return (linhas || [])
+    .filter(it => filaAberta(it) && it.proximo_contato && it.proximo_contato <= hoje)
+    .map(it => ({ key: "fila:" + it.id + ":" + it.proximo_contato, id: it.id,
+      aluno: it.nome, foto: null, data: it.proximo_contato,
+      dias: filaDiasAte(it.proximo_contato, hoje),
+      plano: nomePlano ? nomePlano(it.plano_id) : "", cat: nomeCat ? nomeCat(it.categoria_id) : "" }))
+    .sort((a, b) => a.data.localeCompare(b.data) || String(a.aluno).localeCompare(String(b.aluno), "pt-BR"));
+}
+function filaLerVistos() {
+  try {
+    const v = JSON.parse(localStorage.getItem(FILA_LS_VISTOS) || "[]");
+    return new Set(Array.isArray(v) ? v : []);
+  } catch (e) { return new Set(); }
+}
+/* guarda só as 300 mais recentes: a lista não cresce para sempre */
+function filaGravarVistos(set) {
+  try { localStorage.setItem(FILA_LS_VISTOS, JSON.stringify([...set].slice(-300))); } catch (e) {}
+}
+
+/* ---- contexto da fila: o sino lê daqui; o Admin pede para abrir um item ----
+   Uma leitura leve (só quem tem contato vencido) a cada 5 min, como os
+   aniversários. "Visto" por navegador, igual ao resto do sino (sem DDL). */
+const CtxFila = React.createContext({ itens: [], vistos: new Set(), naoVistos: 0,
+  marcarVistos: () => {}, abrir: () => {}, pedido: null, limparPedido: () => {},
+  recarregar: async () => {}, hoje: "" });
+const usarFila = () => React.useContext(CtxFila);
+
+function ProvedorFila({ irAba, children }) {
+  const [linhas, setLinhas] = useState(null);
+  const [nomes, setNomes]   = useState(() => ({ pl: new Map(), ct: new Map() }));
+  const [vistos, setVistos] = useState(() => filaLerVistos());
+  const [pedido, setPedido] = useState(null);
+  const [hoje, setHoje]     = useState(() => hojeFuso());
+
+  const recarregar = useCallback(async () => {
+    const h = hojeFuso();
+    setHoje(h);
+    const [f, p, c] = await Promise.all([
+      sb.from("fila").select("id, nome, plano_id, categoria_id, etapa, proximo_contato")
+        .in("etapa", ["fila", "conversa"]).lte("proximo_contato", h)
+        .order("proximo_contato").limit(200),
+      sb.from("planos").select("id, nome"),
+      sb.from("fila_categorias").select("id, nome")
+    ]);
+    if (f.error) {
+      /* fila.sql ainda não rodou: o sino segue sem a seção, sem barulho */
+      if (!filaSemObjeto(f.error.message)) console.warn("[fila] sino:", f.error.message);
+      setLinhas([]); return;
+    }
+    setLinhas(f.data || []);
+    setNomes({ pl: new Map(((p && p.data) || []).map(x => [x.id, x.nome])),
+               ct: new Map(((c && c.data) || []).map(x => [x.id, x.nome])) });
+  }, []);
+
+  useEffect(() => {
+    recarregar();
+    const t = setInterval(() => { if (!document.hidden) recarregar(); }, FILA_POLL_MS);
+    const vis = () => { if (!document.hidden) recarregar(); };
+    document.addEventListener("visibilitychange", vis);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", vis); };
+  }, [recarregar]);
+
+  const itens = useMemo(() => linhas ? filaSinoItens(linhas, hoje,
+    id => nomes.pl.get(id) || "", id => nomes.ct.get(id) || "") : [], [linhas, nomes, hoje]);
+  const naoVistos = itens.filter(i => !vistos.has(i.key)).length;
+  const marcarVistos = useCallback(() => {
+    setVistos(v => {
+      const n = new Set(v);
+      itens.forEach(i => n.add(i.key));
+      filaGravarVistos(n);
+      return n;
+    });
+  }, [itens]);
+  const abrir = useCallback(id => {
+    setPedido({ id, em: Date.now() });
+    if (irAba) irAba("admin");
+  }, [irAba]);
+  const limparPedido = useCallback(() => setPedido(null), []);
+
+  const valor = { itens, vistos, naoVistos, marcarVistos, abrir, pedido, limparPedido,
+    recarregar, hoje };
+  return <CtxFila.Provider value={valor}>{children}</CtxFila.Provider>;
+}
+
+function IconeWhats() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.5L3.5 20.5l1.4-4.3a8.5 8.5 0 1 1 15.6-4.6z" />
+      <path d="M9.2 8.6c.3 2.3 2.5 4.6 4.9 5.1l1.1-1.1 1.6.9-.6 1.2c-3.2.2-6.9-3.4-6.9-6.6l1.2-.6.9 1.6z" />
+    </svg>
+  );
+}
+
+/* grade dia × período. Toque no dia (coluna) ou no período (linha) marca
+   tudo de uma vez; toque de novo desmarca */
+function FilaGrade({ valor, onChange, rotulo }) {
+  const s = new Set(valor || []);
+  const alt = cods => {
+    const todos = cods.every(c => s.has(c));
+    const n = new Set(s);
+    cods.forEach(c => { if (todos) n.delete(c); else n.add(c); });
+    onChange(filaDispNorm([...n]));
+  };
+  return (
+    <div className="fl-grade" role="group" aria-label={rotulo || "Dias e períodos"}>
+      <span />
+      {FILA_DIAS.map(([d, rd]) => (
+        <button key={d} type="button" className="h" title={"Marcar " + rd + " inteira"}
+          onClick={() => alt(FILA_PERIODOS.map(([p]) => d + "-" + p))}>{rd}</button>
+      ))}
+      {FILA_PERIODOS.map(([p, rp]) => (
+        <React.Fragment key={p}>
+          <button type="button" className="h lin" title={"Marcar " + rp.toLowerCase() + " em todos os dias"}
+            onClick={() => alt(FILA_DIAS.map(([d]) => d + "-" + p))}>{rp}</button>
+          {FILA_DIAS.map(([d, rd]) => {
+            const c = d + "-" + p, on = s.has(c);
+            return (
+              <button key={c} type="button" className={on ? "on" : ""} aria-pressed={on}
+                aria-label={rd + " " + rp.toLowerCase()} onClick={() => alt([c])}>
+                {on ? "✓" : ""}</button>
+            );
+          })}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+/* uma pessoa da lista */
+function FilaItem({ it, hoje, nome, plano, cat, motivo, aluno, saida, vagas, onAbrir }) {
+  const aberta = filaAberta(it);
+  const n = filaDiasAte(it.proximo_contato, hoje);
+  const venc = aberta && n != null && n <= 0;
+  const wa = waNumero(it.telefone || (aluno && aluno.telefone));
+  const enc = filaEncaixa(it, vagas);
+  const disp = filaDispTexto(it.disponibilidade);
+  return (
+    <div className={"fl-it" + (venc ? " venc" : "") + (aberta ? "" : " enc") + (wa ? " wa" : "")}
+      role="button" tabIndex={0} data-fila={it.id}
+      onClick={onAbrir} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onAbrir(); } }}>
+      <div className="fl-l1">
+        <b>{nome}</b>
+        {plano && <span className="fl-tag pl">{plano}</span>}
+        {cat && <span className="fl-tag">{cat}</span>}
+        <span className={"fl-et " + it.etapa}>{FILA_ETAPA_ROT[it.etapa] || it.etapa}</span>
+      </div>
+      <div className="fl-l2">
+        {aberta ? (
+          <span className={venc ? "fl-venc" : ""}>
+            {it.proximo_contato
+              ? (venc ? "⏰ " : "📅 ") + "contato " + filaQuando(it.proximo_contato, hoje)
+              : "sem data de contato"}
+          </span>
+        ) : (
+          <span>{(it.etapa === "fechou" ? "fechou" : "encerrou") +
+            (it.encerrado_em ? " em " + dBR(it.encerrado_em) : "")}</span>
+        )}
+        {motivo && <span>trava: {motivo}</span>}
+        {disp && <span>🕒 {disp}</span>}
+        {enc != null && <span className="fl-cab">encaixa em {enc} de {vagas.size}</span>}
+        {saida && <span>saiu em {dBR(saida.fim)}{saida.motivo ? " · " + saida.motivo : ""}</span>}
+        <span>{filaDiasNaFila(it, hoje)} dias na fila</span>
+      </div>
+      {it.obs && <div className="fl-obs">{it.obs}</div>}
+      {wa && (
+        <a className="fl-wa" href={"https://wa.me/" + wa} target="_blank" rel="noopener noreferrer"
+          title={"WhatsApp de " + nome} aria-label={"Abrir WhatsApp de " + nome}
+          onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
+          <IconeWhats />
+        </a>
+      )}
+    </div>
+  );
+}
+
+/* ---- gaveta: adicionar / editar / encerrar ---- */
+function DrawerFila({ it, cats, mots, planos, alunos, contratos, itensFila, onFechar, onSalvo, onFechou }) {
+  const { toast, confirmar } = usarUI();
+  const novo = !it;
+  const hoje = hojeFuso();
+  useEsc(true, onFechar);
+  const alunoPor = useMemo(() => new Map((alunos || []).map(a => [a.id, a])), [alunos]);
+  const catsAt = (cats || []).filter(c => c.ativo !== false || (it && c.id === it.categoria_id));
+  const motsAt = (mots || []).filter(m => m.ativo !== false || (it && m.id === it.motivo_id));
+  const plsAt = (planos || []).filter(p => p.ativo !== false || (it && p.id === it.plano_id));
+  const [r, setR] = useState(() => it ? {
+      categoria_id: it.categoria_id, plano_id: it.plano_id, nome: it.nome || "",
+      aluno_id: it.aluno_id || "", telefone: filaTelBR(it.telefone), etapa: it.etapa,
+      motivo_id: it.motivo_id || "", disponibilidade: it.disponibilidade || [],
+      proximo_contato: it.proximo_contato || "", obs: it.obs || "" }
+    : { categoria_id: ((cats || []).find(c => c.ativo !== false && c.vinculo === "lead") ||
+          (cats || []).find(c => c.ativo !== false) || {}).id || "",
+      plano_id: "", nome: "", aluno_id: "", telefone: "", etapa: "fila", motivo_id: "",
+      disponibilidade: [], proximo_contato: dISO(addDias(parseISO(hoje), 7)), obs: "" });
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+  /* mexeu em algo: o aviso de erro da tentativa anterior some */
+  const set = o => { setErro(""); setR(x => ({ ...x, ...o })); };
+
+  const cat = (cats || []).find(c => c.id === r.categoria_id);
+  const vinc = cat ? cat.vinculo : "lead";
+  const pl = (planos || []).find(p => p.id === r.plano_id);
+  const ficha = r.aluno_id ? alunoPor.get(r.aluno_id) || null : null;
+  const aberta = filaAberta({ etapa: r.etapa });
+  const nomeM = ficha ? ficha.nome : (r.nome.trim() || (it && it.nome) || "");
+  const saida = ficha && ficha.status !== "ativo" ? filaUltimaSaida(contratos, ficha.id) : null;
+  const par = useMemo(() => vinc === "lead" && !r.aluno_id
+    ? filaParecidos(r.nome, alunos, itensFila, it && it.id) : { alunos: [], fila: [] },
+    [vinc, r.nome, r.aluno_id, alunos, itensFila]);
+
+  /* ficha que já está aberta na fila não aparece de novo (o banco também barra) */
+  const jaNaFila = new Set((itensFila || []).filter(x => filaAberta(x) && x.aluno_id &&
+    (!it || x.id !== it.id)).map(x => x.aluno_id));
+  const opcoesAluno = (alunos || [])
+    .filter(a => a.id === r.aluno_id || (!jaNaFila.has(a.id) &&
+      (vinc === "ex_aluno" ? a.status !== "ativo" : a.status === "ativo")))
+    .sort((x, y) => String(x.nome).localeCompare(String(y.nome), "pt-BR"))
+    .map(a => {
+      const s = vinc === "ex_aluno" ? filaUltimaSaida(contratos, a.id) : null;
+      return { value: a.id, label: a.nome + (s ? " · saiu " + dBR(s.fim) +
+        (s.motivo ? " (" + s.motivo + ")" : "") : "") };
+    });
+
+  function trocarCat(c) {
+    const mudou = !cat || cat.vinculo !== c.vinculo;
+    set({ categoria_id: c.id, ...(mudou && aberta ? { aluno_id: "" } : {}) });
+  }
+  function usarFicha(a) {
+    const alvo = (cats || []).find(c => c.ativo !== false &&
+      c.vinculo === (a.status === "ativo" ? "aluno_atual" : "ex_aluno"));
+    set({ aluno_id: a.id, ...(alvo ? { categoria_id: alvo.id } : {}) });
+  }
+
+  async function gravar(extra, msg) {
+    const res = filaLinha({ ...r, ...extra }, cats, planos, alunoPor);
+    if (res.erro) { setErro(res.erro); return null; }
+    setBusy(true); setErro("");
+    const q = novo ? sb.from("fila").insert(res.linha).select("*").single()
+      : sb.from("fila").update(res.linha).eq("id", it.id).select("*").single();
+    const { data, error } = await q;
+    setBusy(false);
+    if (error) { setErro(filaMsgErro(error)); return null; }
+    if (msg) toast(msg);
+    return data;
+  }
+  async function salvar() {
+    const d = await gravar({});
+    if (!d) return;
+    toast(novo ? d.nome + " entrou na fila." : "Fila atualizada ✓");
+    onSalvo();
+  }
+  /* grava o que mudou (continua aberta) e só então abre a conversão */
+  async function fechou(soMarcar) {
+    const d = await gravar({});
+    if (d) onFechou(d, soMarcar);
+  }
+  async function naoFechou() {
+    if (!r.motivo_id) { setErro("Escolha o que travou (motivo) para encerrar como Não fechou."); return; }
+    const d = await gravar({ etapa: "nao_fechou" });
+    if (!d) return;
+    toast(d.nome + " saiu da fila (não fechou).");
+    onSalvo();
+  }
+  async function reabrir() {
+    const d = await gravar({ etapa: "fila",
+      proximo_contato: r.proximo_contato || dISO(addDias(parseISO(hoje), 7)) });
+    if (!d) return;
+    toast(d.nome + " voltou para a fila.");
+    onSalvo();
+  }
+  async function apagar() {
+    const ok = await confirmar({
+      titulo: "Apagar " + (nomeM || "este item") + " da fila?",
+      texto: "Some de vez, inclusive das contas de fechamento.",
+      alerta: "Para guardar o histórico, prefira \"Não fechou\". Apagar é para cadastro errado " +
+        "ou para quem pediu para sair da sua lista.",
+      ok: "Apagar", perigo: true
+    });
+    if (!ok) return;
+    setBusy(true);
+    const { error } = await sb.from("fila").delete().eq("id", it.id);
+    setBusy(false);
+    if (error) { setErro(filaMsgErro(error)); return; }
+    toast("Apagado da fila.");
+    onSalvo();
+  }
+
+  const acao = filaAcaoFechar({ aluno_id: r.aluno_id || null }, ficha);
+  const acaoTxt = acao === "novo" ? "Fechou abre o Novo aluno já preenchido."
+    : acao === "reativar" ? "Fechou abre o Reativar: no financeiro conta como retorno, não como aluno novo."
+    : acao === "valor" ? "Fechou abre o valor dele: o aumento entra no MRR como expansão."
+    : "Fechou só marca: a ficha ligada não carregou.";
+
+  return (
+    <>
+      <div className="drawer-bg" onClick={busy ? undefined : onFechar} />
+      <div className="drawer" style={{ width: "min(600px,96vw)" }} role="dialog"
+        aria-label={novo ? "Adicionar à fila" : "Fila: " + nomeM}>
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar} aria-label="Fechar">×</button>
+          <h2>{novo ? "Adicionar à fila" : nomeM}</h2>
+          <div className="meta">
+            {novo ? "Quem quer entrar, voltar ou comprar mais e ainda não fechou."
+              : (FILA_ETAPA_ROT[it.etapa] || it.etapa) + " · entrou em " +
+                dBR(hojeFuso(new Date(it.criado_em))) + " (" + filaDiasNaFila(it, hoje) + " dias)" +
+                (it.encerrado_em ? " · encerrou em " + dBR(it.encerrado_em) : "")}
+          </div>
+        </div>
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+
+          <div className="ed-lab">Categoria</div>
+          <div className="chips">
+            {catsAt.map(c => (
+              <button key={c.id} type="button" className={"chip mini" + (r.categoria_id === c.id ? " on" : "")}
+                onClick={() => trocarCat(c)}>{c.nome}</button>
+            ))}
+          </div>
+
+          {vinc === "lead" && !ficha ? (
+            <>
+              <div className="nv-grid" style={{ marginTop: 14 }}>
+                <div>
+                  <div className="ed-lab">Nome *</div>
+                  <input value={r.nome} maxLength={120} autoFocus={novo} placeholder="Nome da pessoa"
+                    onChange={e => set({ nome: e.target.value })} style={{ marginBottom: 0 }} />
+                </div>
+                <div>
+                  <div className="ed-lab">WhatsApp</div>
+                  <input value={r.telefone} inputMode="tel" placeholder="(11) 9..."
+                    onChange={e => set({ telefone: e.target.value })} style={{ marginBottom: 0 }} />
+                </div>
+              </div>
+              {(par.alunos.length > 0 || par.fila.length > 0) && (
+                <div className="fl-aviso">
+                  {par.alunos.map(a => (
+                    <div key={a.id}>⚠️ Já tem ficha: <b>{a.nome}</b> ({a.status === "ativo" ? "ativo" : "inativo"}).
+                      <button type="button" onClick={() => usarFicha(a)}>usar a ficha</button></div>
+                  ))}
+                  {par.fila.map(x => (
+                    <div key={x.id}>⚠️ Já está na fila: <b>{x.nome}</b> ({FILA_ETAPA_ROT[x.etapa]}).</div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="ed-lab">
+                {vinc === "ex_aluno" ? "Ex-aluno *" : vinc === "aluno_atual" ? "Aluno atual *" : "Ficha"}
+                <i>{vinc === "ex_aluno" ? "fichas inativas" : vinc === "aluno_atual" ? "fichas ativas" : ""}</i>
+              </div>
+              {vinc !== "lead" ? (
+                <Combobox opcoes={opcoesAluno} value={r.aluno_id} onChange={v => set({ aluno_id: v || "" })}
+                  placeholder="Buscar pelo nome..." />
+              ) : (
+                <div className="fn-aviso">Virou aluno: <b>{ficha.nome}</b></div>
+              )}
+              {saida && (
+                <div className="ed-cnt" style={{ marginTop: 6 }}>
+                  Saiu em {dBR(saida.fim)}{saida.plano ? " · era " + saida.plano : ""}
+                  {saida.motivo ? " · motivo: " + saida.motivo : ""}
+                </div>
+              )}
+              <div className="ed-lab">WhatsApp <i>{ficha && ficha.telefone ? "vazio = o da ficha" : "opcional"}</i></div>
+              <input value={r.telefone} inputMode="tel" onChange={e => set({ telefone: e.target.value })}
+                placeholder={ficha && ficha.telefone ? (filaTelBR(ficha.telefone) || ficha.telefone) : "(11) 9..."}
+                style={{ marginBottom: 0 }} />
+            </>
+          )}
+
+          <div className="ed-lab">Interesse *</div>
+          <div className="chips">
+            {plsAt.map(p => (
+              <button key={p.id} type="button" className={"chip mini" + (r.plano_id === p.id ? " on" : "")}
+                onClick={() => set({ plano_id: p.id })}>{p.nome}</button>
+            ))}
+          </div>
+
+          {pl && pl.cobra_aulas && (
+            <>
+              <div className="ed-lab">Dias e períodos que a pessoa quer
+                <i>toque no dia ou período marca tudo</i></div>
+              <FilaGrade valor={r.disponibilidade} onChange={v => set({ disponibilidade: v })} />
+              {r.disponibilidade.length > 0 && (
+                <div className="ed-cnt fl-disp-txt">{filaDispTexto(r.disponibilidade)}</div>
+              )}
+            </>
+          )}
+
+          {aberta && (
+            <>
+              <div className="ed-lab">Etapa</div>
+              <div className="chips">
+                {FILA_ETAPAS.slice(0, 2).map(([e, rot]) => (
+                  <button key={e} type="button" className={"chip mini" + (r.etapa === e ? " on" : "")}
+                    onClick={() => set({ etapa: e })}>{rot}</button>
+                ))}
+              </div>
+
+              <div className="ed-lab">Próximo contato <i>avisa no sino no dia</i></div>
+              <div className="fl-pc">
+                <SeletorData value={r.proximo_contato || ""} onChange={v => set({ proximo_contato: v })}
+                  placeholder="sem data" />
+                <div className="chips">
+                  {FILA_ATALHOS.map(([rot, n]) => {
+                    const v = dISO(addDias(parseISO(hoje), n));
+                    return (
+                      <button key={rot} type="button" className={"chip mini" + (r.proximo_contato === v ? " on" : "")}
+                        onClick={() => set({ proximo_contato: v })}>{rot}</button>
+                    );
+                  })}
+                  <button type="button" className={"chip mini" + (!r.proximo_contato ? " on" : "")}
+                    onClick={() => set({ proximo_contato: "" })}>Sem data</button>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="ed-lab">O que trava
+            <i>{aberta ? "obrigatório para Não fechou" : ""}</i></div>
+          <div className="chips">
+            {motsAt.map(m => (
+              <button key={m.id} type="button" className={"chip mini" + (r.motivo_id === m.id ? " on" : "")}
+                onClick={() => set({ motivo_id: r.motivo_id === m.id ? "" : m.id })}>{m.nome}</button>
+            ))}
+          </div>
+
+          <div className="ed-lab">Observação</div>
+          <textarea value={r.obs} rows={3} maxLength={1000} onChange={e => set({ obs: e.target.value })}
+            placeholder="ex.: só pode depois das 18h, volta depois da cirurgia, pediu proposta do semestral..." />
+
+          {novo ? (
+            <div className="conf-bt" style={{ marginTop: 16 }}>
+              <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+              <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Adicionar à fila"}</button>
+            </div>
+          ) : aberta ? (
+            <>
+              <div className="conf-bt" style={{ marginTop: 16 }}>
+                <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+                <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar"}</button>
+              </div>
+              <div className="fl-fim">
+                <button className="fl-ok" onClick={() => fechou(false)} disabled={busy}>✅ Fechou</button>
+                <button className="btn-sec" onClick={naoFechou} disabled={busy}>Não fechou</button>
+              </div>
+              <div className="fl-fim-txt">{acaoTxt} "Não fechou" encerra; para tentar de novo
+                depois, deixe na fila com a data do próximo contato.</div>
+              {acao !== "marcar" && (
+                <button className="fn-link" onClick={() => fechou(true)} disabled={busy}>
+                  fechou, mas cadastro depois</button>
+              )}
+              <button className="fn-link" onClick={apagar} disabled={busy}>apagar da fila</button>
+            </>
+          ) : (
+            <>
+              <div className="fn-aviso" style={{ marginTop: 16 }}>
+                {r.etapa === "fechou" ? "Fechou" : "Não fechou"}
+                {it.encerrado_em ? " em " + dBR(it.encerrado_em) : ""}. Saiu das contas de quem está
+                em aberto e entrou na taxa de fechamento.
+              </div>
+              <div className="conf-bt" style={{ marginTop: 12 }}>
+                <button className="btn-sec" onClick={reabrir} disabled={busy}>Voltar para a fila</button>
+                <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar"}</button>
+              </div>
+              <button className="fn-link" onClick={apagar} disabled={busy}>apagar da fila</button>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---- categorias e motivos: renomear, desativar, criar ---- */
+function FilaListaLinha({ tab, x, comVinculo, onRodar }) {
+  const [nome, setNome] = useState(x.nome);
+  useEffect(() => { setNome(x.nome); }, [x.nome]);
+  function salvarNome() {
+    const n = nome.trim();
+    if (!n || n === x.nome) { setNome(x.nome); return; }
+    onRodar(sb.from(tab).update({ nome: n }).eq("id", x.id), "Renomeado ✓");
+  }
+  return (
+    <div className={"fl-ls" + (x.ativo === false ? " off" : "")}>
+      <input value={nome} maxLength={40} aria-label="Nome" onChange={e => setNome(e.target.value)}
+        onBlur={salvarNome} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }} />
+      {comVinculo && (
+        <select className="fn-sel mini" value={x.vinculo} aria-label="O que a categoria pede"
+          onChange={e => onRodar(sb.from(tab).update({ vinculo: e.target.value }).eq("id", x.id), "Atualizado ✓")}>
+          {FILA_VINCULOS.map(([v, rt]) => <option key={v} value={v}>{rt}</option>)}
+        </select>
+      )}
+      <button type="button" className="fl-ls-bt"
+        onClick={() => onRodar(sb.from(tab).update({ ativo: x.ativo === false }).eq("id", x.id),
+          x.ativo === false ? "Reativado ✓" : "Desativado ✓")}>
+        {x.ativo === false ? "reativar" : "desativar"}</button>
+    </div>
+  );
+}
+
+function FilaListas({ cats, mots, onSalvo }) {
+  const { toast } = usarUI();
+  const [nc, setNc]   = useState("");
+  const [nv, setNv]   = useState("lead");
+  const [nm, setNm]   = useState("");
+  const [busy, setBusy] = useState(false);
+  const prox = l => (l || []).reduce((m, x) => Math.max(m, x.ordem || 0), 0) + 1;
+  async function rodar(q, ok) {
+    setBusy(true);
+    const { error } = await q;
+    setBusy(false);
+    if (error) { toast(filaMsgErro(error), "erro"); return false; }
+    if (ok) toast(ok);
+    await onSalvo();
+    return true;
+  }
+  return (
+    <div className="fn-box fl-listas-box">
+      <div className="fn-tit"><b>Categorias e motivos</b><i>suas listas</i></div>
+      <p className="fn-sub">Renomeie, desative ou crie as suas. Desativar só esconde das escolhas novas:
+        quem já usa continua igual.</p>
+      <div className="fl-listas">
+        <div>
+          <div className="fn-gr">Categorias · o que pedem ao adicionar</div>
+          {cats.map(x => <FilaListaLinha key={x.id} tab="fila_categorias" x={x} comVinculo onRodar={rodar} />)}
+          <div className="fl-ls novo">
+            <input value={nc} maxLength={40} placeholder="Nova categoria" onChange={e => setNc(e.target.value)} />
+            <select className="fn-sel mini" value={nv} onChange={e => setNv(e.target.value)} aria-label="O que pede">
+              {FILA_VINCULOS.map(([v, rt]) => <option key={v} value={v}>{rt}</option>)}
+            </select>
+            <button type="button" className="btn-sec" disabled={busy || !nc.trim()}
+              onClick={async () => {
+                if (await rodar(sb.from("fila_categorias").insert({ nome: nc.trim(), vinculo: nv,
+                  ordem: prox(cats) }), "Categoria criada ✓")) setNc("");
+              }}>Criar</button>
+          </div>
+        </div>
+        <div>
+          <div className="fn-gr">Motivos · o que trava</div>
+          {mots.map(x => <FilaListaLinha key={x.id} tab="fila_motivos" x={x} onRodar={rodar} />)}
+          <div className="fl-ls novo">
+            <input value={nm} maxLength={40} placeholder="Novo motivo" onChange={e => setNm(e.target.value)} />
+            <button type="button" className="btn-sec" disabled={busy || !nm.trim()}
+              onClick={async () => {
+                if (await rodar(sb.from("fila_motivos").insert({ nome: nm.trim(), ordem: prox(mots) }),
+                  "Motivo criado ✓")) setNm("");
+              }}>Criar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Financeiro | Fila de alunos */
+function AdminVistas({ vista, setVista, retomar }) {
+  return (
+    <div className="fn-vistas" role="tablist" aria-label="Admin">
+      <button role="tab" aria-selected={vista === "fin"} className={vista === "fin" ? "on" : ""}
+        onClick={() => setVista("fin")}>Financeiro</button>
+      <button role="tab" aria-selected={vista === "fila"} className={vista === "fila" ? "on" : ""}
+        onClick={() => setVista("fila")}>Fila de alunos
+        {retomar > 0 && <b title={retomar + " para retomar hoje"}>{retomar}</b>}</button>
+    </div>
+  );
+}
+
+const FILA_VISTAS = [["abertas", "Em aberto"], ["fechou", "Fecharam"],
+  ["nao_fechou", "Não fecharam"], ["todas", "Todos"]];
+
+/* ---- a vista Fila dentro do Admin ----
+   d = o que o financeiro já carregou (planos, preços, contratos): a fila usa
+   os mesmos planos e as mesmas telas de Reativar e valor. */
+function PainelFila({ d, onFinMudou }) {
+  const { toast } = usarUI();
+  const fila = usarFila();
+  const { recarregar: recarregarAlunos } = usarAluno();
+  const [dados, setDados] = useState(null);
+  const [erro, setErro]   = useState("");
+  const [f, setF]         = useState({ plano: null, cat: null, vista: "abertas", busca: "" });
+  const [vagas, setVagas] = useState(() => new Set());
+  const [verVagas, setVerVagas] = useState(false);
+  const [edit, setEdit]   = useState(null);     /* null | "novo" | linha */
+  const [conv, setConv]   = useState(null);     /* { it, acao, aluno } */
+  const [verListas, setVerListas] = useState(false);
+  const hoje = hojeFuso();
+
+  const carregar = useCallback(async () => {
+    const [it, c, m, a] = await Promise.all([
+      finPaginar(() => sb.from("fila").select("*").order("criado_em").order("id")),
+      sb.from("fila_categorias").select("*").order("ordem").order("nome"),
+      sb.from("fila_motivos").select("*").order("ordem").order("nome"),
+      finPaginar(() => sb.from("alunos")
+        .select("id, nome, status, telefone, modalidade_id, foto_url, criado_em").order("id"))
+    ]);
+    if ([it, c, m].some(x => x.error && filaSemObjeto(x.error.message))) {
+      setDados({ falta: true }); return;
+    }
+    const e = [it, c, m, a].find(x => x.error);
+    if (e) { setErro(e.error.message); return; }
+    setErro("");
+    setDados({ itens: it.data || [], cats: c.data || [], mots: m.data || [], alunos: a.data || [] });
+  }, []);
+  useEffect(() => { carregar(); }, [carregar]);
+
+  /* veio do sino: abre a pessoa */
+  useEffect(() => {
+    if (!fila.pedido || !dados) return;
+    if (!dados.falta) {
+      const it = (dados.itens || []).find(x => x.id === fila.pedido.id);
+      if (it) setEdit(it);
+      else toast("Essa pessoa não está mais na fila.", "aviso");
+    }
+    fila.limparPedido();
+  }, [fila.pedido, dados]);
+
+  const depois = useCallback(async () => { await carregar(); fila.recarregar(); }, [carregar, fila.recarregar]);
+
+  if (erro) return <div className="err">{erro}</div>;
+  if (dados === null) return <div className="msg">Abrindo a fila...</div>;
+  if (dados.falta) return (
+    <div className="box">
+      <h2>Falta ativar a fila no banco</h2>
+      <p>Rode o <b>fila.sql</b> no Supabase (SQL Editor) e recarregue. Ele cria a fila, as
+        categorias e os motivos, com acesso só seu.</p>
+    </div>
+  );
+
+  const { itens, cats, mots, alunos } = dados;
+  const planos = d.planos || [];
+  const alunoPor = new Map(alunos.map(a => [a.id, a]));
+  const plPor = new Map(planos.map(p => [p.id, p]));
+  const catPor = new Map(cats.map(c => [c.id, c]));
+  const motPor = new Map(mots.map(m => [m.id, m]));
+  const nomeDe = it => (it.aluno_id && alunoPor.get(it.aluno_id)) ? alunoPor.get(it.aluno_id).nome : it.nome;
+
+  const plSel = f.plano ? plPor.get(f.plano) : null;
+  const temAulas = plSel ? !!plSel.cobra_aulas : planos.some(p => p.cobra_aulas && p.ativo !== false);
+  const vagasAt = temAulas ? vagas : new Set();
+  const fv = { ...f, vagas: vagasAt };
+  const lista = filaOrdenar(filaFiltrar(itens, fv, nomeDe), hoje, vagasAt);
+  const baseKpi = filaFiltrar(itens, { plano: f.plano, cat: f.cat, vista: "todas" });
+  const r = filaResumo(baseKpi, hoje);
+  const motivos = filaMotivos(baseKpi, mots);
+  const porCat = [...filaContar(baseKpi.filter(filaAberta), "categoria_id")]
+    .map(([id, n]) => ({ cat: (catPor.get(id) || {}).nome || "—", n }))
+    .sort((a, b) => b.n - a.n || a.cat.localeCompare(b.cat, "pt-BR"));
+  const nPlano = filaContar(filaFiltrar(itens, { ...fv, plano: null }, nomeDe), "plano_id");
+  const nCat = filaContar(filaFiltrar(itens, { ...fv, cat: null }, nomeDe), "categoria_id");
+  const nVista = Object.fromEntries(FILA_VISTAS.map(([v]) =>
+    [v, filaFiltrar(itens, { ...fv, vista: v }, nomeDe).length]));
+  const plsChip = planos.filter(p => p.ativo !== false || nPlano.get(p.id));
+  const catsChip = cats.filter(c => c.ativo !== false || nCat.get(c.id));
+  const titulo = (FILA_VISTAS.find(([v]) => v === f.vista) || [0, ""])[1];
+
+  async function marcarFechou(it, alunoId, msg, cadastrou) {
+    const { error } = await sb.from("fila").update({ etapa: "fechou",
+      aluno_id: alunoId || it.aluno_id || null }).eq("id", it.id);
+    if (error) toast("A fila não atualizou: " + filaMsgErro(error) +
+      (cadastrou ? ". O cadastro foi feito: abra a pessoa e marque Fechou de novo." : "."), "erro");
+    else toast(msg);
+    await depois();
+  }
+  async function aoFechar(it, soMarcar) {
+    setEdit(null);
+    const a = it.aluno_id ? alunoPor.get(it.aluno_id) : null;
+    const acao = soMarcar ? "marcar" : filaAcaoFechar(it, a);
+    if (acao === "marcar") {
+      await marcarFechou(it, null, nomeDe(it) + " fechou ✓" + (soMarcar ? " (cadastro fica para depois)" : ""), false);
+      return;
+    }
+    setConv({ it, acao, aluno: a });
+  }
+  async function convFeita(alunoId) {
+    const c = conv;
+    setConv(null);
+    const nome = c.aluno ? c.aluno.nome : c.it.nome;
+    await marcarFechou(c.it, alunoId, c.acao === "novo" ? nome + " virou aluno ✓ e saiu da fila."
+      : c.acao === "reativar" ? nome + " voltou ✓ (retorno registrado) e saiu da fila."
+      : nome + ": valor atualizado ✓ e saiu da fila.", true);
+    onFinMudou();
+    recarregarAlunos();
+  }
+
+  return (
+    <>
+      <div className="fl-topo">
+        <button className="fl-add" onClick={() => setEdit("novo")}>+ Adicionar à fila</button>
+        <div className="busca-alunos">
+          <input value={f.busca} onChange={e => setF({ ...f, busca: e.target.value })}
+            placeholder="Buscar na fila..." />
+          {f.busca && <button className="cb-lim" onClick={() => setF({ ...f, busca: "" })} title="Limpar">×</button>}
+        </div>
+      </div>
+
+      <div className="fl-filtros">
+        <div className="filtros" aria-label="Interesse">
+          <button className={"fbtn" + (!f.plano ? " on" : "")} onClick={() => setF({ ...f, plano: null })}>
+            Todos os planos</button>
+          {plsChip.map(p => (
+            <button key={p.id} className={"fbtn" + (f.plano === p.id ? " on" : "")}
+              onClick={() => setF({ ...f, plano: f.plano === p.id ? null : p.id })}>
+              {p.nome}<i>{nPlano.get(p.id) || 0}</i></button>
+          ))}
+        </div>
+        <div className="filtros" aria-label="Categoria">
+          <button className={"fbtn" + (!f.cat ? " on" : "")} onClick={() => setF({ ...f, cat: null })}>
+            Todas as categorias</button>
+          {catsChip.map(c => (
+            <button key={c.id} className={"fbtn" + (f.cat === c.id ? " on" : "")}
+              onClick={() => setF({ ...f, cat: f.cat === c.id ? null : c.id })}>
+              {c.nome}<i>{nCat.get(c.id) || 0}</i></button>
+          ))}
+        </div>
+        <div className="filtros" aria-label="Situação">
+          {FILA_VISTAS.map(([v, rot]) => (
+            <button key={v} className={"fbtn" + (f.vista === v ? " on" : "")}
+              onClick={() => setF({ ...f, vista: v })}>{rot}<i>{nVista[v]}</i></button>
+          ))}
+          {temAulas && (
+            <button className={"fbtn fl-vg" + (verVagas || vagasAt.size ? " on2" : "")}
+              aria-expanded={verVagas} onClick={() => setVerVagas(!verVagas)}>
+              🕒 Abriu vaga?{vagasAt.size ? <i>{vagasAt.size}</i> : null}</button>
+          )}
+        </div>
+      </div>
+
+      {temAulas && verVagas && (
+        <div className="fl-vagas">
+          <p className="fn-sub">Marque o horário que abriu. A lista fica só com quem quer aquele dia e
+            período, e quem encaixa em mais vagas aparece primeiro.</p>
+          <FilaGrade valor={[...vagasAt]} onChange={v => setVagas(new Set(v))} rotulo="Vagas abertas" />
+          {vagasAt.size > 0 && (
+            <button className="fn-link" onClick={() => setVagas(new Set())}>limpar vagas</button>
+          )}
+        </div>
+      )}
+
+      <div className="fn-kpis">
+        <FinCard rot="Na fila" valor={String(r.abertas)}
+          sub={r.conversa + " em conversa"}
+          sub2={r.semData ? r.semData + " sem data de contato" : null}
+          info="Pessoas em aberto (Na fila + Em conversa), no recorte de plano e categoria escolhido acima." />
+        <FinCard rot="Retomar hoje" valor={String(r.retomar)} alerta={r.atrasadas > 0}
+          sub={r.atrasadas ? r.atrasadas + (r.atrasadas === 1 ? " atrasado" : " atrasados") : "nada atrasado"}
+          info="Quem tem o próximo contato marcado para hoje ou para um dia que já passou. Também aparece no sino." />
+        <FinCard rot="Fecharam" valor={r.taxa == null ? "—" : finPct(r.taxa, 0)}
+          sub={r.encerradas ? r.fechou + " de " + r.encerradas + " encerrados" : "ninguém encerrado ainda"}
+          sub2={r.encerradas && r.amostraPequena ? "amostra pequena: cada caso muda muito o %" : null}
+          info="Fechou ÷ (Fechou + Não fechou). Quem ainda está em aberto fica fora da conta: senão a taxa cairia só porque a conversa ainda não terminou." />
+        <FinCard rot="Tempo até fechar"
+          valor={r.medianaDias == null ? "—" : String(r.medianaDias).replace(".", ",")}
+          unid={r.medianaDias == null ? null : " dias"}
+          sub="mediana, da entrada na fila até fechar"
+          info="Metade fechou mais rápido que isso e metade mais devagar. É mediana, e não média, porque poucos casos que demoram meses distorceriam a média." />
+      </div>
+
+      <div className="fn-box">
+        <div className="fn-tit"><b>{titulo}</b><i>{lista.length}</i>
+          {vagasAt.size > 0 && <span className="ed-cnt">encaixam nas vagas marcadas</span>}</div>
+        {lista.length === 0 ? (
+          <div className="fn-vz">
+            {itens.length === 0
+              ? "A fila está vazia. Adicione quem quer entrar, voltar ou comprar mais aulas e ainda não fechou."
+              : vagasAt.size ? "Ninguém nesse recorte marcou esses horários. Quem está sem dias marcados não aparece aqui."
+              : "Ninguém nesse recorte."}
+          </div>
+        ) : (
+          <div className="fl-lista">
+            {lista.map(it => {
+              const a = it.aluno_id ? alunoPor.get(it.aluno_id) : null;
+              const c = catPor.get(it.categoria_id);
+              return (
+                <FilaItem key={it.id} it={it} hoje={hoje} nome={nomeDe(it)}
+                  plano={(plPor.get(it.plano_id) || {}).nome} cat={c && c.nome}
+                  motivo={it.motivo_id && it.etapa !== "fechou" ? (motPor.get(it.motivo_id) || {}).nome : null}
+                  aluno={a} saida={a && a.status !== "ativo" && filaAberta(it) ? filaUltimaSaida(d.contratos, a.id) : null}
+                  vagas={vagasAt} onAbrir={() => setEdit(it)} />
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {(motivos.length > 0 || porCat.length > 0) && (
+        <div className="fn-grafs">
+          <div className="fn-graf">
+            <div className="fn-gt">O que trava<i>em aberto + não fecharam</i></div>
+            {motivos.length ? <FinBarras itens={motivos} rotulo={x => x.motivo} valor={x => x.n} total={x => x.n} />
+              : <div className="fn-vz">Nenhum motivo marcado ainda.</div>}
+          </div>
+          <div className="fn-graf">
+            <div className="fn-gt">Em aberto por categoria</div>
+            {porCat.length ? <FinBarras itens={porCat} rotulo={x => x.cat} valor={x => x.n} total={x => x.n} />
+              : <div className="fn-vz">Ninguém em aberto.</div>}
+          </div>
+        </div>
+      )}
+
+      <button className="fn-link" onClick={() => setVerListas(!verListas)}>
+        {verListas ? "fechar categorias e motivos" : "editar categorias e motivos"}</button>
+      {verListas && <FilaListas cats={cats} mots={mots} onSalvo={depois} />}
+
+      {edit && (
+        <DrawerFila key={edit === "novo" ? "novo" : edit.id} it={edit === "novo" ? null : edit}
+          cats={cats} mots={mots} planos={planos} alunos={alunos} contratos={d.contratos}
+          itensFila={itens} onFechar={() => setEdit(null)}
+          onSalvo={async () => { setEdit(null); await depois(); }} onFechou={aoFechar} />
+      )}
+      {conv && conv.acao === "novo" && (
+        <ModalNovoAluno inicial={{ nome: conv.it.nome, tel: filaTelBR(conv.it.telefone),
+            plano: conv.it.plano_id }}
+          onFechar={() => setConv(null)} onCriado={id => convFeita(id)} />
+      )}
+      {conv && conv.acao === "reativar" && (
+        <ModalRetorno aluno={conv.aluno} planoInicial={conv.it.plano_id}
+          onFechar={() => setConv(null)} onFeito={() => convFeita(conv.aluno.id)} />
+      )}
+      {conv && conv.acao === "valor" && (
+        <DrawerContrato aluno={conv.aluno} contratos={d.contratos} planos={d.planos} precos={d.precos}
+          mods={d.mods} goLive={finGoLive(d.contratos)} planoInicial={conv.it.plano_id}
+          onFechar={() => setConv(null)} onSalvo={() => convFeita(conv.aluno.id)} />
+      )}
+    </>
+  );
+}
+
 function PainelAdmin() {
   const [d, setD]         = useState(null);
   const [erro, setErro]   = useState("");
@@ -20441,6 +21667,18 @@ function PainelAdmin() {
   const [saida, setSaida] = useState(null);
   const [hoje, setHoje]   = useState(() => hojeFuso());
   const [ped] = useState(() => { const x = pedidoAdmin; pedidoAdmin = null; return x; });
+  /* Financeiro | Fila de alunos: a escolha fica neste navegador; o atalho
+     "sem valor" do Início sempre abre o Financeiro, o sino abre a Fila */
+  const fila = usarFila();
+  const [vista, setVistaS] = useState(() => {
+    if (ped === "semValor") return "fin";
+    try { return localStorage.getItem(FILA_LS_VISTA) === "fila" ? "fila" : "fin"; } catch (e) { return "fin"; }
+  });
+  const setVista = useCallback(v => {
+    setVistaS(v);
+    try { localStorage.setItem(FILA_LS_VISTA, v); } catch (e) {}
+  }, []);
+  useEffect(() => { if (fila.pedido) setVista("fila"); }, [fila.pedido, setVista]);
 
   const carregar = useCallback(async () => {
     setHoje(hojeFuso());
@@ -20501,8 +21739,16 @@ function PainelAdmin() {
   const abrirAluno = id => { const a = alunoPor.get(id); if (a) { setAlunoId(id); setEdit(a); } };
   const descLista = lista.filter(c => c.desc > 0);
 
+  if (vista === "fila") return (
+    <div className="fn">
+      <AdminVistas vista={vista} setVista={setVista} retomar={fila.itens.length} />
+      <PainelFila d={d} onFinMudou={carregar} />
+    </div>
+  );
+
   return (
     <div className="fn">
+      <AdminVistas vista={vista} setVista={setVista} retomar={fila.itens.length} />
       <div className="filtros">
         <button className={"fbtn" + (seg == null ? " on" : "")} onClick={() => setSeg(null)}>Todos</button>
         {segs.map(s => (
@@ -20662,7 +21908,7 @@ const TABELAS_BACKUP = [
   "fases", "planejamentos", "fase_templates", "fase_categorias", "metodos",
   "equipamentos", "academias", "academia_equipamentos", "aluno_academias",
   "anamnese_secoes", "ocorrencia_tipos", "anamnese_entradas",
-  "planos", "contratos"
+  "planos", "contratos", "fila_categorias", "fila_motivos", "fila"
 ];
 
 function PainelBackup() {
@@ -21773,6 +23019,7 @@ function App() {
     <ProvedorAluno>
     <ProvedorFeed irAba={setAba}>
     <ProvedorAniv>
+    <ProvedorFila irAba={setAba}>
     <div className="shell">
       <aside className={"side" + (recolhida ? " rec" : "")}>
         <div className="side-marca">
@@ -21844,6 +23091,7 @@ function App() {
         </div>
       </div>
     </div>
+    </ProvedorFila>
     </ProvedorAniv>
     </ProvedorFeed>
     </ProvedorAluno>
