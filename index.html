@@ -2895,13 +2895,16 @@
     .fl-ls .fn-sel{max-width:none;flex:1 1 auto}
   }
   /* histórico manual + avulsas (12/11/2026) */
-  .fn-tr.c5h{grid-template-columns:1.4fr 1fr 1fr .9fr 1fr}
+  .fn-tr.c2h{grid-template-columns:1fr 1fr}
+  .fn-hist-ed{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;padding:4px 0 12px}
+  .fn-hist-ed > div{min-width:170px}
+  .fn-hist-ed .fn-val,.fn-hist-ed .fn-sel{margin-bottom:0}
+  .fn-hist-ed .err{flex-basis:100%;min-width:0}
+  .fn-vistas.mini button{padding:4px 10px;font-size:11.5px}
   .fn-tr.c4a{grid-template-columns:.8fr 1.4fr 1.4fr 1fr auto;cursor:default}
   .fn-tr.c4a:hover{background:none}
   .fn-soav{margin-left:2px!important;font-size:11px!important}
   @media (max-width: 900px){
-    .fn-tr.c5h{grid-template-columns:1.4fr 1fr 1fr}
-    .fn-tr.c5h span:nth-child(2),.fn-tr.c5h span:nth-child(3){display:none}
     .fn-tr.c4a{grid-template-columns:.9fr 1.3fr 1fr auto}
     .fn-tr.c4a span:nth-child(3){display:none}
   }
@@ -19298,9 +19301,9 @@ function finCoortes(vidas, hoje) {
 
 /* tudo de uma vez, para um segmento (null = todos os formatos) */
 /* extras (só no recorte "Todos"; não têm plano):
-   - manual: [{ mes: "AAAA-MM-01", consultoria_centavos, aulas_centavos,
-     avulsos_centavos, alunos }] = histórico lançado à mão, só antes do mês de
-     início dos contratos (depois disso o mês vem dos contratos).
+   - manual: [{ mes: "AAAA-MM-01", total_centavos }] = faturamento total (bruto)
+     lançado à mão, só antes do mês de início dos contratos (depois disso o mês
+     vem dos contratos). Não é dividido em consultoria/aulas: vira receitaM.
    - avulsas: [{ dia, valor_centavos }] = pagamentos únicos, no mês em que caíram.
    Os dois só mexem na série de FATURAMENTO (fat), no faturado no ano e na
    comparação com o mês anterior. Churn, MRR, permanência e LTV não mudam. */
@@ -19320,23 +19323,22 @@ function finSerieFat(meses, goLive, hoje, extras) {
   const porMes = new Map();
   for (const m of meses) {
     const v = av.get(m.mes) || 0;
-    porMes.set(m.mes, { mes: m.mes, receitaC: m.receitaC, receitaA: m.receitaA, receitaV: v,
+    porMes.set(m.mes, { mes: m.mes, receitaC: m.receitaC, receitaA: m.receitaA, receitaV: v, receitaM: 0,
       receita: m.receita + v, fatN: m.fatN, manual: false, parcial: m.parcial });
   }
   const antigos = new Set([...man.keys(), ...[...av.keys()].filter(k => k < iniContratos)]);
   for (const k of antigos) {
     const x = man.get(k) || {};
-    const c = Number(x.consultoria_centavos) || 0, a = Number(x.aulas_centavos) || 0;
-    const v = (Number(x.avulsos_centavos) || 0) + (av.get(k) || 0);
-    porMes.set(k, { mes: k, receitaC: c, receitaA: a, receitaV: v, receita: c + a + v,
-      fatN: x.alunos == null ? null : Number(x.alunos), manual: true, parcial: false });
+    const tot = Number(x.total_centavos) || 0, v = av.get(k) || 0;
+    porMes.set(k, { mes: k, receitaC: 0, receitaA: 0, receitaV: v, receitaM: tot, receita: tot + v,
+      fatN: null, manual: true, parcial: false });
   }
   const chaves = [...porMes.keys()].sort();
   if (!chaves.length) return [];
   const out = [];
   for (let ym = chaves[0]; ym <= chaves[chaves.length - 1]; ym = finMesSeg(ym))
     out.push(porMes.get(ym) || { mes: ym, vazio: true, receitaC: null, receitaA: null,
-      receitaV: null, receita: null, fatN: null, manual: true, parcial: false });
+      receitaV: null, receitaM: null, receita: null, fatN: null, manual: true, parcial: false });
   return out;
 }
 
@@ -19551,7 +19553,7 @@ const finMesRot = ym => {
 const FIN_MOTIVOS = ["Financeiro", "Falta de tempo", "Pausa", "Lesão ou saúde",
   "Mudou de cidade ou academia", "Insatisfação", "Parou de responder", "Outro"];
 /* paleta validada (dataviz) contra o fundo dos cards #131a1c */
-const FIN_COR = { consultoria: "#3987e5", aulas: "#199e70", avulsos: "#d95926", mrr: "#d95926", entradas: "#3987e5",
+const FIN_COR = { consultoria: "#3987e5", aulas: "#199e70", avulsos: "#d95926", manual: "#a3b3b6", mrr: "#d95926", entradas: "#3987e5",
   exp: "#199e70", contr: "#9085e9", saidas: "#e66767", media: "#89a0a3", km: "#3987e5" };
 let pedidoAdmin = null;   /* atalho do Início: abre a aba já em "sem valor" */
 
@@ -20454,13 +20456,14 @@ function FinEvolucao({ m }) {
   const temManual = sf.some(x => x.manual && !x.vazio);
   const serie = m.meses.map(x => ({ ...x, rot: finMesRot(x.mes), entN: x.novosN + x.retN, saiN: -x.saidasN }));
   const grade = <CartesianGrid stroke="#1b2427" vertical={false} />;
-  const pedacos = [["receitaC", FIN_COR.consultoria, true], ["receitaA", FIN_COR.aulas, temAulas],
-    ["receitaV", FIN_COR.avulsos, temAv]].filter(x => x[2]);
+  const pedacos = [["receitaM", FIN_COR.manual, temManual], ["receitaC", FIN_COR.consultoria, true],
+    ["receitaA", FIN_COR.aulas, temAulas], ["receitaV", FIN_COR.avulsos, temAv]].filter(x => x[2]);
   return (
     <div className="fn-grafs">
       <div className="fn-graf">
         <div className="fn-gt">Faturamento do mês<i>mês cheio de quem foi aluno no mês + avulsas</i></div>
-        <FinLegenda itens={[{ rot: "Consultoria", cor: FIN_COR.consultoria },
+        <FinLegenda itens={[...(temManual ? [{ rot: "Total lançado à mão", cor: FIN_COR.manual }] : []),
+          { rot: "Consultoria", cor: FIN_COR.consultoria },
           ...(temAulas ? [{ rot: "Aulas", cor: FIN_COR.aulas }] : []),
           ...(temAv ? [{ rot: "Avulsas", cor: FIN_COR.avulsos }] : [])]} />
         {comDado.length < 2 ? (
@@ -20475,21 +20478,21 @@ function FinEvolucao({ m }) {
                 <YAxis width={64} tickFormatter={finEixoR} {...finEixo} />
                 <Tooltip cursor={{ fill: "rgba(255,255,255,.04)" }} content={<FinTooltip linhas={p => p.vazio
                   ? [{ rot: "mês não lançado", val: "" }] : [
-                  { rot: "Consultoria", val: finBRL(p.receitaC), cor: FIN_COR.consultoria },
-                  temAulas && { rot: "Aulas", val: finBRL(p.receitaA), cor: FIN_COR.aulas },
+                  p.manual && { rot: "Total lançado à mão", val: finBRL(p.receitaM), cor: FIN_COR.manual },
+                  !p.manual && { rot: "Consultoria", val: finBRL(p.receitaC), cor: FIN_COR.consultoria },
+                  !p.manual && temAulas && { rot: "Aulas", val: finBRL(p.receitaA), cor: FIN_COR.aulas },
                   temAv && { rot: "Avulsas", val: finBRL(p.receitaV), cor: FIN_COR.avulsos },
                   { rot: "Total", val: finBRL(p.receita) },
-                  p.fatN != null && { rot: "Alunos pagantes", val: String(p.fatN) },
-                  p.manual && { rot: "lançado à mão", val: "" }]} />} />
+                  p.fatN != null && { rot: "Alunos pagantes", val: String(p.fatN) }]} />} />
                 {pedacos.map(([k, cor], i) => (
                   <Bar key={k} dataKey={k} stackId="r" fill={cor} stroke="#131a1c" strokeWidth={1}
                     radius={i === pedacos.length - 1 ? [4, 4, 0, 0] : 0} maxBarSize={34}>
-                    {sf.map(x => <Cell key={x.mes} fillOpacity={x.manual ? 0.5 : 1} />)}
+                    {sf.map(x => <Cell key={x.mes} />)}
                   </Bar>
                 ))}
               </ComposedChart>
             </ResponsiveContainer>
-            {temManual && <div className="fn-sub" style={{ margin: "4px 0 0" }}>* mês lançado à mão (barra mais clara)</div>}
+            {temManual && <div className="fn-sub" style={{ margin: "4px 0 0" }}>* mês lançado à mão: só o total, sem separar consultoria e aulas</div>}
           </>
         )}
       </div>
@@ -20552,38 +20555,35 @@ function FinHistorico({ manual, goLive, onSalvo }) {
     opcoes.push(ym);
   }
   const porMes = new Map((manual || []).map(x => [String(x.mes).slice(0, 7), x]));
-  const vazio = mes => ({ mes, c: "", a: "", v: "", n: "" });
   const [ed, setEd]     = useState(null);
   const [erro, setErro] = useState("");
   const [busy, setBusy] = useState(false);
   const abrir = mes => {
     const x = porMes.get(mes);
     setErro("");
-    setEd(x ? { mes, c: finTxtValor(x.consultoria_centavos), a: finTxtValor(x.aulas_centavos),
-      v: x.avulsos_centavos ? finTxtValor(x.avulsos_centavos) : "", n: x.alunos == null ? "" : String(x.alunos),
-      id: x.id } : vazio(mes));
+    setEd(x ? { mes, tot: finTxtValor(x.total_centavos), id: x.id } : { mes, tot: "" });
   };
   const proximo = opcoes.find(o => !porMes.has(o));
+  const rotMes = k => finCap(finMesNome(k)) + " " + k.slice(0, 4);
 
   async function salvar() {
-    const c = ed.c.trim() ? finCentavos(ed.c) : 0, a = ed.a.trim() ? finCentavos(ed.a) : 0;
-    const v = ed.v.trim() ? finCentavos(ed.v) : 0;
-    const n = ed.n.trim() === "" ? null : Number(ed.n);
-    if (c == null || a == null || v == null) { setErro("Valor inválido."); return; }
-    if (c + a + v === 0) { setErro("Lance pelo menos um valor."); return; }
-    if (n != null && !(Number.isInteger(n) && n >= 0 && n <= 10000)) { setErro("Nº de alunos inválido."); return; }
+    const tot = finCentavos(ed.tot);
+    if (!(tot > 0)) { setErro("Informe o faturamento do mês."); return; }
     setBusy(true); setErro("");
-    const linha = { mes: ed.mes + "-01", consultoria_centavos: c, aulas_centavos: a, avulsos_centavos: v, alunos: n };
+    const linha = { mes: ed.mes + "-01", total_centavos: tot };
     const r = ed.id ? await sb.from("faturamento_manual").update(linha).eq("id", ed.id)
       : await sb.from("faturamento_manual").insert(linha);
     setBusy(false);
     if (r.error) { setErro(/23505|duplicate/.test(r.error.code + r.error.message) ? "Esse mês já foi lançado." : finMsgErro(r.error)); return; }
-    toast(finCap(finMesNome(ed.mes)) + " lançado.");
-    setEd(null); onSalvo();
+    toast(rotMes(ed.mes) + " lançado: " + finBRL(tot) + ".");
+    /* segue lançando: abre o mês anterior ainda vazio */
+    const prox = opcoes.find(o => o < ed.mes && !porMes.has(o));
+    setEd(!ed.id && prox ? { mes: prox, tot: "" } : null);
+    onSalvo();
   }
   async function apagar() {
-    if (!(await confirmar({ titulo: "Apagar " + finMesNome(ed.mes) + " " + ed.mes.slice(0, 4) + "?",
-      texto: "Sai do gráfico de faturamento e do faturado no ano.", ok: "Apagar", perigo: true }))) return;
+    if (!(await confirmar({ titulo: "Apagar " + rotMes(ed.mes) + "?",
+      texto: "Sai do gráfico de faturamento, da curva anual e do faturado no ano.", ok: "Apagar", perigo: true }))) return;
     setBusy(true);
     const r = await sb.from("faturamento_manual").delete().eq("id", ed.id);
     setBusy(false);
@@ -20600,54 +20600,109 @@ function FinHistorico({ manual, goLive, onSalvo }) {
           <button className="btn-sec cr-mini" onClick={() => abrir(proximo)}>+ Lançar mês</button>
         )}
       </div>
-      <div className="fn-sub">Faturamento dos meses antes de {finMesNome(limite)}/{limite.slice(2, 4)}, quando
-        os valores começaram a ser registrados aqui. Entra só no gráfico de faturamento e no faturado
-        no ano: churn e permanência precisam saber quem entrou e saiu, e um total não diz isso.</div>
+      <div className="fn-sub">Faturamento total (bruto) dos meses antes de {finMesNome(limite)}/{limite.slice(2, 4)},
+        quando os valores começaram a ser registrados aqui. Entra no gráfico de faturamento, na curva anual e no
+        faturado no ano. Churn e permanência ficam de fora: eles precisam saber quem entrou e saiu, e um total não diz isso.</div>
       {ed && (
-        <div className="fn-pl-ed" style={{ borderTop: "none", marginTop: 0 }}>
+        <div className="fn-hist-ed">
           {erro && <div className="err">{erro}</div>}
-          <div className="nv-grid">
-            <div><div className="ed-lab">Mês</div>
-              <select className="fn-sel" value={ed.mes} disabled={!!ed.id}
-                onChange={e => abrir(e.target.value)}>
-                {opcoes.map(o => <option key={o} value={o}>{finCap(finMesNome(o))} {o.slice(0, 4)}
-                  {porMes.has(o) ? " · já lançado" : ""}</option>)}
-              </select></div>
-            <div><div className="ed-lab">Consultoria</div>
-              <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.c} placeholder="0,00"
-                aria-label="Consultoria no mês" onChange={e => setEd({ ...ed, c: e.target.value })} /></div></div>
-            <div><div className="ed-lab">Aulas</div>
-              <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.a} placeholder="0,00"
-                aria-label="Aulas no mês" onChange={e => setEd({ ...ed, a: e.target.value })} /></div></div>
-            <div><div className="ed-lab">Montagens avulsas <i>opcional</i></div>
-              <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.v} placeholder="0,00"
-                aria-label="Avulsas no mês" onChange={e => setEd({ ...ed, v: e.target.value })} /></div></div>
-            <div><div className="ed-lab">Alunos pagantes <i>opcional</i></div>
-              <input type="number" min={0} value={ed.n} placeholder="ex.: 52" aria-label="Alunos no mês"
-                onChange={e => setEd({ ...ed, n: e.target.value })} /></div>
+          <div>
+            <div className="ed-lab">Mês</div>
+            <select className="fn-sel" value={ed.mes} disabled={!!ed.id} aria-label="Mês do histórico"
+              onChange={e => abrir(e.target.value)}>
+              {opcoes.map(o => <option key={o} value={o}>{rotMes(o)}{porMes.has(o) ? " · já lançado" : ""}</option>)}
+            </select>
           </div>
-          <div className="acoes" style={{ marginTop: 4 }}>
-            <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar mês"}</button>
-            <button className="btn-sec" onClick={() => setEd(null)} disabled={busy}>Cancelar</button>
+          <div>
+            <div className="ed-lab">Faturamento total</div>
+            <div className="fn-val"><span>R$</span><input inputMode="decimal" value={ed.tot} placeholder="0,00" autoFocus
+              aria-label="Faturamento total do mês" onChange={e => setEd({ ...ed, tot: e.target.value })}
+              onKeyDown={e => { if (e.key === "Enter") salvar(); }} /></div>
+          </div>
+          <div className="acoes">
+            <button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar"}</button>
+            <button className="btn-sec" onClick={() => setEd(null)} disabled={busy}>Fechar</button>
             {ed.id && <button className="btn-sec" onClick={apagar} disabled={busy}>Apagar</button>}
           </div>
         </div>
       )}
       {lancados.length > 0 && (
         <div className="fn-tab">
-          <div className="fn-tr h c5h"><span>Mês</span><span>Consultoria</span><span>Aulas</span>
-            <span>Avulsas</span><span>Total</span></div>
-          {lancados.map(k => { const x = porMes.get(k);
-            const tot = (x.consultoria_centavos || 0) + (x.aulas_centavos || 0) + (x.avulsos_centavos || 0);
-            return (
-              <button key={k} className="fn-tr c5h" onClick={() => abrir(k)}>
-                <span>{finCap(finMesNome(k))} {k.slice(0, 4)}{x.alunos != null ? " · " + x.alunos + " alunos" : ""}</span>
-                <span>{finBRL(x.consultoria_centavos)}</span><span>{finBRL(x.aulas_centavos)}</span>
-                <span>{x.avulsos_centavos ? finBRL(x.avulsos_centavos) : "—"}</span><span>{finBRL(tot)}</span>
-              </button>
-            ); })}
+          <div className="fn-tr h c2h"><span>Mês</span><span>Faturamento total</span></div>
+          {lancados.map(k => (
+            <button key={k} className="fn-tr c2h" onClick={() => abrir(k)}>
+              <span>{rotMes(k)}</span><span>{finBRL(porMes.get(k).total_centavos)}</span>
+            </button>
+          ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* curva do faturamento ao longo do ano: uma linha por ano (jan a dez), para
+   comparar 2025 x 2026. "Acumulado" soma mês a mês (onde o ano vai fechar). */
+const FIN_COR_ANOS = ["#3987e5", "#199e70", "#9085e9"];   /* validada: ano atual primeiro */
+function FinCurvaAnual({ m }) {
+  const RC = window.Recharts;
+  const [modo, setModo] = useState("mes");
+  const fat = (m.fat || []).filter(x => !x.vazio);
+  if (fat.length < 2 || !RC) return null;
+  const { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } = RC;
+  const anos = [...new Set(fat.map(x => x.mes.slice(0, 4)))].sort().reverse().slice(0, 3);
+  const porMes = new Map(fat.map(x => [x.mes, x]));
+  const NOMES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  const acum = {};
+  const dados = NOMES.map((rot, i) => {
+    const linha = { rot };
+    for (const a of anos) {
+      const x = porMes.get(a + "-" + String(i + 1).padStart(2, "0"));
+      if (modo === "mes") linha[a] = x ? x.receita : null;
+      else {
+        if (x) acum[a] = (acum[a] || 0) + x.receita;
+        /* acumulado só depois do 1º mês com dado, e até o último */
+        const ult = [...porMes.keys()].filter(k => k.startsWith(a)).sort().pop();
+        linha[a] = acum[a] != null && a + "-" + String(i + 1).padStart(2, "0") <= ult ? acum[a] : null;
+      }
+      linha["m" + a] = x ? !!x.manual : false;
+    }
+    return linha;
+  });
+  const totAno = a => fat.filter(x => x.mes.startsWith(a)).reduce((t, x) => t + x.receita, 0);
+  const nMeses = a => fat.filter(x => x.mes.startsWith(a)).length;
+  const faixa = a => { const ks = fat.filter(x => x.mes.startsWith(a)).map(x => x.mes).sort();
+    const ini = NOMES[Number(ks[0].slice(5, 7)) - 1], fim = NOMES[Number(ks[ks.length - 1].slice(5, 7)) - 1];
+    return ks.length === 1 ? " (" + ini + ")" : " (" + ini + " a " + fim + ")"; };
+  return (
+    <div className="fn-graf fn-larga">
+      <div className="fn-gt">Curva de faturamento do ano<i>{modo === "mes" ? "quanto entrou em cada mês" : "quanto já entrou no ano até cada mês"}</i>
+        <div className="fn-vistas mini" role="tablist" aria-label="Modo da curva" style={{ marginLeft: "auto" }}>
+          <button role="tab" aria-selected={modo === "mes"} className={modo === "mes" ? "on" : ""} onClick={() => setModo("mes")}>Mês a mês</button>
+          <button role="tab" aria-selected={modo === "acum"} className={modo === "acum" ? "on" : ""} onClick={() => setModo("acum")}>Acumulado</button>
+        </div>
+      </div>
+      <div className="fn-leg">
+        {anos.map((a, i) => (
+          <span key={a}><i className="ln" style={{ background: FIN_COR_ANOS[i], borderColor: FIN_COR_ANOS[i] }} />
+            {a}: {finBRL(totAno(a))} em {nMeses(a)} {nMeses(a) === 1 ? "mês" : "meses"}{faixa(a)}</span>
+        ))}
+      </div>
+      <ResponsiveContainer width="100%" height={240}>
+        <LineChart data={dados} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+          <CartesianGrid stroke="#1b2427" vertical={false} />
+          <XAxis dataKey="rot" {...finEixo} />
+          <YAxis width={64} tickFormatter={finEixoR} {...finEixo} />
+          <Tooltip content={<FinTooltip linhas={p => anos.map((a, i) => p[a] == null ? null :
+            { rot: a + (p["m" + a] ? " · lançado à mão" : ""), val: finBRL(p[a]), cor: FIN_COR_ANOS[i] })} />} />
+          {anos.map((a, i) => (
+            <Line key={a} type="monotone" dataKey={a} stroke={FIN_COR_ANOS[i]} strokeWidth={i === 0 ? 2.5 : 2}
+              strokeDasharray={i === 0 ? undefined : "6 4"} connectNulls={false}
+              dot={{ r: i === 0 ? 4 : 3, fill: FIN_COR_ANOS[i], stroke: "#131a1c", strokeWidth: 2 }} />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+      <div className="fn-sub" style={{ margin: "4px 0 0" }}>Ano atual em linha cheia; anos anteriores tracejados.
+        Mês sem dado fica em branco, para não inventar valor{modo === "acum" ? "; o acumulado começa no 1º mês com dado de cada ano" : ""}.</div>
     </div>
   );
 }
@@ -22174,6 +22229,7 @@ function PainelAdmin() {
 
           <FinExtrato m={m} />
           <FinEvolucao m={m} />
+          <FinCurvaAnual m={m} />
 
           <div className="fn-grafs">
             <div className="fn-graf">
