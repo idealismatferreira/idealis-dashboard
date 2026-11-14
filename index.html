@@ -2025,6 +2025,81 @@
   .tw-acs{flex-direction:row;flex-wrap:wrap;gap:4px;padding-top:9px;justify-content:flex-end}
   .tw-acs .tw-ferr{position:static;opacity:1;gap:4px}
   .tw-acs .tw-ferr button{padding:5px 8px;font-size:11px}
+  /* ===== LOTE_AVISO + LOTE_AVISO_ACOPLADO (14/11/2026) =====
+     Cores e estrutura copiadas do App (idealis-supabase). Os tokens do App
+     moram aqui com prefixo --av-* para NÃO vazar nas linhas da Dashboard que
+     ficam dentro da moldura. Tamanhos reduzidos para a coluna da Dashboard.
+     Cor por PAPEL do tipo (--avc): no multitenant o tenant troca o tom aqui;
+     o dado no banco (tipo) não muda. */
+  .av-app{--av-bg:#090b0c;--av-surface:#131718;--av-surface-2:#1b2123;--av-line:#2c3436;
+    --av-text:#eef7f8;--av-muted:#9fb3b8;--av-lime:#ddff00;--av-r:12px}
+  .av-recado{--avc:#00c9cc}
+  .av-dica{--avc:#ddff00}
+  .av-ajuste{--avc:#9fb3b8}
+  .av-dor{--avc:#6ee89a}
+  .av-atencao{--avc:#f39c12}
+  .av-pare{--avc:#ff5c6c}
+  .av-filmar{--avc:#00c9cc}
+  .avaco{margin:8px 10px;border-radius:var(--av-r);--avbd:var(--avc)}
+  @supports (background:color-mix(in srgb,red 50%,blue)){
+    .avaco{--avbd:color-mix(in srgb,var(--avc) 55%,transparent)}
+  }
+  .avaco.av-pare,.avaco.av-atencao{--avbd:var(--avc)}
+  .avaco.tb{margin:10px 0}
+  .avaba{border:1.5px solid var(--avbd);border-bottom:none;border-radius:var(--av-r) var(--av-r) 0 0;overflow:hidden}
+  .avcorpo{border:1.5px solid var(--avbd);border-top:1px dashed var(--avbd);
+    border-radius:0 0 var(--av-r) var(--av-r);overflow:hidden}
+  .avcorpo > .tw-ex:first-child,.avcorpo > .tw-gr:first-child,.avcorpo > .tw-fxw:first-child{border-top:none}
+  .avitem{display:flex;align-items:center;gap:10px;padding:8px 11px 9px;background:var(--av-surface-2)}
+  @supports (background:color-mix(in srgb,red 50%,blue)){
+    .avitem{background:color-mix(in srgb,var(--avc) 12%,var(--av-surface))}
+    .avitem.av-grave{background:color-mix(in srgb,var(--avc) 17%,var(--av-surface))}
+  }
+  .avitem + .avitem{border-top:1px dashed var(--avbd)}
+  .avfoto{position:relative;flex:0 0 28px;width:28px;height:28px}
+  .avfoto img,.avfoto .avini{display:block;width:28px;height:28px;box-sizing:border-box;border-radius:50%;
+    border:2px solid var(--av-lime);background:var(--av-surface-2);object-fit:cover}
+  .avfoto .avini{display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--av-lime)}
+  .avselo{position:absolute;right:-5px;bottom:-4px;width:16px;height:16px;box-sizing:border-box;border-radius:50%;
+    display:grid;place-items:center;background:var(--avc);border:2px solid var(--av-bg);color:var(--av-bg)}
+  .avselo svg{width:9px;height:9px;fill:currentColor;display:block}
+  .avconteudo{flex:1;min-width:0}
+  .avcab{display:flex;align-items:center;gap:5px;margin-bottom:1px;min-height:16px}
+  .avnome{font-size:11.5px;font-weight:700;color:var(--av-lime)}
+  .avtipo{font-size:11px;font-weight:600;color:var(--avc)}
+  .avitem.av-grave .avtipo{font-weight:700}
+  .avletra{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;
+    font-size:9px;font-weight:800;color:var(--av-muted);border:1px solid var(--av-line)}
+  .avbtnedit{margin:-6px -6px -6px auto;width:28px;height:28px;display:grid;place-items:center;flex:none;
+    border:none;border-radius:7px;background:none;color:var(--av-muted);cursor:pointer;padding:0}
+  .avbtnedit svg{width:13px;height:13px;fill:currentColor;display:block}
+  .avbtnedit:hover{background:var(--av-line);color:var(--av-text);filter:none}
+  .avtxt{margin:0;font-size:12.5px;line-height:1.45;color:var(--av-text);white-space:pre-line;overflow-wrap:anywhere}
+  .avitem.av-grave .avtxt{font-weight:500}
+  /* Filmar na Dashboard: só o rótulo (o visual completo é do App) */
+  .avitem.flm{padding:6px 11px}
+  .avflm{flex:1;font-size:11.5px;font-weight:600;color:var(--avc)}
+  /* editor do aviso */
+  .av-ed{width:min(480px,94vw)}
+  .avtipos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:14px}
+  .avtipobtn{display:flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 6px;border-radius:10px;
+    font-family:inherit;font-size:12px;font-weight:700;background:var(--av-surface-2);border:1px solid var(--av-line);
+    color:var(--av-muted);cursor:pointer;width:auto}
+  .avtipobtn svg{width:13px;height:13px;fill:currentColor;display:block}
+  .avtipobtn:hover{filter:none;color:var(--av-text)}
+  .avtipobtn.on{border:1.5px solid var(--avc);color:var(--avc)}
+  @supports (background:color-mix(in srgb,red 50%,blue)){
+    .avtipobtn.on{background:color-mix(in srgb,var(--avc) 14%,var(--av-surface))}
+  }
+  .av-ed textarea{width:100%;font-size:13px;line-height:1.5;margin-bottom:0;font-family:inherit}
+  .conf.av-ed p.avtxt{margin:0;color:var(--av-text);font-size:12.5px;line-height:1.45}
+  .av-ed .avaco{margin:4px 0 0}
+  .avprevex{padding:10px 13px;font-size:13px;font-weight:600;color:var(--txt);background:var(--card)}
+  .av-ed .rm-av{margin-top:12px;width:100%;background:none;border:1px dashed #5c2a2a;color:#f5a3a3;
+    font-size:12px;padding:9px;border-radius:9px}
+  .av-ed .rm-av:hover{border-style:solid;filter:none}
+  .tw-ferr button.av{font-size:10.5px}
+  .tw-ferr button.av:hover{border-color:#00c9cc;color:#00c9cc}
   @media (hover:none){
     .tw-ferr,.tw-gr-ferr,.tw-join{opacity:1}
   }
@@ -12930,7 +13005,7 @@ function FormExercicio({ ex, treinoId, ordem, layout, onFechar, onSalvo, onSujo,
         <div className="sw"><i /></div>
         <div>
           <b>Recomendado filmar?</b>
-          <span>O aluno vê um aviso neste exercício</span>
+          <span>O aluno vê um aviso acima deste exercício</span>
         </div>
       </div>
     </div>
@@ -13260,13 +13335,193 @@ function situacaoFase(f, hojeISO) {
   return "ativa";
 }
 
+/* ===== LOTE_AVISO + LOTE_AVISO_ACOPLADO — aviso antes do exercício (14/11/2026) =====
+   Espelho do App (idealis-supabase, versão de 14/11 15:04). Mora em
+   exercicios.aviso (jsonb): {"v":1,"tipo":"<chave>","texto":"1..240"}; nulo =
+   sem aviso (constraint exercicios_aviso_formato no banco). Quer dizer
+   "mostrar colado em cima DESTE exercício", por isso acompanha o exercício
+   quando a ordem muda. `tipo` é chave semântica: ícone e cor saem daqui e do
+   CSS; tipo desconhecido (versão futura) cai em "recado", nunca quebra a tela.
+   - Acoplado: o aviso é uma ABA no topo do card do exercício, na mesma
+     moldura. Bi-set: a aba fica em cima do GRUPO, com a letra do membro
+     (B, C…) quando o aviso não é do primeiro. Regra de exibição, não de dado.
+   - Filmar NÃO é tipo escolhível: nasce de exercicios.filmar e entra na aba.
+     Na Dashboard aparece só o rótulo "🎥 aviso: filmar"; o ✎ abre o exercício.
+   - Moldura com a cor do aviso mais sério (AVISO_PESO).
+   - Aviso não é exercício: nenhum cálculo de volume, contagem ou séries lê o campo.
+   Multitenant: TREINADOR vira o perfil do treinador do tenant (nome + foto),
+   nos dois apps ao mesmo tempo. O texto do filmar pode virar configuração do
+   treinador. Se um tenant tiver mais de um treinador: v2 do JSON com `autor`
+   (uuid), para a aba mostrar quem escreveu. Nada disso criado agora. */
+/* foto: mesmo arquivo do App. Trocou a foto? suba o ?v= nos DOIS apps. */
+const TREINADOR = { nome: "Matheus", iniciais: "MF",
+  foto: "https://idealis.app.br/treinador.jpg?v=1" };
+const AVISO_MAX = 240;
+const AVISO_TIPOS = [
+  { id: "recado",  nome: "Recado",   ic: "chat" },
+  { id: "dica",    nome: "Dica",     ic: "bulb" },
+  { id: "ajuste",  nome: "Ajuste",   ic: "sliders" },
+  { id: "dor",     nome: "Dor",      ic: "firstaid" },
+  { id: "atencao", nome: "Atenção",  ic: "warn", grave: true },
+  { id: "pare",    nome: "Pare se…", ic: "hand", grave: true }
+];
+const AVISO_FILMAR = { id: "filmar", nome: "Filmar", grave: true };
+const AVISO_FILMAR_TXT = "Se puder, recomendo filmar este exercício."; /* o que o aluno lê no App */
+/* peso para escolher a cor da moldura quando há mais de um aviso (igual ao App) */
+const AVISO_PESO = { pare: 5, atencao: 4, filmar: 3, dor: 2, ajuste: 1, dica: 1, recado: 0 };
+/* ícones Phosphor (MIT), os mesmos do App */
+const AVISO_IC = {"chat": "<path d=\"M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z\"/>", "bulb": "<path d=\"M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-32.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z\"/>", "sliders": "<path d=\"M32,80a8,8,0,0,1,8-8H77.17a28,28,0,0,1,53.66,0H216a8,8,0,0,1,0,16H130.83a28,28,0,0,1-53.66,0H40A8,8,0,0,1,32,80Zm184,88H194.83a28,28,0,0,0-53.66,0H40a8,8,0,0,0,0,16H141.17a28,28,0,0,0,53.66,0H216a8,8,0,0,0,0-16Z\"/>", "firstaid": "<path d=\"M232,108v40a16,16,0,0,1-16,16H164v52a16,16,0,0,1-16,16H108a16,16,0,0,1-16-16V164H40a16,16,0,0,1-16-16V108A16,16,0,0,1,40,92H92V40a16,16,0,0,1,16-16h40a16,16,0,0,1,16,16V92h52A16,16,0,0,1,232,108Z\"/>", "warn": "<path d=\"M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z\"/>", "hand": "<path d=\"M216,104v48a88,88,0,0,1-176,0V64a16,16,0,0,1,32,0v56a8,8,0,0,0,16,0V32a16,16,0,0,1,32,0v80a8,8,0,0,0,16,0V48a16,16,0,0,1,32,0v80.67A48.08,48.08,0,0,0,128,176a8,8,0,0,0,16,0,32,32,0,0,1,32-32,8,8,0,0,0,8-8V104a16,16,0,0,1,32,0Z\"/>", "pencil": "<path d=\"M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM192,108.68,147.31,64l24-24L216,84.68Z\"/>"};
+function tipoAviso(id) { return AVISO_TIPOS.find(x => x.id === id) || AVISO_TIPOS[0]; }
+function avisoValido(a) {
+  return !!(a && typeof a === "object" && typeof a.texto === "string" && a.texto.trim());
+}
+const tipoDoItemAviso = a => a.filmar ? "filmar" : tipoAviso(a.aviso && a.aviso.tipo).id;
+/* única porta de escrita: devolve o JSON que o banco aceita, ou null */
+function montarAviso(tipo, texto) {
+  const t = String(texto || "").trim().slice(0, AVISO_MAX);
+  if (!t) return null;
+  return { v: 1, tipo: tipoAviso(tipo).id, texto: t };
+}
+/* itens da aba de um bloco (exercício solto ou bi-set), na ordem dos membros:
+   o aviso escrito primeiro, o filmar depois. onEditar(ex) / onFilmar(ex). */
+function itensAvisoDoBloco(bl, onEditar, onFilmar) {
+  const itens = [];
+  bl.itens.forEach((it, pos) => {
+    const ex = it.ex;
+    const letra = (bl.grupo && pos > 0) ? ("ABCDEFGH".charAt(pos) || String(pos + 1)) : null;
+    if (avisoValido(ex.aviso)) itens.push({ key: "av:" + ex.id, letra, aviso: ex.aviso,
+      onEditar: onEditar ? () => onEditar(ex) : null });
+    if (ex.filmar) itens.push({ key: "fm:" + ex.id, letra, filmar: true,
+      onEditar: onFilmar ? () => onFilmar(ex) : null });
+  });
+  return itens;
+}
+function corDaMoldura(itens) {
+  return itens.reduce((m, a) => {
+    const t = tipoDoItemAviso(a);
+    return (AVISO_PESO[t] || 0) > (AVISO_PESO[m] || 0) ? t : m;
+  }, tipoDoItemAviso(itens[0]));
+}
+function IconeAviso({ n }) {
+  const d = AVISO_IC[n]; if (!d) return null;
+  return <svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"
+    dangerouslySetInnerHTML={{ __html: d }} />;
+}
+/* um aviso dentro da aba */
+function AvisoItem({ aviso, filmar, letra, onEditar }) {
+  const tp = filmar ? AVISO_FILMAR : tipoAviso(aviso && aviso.tipo);
+  const [fotoOk, setFotoOk] = useState(true);
+  if (filmar) {
+    return (
+      <div className="avitem flm av-filmar av-grave" role="note" title={"O aluno lê: " + AVISO_FILMAR_TXT}>
+        <span className="avflm">🎥 aviso: filmar</span>
+        {letra && <span className="avletra" title={"Sobre o exercício " + letra}>{letra}</span>}
+        {onEditar && (
+          <button type="button" className="avbtnedit" onClick={onEditar}
+            title="Editar o exercício (o filmar liga e desliga lá)" aria-label="Editar exercício">
+            <IconeAviso n="pencil" />
+          </button>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className={"avitem av-" + tp.id + (tp.grave ? " av-grave" : "")} role="note"
+      aria-label={"Aviso do treinador: " + tp.nome}>
+      <span className="avfoto" aria-hidden="true">
+        {fotoOk
+          ? <img src={TREINADOR.foto} alt="" onError={() => setFotoOk(false)} />
+          : <span className="avini">{TREINADOR.iniciais}</span>}
+        <span className="avselo"><IconeAviso n={tp.ic} /></span>
+      </span>
+      <div className="avconteudo">
+        <div className="avcab">
+          <span className="avnome">{TREINADOR.nome}</span>
+          <span className="avtipo">· {tp.nome}</span>
+          {letra && <span className="avletra" title={"Sobre o exercício " + letra}>{letra}</span>}
+          {onEditar && (
+            <button type="button" className="avbtnedit" onClick={onEditar}
+              title="Editar aviso" aria-label="Editar aviso"><IconeAviso n="pencil" /></button>
+          )}
+        </div>
+        <p className="avtxt">{aviso.texto}</p>
+      </div>
+    </div>
+  );
+}
+/* moldura única: aba(s) em cima + o bloco do exercício embaixo */
+function AvisoAcoplado({ itens, tabela, children }) {
+  return (
+    <div className={"av-app avaco av-" + corDaMoldura(itens) + (tabela ? " tb" : "")}>
+      <div className="avaba">
+        {itens.map(a => <AvisoItem key={a.key} aviso={a.aviso} filmar={!!a.filmar}
+          letra={a.letra} onEditar={a.onEditar} />)}
+      </div>
+      <div className="avcorpo">{children}</div>
+    </div>
+  );
+}
+function EditorAviso({ exNome, inicial, onSalvar, onRemover, onFechar }) {
+  const [tipo, setTipo] = useState(() => tipoAviso(inicial && inicial.tipo).id);
+  const [txt, setTxt]   = useState((inicial && inicial.texto) || "");
+  const [confRem, setConfRem] = useState(false);
+  const [busy, setBusy] = useState(false);
+  useEsc(true, () => { if (!busy) onFechar(); });
+  const aviso = montarAviso(tipo, txt);
+  const salvar = async () => { if (!aviso || busy) return; setBusy(true); await onSalvar(aviso); setBusy(false); };
+  const remover = async () => {
+    if (!confRem) { setConfRem(true); return; }
+    setBusy(true); await onRemover(); setBusy(false);
+  };
+  return (
+    <>
+      <div className="drawer-bg" style={{ zIndex: 90 }} onClick={() => !busy && onFechar()} />
+      <div className="conf av-ed av-app" role="dialog" aria-label={inicial ? "Editar aviso" : "Novo aviso"}>
+        <h3>{inicial ? "Editar aviso" : "Novo aviso"}</h3>
+        <p>Aparece colado em cima de <b>{exNome}</b>, mesmo com o card fechado.</p>
+        <div className="ed-lab">Tipo</div>
+        <div className="avtipos" role="group" aria-label="Tipo do aviso">
+          {AVISO_TIPOS.map(x => (
+            <button key={x.id} type="button" className={"avtipobtn av-" + x.id + (x.id === tipo ? " on" : "")}
+              aria-pressed={x.id === tipo} onClick={() => setTipo(x.id)}>
+              <IconeAviso n={x.ic} /> {x.nome}
+            </button>
+          ))}
+        </div>
+        <div className="ed-lab">Texto <span className="ed-cnt" style={{ float: "right" }}>{txt.length}/{AVISO_MAX}</span></div>
+        <textarea rows={3} maxLength={AVISO_MAX} value={txt} autoFocus
+          onChange={e => setTxt(e.target.value)}
+          placeholder="Ex: a partir de hoje o leg é com pausa de 2 s embaixo." />
+        {aviso && (
+          <>
+            <div className="ed-lab" style={{ marginTop: 14 }}>Prévia <i>o visual final é do App</i></div>
+            <AvisoAcoplado itens={[{ key: "prev", aviso }]}>
+              <div className="avprevex">{exNome}</div>
+            </AvisoAcoplado>
+          </>
+        )}
+        <div className="conf-bt" style={{ marginTop: 16 }}>
+          <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+          <button onClick={salvar} disabled={!aviso || busy}>{busy ? "Salvando..." : "Salvar"}</button>
+        </div>
+        {onRemover && (
+          <button type="button" className="rm-av" onClick={remover} disabled={busy}>
+            {confRem ? "Clique de novo para remover o aviso" : "Remover aviso"}
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
 /* ---------- Cópia de sessões entre fases e alunos ----------
    Regra fechada junto com o App Idealis. Os dois lados TÊM que copiar a mesma
    coisa; mudar aqui sem mudar lá cria fase que abre diferente em cada tela.
 
    Vem junto: nome do treino; por exercício nome, series, descanso, filmar,
    metodo, cardio, isometria (o jsonb INTEIRO, com o `modo` do alongamento),
-   cardapio_id, observacao; o grupo (bi-set/tri-set) COM ID NOVO; e a ordem
+   cardapio_id, observacao, aviso (LOTE_AVISO, 14/11/2026: "Limpar observações"
+   limpa os dois); o grupo (bi-set/tri-set) COM ID NOVO; e a ordem
    reindexada a partir de 0.
 
    Não vem: done_date e logs (a fase nova começaria "já feita"), audio_url
@@ -13321,6 +13576,12 @@ function montarCopia(origem, alunoDestId, faseDestId, ordemBase, limparObs) {
           isometria: ex.isometria ?? null,
           cardapio_id: ex.cardapio_id ?? null,
           observacao: limparObs ? null : (ex.observacao ?? null),
+          /* LOTE_AVISO: o aviso vem junto; "Limpar observações" limpa os avisos
+             também (regra do App). Só entra no payload quando a origem tem a
+             coluna, para não quebrar o insert se o SQL não tiver rodado. */
+          ...("aviso" in ex
+            ? { aviso: limparObs ? null : (avisoValido(ex.aviso) ? ex.aviso : null) }
+            : {}),
           grupo,
           ordem: k
         });
@@ -13565,7 +13826,7 @@ function SeletorSessoes({ alunoDest, faseDest, nomesDestino, onFechar, onPronto 
                 onClick={() => setLimpar(v => !v)}>
                 <div className="sw"><i /></div>
                 <div>
-                  <b>Limpar observações</b>
+                  <b>Limpar observações e avisos</b>
                   <span>
                     quando a dica era específica do aluno de origem
                   </span>
@@ -13834,6 +14095,18 @@ function mtPlano(fases, f) {
 }
 
 const MT_ABA_DE = { ativa: "atuais", encerrada: "anteriores", futura: "futuros" };
+
+/* ordem de EXIBIÇÃO dos chips de fase por aba (14/11/2026, igual à aba
+   "Futuros" do App): Futuras em início crescente, a mais próxima à esquerda.
+   Anteriores e Atuais seguem como vêm do banco (início decrescente: a mais
+   recente à esquerda). Só tela: não mexe em data nem em ordem salva. Quem
+   pega "a primeira da aba" (trocarAba, apagarFase) passa por aqui, então
+   abrir Futuras abre a próxima fase, não a mais distante. */
+function ordenarAba(k, lista) {
+  return k === "futuros"
+    ? [...lista].sort((a, b) => String(a.inicio || "").localeCompare(String(b.inicio || "")))
+    : lista;
+}
 
 function AnelFase({ info, px }) {
   const t = px || 86, C = 2 * Math.PI * 36;
@@ -14312,6 +14585,7 @@ function PainelMontagem() {
      falhou ou historico.js ausente. exAnt null = fase anterior ainda não lida. */
   const [histRows, setHistRows] = useState(null);
   const [exAnt, setExAnt]       = useState(null);
+  const [avisando, setAvisando] = useState(null);  /* LOTE_AVISO: {ex} em edição */
   const histReq = React.useRef(0);
   const antReq  = React.useRef(0);
 
@@ -14443,7 +14717,7 @@ function PainelMontagem() {
 
   useEffect(() => { carregar(sel); }, [sel, carregar]);
 
-  const daAba = k => fases.filter(f => MT_ABA_DE[situacaoFase(f, hoje)] === k);
+  const daAba = k => ordenarAba(k, fases.filter(f => MT_ABA_DE[situacaoFase(f, hoje)] === k));
   const porAba = daAba(aba);
   const cont = { anteriores: daAba("anteriores").length, atuais: daAba("atuais").length,
                  futuros: daAba("futuros").length };
@@ -14652,7 +14926,7 @@ function PainelMontagem() {
     if (r.error) { toast(r.error.message, "erro"); return; }
     const resto = fases.filter(x => x.id !== f.id);
     setFases(resto);
-    const prox = resto.filter(x => MT_ABA_DE[situacaoFase(x, hoje)] === aba)[0];
+    const prox = ordenarAba(aba, resto.filter(x => MT_ABA_DE[situacaoFase(x, hoje)] === aba))[0];
     await abrirFase(prox ? prox.id : "");
     toast("Fase apagada.");
   }
@@ -14687,6 +14961,21 @@ function PainelMontagem() {
       (colide ? "  " + colide + " com nome que já existia." : ""));
   }
 
+  /* LOTE_AVISO: grava só a coluna aviso (null remove). Otimista com rollback. */
+  async function gravarAviso(ex, aviso) {
+    const antes = ex.aviso ?? null;
+    const troca = v => setExs(m => ({ ...m,
+      [ex.treino_id]: (m[ex.treino_id] || []).map(x => x.id === ex.id ? { ...x, aviso: v } : x) }));
+    troca(aviso);
+    const r = await sb.from("exercicios").update({ aviso }).eq("id", ex.id);
+    if (r.error) { troca(antes); toast("Aviso não salvo: " + r.error.message, "erro"); return false; }
+    setAvisando(null);
+    toast(aviso ? "Aviso salvo ✓" : "Aviso removido.");
+    return true;
+  }
+  const abrirAviso = ex => setAvisando({ ex });
+  const filmarDoAviso = ex => abrirEdicao({ exId: ex.id });
+
   /* ---------- pedaços de tela (funções, não componentes: componente criado
      dentro do render remonta a cada atualização e apagaria o formulário) ---------- */
   const sessoes = treinos.map((t, i) => {
@@ -14706,7 +14995,8 @@ function PainelMontagem() {
     if (isoDe(ex)) tg.push(modoDe(ex) === "alongamento"
       ? <span key="i" className="mt-tag alo">alongamento</span>
       : <span key="i" className="mt-tag iso">isometria</span>);
-    if (ex.filmar) tg.push(<span key="f" className="mt-tag flm">filmar</span>);
+    /* filmar saiu das tags em 14/11/2026: agora é o rótulo "🎥 aviso: filmar"
+       na aba em cima do exercício, igual ao App */
     if (ex.audio_url) tg.push(<span key="a" className="mt-tag aud">áudio</span>);
     if (!ex.cardapio_id) tg.push(<span key="v" className="mt-tag avl">avulso</span>);
     return tg;
@@ -14776,6 +15066,10 @@ function PainelMontagem() {
         <button type="button" title={emGrupo ? "Descer dentro do grupo" : "Descer"}
           aria-label="Descer" onClick={() => emGrupo ? moverDentro(s.lista, bl, k, 1)
             : moverBlocoTreino(s.blocos, bi, 1)}>▼</button>
+        {!avisoValido(ex.aviso) && (
+          <button type="button" className="av" title="Aviso colado em cima deste exercício"
+            aria-label="Novo aviso" onClick={() => abrirAviso(ex)}>+ aviso</button>
+        )}
         <button type="button" title="Apagar" aria-label="Apagar exercício"
           className="rm" onClick={() => apagarEx(ex, s.lista)}>×</button>
       </span>
@@ -14797,6 +15091,14 @@ function PainelMontagem() {
         </span>
       </div>
     );
+  }
+
+  /* LOTE_AVISO_ACOPLADO: com aviso (ou filmar), o bloco vai DENTRO da
+     moldura, embaixo da aba. Sem aviso, o bloco fica como era. */
+  function acoplarAviso(bl, tabela, bloco) {
+    const itens = itensAvisoDoBloco(bl, abrirAviso, filmarDoAviso);
+    if (!itens.length) return bloco;
+    return <AvisoAcoplado itens={itens} tabela={tabela}>{bloco}</AvisoAcoplado>;
   }
 
   /* ----- visão geral: uma linha de exercício na coluna ----- */
@@ -14867,12 +15169,12 @@ function PainelMontagem() {
         )}
         {s.blocos.map((bl, bi) => (
           <React.Fragment key={bl.itens[0].ex.id}>
-            {bl.grupo ? (
+            {acoplarAviso(bl, false, bl.grupo ? (
               <div className="tw-gr">
                 {cabGrupo(s, bl, bi, "tw-grh")}
                 {bl.itens.map((it, k) => linhaColuna(s, bl, bi, it, k))}
               </div>
-            ) : linhaColuna(s, bl, bi, bl.itens[0], 0)}
+            ) : linhaColuna(s, bl, bi, bl.itens[0], 0))}
             {bi < s.blocos.length - 1 && (
               <div className="tw-join">
                 <button type="button" onClick={() => agrupar(s.blocos, bi)}>
@@ -14968,8 +15270,10 @@ function PainelMontagem() {
           )}
           {s.blocos.map((bl, bi) => (
             <React.Fragment key={bl.itens[0].ex.id}>
-              {bl.grupo && cabGrupo(s, bl, bi, "tw-grh tb")}
-              {bl.itens.map((it, k) => linhaTabela(s, bl, bi, it, k))}
+              {acoplarAviso(bl, true, <>
+                {bl.grupo && cabGrupo(s, bl, bi, "tw-grh tb")}
+                {bl.itens.map((it, k) => linhaTabela(s, bl, bi, it, k))}
+              </>)}
             </React.Fragment>
           ))}
           {novoAqui && (
@@ -15198,6 +15502,14 @@ function PainelMontagem() {
           onCriada={aposCriarFase} />
       )}
 
+      {avisando && (
+        <EditorAviso exNome={avisando.ex.nome}
+          inicial={avisoValido(avisando.ex.aviso) ? avisando.ex.aviso : null}
+          onFechar={() => setAvisando(null)}
+          onSalvar={a => gravarAviso(avisando.ex, a)}
+          onRemover={avisoValido(avisando.ex.aviso) ? () => gravarAviso(avisando.ex, null) : null} />
+      )}
+
       {importar && alunoObj && faseSel && (
         <SeletorSessoes
           alunoDest={alunoObj}
@@ -15212,8 +15524,9 @@ function PainelMontagem() {
         ampliada, em tabela. As setas movem o <b>bloco inteiro</b> — dentro de um bi-set
         elas trocam a ordem dos membros. <b>Agrupar com o próximo</b> junta dois blocos
         vizinhos em bi-set, tri-set ou circuito (o nome vem da contagem), com descanso
-        uma vez só, no fim da rodada. <b>Importar sessões</b> traz exercícios, séries,
-        método, cardio, isometria/alongamento e bi-sets; não traz carga, correções,
+        uma vez só, no fim da rodada. <b>+ aviso</b> (nas ferramentas da linha) cola um
+        recado do treinador em cima do exercício, igual o aluno vê no App. <b>Importar sessões</b> traz exercícios, séries,
+        método, cardio, isometria/alongamento, bi-sets e avisos; não traz carga, correções,
         áudio nem histórico. As datas da fase se ajustam direto no card de cima.
         Nas fases atual e futura, cada exercício mostra o histórico do aluno de antes da fase: <b>🆕 novo</b>,
         <b>↺ volta</b> (fez antes, não está na fase anterior) ou, em cinza, o que já
@@ -16160,7 +16473,7 @@ function SinoFeed() {
    4 modelos migram para bilhete_modelos(tenant_id, ...). Por isso moram
    aqui em cima, e em mais nenhum lugar. */
 const FUSO            = "America/Sao_Paulo";
-const TREINADOR_NOME  = "Matheus";
+const TREINADOR_NOME  = TREINADOR.nome;  /* uma fonte só: TREINADOR (LOTE_AVISO) */
 const ANIV_JANELA     = 3;          /* dias de antecedência do aviso */
 const ANIV_POLL_MS    = 300000;
 const ANIV_LS_VISTOS  = "idealis_aniv_vistos_v1";
