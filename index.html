@@ -8703,6 +8703,30 @@ function evCasa(a, b) {
   return evNorm(a.nome) === evNorm(b.nome);
 }
 
+/* De quem é esta série. Desde 14/11/2026 a série guarda a própria identidade
+   (logs.exercicio_nome + logs.cardapio_id, preenchidos pelo gatilho
+   logs_identidade no INSERT). Antes disso a identidade vinha da linha de
+   `exercicios`, e trocar o exercício no editor renomeava todo o histórico
+   (Flexora em Pé -> Mesa Flexora levava a dor junto). Série sem snapshot
+   (banco antes da migração) cai na linha do exercício, como era.
+   isometria: a da linha, se for o mesmo exercício; senão, deduzida da série
+   (tem segundos = exercício de tempo). */
+function evIdentLog(l, ex) {
+  const snap = l && l.exercicio_nome != null && String(l.exercicio_nome).trim() !== "";
+  const nome = snap ? String(l.exercicio_nome).trim() : (ex ? String(ex.nome || "").trim() : "");
+  const card = snap ? (l.cardapio_id ?? null) : (ex ? (ex.cardapio_id ?? null) : null);
+  if (card == null && !evNorm(nome)) return null;
+  const ref = card != null ? "c:" + card : "n:" + evNorm(nome);
+  let isometria = null;
+  if (ex && evCasa(ex, { nome, cardapio_id: card })) isometria = ex.isometria || null;
+  else {
+    const x = (l && l.extra) || {};
+    if (x.segundos != null) isometria = { min: 0, max: 0,
+      modo: x.tipo === "alongamento" ? "alongamento" : "isometria" };
+  }
+  return { ref, nome, cardapio_id: card, isometria };
+}
+
 /* une exercícios que o App consideraria o mesmo histórico */
 function evAgrupar(exs) {
   const pai = exs.map((_, i) => i);
@@ -9039,13 +9063,27 @@ function PainelEvolucao({ aluno, focoCardio, onFocado }) {
      dentro do aluno (regra do App), então a fase nova nasce com o passado junto. */
   const { grupos, porEx, porGrupo } = useMemo(() => {
     if (!base) return { grupos: [], porEx: new Map(), porGrupo: new Map() };
+    /* cada série vai para a identidade gravada NELA (evIdentLog), não para a
+       linha do exercício: trocar o exercício no editor não reescreve o passado.
+       As identidades viram itens "virtuais" (id "lg:<ref>") que entram no
+       agrupamento junto com os exercícios prescritos; a evCasa junta os dois
+       quando são o mesmo exercício. */
+    const slot = new Map(base.exs.map(e => [e.id, e]));
+    const virt = new Map();
     const porEx = new Map();
     base.logs.forEach(l => {
       if (l.extra && l.extra.tipo === "cardio") return;
-      if (!porEx.has(l.exercicio_id)) porEx.set(l.exercicio_id, []);
-      porEx.get(l.exercicio_id).push(l);
+      const idt = evIdentLog(l, slot.get(l.exercicio_id));
+      if (!idt) return;
+      const k = "lg:" + idt.ref;
+      const v = virt.get(k);
+      if (!v) virt.set(k, { id: k, nome: idt.nome, cardapio_id: idt.cardapio_id,
+                            isometria: idt.isometria, virtual: true });
+      else if (!v.isometria && idt.isometria) v.isometria = idt.isometria;
+      if (!porEx.has(k)) porEx.set(k, []);
+      porEx.get(k).push(l);
     });
-    const grupos = evAgrupar(base.exs);
+    const grupos = evAgrupar([...base.exs, ...virt.values()]);
     /* rótulo também pelo log (extra.tipo): vale para exercício já editado */
     grupos.forEach(g => {
       if (g.tipo) return;
@@ -15583,12 +15621,19 @@ function montarFeed(raw) {
     });
   }
 
-  /* dor: um item por exercício + dia */
+  /* dor: um item por exercício + dia. "Exercício" = a identidade gravada na
+     série (logs.exercicio_nome / cardapio_id), não o nome que a linha tem hoje:
+     se o exercício foi trocado depois da dor, o feed continua dizendo onde
+     doeu. Série sem snapshot (antes da migração de 14/11/2026) usa a linha. */
   const grp = new Map();
   for (const l of (raw.logs || [])) {
     if (l.dor == null || l.dor < FEED_DOR_MIN) continue;
-    const k = l.exercicio_id + "|" + l.data;
+    const snap = l.exercicio_nome != null && String(l.exercicio_nome).trim() !== "";
+    const k = l.exercicio_id + "|" + (snap ? normAcc(l.exercicio_nome) : "") + "|" + l.data;
     const g = grp.get(k) || { ids: [], exercicio_id: l.exercicio_id, data: l.data,
+      nome: snap ? String(l.exercicio_nome).trim() : null,
+      cardapio_id: snap ? (l.cardapio_id ?? null) : undefined,
+      aluno_id: l.aluno_id || null,
       max: 0, series: new Set(), locais: new Set(), reg: 0 };
     g.ids.push(l.id);
     g.max = Math.max(g.max, l.dor);
@@ -15603,15 +15648,22 @@ function montarFeed(raw) {
   for (const g of grp.values()) {
     const e = ex.get(g.exercicio_id);
     const t = e ? tr.get(e.treino_id) : null;
-    if (!t) continue;                  /* sem treino não há aluno: não inventa */
+    const alunoId = g.aluno_id || (t ? t.aluno_id : null);
+    if (!alunoId) continue;            /* sem aluno não há item: não inventa */
+    const nome = g.nome != null ? g.nome : (e ? e.nome : "");
+    if (!nome) continue;
     const n = g.series.size;
     push({
-      key: "dor:" + g.exercicio_id + ":" + g.data, tipo: "dor",
-      /* log_ids, exercicio_id e locais: usados pelo Acompanhamento (revisar e
-         inserir na anamnese). O feed do Início não lê. */
-      log_ids: g.ids, exercicio_id: g.exercicio_id, locais: [...g.locais],
-      aluno_id: t.aluno_id, treino_id: t.id, data: g.data, reg: g.reg,
-      alvo: e.nome, sub: nomeTreino(t.id, t.aluno_id), valor: g.max,
+      key: "dor:" + g.exercicio_id + ":" + (g.nome != null ? normAcc(g.nome) : "") + ":" + g.data,
+      tipo: "dor",
+      /* log_ids, exercicio_id, cardapio_id e locais: usados pelo Acompanhamento
+         (revisar e inserir na anamnese). O feed do Início não lê.
+         cardapio_id: o da SÉRIE (undefined = série sem snapshot, aí o
+         Acompanhamento lê da linha do exercício, como antes). */
+      log_ids: g.ids, exercicio_id: g.exercicio_id, cardapio_id: g.cardapio_id,
+      locais: [...g.locais],
+      aluno_id: alunoId, treino_id: t ? t.id : null, data: g.data, reg: g.reg,
+      alvo: nome, sub: t ? nomeTreino(t.id, alunoId) : "", valor: g.max,
       texto: [...g.locais].join(" · ") +
         (g.locais.size ? " · " : "") + n + (n === 1 ? " série" : " séries") + " com dor",
       cor: (feedNivelDor(g.max) || {}).cor || null
@@ -15750,7 +15802,7 @@ async function carregarFeed() {
         .select("id, aluno_id, treino_id, exercicio_id, exercicio_nome, data, texto, created_at")
         .gte("data", corte).order("data", { ascending: false }).limit(1000)),
       pega("logs", sb.from("logs")
-        .select("id, exercicio_id, data, serie, dor, dor_local, dor_lado, criado_em")
+        .select("id, exercicio_id, aluno_id, cardapio_id, exercicio_nome, data, serie, dor, dor_local, dor_lado, criado_em")
         .gte("data", corte).gte("dor", FEED_DOR_MIN).limit(2000)),
       pega("treino_semaforo", sb.from("treino_semaforo").select("*")
         .gte("treino_em", corte).neq("cor", "verde")),
@@ -18036,8 +18088,12 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
   /* vínculo do exercício: { exId, nome, cardId, auto } | null.
      Começa com o exercício do relato; observação final do treino começa
      vazia e tenta achar o exercício citado no texto. Sempre editável. */
+  /* dor com snapshot: o cardapio_id vem da própria série (o.cardapio_id !==
+     undefined) e a linha do exercício nem é consultada, porque ela pode ter
+     sido trocada depois da dor. */
   const [vinc, setVinc]     = useState(geral ? null
-    : { exId: o.exercicio_id || null, nome: o.alvo || "", cardId: null, auto: false });
+    : { exId: o.exercicio_id || null, nome: o.alvo || "",
+        cardId: o.cardapio_id !== undefined ? o.cardapio_id : null, auto: false });
   const [exsTreino, setExsTreino] = useState(null);
   const [trocar, setTrocar] = useState(false);
   const [busy, setBusy]     = useState(false);
@@ -18054,8 +18110,8 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
           : sb.from("anamnese_secoes").select("*").eq("ativa", true).order("ordem"),
         sb.from("anamnese_entradas").select("id", { count: "exact", head: true })
           .eq("aluno_id", aluno.id),
-        o.exercicio_id
-          ? sb.from("exercicios").select("cardapio_id").eq("id", o.exercicio_id).maybeSingle()
+        o.exercicio_id && o.cardapio_id === undefined
+          ? sb.from("exercicios").select("nome, cardapio_id").eq("id", o.exercicio_id).maybeSingle()
           : Promise.resolve({ data: null, error: null }),
         o.treino_id
           ? sb.from("exercicios").select("id, nome, cardapio_id, ordem")
@@ -18074,7 +18130,9 @@ function FormObsAnamnese({ aluno, o, onCancelar, onInserida }) {
       }
       if (ct.error) setErro(e => e || "anamnese: " + ct.error.message);
       setMigrado(ct.error ? null : (ct.count || 0) > 0);
-      if (!ex.error && ex.data) {
+      /* só herda o cardapio_id da linha se ela ainda é o mesmo exercício do
+         relato/série: exercício trocado depois daria o id do substituto */
+      if (!ex.error && ex.data && normAcc(ex.data.nome) === normAcc(o.alvo)) {
         const c = ex.data.cardapio_id ?? null;
         setVinc(v => (v && v.exId === o.exercicio_id ? { ...v, cardId: c } : v));
       }
