@@ -3279,12 +3279,12 @@ function PainelAlunos() {
   /* agrupa: família > modalidade > alunos */
   const familias = [];
   const idxF = new Map();
-  const ordemAluno = (x, y) => {
-    if (x.dias_sem_treinar === null && y.dias_sem_treinar !== null) return -1;
-    if (y.dias_sem_treinar === null && x.dias_sem_treinar !== null) return 1;
-    if (x.dias_sem_treinar === null) return String(x.nome).localeCompare(String(y.nome), "pt-BR");
-    return y.dias_sem_treinar - x.dias_sem_treinar;
-  };
+  /* dentro de cada formato: SEMPRE alfabético (ignora acento e caixa).
+     Antes reordenava por dias sem treinar e desmentia o "ordem alfabética"
+     do subtítulo. Tempo parado é assunto do modo Acompanhamento. */
+  const ordemAluno = (x, y) =>
+    String(x.nome || "").localeCompare(String(y.nome || ""), "pt-BR",
+      { sensitivity: "base" });
   for (const a of visiveis) {
     const fam = a.modalidade_familia || "Sem formato definido";
     const mid = a.modalidade_id || "__none";
