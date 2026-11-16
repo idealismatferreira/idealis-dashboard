@@ -1683,6 +1683,40 @@
   .tn-app .pgtopo{margin:0}
   .tn-app .pgcard.destaque{flex:1.7}
   .fd-tag.pc{background:#2a2418;color:var(--warn)}
+  /* nota interna do treinador no topo da ficha (alunos_notas) */
+  .nt-int{display:flex;align-items:flex-start;gap:8px;width:100%;margin-top:10px;
+    padding:8px 11px;text-align:left;background:#14191a;border:1px solid var(--line);
+    border-radius:9px;color:var(--txt);font-size:12.5px;font-weight:400;line-height:1.5;
+    cursor:pointer}
+  .nt-int:hover{border-color:#3a4a4d;filter:none}
+  .nt-int .nt-ic{flex-shrink:0}
+  .nt-int .nt-tx{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .nt-int .nt-ed{flex-shrink:0;font-size:10.5px;color:var(--mut);text-decoration:underline;
+    text-underline-offset:3px}
+  .nt-int.vazio{width:auto;display:inline-flex;align-items:baseline;padding:5px 10px;
+    border-style:dashed;color:var(--mut);font-size:11.5px;background:transparent}
+  .nt-int.vazio i{font-style:normal;font-size:10px;opacity:.7}
+  .nt-int.vazio:hover{color:var(--txt)}
+  .nt-int.falha{cursor:default;color:var(--warn);font-size:11px;border-style:dashed;
+    background:transparent}
+  .nt-int.ed{display:block;cursor:default}
+  .nt-int.ed textarea{width:100%;margin:6px 0 0;font-family:inherit;font-size:13px;
+    line-height:1.5}
+  .nt-lab{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--mut)}
+  .nt-lab i{font-style:normal;text-transform:none;letter-spacing:0;opacity:.8}
+  .nt-err{color:#ff8a8a;font-size:11.5px;margin-top:4px}
+  .nt-acs{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:6px}
+  .nt-acs span{margin-right:auto;font-size:10.5px;color:var(--mut)}
+  .nt-acs button{width:auto;padding:6px 12px;font-size:12px}
+  @media (max-width: 720px){ .nt-int.ed textarea{font-size:16px} }
+  /* recado que o aluno respondeu, dentro do item aberto */
+  .fd-rc{margin-top:8px;padding:8px 11px;border-left:2px solid #4d5a10;
+    background:#12160a;border-radius:0 8px 8px 0;font-size:11.5px;line-height:1.5;
+    color:#a9b98a;white-space:pre-wrap;overflow-wrap:anywhere}
+  .fd-rc small{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:1px;
+    color:var(--marca);margin-bottom:3px;font-weight:600}
+  .fd-rc i{color:var(--mut)}
   /* desafio da fase (brief do App, 09/11/2026) */
   .fd-tag.dsf{background:#2b2f10;color:var(--marca)}
   .fd-it.off,.sn-it.off{opacity:.5}
@@ -5208,6 +5242,98 @@ function CardDesafio({ aluno, onDores }) {
   );
 }
 
+/* ============ NOTA INTERNA do treinador (15/11/2026) ============
+   Mora em alunos_notas (1 linha por aluno), RLS só do treinador via
+   posso_gerenciar_aluno: o aluno NÃO lê. Substitui alunos.observacao, que
+   ficava visível para o aluno pela API. Nota vazia = linha apagada
+   (o banco exige 1 a NOTA_MAX caracteres). */
+const NOTA_MAX = 4000;
+async function notaSalvar(alunoId, texto) {
+  const t = String(texto || "").trim();
+  if (t.length > NOTA_MAX) return { erro: "passa de " + NOTA_MAX + " caracteres" };
+  /* .select(): sem permissão o banco não dá erro, só devolve 0 linhas */
+  const r = t
+    ? await sb.from("alunos_notas").upsert({ aluno_id: alunoId, observacao: t },
+        { onConflict: "aluno_id" }).select("aluno_id, observacao, atualizado_em")
+    : await sb.from("alunos_notas").delete().eq("aluno_id", alunoId).select("aluno_id");
+  if (r.error) return { erro: r.error.message };
+  if (t && (!r.data || !r.data.length)) return { erro: "o banco não confirmou a gravação" };
+  return { linha: t ? r.data[0] : null };
+}
+
+function NotaInterna({ aluno }) {
+  const { toast } = usarUI();
+  const [nota, setNota]   = useState(undefined);   /* undefined = carregando */
+  const [falha, setFalha] = useState("");
+  const [edit, setEdit]   = useState(false);
+  const [txt, setTxt]     = useState("");
+  const [busy, setBusy]   = useState(false);
+  const [erro, setErro]   = useState("");
+
+  useEffect(() => {
+    let vivo = true;
+    setNota(undefined); setFalha(""); setEdit(false);
+    sb.from("alunos_notas").select("aluno_id, observacao, atualizado_em")
+      .eq("aluno_id", aluno.id).maybeSingle().then(r => {
+        if (!vivo) return;
+        if (r.error) { setFalha(r.error.message); setNota(null); return; }
+        setNota(r.data || null);
+      });
+    return () => { vivo = false; };
+  }, [aluno.id]);
+
+  function abrir() { setTxt(nota ? nota.observacao : ""); setErro(""); setEdit(true); }
+
+  async function salvar() {
+    if (busy) return;
+    setBusy(true); setErro("");
+    const r = await notaSalvar(aluno.id, txt);
+    setBusy(false);
+    if (r.erro) { setErro(r.erro); return; }
+    setNota(r.linha); setEdit(false);
+    toast(r.linha ? "Nota interna salva ✓" : "Nota interna apagada.");
+  }
+
+  if (nota === undefined) return null;
+  if (falha) return (
+    <div className="nt-int falha" title={falha}>
+      📝 nota interna indisponível: {/does not exist|schema cache/i.test(falha)
+        ? "a tabela alunos_notas ainda não existe (rodar o SQL 1)" : falha}
+    </div>
+  );
+
+  if (edit) return (
+    <div className="nt-int ed" onKeyDown={e => {
+      if (e.key === "Escape") { e.stopPropagation(); setEdit(false); }
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) salvar();
+    }}>
+      <div className="nt-lab">📝 Nota interna <i>só você vê · o aluno não tem acesso</i></div>
+      <textarea rows={3} autoFocus value={txt} maxLength={NOTA_MAX}
+        onChange={e => setTxt(e.target.value)}
+        placeholder="anotação sua sobre o aluno (vazio apaga a nota)" />
+      {erro && <div className="nt-err">{erro}</div>}
+      <div className="nt-acs">
+        <span>{txt.trim().length}/{NOTA_MAX}</span>
+        <button className="btn-sec" onClick={() => setEdit(false)} disabled={busy}>Cancelar</button>
+        <button onClick={salvar}
+          disabled={busy || txt.trim() === (nota ? nota.observacao : "")}>
+          {busy ? "Salvando..." : "Salvar"}
+        </button>
+      </div>
+    </div>
+  );
+
+  return nota ? (
+    <button className="nt-int" onClick={abrir} title="Editar nota interna (só você vê)">
+      <span className="nt-ic">📝</span>
+      <span className="nt-tx">{nota.observacao}</span>
+      <span className="nt-ed">editar</span>
+    </button>
+  ) : (
+    <button className="nt-int vazio" onClick={abrir}>+ nota interna <i>só você vê</i></button>
+  );
+}
+
 function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
   useEsc(true, onFechar);
   const { setAlunoId } = usarAluno();
@@ -5459,6 +5585,7 @@ function DrawerAnamnese({ aluno, onFechar, modoInicial }) {
             <button onClick={() => irPara("volume")}>Volume ↗</button>
           </div>
           <CardDesafio aluno={aluno} onDores={() => setModo("dores")} />
+          <NotaInterna aluno={aluno} />
         </div>
 
         <div className="dr-acoes">
@@ -6946,7 +7073,7 @@ function ModalNovoAluno({ onFechar, onCriado, inicial }) {
   const [anCat, setAnCat]     = useState([]);
   /* cada passo da criação roda uma vez só: se algo falhar depois da ficha,
      "Concluir" retoma dali sem duplicar o aluno */
-  const passo = React.useRef({ aluno: null, academia: false, anamnese: false });
+  const passo = React.useRef({ aluno: null, academia: false, anamnese: false, nota: false });
   const [criarAcesso, setCriarAcesso] = useState(false);
   const [senha, setSenha] = useState("");
   const [mods, setMods]   = useState([]);
@@ -7013,13 +7140,21 @@ function ModalNovoAluno({ onFechar, onCriado, inicial }) {
           email: email.trim() || null,
           telefone: tel.trim() || null,
           nascimento: nasc || null,
-          sexo: sexo || null,
-          observacao: obs.trim() || null
+          sexo: sexo || null
         }).select("id").single();
         if (ins.error) throw new Error(ins.error.message);
         P.aluno = ins.data.id;
       }
       const alunoId = P.aluno;
+
+      /* nota interna mora em alunos_notas (só treinador lê). Antes ficava em
+         alunos.observacao, que o aluno conseguia ler pela API (15/11/2026). */
+      if (obs.trim() && !P.nota) {
+        const nt = await notaSalvar(alunoId, obs);
+        if (nt.erro) throw new Error("Ficha criada, mas a observação interna não foi salva: " +
+          nt.erro + ". Clique em Concluir para tentar de novo.");
+        P.nota = true;
+      }
 
       if (acId && !P.academia) {
         const v = await sb.from("aluno_academias")
@@ -7144,7 +7279,7 @@ function ModalNovoAluno({ onFechar, onCriado, inicial }) {
             value={acId} onChange={setAcId} placeholder="Buscar academia..." />
 
           <div className="ed-lab">Observação interna</div>
-          <textarea value={obs} rows={2} onChange={e => setObs(e.target.value)}
+          <textarea value={obs} rows={2} maxLength={NOTA_MAX} onChange={e => setObs(e.target.value)}
             placeholder="anotação sua, o aluno não vê" />
 
           <div className="ed-lab">
@@ -15904,6 +16039,7 @@ function montarFeed(raw) {
   const tr  = new Map((raw.treinos || []).map(t => [t.id, t]));
   const ex  = new Map((raw.exercicios || []).map(e => [e.id, e]));
   const dr  = new Map((raw.dores || []).map(d => [d.id, d]));
+  const bl  = new Map((raw.bilhetes || []).map(b => [b.id, b]));
   const out = [];
   const nomeTreino = (id, alunoId) =>
     feedSemAluno((tr.get(id) || {}).nome || "", (al.get(alunoId) || {}).nome);
@@ -15919,6 +16055,23 @@ function montarFeed(raw) {
     const texto = String(r.texto || "").trim();
     if (!texto) continue;
     const geral = !r.exercicio_id && !r.exercicio_nome;
+    /* resposta ao recado: continua "relato_geral" de propósito, para entrar
+       igual na revisão da semana e no "inserir na Anamnese". Só muda a frase
+       e ganha o texto do recado junto. */
+    if (r.bilhete_id) {
+      const b = bl.get(r.bilhete_id);
+      push({
+        key: "rel:" + r.id, tipo: "relato_geral", recado: true,
+        recado_texto: b ? String(b.texto || "") : null,
+        relato_id: r.id, exercicio_id: null,
+        aluno_id: r.aluno_id, treino_id: null,
+        data: r.data || feedDiaDe(r.created_at),
+        reg: feedMs(r.created_at) || feedMsDia(r.data),
+        alvo: b && b.tipo !== "aniversario" ? "recado" : "recado de aniversário",
+        sub: "", orfao: false, tag: "resposta ao recado", texto, cor: null
+      });
+      continue;
+    }
     push({
       key: "rel:" + r.id, tipo: geral ? "relato_geral" : "relato_ex",
       /* relato_id e exercicio_id: usados pelo Acompanhamento (revisar e
@@ -16069,7 +16222,8 @@ function montarFeed(raw) {
 function feedFrase(it) {
   switch (it.tipo) {
     case "relato_ex":    return ["fez observação no ", it.alvo];
-    case "relato_geral": return ["fez observação sobre o ", it.alvo];
+    case "relato_geral": return it.recado ? ["respondeu o ", it.alvo]
+                                          : ["fez observação sobre o ", it.alvo];
     case "dor":          return ["relatou dor " + it.valor + "/10 no ", it.alvo];
     case "semaforo":     return ["sinalizou o treino como ", it.alvo];
     case "retro":        return ["disse que a dor ", it.alvo];
@@ -16109,11 +16263,25 @@ async function carregarFeed() {
       return r.data || [];
     } catch (e) { falhas.push(nome + ": " + e.message); return []; }
   };
+  /* relatos.bilhete_id (resposta ao recado) nasce pelo SQL do App. Até a
+     coluna existir, a leitura com ela falha: aí lê sem ela, em silêncio,
+     para o feed não perder TODOS os relatos por causa de uma coluna. */
+  const lerRelatos = async () => {
+    const cols = "id, aluno_id, treino_id, exercicio_id, exercicio_nome, data, texto, created_at";
+    const q = c => sb.from("relatos").select(c)
+      .gte("data", corte).order("data", { ascending: false }).limit(1000);
+    try {
+      const r = await q(cols + ", bilhete_id");
+      if (!r.error) return r.data || [];
+      if (!/bilhete_id/.test(r.error.message || "")) {
+        falhas.push("relatos: " + r.error.message); return [];
+      }
+    } catch (e) { falhas.push("relatos: " + e.message); return []; }
+    return pega("relatos", q(cols));
+  };
   const [relatos, logs, semaforo, retro, checkins, avaliacoes, redflags, alunos, desafios] =
     await Promise.all([
-      pega("relatos", sb.from("relatos")
-        .select("id, aluno_id, treino_id, exercicio_id, exercicio_nome, data, texto, created_at")
-        .gte("data", corte).order("data", { ascending: false }).limit(1000)),
+      lerRelatos(),
       pega("logs", sb.from("logs")
         .select("id, exercicio_id, aluno_id, cardapio_id, exercicio_nome, data, serie, dor, dor_local, dor_lado, criado_em")
         .gte("data", corte).gte("dor", FEED_DOR_MIN).limit(2000)),
@@ -16153,9 +16321,16 @@ async function carregarFeed() {
     dores = await feedPorIds("dores", "id, regiao, vista, apelido",
       [...semaforo, ...retro, ...checkins].map(x => x.dor_id));
   } catch (e) { falhas.push(e.message); }
+  /* texto do recado que o aluno respondeu (a tabela pode ter apagado:
+     a resposta continua, só sem o recado junto) */
+  let bilhetes = [];
+  try {
+    bilhetes = await feedPorIds("bilhetes", "id, tipo, texto, exibir_em",
+      relatos.map(r => r.bilhete_id));
+  } catch (e) { falhas.push(e.message); }
 
   const itens = montarFeed({ relatos, logs, semaforo, retro, checkins,
-    avaliacoes, redflags, alunos, exercicios, treinos, dores, desafios, fases });
+    avaliacoes, redflags, alunos, exercicios, treinos, dores, desafios, fases, bilhetes });
   /* retrospectiva buscou 7 dias a mais (a data do filtro é a do treino
      avaliado, não a da resposta); corta aqui pela data exibida */
   return { itens: itens.filter(i => !i.data || i.data >= corte), falhas };
@@ -16292,6 +16467,12 @@ function FeedLinha({ it, nova, hoje, aberto, onClick, onFicha, onTreino, piscar 
           </div>
         )}
         {ehObs && it.sub && <div className="fd-sb">{it.sub}</div>}
+        {aberto && it.recado && (
+          <div className="fd-rc">
+            <small>Seu recado</small>
+            {it.recado_texto || <i>o recado foi apagado; a resposta ficou</i>}
+          </div>
+        )}
         {aberto && (
           <div className="fd-ac" onClick={e => e.stopPropagation()}>
             <button className="btn-sec cr-mini" onClick={onFicha}>
@@ -16973,7 +17154,7 @@ function DrawerBilhete({ it, hoje, onFechar, onSalvo, onEncerrarTeste }) {
 
           <div className="ed-lab">Prévia <i>o visual final é do App</i></div>
           <div className="bl-prev">
-            <small>Bilhete do seu treinador</small>
+            <small>Recado do {TREINADOR_NOME}</small>
             {t || <span style={{ color: "var(--mut)" }}>(vazio)</span>}
           </div>
 
