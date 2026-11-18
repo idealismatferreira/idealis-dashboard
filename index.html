@@ -3230,6 +3230,41 @@
   .ag-motivo{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
   .ag-motivo input{flex:1 1 200px;margin:0}
   .ag-motivo.off{opacity:.5}
+  .ag-mover{position:fixed;z-index:85;background:var(--card);border:1px solid var(--line2);border-radius:14px;
+    padding:14px 16px 14px;box-shadow:0 16px 40px rgba(0,0,0,.55)}
+  .ag-mover-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+  .ag-mover-cor{width:12px;height:12px;border-radius:3px;margin-top:4px;flex:none;background:var(--accent)}
+  .ag-mover-cor.reposicao{background:#a78bfa}
+  .ag-mover-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+  .ag-mover-t b{font-size:16px;font-weight:600}
+  .ag-mover-t span{font-size:12px;color:var(--mut)}
+  .ag-mover-x{width:auto;background:none;border:none;color:var(--mut);font-size:20px;padding:0 2px;line-height:1}
+  .ag-mover-x:hover{color:var(--txt);filter:none}
+  .ag-mover-linha{display:flex;align-items:center;gap:8px;padding:5px 0}
+  .ag-mover-ic{width:22px;text-align:center;font-size:14px;opacity:.75}
+  .ag-mover-dl{font-size:12.5px;color:var(--mut)}
+  .ag-mover-hora{width:auto;padding:6px 10px;font-size:14px;font-family:var(--num);font-weight:600;border-radius:8px;
+    background:var(--bg);color:var(--txt);border:1px solid var(--line)}
+  .ag-mover-hora:hover,.ag-mover-hora.on{border-color:var(--accent);filter:none}
+  .ag-mover-traco{color:var(--mut)}
+  .ag-mover-lista{margin:4px 0 4px 30px;max-height:196px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--bg);padding:4px}
+  .ag-mover-op{width:100%;display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:6px 10px;
+    background:none;border:none;border-radius:7px;color:var(--txt);font-weight:400;text-align:left}
+  .ag-mover-op:hover{background:color-mix(in srgb,var(--accent) 10%,transparent);filter:none}
+  .ag-mover-op b{font-family:var(--num);font-size:13.5px;font-weight:600}
+  .ag-mover-op span{font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ag-mover-op.ocup b{color:var(--mut);font-weight:500}
+  .ag-mover-op.ocup span{color:var(--warn)}
+  .ag-mover-op.sel{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+  .ag-mover-op.atual span::after{content:" · horário atual";color:var(--mut)}
+  .ag-mover-st{margin:8px 0 0 30px;font-size:12.5px;color:#4ade80}
+  .ag-mover-st.ocup{color:var(--warn)}
+  .ag-mover-dica{margin:2px 0 0 30px;font-size:11.5px;color:var(--mut)}
+  .ag-mover-acoes{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+  .ag-mover-acoes button{width:auto;padding:8px 16px;font-size:13px}
+  .ag-b.fantasma.mover{border-color:var(--accent);border-left-color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 8%,transparent)}
   @media (max-width: 760px){
     .ag-rep-resumo b{font-size:20px}
   }
@@ -24756,7 +24791,8 @@ function PainelAgendaPersonal() {
   const [agoraMin, setAgoraMin] = useState(() => agMinAgora());
   const [menu, setMenu] = useState(null);       /* { b, x, y } aula, avulsa ou desmarcada */
   const [diaMenu, setDiaMenu] = useState(null); /* { dia, x, y } */
-  const [encaixe, setEncaixe] = useState(null); /* { falta } repor | { av } mover avulsa */
+  const [encaixe, setEncaixe] = useState(null); /* { falta } repor | { av, pos } mover avulsa */
+  const [previa, setPrevia] = useState(null);   /* { data, ini, fim } do editor de horário */
   const [repAluno, setRepAluno] = useState(null);
   const [verRepor, setVerRepor] = useState(false);
   const [ajustes, setAjustes] = useState(false);
@@ -24924,7 +24960,8 @@ function PainelAgendaPersonal() {
   function abrirAula(b, e) {
     if (encaixe) return;
     if (!temRep && b.tipo === "aula") { setEdit({ h: b.h, dia: b.dia, hora: agHora(b.ini), data: b.data }); return; }
-    setMenu({ b, x: e.clientX + 6, y: e.clientY + 6 });
+    const rc = e.currentTarget.getBoundingClientRect();
+    setMenu({ b, x: e.clientX + 6, y: e.clientY + 6, rl: rc.left, rr: rc.right });
   }
 
   /* ---------- reposição: encaixar na grade (repor uma falta ou mover avulsa) ---------- */
@@ -24945,10 +24982,14 @@ function PainelAgendaPersonal() {
     const r = await agGravarEncaixe(encaixe, data, ini, dur, horarios);
     if (r.erro) { toast(r.erro, "erro"); return; }
     toast((encaixe.falta ? "Reposição marcada: " : "Aula movida: ") + agDataCurta(data) + " " + agHora(ini));
-    setEncaixe(null);
+    fimEncaixe();
     if (agSegundaDe(data) !== segunda) setSegunda(agSegundaDe(data)); else carregar();
   }
-  function iniciarEncaixe(x) { setMenu(null); setEncaixe(x); carregar(); }
+  function iniciarEncaixe(x) {
+    const pos = menu ? { x: menu.x, y: menu.y, rl: menu.rl, rr: menu.rr } : null;
+    setMenu(null); setPrevia(null); setEncaixe(x.av ? { ...x, pos } : x); carregar();
+  }
+  function fimEncaixe() { setEncaixe(null); setPrevia(null); }
   function abrirMontagem(e, m) {
     e.stopPropagation();
     setPop({ m, x: e.clientX + 6, y: e.clientY + 6 });
@@ -25002,11 +25043,16 @@ function PainelAgendaPersonal() {
           funcionando sem ele.
         </div>
       )}
-      {encaixe && vista === "semana" && (
+      {encaixe && encaixe.av && vista === "semana" && (
+        <AgEditorMover av={encaixe.av} pos={encaixe.pos} alunoPor={alunoPor} hoje={hoje}
+          onPrevia={setPrevia} onFechar={fimEncaixe}
+          onSalvar={(data, ini, dur) => encaixar2(data, ini, dur, true)} />
+      )}
+      {encaixe && encaixe.falta && vista === "semana" && (
         <AgBannerEncaixe encaixe={encaixe} alunoPor={alunoPor} ctx={{ horarios, idx, alunoPor,
           capacidade: cfg.capacidade, feriados: cfg.feriados_nacionais }} hoje={hoje}
           onEscolher={(data, ini, dur) => encaixar2(data, ini, dur, true)}
-          onCancelar={() => { setEncaixe(null); if (encaixe.falta) toast("Ficou no saldo de reposição."); }} />
+          onCancelar={() => { fimEncaixe(); toast("Ficou no saldo de reposição."); }} />
       )}
       {conflitos > 0 && vista === "semana" && (
         <div className="ag-aviso">⚠ {conflitos} {conflitos === 1 ? "horário batendo" : "horários batendo"} nesta
@@ -25114,7 +25160,8 @@ function PainelAgendaPersonal() {
                       const dur = b.fim - b.ini;
                       const cls = "ag-b " + b.tipo + (L.conflito ? " bate" : "") +
                         (b.vermelho ? " verm" : "") + (b.inativo ? " inat" : "") +
-                        (dur < 40 ? " curto" : "") + (arr && arr.key === b.key ? " eu" : "");
+                        (dur < 40 ? " curto" : "") + (arr && arr.key === b.key ? " eu" : "") +
+                        (encaixe && encaixe.av && b.av && b.av.id === encaixe.av.id ? " eu" : "");
                       const quinz = b.tipo === "aula" && Number(b.h.a_cada_semanas) > 1;
                       return (
                         <div key={b.key} className={cls}
@@ -25137,6 +25184,13 @@ function PainelAgendaPersonal() {
                         </div>
                       );
                     })}
+                    {previa && previa.data === data && encaixe && encaixe.av && (
+                      <div className="ag-b fantasma mover" style={{ top: (previa.ini - faixa[0]) * AG_PX,
+                        height: Math.max(16, (previa.fim - previa.ini) * AG_PX - 2), left: "2px", width: "calc(100% - 4px)" }}>
+                        <b>{(alunoPor.get(encaixe.av.aluno_id) || {}).nome || ""}</b>
+                        <span>{agHora(previa.ini)}–{agHora(previa.fim)}</span>
+                      </div>
+                    )}
                     {alvo && !alvo.enc && alvo.dia === dia && arr && (
                       <div className="ag-b fantasma" style={{ top: (alvo.ini - faixa[0]) * AG_PX,
                         height: cfg.duracao_montagem * AG_PX - 2, left: "2px", width: "calc(100% - 4px)" }}>
@@ -25620,8 +25674,8 @@ async function agGravarEncaixe(enc, data, ini, dur, horarios) {
       duracao_min: dur, academia_id: h ? h.academia_id || null : null });
     return q.error ? { erro: q.error.message } : {};
   }
-  const q = await sb.from("agenda_aulas").update({ data, hora: agHora(ini), atualizado_em: new Date().toISOString() })
-    .eq("id", enc.av.id);
+  const q = await sb.from("agenda_aulas").update({ data, hora: agHora(ini), duracao_min: dur,
+    atualizado_em: new Date().toISOString() }).eq("id", enc.av.id);
   return q.error ? { erro: q.error.message } : {};
 }
 function agAmanha(hoje) { return dISO(addDias(parseISO(hoje), 1)); }
@@ -26458,6 +26512,130 @@ function DrawerAjustesAgenda({ cfgBruta, motivos, onFechar, onSalvo }) {
         </div>
       </div>
     </>
+  );
+}
+
+/* ---------- editor "Mudar horário" (inspirado no Google Agenda) ----------
+   Cartão flutuante perto da aula: data, início e fim. Clicar no horário abre
+   a lista de horários perto da aula, com livre/ocupado. Clicar num espaço
+   vazio da grade continua movendo direto. Prévia tracejada na grade. */
+function AgEditorMover({ av, pos, alunoPor, hoje, onPrevia, onSalvar, onFechar }) {
+  const { confirmar } = usarUI();
+  useEsc(true, onFechar);
+  const ini0 = agMin(av.hora), dur0 = Number(av.duracao_min) || 60;
+  const [data, setData] = useState(av.data);
+  const [ini, setIni] = useState(ini0);
+  const [dur, setDur] = useState(dur0);
+  const [lista, setLista] = useState(null);     /* "ini" | "fim" */
+  const [ctx, setCtx] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const selRef = React.useRef(null);
+  const a = alunoPor.get(av.aluno_id);
+
+  useEffect(() => {
+    let vivo = true;
+    agCarregarFuturo(av.data < hoje ? av.data : hoje).then(fut => {
+      if (!vivo) return;
+      const l = fut.idx.avulsasPorData.get(av.data);
+      if (l) fut.idx.avulsasPorData.set(av.data, l.filter(x => x.id !== av.id));
+      setCtx({ horarios: fut.horarios, idx: fut.idx, alunoPor, capacidade: fut.cfg.capacidade,
+               feriados: fut.cfg.feriados_nacionais });
+    });
+    return () => { vivo = false; };
+  }, [av.id]);
+  useEffect(() => { onPrevia({ data, ini, fim: ini + dur }); }, [data, ini, dur]);
+  useEffect(() => { if (selRef.current) selRef.current.scrollIntoView({ block: "center" }); }, [lista]);
+
+  const motivo = (d, i, du) => ctx ? agMotivoOcupado(ctx, d, i, i + du, [], av.aluno_id) : "";
+  const status = motivo(data, ini, dur);
+  const mudou = data !== av.data || ini !== ini0 || dur !== dur0;
+
+  /* horários perto da aula: 3h antes e depois, de 15 em 15 */
+  const inicios = [];
+  for (let t = Math.max(0, Math.floor((ini0 - 180) / 15) * 15); t <= Math.min(1440 - dur, ini0 + 180); t += 15) inicios.push(t);
+  if (!inicios.includes(ini)) inicios.push(ini);
+  inicios.sort((x, y) => x - y);
+  const fins = [];
+  for (let du = 15; du <= 180 && ini + du <= 1440; du += 15) fins.push(du);
+  if (!fins.includes(dur)) { fins.push(dur); fins.sort((x, y) => x - y); }
+
+  async function salvar() {
+    if (!mudou) { onFechar(); return; }
+    if (status) {
+      const ok = await confirmar({ titulo: "Marcar mesmo assim?", ok: "Marcar mesmo assim",
+        texto: agDataCurta(data) + " " + agHora(ini) + ": " + status + "." });
+      if (!ok) return;
+    }
+    setBusy(true);
+    await onSalvar(data, ini, dur);
+    setBusy(false);
+  }
+
+  const w = 340;
+  /* abre do lado da aula, sem cobrir a coluna onde ela está (a prévia fica visível) */
+  const rl = pos && pos.rl != null ? pos.rl : pos ? pos.x : 0, rr = pos && pos.rr != null ? pos.rr : pos ? pos.x : 0;
+  const lado = !pos ? (window.innerWidth - w) / 2 : rr > window.innerWidth / 2 ? rl - w - 12 : rr + 12;
+  const left = Math.max(8, Math.min(lado, window.innerWidth - w - 8));
+  const top = pos ? Math.max(8, Math.min(pos.y, window.innerHeight - 330)) : 120;
+  const dataLonga = AG_DIA_LONGO[agDiaSemana(data)] + ", " + Number(data.slice(8, 10)) + " de " +
+    ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"][Number(data.slice(5, 7)) - 1];
+  return (
+    <div className="ag-mover" style={{ left, top, width: w }} role="dialog" aria-label="Mudar horário">
+      <div className="ag-mover-top">
+        <span className={"ag-mover-cor " + av.tipo} />
+        <div className="ag-mover-t">
+          <b>{a ? a.nome : "Aula"}</b>
+          <span>{av.tipo === "reposicao" ? "Reposição" : "Aula extra"} · hoje em {agDataCurta(av.data)} {agHora(ini0)}</span>
+        </div>
+        <button className="ag-mover-x" onClick={onFechar} aria-label="Fechar">×</button>
+      </div>
+
+      <div className="ag-mover-linha">
+        <span className="ag-mover-ic">🗓</span>
+        <SeletorData value={data} onChange={v => v && setData(v)} title="Data" className="ag-mover-data" />
+        <span className="ag-mover-dl">{dataLonga}</span>
+      </div>
+      <div className="ag-mover-linha">
+        <span className="ag-mover-ic">🕒</span>
+        <button type="button" className={"ag-mover-hora" + (lista === "ini" ? " on" : "")}
+          onClick={() => setLista(lista === "ini" ? null : "ini")}>{agHora(ini)}</button>
+        <span className="ag-mover-traco">–</span>
+        <button type="button" className={"ag-mover-hora" + (lista === "fim" ? " on" : "")}
+          onClick={() => setLista(lista === "fim" ? null : "fim")}>{agHora(ini + dur)}</button>
+        <span className="ag-mover-dl">{dur} min</span>
+      </div>
+      {lista && (
+        <div className="ag-mover-lista" role="listbox">
+          {lista === "ini" ? inicios.map(t => {
+            const m = motivo(data, t, dur);
+            return (
+              <button key={t} type="button" ref={t === ini ? selRef : null}
+                className={"ag-mover-op" + (t === ini ? " sel" : "") + (m ? " ocup" : "") + (t === ini0 && data === av.data ? " atual" : "")}
+                onClick={() => { setIni(t); setLista(null); }} title={m || "livre"}>
+                <b>{agHora(t)}</b><span>{m ? m.replace(/^ocupado \((.*)\)$/, "$1") : "livre"}</span>
+              </button>
+            );
+          }) : fins.map(du => {
+            const m = motivo(data, ini, du);
+            return (
+              <button key={du} type="button" ref={du === dur ? selRef : null}
+                className={"ag-mover-op" + (du === dur ? " sel" : "") + (m ? " ocup" : "")}
+                onClick={() => { setDur(du); setLista(null); }}>
+                <b>{agHora(ini + du)}</b><span>{du < 60 ? du + " min" : agHorasTexto(du)}{m ? " · bate" : ""}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div className={"ag-mover-st" + (status ? " ocup" : "")}>
+        {!ctx ? "conferindo a agenda…" : status ? "⚠ " + status : "✓ horário livre"}
+      </div>
+      <div className="ag-mover-dica">ou clique num horário livre da grade</div>
+      <div className="ag-mover-acoes">
+        <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+        <button onClick={salvar} disabled={busy}>{busy ? "Salvando…" : "Salvar"}</button>
+      </div>
+    </div>
   );
 }
 
