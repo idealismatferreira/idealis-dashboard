@@ -3017,6 +3017,122 @@
     .fn-tr.c4a{grid-template-columns:.9fr 1.3fr 1fr auto}
     .fn-tr.c4a span:nth-child(3){display:none}
   }
+  /* ============ AGENDA DO PERSONAL (17/11/2026) ============
+     Escopada em .ag-*. Aula = ciano (accent), montagem = lima (marca),
+     batendo = contorno vermelho + ⚠ (nunca só cor). 1 px por minuto. */
+  .ag-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .ag-bar > .btn-sec{padding:7px 13px}
+  .ag-sem{font-family:var(--num);font-size:17px;margin-left:6px}
+  .ag-res{color:var(--mut);font-size:12.5px}
+  .ag-res em{font-style:normal;color:var(--marca)}
+  .ag-dir{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .ag-vistas{margin-bottom:0}
+  .ag-vistas button{padding:5px 12px;font-size:12px;white-space:nowrap}
+  .ag-add{width:auto;padding:8px 14px;font-size:13px}
+  .ag-aviso{background:#2d1618;border:1px solid #5c2427;color:#f5b3b3;border-radius:8px;
+    padding:8px 12px;font-size:12.5px;margin:0 0 12px}
+  .ag-leg{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;
+    color:var(--mut);margin:0 0 8px}
+  .ag-leg span{display:inline-flex;align-items:center;gap:6px}
+  .ag-sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .ag-sw.aula{background:color-mix(in srgb,var(--accent) 22%,var(--card));border-left:3px solid var(--accent)}
+  .ag-sw.montagem{background:color-mix(in srgb,var(--marca) 16%,var(--card));border-left:3px solid var(--marca)}
+  .ag-sw.bate{background:var(--card);box-shadow:inset 0 0 0 2px var(--alert)}
+  .ag-dica{margin-left:auto;font-style:italic}
+
+  .ag-grade{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden}
+  .ag-linha{display:grid;grid-template-columns:52px repeat(var(--ag-dias),minmax(0,1fr))}
+  .ag-cabs{border-bottom:1px solid var(--line)}
+  .ag-dcab{padding:9px 8px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:1px;min-width:0}
+  .ag-dcab b{font-size:13px}
+  .ag-dcab span{font-size:11px;color:var(--mut)}
+  .ag-dcab.hoje b{color:var(--accent)}
+  .ag-encs{border-bottom:1px solid var(--line);background:var(--bg)}
+  .ag-canto-enc{font-size:10px;color:var(--mut);padding:8px 4px;line-height:1.2;text-align:center}
+  .ag-enc{border-left:1px solid var(--line);padding:6px;min-height:40px;display:flex;flex-wrap:wrap;
+    gap:4px;align-content:flex-start;min-width:0}
+  .ag-enc.alvo{background:color-mix(in srgb,var(--marca) 10%,transparent);outline:1px dashed var(--marca);outline-offset:-3px}
+  .ag-chip{width:auto;max-width:100%;padding:4px 8px;font-size:11.5px;font-weight:600;border-radius:6px;
+    background:color-mix(in srgb,var(--marca) 10%,var(--card));color:var(--txt);
+    border:1px dashed color-mix(in srgb,var(--marca) 55%,transparent);cursor:grab;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;gap:4px;align-items:center}
+  .ag-chip:hover{border-style:solid;filter:none}
+  .ag-chip.verm{border-color:var(--alert)}
+  .ag-chip.eu{opacity:.4}
+  .ag-cuid{color:var(--warn);display:inline-flex}
+
+  .ag-corpo{position:relative}
+  .ag-horas{position:relative}
+  .ag-horas span{position:absolute;right:7px;transform:translateY(-50%);font-size:10px;color:var(--mut);
+    font-family:var(--num)}
+  .ag-horas span:first-child{transform:none;top:2px!important}
+  .ag-dia{position:relative;border-left:1px solid var(--line);min-width:0;cursor:copy;
+    background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px 30px,
+      color-mix(in srgb,var(--line) 45%,transparent) 30px 31px,transparent 31px 60px)}
+  .ag-dia.hoje{background-color:color-mix(in srgb,var(--accent) 4%,transparent)}
+  .ag-grade.arrastando .ag-dia{cursor:grabbing}
+  .ag-b{position:absolute;border-radius:6px;padding:3px 6px;overflow:hidden;cursor:pointer;
+    display:flex;flex-direction:column;gap:1px;font-size:11px;line-height:1.25;z-index:1;
+    background:color-mix(in srgb,var(--accent) 16%,var(--card));border-left:3px solid var(--accent);
+    color:var(--txt);transition:filter .12s}
+  .ag-b:hover{filter:brightness(1.15);z-index:3}
+  .ag-b b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ag-b span{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ag-b.curto{flex-direction:row;align-items:center;gap:6px;padding-top:1px;padding-bottom:1px}
+  .ag-b.curto span{font-size:10px}
+  .ag-b.montagem{background:color-mix(in srgb,var(--marca) 13%,var(--card));border-left-color:var(--marca);cursor:grab}
+  .ag-b.verm{border-left-color:var(--alert)}
+  .ag-b.bate{box-shadow:inset 0 0 0 2px var(--alert)}
+  .ag-b.inat{opacity:.55}
+  .ag-b.eu{opacity:.35}
+  .ag-b.fantasma{background:transparent;border:1px dashed var(--marca);border-left:3px solid var(--marca);
+    pointer-events:none;z-index:4}
+  .ag-tag{font-style:normal;font-size:9.5px;margin-left:5px;padding:0 5px;border-radius:7px;
+    background:var(--bg);color:var(--mut);border:1px solid var(--line)}
+  .ag-agora{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--alert);z-index:5;pointer-events:none}
+  .ag-agora::before{content:"";position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;
+    background:var(--alert)}
+  .ag-carr{color:var(--mut);font-size:12px;margin-top:8px}
+  .ag-dias-cel{margin-bottom:10px}
+  .ag-dias-cel i{font-style:normal;color:var(--mut)}
+
+  .ag-pop{position:fixed;z-index:80;background:var(--card);border:1px solid var(--line2);border-radius:12px;
+    padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+  .ag-pop-t{font-weight:700;font-size:14px;margin-bottom:3px}
+  .ag-pop-s{color:var(--mut);font-size:11.5px;line-height:1.45}
+  .ag-pop .ed-lab{margin-top:10px}
+  .ag-pop .fn-link{margin-top:8px}
+  .ag-livres{max-height:132px;overflow-y:auto}
+  .ag-verm-txt{color:var(--alert)}
+
+  .ag-ed-linha{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+  .ag-ed-linha input[type=time]{width:130px}
+  .ag-ed-fim{color:var(--mut);font-size:12px;padding-bottom:9px}
+  .ag-ed-fim b{color:var(--txt)}
+  .ag-ed-min{width:90px!important;margin:0!important;padding:5px 8px!important}
+  .ag-ed-fim-bloco{margin-top:26px;padding-top:14px;border-top:1px solid var(--line)}
+  .ag-ed-fim-bloco .btn-sec{padding:8px 14px}
+  .ag-fase2{margin-top:12px;text-align:center}
+
+  .ag-lista-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .ag-lista-top .busca-alunos{margin:0}
+  .ag-vz{color:var(--mut);padding:30px;text-align:center;border:1px dashed var(--line);border-radius:12px}
+  .ag-al{display:grid;grid-template-columns:220px 1fr;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);
+    align-items:center}
+  .ag-al-n{font-weight:600;font-size:13.5px}
+  .ag-al-hs{display:flex;gap:8px;flex-wrap:wrap}
+  .ag-al-h{width:auto;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:8px;
+    padding:6px 10px;text-align:left;display:flex;flex-direction:column;gap:1px;font-weight:400}
+  .ag-al-h:hover{border-color:var(--accent);filter:none}
+  .ag-al-h b{font-size:12.5px;font-family:var(--num)}
+  .ag-al-h span{font-size:11px;color:var(--mut)}
+  .ag-al-h.fim{opacity:.5}
+  @media (max-width: 760px){
+    .ag-dir{margin-left:0;width:100%;justify-content:space-between}
+    .ag-leg .ag-dica{display:none}
+    .ag-linha{grid-template-columns:44px minmax(0,1fr)}
+    .ag-al{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -7179,7 +7295,7 @@ function ModalNovoAluno({ onFechar, onCriado, inicial }) {
         const fc = await sb.rpc("fin_salvar_contrato", { p_aluno: alunoId, p_data: hojeFuso(),
           ...finR.args, p_base: false, p_obs: null });
         if (fc.error) avisoFin = " Valor NÃO salvo (" + finMsgErro(fc.error) +
-          "): preencha na aba Admin.";
+          "): preencha na aba Administrativo.";
       }
 
       let extra = "";
@@ -7269,7 +7385,7 @@ function ModalNovoAluno({ onFechar, onCriado, inicial }) {
               <FinValores planos={fin.planos} precos={fin.precos} v={fv}
                 setV={x => { setFvMexeu(true); setFv(x); }} />
               <div className="ed-cnt">
-                financeiro · opcional · entra como aluno novo hoje (dá para preencher depois na aba Admin)
+                financeiro · opcional · entra como aluno novo hoje (dá para preencher depois na aba Administrativo)
               </div>
             </div>
           )}
@@ -16600,7 +16716,7 @@ function SinoFeed() {
                   </button>
                 ))}
                 {filas.length > 15 && (
-                  <div className="fd-vz">+{filas.length - 15} na Fila do Admin</div>
+                  <div className="fd-vz">+{filas.length - 15} na Fila do Administrativo</div>
                 )}
               </>
             )}
@@ -20393,7 +20509,7 @@ function ModalSaida({ aluno, onFechar, onFeito }) {
             desde {dBR(aberto.inicio)}.</p>
         ) : (
           <div className="conf-al">⚠️ Sem valor cadastrado: a saída não entra nas métricas.
-            Se quiser que conte, cadastre o valor na aba Admin antes.</div>
+            Se quiser que conte, cadastre o valor na aba Administrativo antes.</div>
         )}
         {erro && <div className="err">{erro}</div>}
         {aberto && !falta && (
@@ -22348,7 +22464,7 @@ function FilaListas({ cats, mots, onSalvo }) {
 /* Financeiro | Fila de alunos */
 function AdminVistas({ vista, setVista, retomar }) {
   return (
-    <div className="fn-vistas" role="tablist" aria-label="Admin">
+    <div className="fn-vistas" role="tablist" aria-label="Administrativo">
       <button role="tab" aria-selected={vista === "fin"} className={vista === "fin" ? "on" : ""}
         onClick={() => setVista("fin")}>Financeiro</button>
       <button role="tab" aria-selected={vista === "fila"} className={vista === "fila" ? "on" : ""}
@@ -23016,10 +23132,10 @@ function PainelBackup() {
    (barra lateral agrupada) e ganham ícone. Grupo = só organização visual. */
 const NAV_GRUPOS = [
   ["Operação",   [["inicio", "Início", "home"], ["alunos", "Alunos", "users"],
-                  ["trocas", "Trocas", "cal"]]],
+                  ["trocas", "Agenda", "cal"]]],
   ["Prescrição", [["montagem", "Treinos", "dumb"], ["planejamento", "Planejamento", "plan"],
                   ["volume", "Volume", "vol"], ["catalogo", "Catálogo", "book"]]],
-  ["Gestão",     [["admin", "Admin", "wal"], ["acessos", "Acessos", "key"],
+  ["Gestão",     [["admin", "Administrativo", "wal"], ["acessos", "Acessos", "key"],
                   ["aparelhos", "Aparelhos Geral", "grid"]]]
 ];
 const NAV_IC = {
@@ -23147,6 +23263,8 @@ function tcMontar(raw) {
       nome: m.aluno_id ? (a ? a.nome : "(aluno removido)") : String(m.nome_livre || "").trim(),
       vence: m.vence_em || dISO(addDias(parseISO(m.semana), -1)),
       fixo: m.dia_montagem || null, cor: m.cor || null, incerto: !!m.incerto,
+      /* hora em que a montagem foi encaixada na Agenda do Personal */
+      hora: m.hora_montagem || null,
       nota: m.nota || "", oculto: !!m.oculto, criado: m.criado_em || "",
       ordem: m.ordem == null ? null : m.ordem, montado: false
     });
@@ -23170,6 +23288,7 @@ function tcMontar(raw) {
       vence: f.fim,
       /* dia escolhido para outra semana não vale se o fim da fase mudou */
       fixo: aj && aj.semana === semana ? (aj.dia_montagem || null) : null,
+      hora: aj && aj.semana === semana ? (aj.hora_montagem || null) : null,
       cor: aj ? aj.cor || null : null, incerto: !!(aj && aj.incerto),
       nota: aj ? aj.nota || "" : "", oculto: !!(aj && aj.oculto),
       ordem: aj && aj.semana === semana && aj.ordem != null ? aj.ordem : null,
@@ -23663,6 +23782,7 @@ function PainelTrocas() {
           if (semana !== it.semana) {
             campos.semana = semana;
             campos.vence_em = dISO(addDias(parseISO(semana), -1));
+            if (manuais.some(m => "hora_montagem" in m)) campos.hora_montagem = null;
           }
         } else {
           if (!x.diaFixo) campos.dia_montagem = dd;
@@ -23733,7 +23853,9 @@ function PainelTrocas() {
 
   function mover(it, dias) {
     const nova = dISO(addDias(parseISO(it.semana), dias));
-    salvar(it, { semana: nova, vence_em: dISO(addDias(parseISO(nova), -1)), dia_montagem: null });
+    /* hora encaixada na Agenda do Personal não vale na outra semana */
+    const semHora = manuais.some(x => "hora_montagem" in x) ? { hora_montagem: null } : {};
+    salvar(it, { semana: nova, vence_em: dISO(addDias(parseISO(nova), -1)), dia_montagem: null, ...semHora });
     toast(it.nome + " → semana de " + dBR(nova));
   }
 
@@ -23849,6 +23971,1066 @@ function PainelTrocas() {
         </div>
       ))}
     </div>
+  );
+}
+
+/* ---------- Agenda do Personal · motor (funções puras) ----------
+   Decisões do Matheus (17/11/2026), ver claude/spec-agenda-do-personal.md:
+   - Grade fixa = REGRA recorrente (agenda_horarios): aluno, dia (1=2ª..7=Dom),
+     hora local, duração, a cada N semanas, início (= 1ª aula e âncora da
+     repetição) e fim. As aulas da semana são calculadas aqui, nada é gerado
+     no banco.
+   - 1 aluno por horário (agenda_config.capacidade): sobreposição vira AVISO,
+     não trava (a dupla rara continua possível).
+   - Montagens vêm da Trocas (tcMontar): a semana de montagem da coluna S é a
+     semana anterior a S. Sem hora = faixa "a encaixar" do dia; com hora =
+     bloco de duracao_montagem minutos. Montagem sobreposta a qualquer coisa
+     é conflito (é o tempo do próprio treinador).
+   Tudo aqui é função pura: é o que os testes cobrem. */
+const AG_PASSO = 15;              /* soltar/encaixar anda de 15 em 15 min */
+const AG_SEMANAS_CONFLITO = 12;   /* quantas aulas da regra nova conferir */
+const AG_CFG_PADRAO = {
+  duracoes: [30, 45, 60, 75, 90], duracao_padrao: 60, duracao_montagem: 60,
+  capacidade: 1, validade_dias: null, hora_inicio: "06:00", hora_fim: "22:00"
+};
+const AG_DIA_LONGO = { 1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta",
+                       6: "Sábado", 7: "Domingo" };
+
+/* "07:20" ou "07:20:00" -> 440; vazio/ruim -> null */
+function agMin(h) {
+  if (h == null || h === "") return null;
+  const m = /^(\d{1,2}):(\d{2})/.exec(String(h));
+  if (!m) return null;
+  const v = Number(m[1]) * 60 + Number(m[2]);
+  return v >= 0 && v <= 1440 ? v : null;
+}
+/* 440 -> "07:20" */
+function agHora(min) {
+  const p = n => String(n).padStart(2, "0");
+  const v = Math.max(0, Math.min(1440, Math.round(min)));
+  return p(Math.floor(v / 60)) + ":" + p(v % 60);
+}
+/* 1 = 2ª ... 7 = Dom (igual ao isodow do banco e ao TC_DIA da Trocas) */
+function agDiaSemana(iso) { return parseISO(iso).getDay() || 7; }
+function agSegundaDe(iso) { return dISO(addDias(parseISO(iso), 1 - agDiaSemana(iso))); }
+function agDataDoDia(segunda, dia) { return dISO(addDias(parseISO(segunda), dia - 1)); }
+function agDiffDias(a, b) { return Math.round((parseISO(b) - parseISO(a)) / 864e5); }
+/* primeira data >= aPartir que cai no dia da semana pedido */
+function agProximaData(dia, aPartir) {
+  return dISO(addDias(parseISO(aPartir), (Number(dia) - agDiaSemana(aPartir) + 7) % 7));
+}
+function agCfg(c) {
+  const out = { ...AG_CFG_PADRAO };
+  for (const k of Object.keys(AG_CFG_PADRAO)) if (c && c[k] != null) out[k] = c[k];
+  if (!Array.isArray(out.duracoes) || !out.duracoes.length) out.duracoes = AG_CFG_PADRAO.duracoes;
+  out.duracoes = out.duracoes.map(Number).filter(n => n >= 10 && n <= 240);
+  out.capacidade = Math.max(1, Number(out.capacidade) || 1);
+  return out;
+}
+/* duração válida no banco: múltiplo de 5 entre 10 e 240 */
+function agDuracaoOk(n) {
+  const v = Number(n);
+  return Number.isInteger(v) && v >= 10 && v <= 240 && v % 5 === 0;
+}
+function agCadenciaTexto(n) {
+  const v = Number(n) || 1;
+  return v === 1 ? "toda semana" : v === 2 ? "quinzenal" : "a cada " + v + " semanas";
+}
+
+/* a regra tem aula nesta data? */
+function agVale(h, iso) {
+  if (!h || !h.inicio || agDiaSemana(iso) !== Number(h.dia_semana)) return false;
+  if (iso < h.inicio || (h.fim && iso > h.fim)) return false;
+  const semanas = agDiffDias(h.inicio, iso) / 7;
+  return semanas % (Number(h.a_cada_semanas) || 1) === 0;
+}
+
+/* aulas da semana que começa na segunda `segunda` */
+function agAulasDaSemana(horarios, segunda, alunoPor) {
+  const out = [];
+  for (let dia = 1; dia <= 7; dia++) {
+    const data = agDataDoDia(segunda, dia);
+    for (const h of horarios || []) {
+      if (!agVale(h, data)) continue;
+      const ini = agMin(h.hora);
+      if (ini == null) continue;
+      const a = alunoPor ? alunoPor.get(h.aluno_id) : null;
+      out.push({
+        key: "a:" + h.id + ":" + data, tipo: "aula", h, horario_id: h.id,
+        aluno_id: h.aluno_id, nome: a ? a.nome : "(aluno sem ficha)",
+        inativo: !!(a && a.status && a.status !== "ativo"),
+        data, dia, ini, fim: ini + (Number(h.duracao_min) || 60)
+      });
+    }
+  }
+  return out;
+}
+
+/* lista = tcMontar(...)[segunda + 7]: a coluna da Trocas cujos dias de
+   montagem caem nesta semana. Montado/oculto não entram. */
+function agMontagensDaSemana(lista, segunda, durMontagem) {
+  const dur = Number(durMontagem) || 60;
+  const encaixar = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
+  const blocos = [];
+  for (const it of lista || []) {
+    if (it.oculto || it.montado || !it.dia) continue;
+    const base = {
+      key: "m:" + it.key, tipo: "montagem", it, aluno_id: it.aluno_id || null,
+      nome: it.nome || "(sem nome)", dia: it.dia, data: agDataDoDia(segunda, it.dia),
+      vermelho: !!it.vermelho, incerto: !!it.incerto
+    };
+    const ini = agMin(it.hora);
+    if (ini == null) encaixar[it.dia].push(base);
+    else blocos.push({ ...base, ini, fim: Math.min(1440, ini + dur) });
+  }
+  return { encaixar, blocos };
+}
+
+/* Colunas lado a lado para o que se sobrepõe + marca de conflito.
+   capacidade: quantos alunos cabem no mesmo horário (montagem nunca divide).
+   Devolve { [key]: { col, cols, conflito } } */
+function agLayoutDia(blocos, capacidade) {
+  const cap = Math.max(1, Number(capacidade) || 1);
+  const ord = [...(blocos || [])].sort((a, b) =>
+    a.ini - b.ini || b.fim - a.fim || String(a.key).localeCompare(String(b.key)));
+  const res = {};
+  let grupo = [], fimGrupo = -1, colsFim = [];
+  const fechar = () => {
+    for (const b of grupo) res[b.key].cols = colsFim.length;
+    grupo = []; colsFim = [];
+  };
+  for (const b of ord) {
+    if (grupo.length && b.ini >= fimGrupo) { fechar(); fimGrupo = -1; }
+    let c = colsFim.findIndex(f => f <= b.ini);
+    if (c < 0) { c = colsFim.length; colsFim.push(b.fim); } else colsFim[c] = b.fim;
+    res[b.key] = { col: c, cols: 1, conflito: false };
+    grupo.push(b);
+    fimGrupo = Math.max(fimGrupo, b.fim);
+  }
+  if (grupo.length) fechar();
+
+  for (const b of ord) {
+    const outros = ord.filter(o => o !== b && o.ini < b.fim && b.ini < o.fim);
+    if (!outros.length) continue;
+    if (b.tipo === "montagem" || outros.some(o => o.tipo === "montagem")) {
+      res[b.key].conflito = true; continue;
+    }
+    /* só aulas: conflito quando, em algum minuto, passa da capacidade */
+    const aulas = [b, ...outros];
+    for (const t of aulas.map(x => Math.max(x.ini, b.ini))) {
+      if (t >= b.fim) continue;
+      const n = aulas.filter(x => x.ini <= t && t < x.fim).length;
+      if (n > cap) { res[b.key].conflito = true; break; }
+    }
+  }
+  return res;
+}
+
+/* faixa de horas que a grade mostra: expediente, esticado para caber tudo */
+function agFaixa(blocos, cfg) {
+  const c = agCfg(cfg);
+  let ini = agMin(c.hora_inicio), fim = agMin(c.hora_fim);
+  if (ini == null) ini = 360;
+  if (fim == null || fim <= ini) fim = Math.max(ini + 60, 1320);
+  for (const b of blocos || []) { ini = Math.min(ini, b.ini); fim = Math.max(fim, b.fim); }
+  return [Math.floor(ini / 60) * 60, Math.min(1440, Math.ceil(fim / 60) * 60)];
+}
+
+/* horários de início livres no dia para algo de `dur` minutos (de 15 em 15) */
+function agHorariosLivres(blocosDoDia, dur, faixa, ignorarKey) {
+  const d = Number(dur) || 60;
+  const ocupados = (blocosDoDia || []).filter(b => b.key !== ignorarKey);
+  const out = [];
+  for (let t = Math.ceil(faixa[0] / AG_PASSO) * AG_PASSO; t + d <= faixa[1]; t += AG_PASSO) {
+    if (!ocupados.some(b => b.ini < t + d && t < b.fim)) out.push(t);
+  }
+  return out;
+}
+
+/* soltar na grade: posição em minutos -> início, encaixado no passo e na faixa */
+function agSoltarEm(minuto, dur, faixa) {
+  const d = Number(dur) || 60;
+  let t = Math.round(minuto / AG_PASSO) * AG_PASSO;
+  t = Math.max(faixa[0], Math.min(t, faixa[1] - d));
+  return Math.max(0, t);
+}
+
+/* Aulas de OUTRAS regras que batem com a regra (nova ou editada) nas
+   próximas AG_SEMANAS_CONFLITO aulas dela. Com capacidade > 1, só conta
+   quando o horário já está cheio. Devolve [{ data, nome, ini, fim }] */
+function agConflitosRegra(regra, horarios, alunoPor, capacidade, ignorarId) {
+  const ini = agMin(regra.hora), dur = Number(regra.duracao_min) || 60;
+  if (ini == null || !regra.inicio) return [];
+  const fim = ini + dur, passo = 7 * (Number(regra.a_cada_semanas) || 1);
+  const cap = Math.max(1, Number(capacidade) || 1);
+  const out = [];
+  let data = regra.inicio;
+  for (let k = 0; k < AG_SEMANAS_CONFLITO; k++) {
+    if (regra.fim && data > regra.fim) break;
+    const batem = [];
+    for (const h of horarios || []) {
+      if (h.id === regra.id || (ignorarId && h.id === ignorarId) || !agVale(h, data)) continue;
+      const hi = agMin(h.hora), hf = hi + (Number(h.duracao_min) || 60);
+      if (hi < fim && ini < hf) {
+        const a = alunoPor ? alunoPor.get(h.aluno_id) : null;
+        batem.push({ data, horario_id: h.id, nome: a ? a.nome : "(aluno sem ficha)", ini: hi, fim: hf });
+      }
+    }
+    if (batem.length >= cap) out.push(...batem);
+    data = dISO(addDias(parseISO(data), passo));
+  }
+  return out;
+}
+
+/* Editar "esta e as próximas": a regra antiga para na véspera de `aPartir`
+   e nasce outra com os campos novos. Se `aPartir` não passa do início da
+   regra, só atualiza no lugar (ela ainda não aconteceu).
+   nova: { dia_semana, hora, duracao_min, a_cada_semanas, academia_id, obs }
+   Devolve { tipo: "atualizar", campos } | { tipo: "dividir", fimAntiga, nova } | { erro } */
+function agPlanoEdicao(h, nova, aPartir) {
+  if (!aPartir) return { erro: "Escolha a partir de quando vale." };
+  const inicio = agProximaData(nova.dia_semana, aPartir);
+  if (h.fim && aPartir > h.fim) return { erro: "Esse horário já terminou em " + dBR(h.fim) + "." };
+  if (h.fim && inicio > h.fim) {
+    return { erro: "Com essa mudança a primeira aula seria " + dBR(inicio) +
+      ", depois do fim do horário (" + dBR(h.fim) + ")." };
+  }
+  if (aPartir <= h.inicio) {
+    return { tipo: "atualizar", campos: { ...nova, inicio } };
+  }
+  return {
+    tipo: "dividir",
+    fimAntiga: dISO(addDias(parseISO(aPartir), -1)),
+    nova: { aluno_id: h.aluno_id, academia_id: h.academia_id || null, obs: h.obs || null,
+            ...nova, inicio, fim: h.fim || null }
+  };
+}
+
+/* Encerrar: a última aula fica antes de `aPartir`. Se a regra nem começou,
+   o certo é apagar (fim antes do início não existe). */
+function agPlanoEncerrar(h, aPartir) {
+  if (!aPartir) return { erro: "Escolha a partir de quando para." };
+  if (aPartir <= h.inicio) return { tipo: "apagar" };
+  const fim = dISO(addDias(parseISO(aPartir), -1));
+  if (h.fim && h.fim <= fim) return { erro: "Esse horário já termina em " + dBR(h.fim) + "." };
+  return { tipo: "encerrar", fim };
+}
+
+/* próxima aula da regra a partir de uma data (inclusive); null se acabou */
+function agProximaAula(h, aPartir) {
+  let d = agProximaData(h.dia_semana, aPartir < h.inicio ? h.inicio : aPartir);
+  for (let k = 0; k < 8; k++) {
+    if (h.fim && d > h.fim) return null;
+    if (agVale(h, d)) return d;
+    d = dISO(addDias(parseISO(d), 7));
+  }
+  return null;
+}
+
+/* regra válida para gravar? devolve mensagem de erro ou "" */
+function agValidarRegra(r) {
+  if (!r.aluno_id) return "Escolha o aluno.";
+  const d = Number(r.dia_semana);
+  if (!(d >= 1 && d <= 7)) return "Escolha o dia.";
+  const ini = agMin(r.hora);
+  if (ini == null) return "Hora inválida.";
+  if (!agDuracaoOk(r.duracao_min)) return "Duração: múltiplo de 5 entre 10 e 240 minutos.";
+  if (ini + Number(r.duracao_min) > 1440) return "A aula passaria da meia-noite.";
+  const c = Number(r.a_cada_semanas);
+  if (!(c >= 1 && c <= 4)) return "Repetição inválida.";
+  if (r.inicio && agDiaSemana(r.inicio) !== d) return "A data de início não cai nesse dia.";
+  if (r.fim && r.inicio && r.fim < r.inicio) return "O fim é antes do início.";
+  return "";
+}
+
+/* resumo da semana para o cabeçalho */
+function agResumo(aulas, montagens) {
+  const at = (aulas || []);
+  const min = at.reduce((s, a) => s + (a.fim - a.ini), 0);
+  const enc = montagens ? Object.values(montagens.encaixar).reduce((s, l) => s + l.length, 0) : 0;
+  const pos = montagens ? montagens.blocos.length : 0;
+  return {
+    aulas: at.length, minutos: min,
+    alunos: new Set(at.map(a => a.aluno_id)).size,
+    montagens: enc + pos, aEncaixar: enc
+  };
+}
+function agHorasTexto(min) {
+  const h = Math.floor(min / 60), m = min % 60;
+  return m ? h + "h" + String(m).padStart(2, "0") : h + "h";
+}
+/* ---------- Agenda do Personal · fim do motor ---------- */
+
+/* ---------- Agenda do Personal · telas (17/11/2026) ----------
+   Aba Agenda = antiga Trocas, com dois chips: Calendário de Troca (abre
+   nele, como sempre) | Agenda do Personal (grade semanal das aulas
+   presenciais + montagens da consultoria).
+   Leitura: agenda_horarios (regras), agenda_config, e a MESMA leitura da
+   Trocas (tcCarregarDados + tcMontar) para as montagens. Escrita da
+   montagem: os mesmos campos da Trocas (dia_montagem) + hora_montagem,
+   numa linha só (fonte de verdade única).
+   Multitenant: tudo passa pelo RLS (tenant_id default meu_tenant_id()). */
+const AG_PX = 1;   /* 1 px por minuto: 60 px por hora */
+
+function agErroSemTabela(msg) {
+  return /agenda_(horarios|config)/.test(msg || "") &&
+    /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(msg || "");
+}
+/* minuto de agora no fuso da consultoria */
+function agMinAgora(agora) {
+  try {
+    const p = {};
+    for (const x of new Intl.DateTimeFormat("en-GB", { timeZone: FUSO, hour: "2-digit",
+      minute: "2-digit", hourCycle: "h23" }).formatToParts(agora || new Date())) p[x.type] = x.value;
+    return Number(p.hour) * 60 + Number(p.minute);
+  } catch (e) { const d = agora || new Date(); return d.getHours() * 60 + d.getMinutes(); }
+}
+function agSemanaTexto(segunda) {
+  const fim = dISO(addDias(parseISO(segunda), 6));
+  const a = dBR(segunda).slice(0, 5), b = dBR(fim).slice(0, 5);
+  return a.slice(3) === b.slice(3) ? a.slice(0, 2) + " a " + b : a + " a " + b;
+}
+
+async function agCarregar(segunda) {
+  const out = { horarios: [], cfg: null, semTabela: false, erros: [],
+                trocas: { manuais: [], fases: [], proximas: [], comTreino: new Set(), semTabela: false } };
+  const S = dISO(addDias(parseISO(segunda), 7));
+  const [h, c, t] = await Promise.all([
+    sb.from("agenda_horarios").select("*").order("hora"),
+    sb.from("agenda_config").select("*").limit(1),
+    tcCarregarDados(S, S).catch(e => ({ erros: [e.message], manuais: [], fases: [], proximas: [], comTreino: new Set() }))
+  ]);
+  if (h.error) {
+    if (agErroSemTabela(h.error.message)) out.semTabela = true;
+    else out.erros.push("horários: " + h.error.message);
+  } else out.horarios = h.data || [];
+  if (!c.error && c.data && c.data[0]) out.cfg = c.data[0];
+  else if (c.error && !agErroSemTabela(c.error.message)) out.erros.push("ajustes: " + c.error.message);
+  out.trocas = { manuais: t.manuais || [], fases: t.fases || [], proximas: t.proximas || [],
+                 comTreino: t.comTreino || new Set(), semTabela: !!t.semTabela };
+  out.erros.push(...(t.erros || []));
+  return out;
+}
+
+/* ---------- aba Agenda: os dois chips ---------- */
+function PainelAgenda() {
+  /* abre sempre no Calendário de Troca (pedido do Matheus) */
+  const [vista, setVista] = useState("trocas");
+  return (
+    <div>
+      <div className="fn-vistas" role="tablist" aria-label="Agenda">
+        <button role="tab" aria-selected={vista === "trocas"} className={vista === "trocas" ? "on" : ""}
+          onClick={() => setVista("trocas")}>Calendário de Troca</button>
+        <button role="tab" aria-selected={vista === "personal"} className={vista === "personal" ? "on" : ""}
+          onClick={() => setVista("personal")}>Agenda do Personal</button>
+      </div>
+      {vista === "trocas" ? <PainelTrocas /> : <PainelAgendaPersonal />}
+    </div>
+  );
+}
+
+/* largura de celular: a grade vira um dia por vez */
+function useAgEstreito() {
+  const q = "(max-width: 760px)";
+  const [v, setV] = useState(() => !!(window.matchMedia && window.matchMedia(q).matches));
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const m = window.matchMedia(q);
+    const f = () => setV(m.matches);
+    if (m.addEventListener) m.addEventListener("change", f); else m.addListener(f);
+    return () => { if (m.removeEventListener) m.removeEventListener("change", f); else m.removeListener(f); };
+  }, []);
+  return v;
+}
+
+/* popover simples na posição do clique; fecha com clique fora e Esc */
+function AgPop({ pos, onFechar, children }) {
+  const ref = React.useRef(null);
+  useEsc(true, onFechar);
+  useEffect(() => {
+    const fora = e => { if (ref.current && !ref.current.contains(e.target)) onFechar(); };
+    const t = setTimeout(() => document.addEventListener("mousedown", fora), 0);
+    return () => { clearTimeout(t); document.removeEventListener("mousedown", fora); };
+  }, [onFechar]);
+  const w = 280;
+  const left = Math.max(8, Math.min(pos.x, window.innerWidth - w - 8));
+  const top = Math.max(8, Math.min(pos.y, window.innerHeight - 340));
+  return (
+    <div ref={ref} className="ag-pop" style={{ left, top, width: w }} role="dialog">{children}</div>
+  );
+}
+
+function PainelAgendaPersonal() {
+  const { alunos, setAlunoId } = usarAluno();
+  const { toast } = usarUI();
+  const { irAba } = usarFeed();
+  const estreito = useAgEstreito();
+  const hoje = hojeFuso();
+  const [segunda, setSegunda] = useState(() => agSegundaDe(hojeFuso()));
+  const [d, setD] = useState(null);
+  const [manuais, setManuais] = useState([]);
+  const [carr, setCarr] = useState(true);
+  const [vista, setVista] = useState("semana");
+  const [diaCel, setDiaCel] = useState(() => agDiaSemana(hojeFuso()));
+  const [edit, setEdit] = useState(null);     /* { h?, dia, hora, data } */
+  const [pop, setPop] = useState(null);       /* { m, x, y } */
+  const [arr, setArr] = useState(null);       /* montagem sendo arrastada */
+  const [alvo, setAlvo] = useState(null);     /* { dia, ini } | { dia, enc: true } */
+  const [agoraMin, setAgoraMin] = useState(() => agMinAgora());
+
+  const carregar = useCallback(async () => {
+    setCarr(true);
+    const x = await agCarregar(segunda);
+    setD(x);
+    setManuais(x.trocas.manuais);
+    setCarr(false);
+  }, [segunda]);
+  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => {
+    const t = setInterval(() => setAgoraMin(agMinAgora()), 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  const alunoPor = useMemo(() => new Map((alunos || []).map(a => [a.id, a])), [alunos]);
+  const cfg = agCfg(d && d.cfg);
+  const horarios = (d && d.horarios) || [];
+  const S = dISO(addDias(parseISO(segunda), 7));
+  const aulas = useMemo(() => agAulasDaSemana(horarios, segunda, alunoPor), [horarios, segunda, alunoPor]);
+  const coluna = useMemo(() => d ? (tcMontar({ semanas: [S], manuais, alunos,
+      fases: d.trocas.fases, proximas: d.trocas.proximas, comTreino: d.trocas.comTreino })[S] || []) : [],
+    [d, manuais, alunos, S]);
+  const mont = useMemo(() => agMontagensDaSemana(coluna, segunda, cfg.duracao_montagem),
+    [coluna, segunda, cfg.duracao_montagem]);
+  const blocos = useMemo(() => [...aulas, ...mont.blocos], [aulas, mont]);
+  const faixa = agFaixa(blocos, cfg);
+  const altura = (faixa[1] - faixa[0]) * AG_PX;
+  const layout = useMemo(() => {
+    const out = {};
+    for (let dia = 1; dia <= 7; dia++)
+      Object.assign(out, agLayoutDia(blocos.filter(b => b.dia === dia), cfg.capacidade));
+    return out;
+  }, [blocos, cfg.capacidade]);
+  const conflitos = blocos.filter(b => layout[b.key] && layout[b.key].conflito).length;
+  const temDom = blocos.some(b => b.dia === 7) || mont.encaixar[7].length > 0;
+  const diasSemana = [1, 2, 3, 4, 5, 6].concat(temDom ? [7] : []);
+  const dias = estreito ? [diaCel] : diasSemana;
+  const res = agResumo(aulas, mont);
+  const semanaAtual = segunda === agSegundaDe(hoje);
+  /* a coluna nova (hora_montagem) só existe depois do agenda.sql */
+  const podeMontar = !!d && !d.semTabela && !d.trocas.semTabela;
+
+  /* ---------- montagem: grava nos mesmos campos da Trocas ---------- */
+  async function salvarMontagem(m, campos) {
+    const it = m.it;
+    const extra = { ...campos, atualizado_em: new Date().toISOString() };
+    if (it.tipo === "manual" || it.id) {
+      if (it.tipo === "auto") extra.semana = it.semana;
+      const antes = manuais.find(x => x.id === it.id);
+      setManuais(l => l.map(x => (x.id === it.id ? { ...x, ...extra } : x)));
+      const r = await sb.from("trocas_calendario").update(extra).eq("id", it.id);
+      if (r.error) {
+        setManuais(l => l.map(x => (x.id === it.id ? antes : x)));
+        toast(r.error.message, "erro");
+        return false;
+      }
+      return true;
+    }
+    /* linha que vem do app (fim da fase) e ainda não tem ajuste: cria o ajuste */
+    const linha = { id: novoUUID(), semana: it.semana, aluno_id: it.aluno_id,
+      fase_id: it.fase_id, criado_em: new Date().toISOString(), ...campos };
+    setManuais(l => [...l, linha]);
+    const r = await sb.from("trocas_calendario").insert(linha);
+    if (r.error) {
+      setManuais(l => l.filter(x => x.id !== linha.id));
+      toast(r.error.message, "erro");
+      return false;
+    }
+    return true;
+  }
+  function encaixar(m, dia, ini) {
+    setPop(null);
+    salvarMontagem(m, { dia_montagem: dia, hora_montagem: agHora(ini) }).then(ok => {
+      if (ok) toast(m.nome + " → " + TC_DIA[dia] + " " + agHora(ini));
+    });
+  }
+  function desencaixar(m, dia) {
+    setPop(null);
+    salvarMontagem(m, { dia_montagem: dia || m.dia, hora_montagem: null });
+  }
+  function abrirTreino(m) {
+    setPop(null);
+    if (!m.aluno_id) return;
+    setAlunoId(m.aluno_id);
+    if (irAba) irAba("montagem");
+  }
+
+  /* ---------- arrastar montagem ---------- */
+  function iniciarArraste(e, m) {
+    if (!podeMontar) { e.preventDefault(); return; }
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", m.key);
+    setPop(null);
+    setArr(m);
+  }
+  function fimArraste() { setArr(null); setAlvo(null); }
+  function minutoDoEvento(e, el) {
+    const r = el.getBoundingClientRect();
+    return faixa[0] + (e.clientY - r.top) / AG_PX;
+  }
+  function sobreDia(e, dia) {
+    if (!arr) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    /* o ponteiro fica perto do topo do bloco: tira 10 min para a mão não cobrir */
+    const ini = agSoltarEm(minutoDoEvento(e, e.currentTarget) - 10, cfg.duracao_montagem, faixa);
+    if (!alvo || alvo.dia !== dia || alvo.ini !== ini) setAlvo({ dia, ini });
+  }
+  function soltarDia(e, dia) {
+    e.preventDefault();
+    const m = arr, a = alvo;
+    fimArraste();
+    if (m && a && a.dia === dia && a.ini != null) encaixar(m, dia, a.ini);
+  }
+  function sobreEnc(e, dia) {
+    if (!arr) return;
+    e.preventDefault();
+    if (!alvo || alvo.dia !== dia || !alvo.enc) setAlvo({ dia, enc: true });
+  }
+  function soltarEnc(e, dia) {
+    e.preventDefault();
+    const m = arr;
+    fimArraste();
+    if (m && (m.ini != null || m.dia !== dia)) desencaixar(m, dia);
+  }
+
+  /* clique num espaço vazio: novo horário fixo ali */
+  function cliqueDia(e, dia) {
+    if (e.target !== e.currentTarget) return;
+    const ini = agSoltarEm(minutoDoEvento(e, e.currentTarget) - 15, cfg.duracao_padrao, faixa);
+    setEdit({ dia, hora: agHora(ini), data: agDataDoDia(segunda, dia) });
+  }
+  function abrirAula(b) {
+    setEdit({ h: b.h, dia: b.dia, hora: agHora(b.ini), data: b.data });
+  }
+  function abrirMontagem(e, m) {
+    e.stopPropagation();
+    setPop({ m, x: e.clientX + 6, y: e.clientY + 6 });
+  }
+
+  const nav = k => setSegunda(s => dISO(addDias(parseISO(s), 7 * k)));
+  const horas = [];
+  for (let t = faixa[0]; t < faixa[1]; t += 60) horas.push(t);
+
+  return (
+    <div className="ag">
+      <div className="ag-bar">
+        <button className="btn-sec" onClick={() => nav(-1)} aria-label="Semana anterior">‹</button>
+        <button className="btn-sec" onClick={() => setSegunda(agSegundaDe(hojeFuso()))}>hoje</button>
+        <button className="btn-sec" onClick={() => nav(1)} aria-label="Próxima semana">›</button>
+        <b className="ag-sem">{agSemanaTexto(segunda)}</b>
+        <span className="ag-res">
+          {res.aulas} {res.aulas === 1 ? "aula" : "aulas"} · {agHorasTexto(res.minutos)} · {res.alunos} {res.alunos === 1 ? "aluno" : "alunos"}
+          {res.montagens > 0 && <> · {res.montagens} {res.montagens === 1 ? "montagem" : "montagens"}
+            {res.aEncaixar > 0 && <em> ({res.aEncaixar} a encaixar)</em>}</>}
+        </span>
+        <div className="ag-dir">
+          <div className="fn-vistas ag-vistas" role="tablist" aria-label="Visão">
+            <button role="tab" aria-selected={vista === "semana"} className={vista === "semana" ? "on" : ""}
+              onClick={() => setVista("semana")}>Semana</button>
+            <button role="tab" aria-selected={vista === "grade"} className={vista === "grade" ? "on" : ""}
+              onClick={() => setVista("grade")}>Grade fixa</button>
+          </div>
+          <button className="ag-add" disabled={!d || d.semTabela}
+            onClick={() => setEdit({ dia: estreito ? diaCel : 1, hora: "08:00", data: null })}>+ Horário fixo</button>
+        </div>
+      </div>
+
+      {d && d.semTabela && (
+        <div className="ac-diag" style={{ marginBottom: 14 }}>
+          A Agenda do Personal ainda não tem as tabelas. Rode o <code>agenda.sql</code> no
+          Supabase (e depois o <code>agenda_carga.sql</code> com a grade). Até lá as montagens
+          aparecem só na faixa "a encaixar", sem arrastar.
+        </div>
+      )}
+      {d && d.erros.length > 0 && <div className="err">{d.erros.join(" | ")}</div>}
+      {conflitos > 0 && vista === "semana" && (
+        <div className="ag-aviso">⚠ {conflitos} {conflitos === 1 ? "horário batendo" : "horários batendo"} nesta
+          semana (contorno vermelho). A regra é 1 aluno por horário; dá para manter, é só um aviso.</div>
+      )}
+
+      {vista === "grade" ? (
+        <AgListaGrade horarios={horarios} alunoPor={alunoPor} hoje={hoje} carr={carr}
+          onAbrir={(h, data) => setEdit({ h, dia: Number(h.dia_semana), hora: agHora(agMin(h.hora)), data })} />
+      ) : (
+        <>
+          {estreito && (
+            <div className="chips ag-dias-cel">
+              {diasSemana.map(dd => (
+                <button key={dd} type="button" className={"chip mini" + (dd === diaCel ? " on" : "")}
+                  onClick={() => setDiaCel(dd)}>
+                  {TC_DIA[dd]} {dBR(agDataDoDia(segunda, dd)).slice(0, 5)}
+                  {aulas.filter(a => a.dia === dd).length > 0 && <i> · {aulas.filter(a => a.dia === dd).length}</i>}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="ag-leg">
+            <span><i className="ag-sw aula" />aula</span>
+            <span><i className="ag-sw montagem" />montagem (1h)</span>
+            <span><i className="ag-sw bate" />batendo</span>
+            <span className="ag-dica">{podeMontar
+              ? "arraste a montagem da faixa \"a encaixar\" para um horário · clique num espaço vazio para criar horário fixo"
+              : "clique num espaço vazio para criar horário fixo"}</span>
+          </div>
+
+          <div className={"ag-grade" + (arr ? " arrastando" : "")} style={{ "--ag-dias": dias.length }}>
+            <div className="ag-linha ag-cabs">
+              <div className="ag-canto" />
+              {dias.map(dia => {
+                const data = agDataDoDia(segunda, dia);
+                const n = aulas.filter(a => a.dia === dia).length;
+                return (
+                  <div key={dia} className={"ag-dcab" + (data === hoje ? " hoje" : "")}>
+                    <b>{AG_DIA_LONGO[dia]}</b>
+                    <span>{dBR(data).slice(0, 5)}{n > 0 ? " · " + n + (n === 1 ? " aula" : " aulas") : ""}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="ag-linha ag-encs">
+              <div className="ag-canto ag-canto-enc">a encaixar</div>
+              {dias.map(dia => (
+                <div key={dia} className={"ag-enc" + (alvo && alvo.enc && alvo.dia === dia ? " alvo" : "")}
+                  onDragOver={e => sobreEnc(e, dia)} onDrop={e => soltarEnc(e, dia)}>
+                  {mont.encaixar[dia].map(m => (
+                    <button key={m.key} type="button" draggable={podeMontar}
+                      className={"ag-chip" + (m.vermelho ? " verm" : "") + (arr && arr.key === m.key ? " eu" : "")}
+                      title={m.nome + " · treino vence " + dBR(m.it.vence) + (m.vermelho ? " · depois do vencimento" : "")}
+                      onDragStart={e => iniciarArraste(e, m)} onDragEnd={fimArraste}
+                      onClick={e => abrirMontagem(e, m)}>
+                      {m.incerto && <span className="ag-cuid"><IconeCuidado size={11} /></span>}
+                      {m.nome}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="ag-linha ag-corpo" style={{ height: altura }}>
+              <div className="ag-horas">
+                {horas.map(t => (
+                  <span key={t} style={{ top: (t - faixa[0]) * AG_PX }}>{agHora(t)}</span>
+                ))}
+              </div>
+              {dias.map(dia => {
+                const data = agDataDoDia(segunda, dia);
+                const doDia = blocos.filter(b => b.dia === dia);
+                return (
+                  <div key={dia} className={"ag-dia" + (data === hoje ? " hoje" : "")}
+                    style={{ backgroundPosition: "0 " + ((60 - (faixa[0] % 60)) % 60) * AG_PX + "px" }}
+                    onClick={e => cliqueDia(e, dia)}
+                    onDragOver={e => sobreDia(e, dia)} onDrop={e => soltarDia(e, dia)}
+                    onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setAlvo(a => (a && a.dia === dia && !a.enc ? null : a)); }}>
+                    {doDia.map(b => {
+                      const L = layout[b.key] || { col: 0, cols: 1, conflito: false };
+                      const dur = b.fim - b.ini;
+                      const cls = "ag-b " + b.tipo + (L.conflito ? " bate" : "") +
+                        (b.vermelho ? " verm" : "") + (b.inativo ? " inat" : "") +
+                        (dur < 40 ? " curto" : "") + (arr && arr.key === b.key ? " eu" : "");
+                      const quinz = b.tipo === "aula" && Number(b.h.a_cada_semanas) > 1;
+                      return (
+                        <div key={b.key} className={cls}
+                          style={{ top: (b.ini - faixa[0]) * AG_PX, height: Math.max(16, dur * AG_PX - 2),
+                                   left: "calc(" + (L.col * 100 / L.cols) + "% + 2px)",
+                                   width: "calc(" + (100 / L.cols) + "% - 4px)" }}
+                          draggable={b.tipo === "montagem" && podeMontar}
+                          onDragStart={b.tipo === "montagem" ? e => iniciarArraste(e, b) : undefined}
+                          onDragEnd={b.tipo === "montagem" ? fimArraste : undefined}
+                          onClick={e => { e.stopPropagation(); if (b.tipo === "aula") abrirAula(b); else abrirMontagem(e, b); }}
+                          title={(b.tipo === "montagem" ? "Montagem · " : "") + b.nome + " · " + agHora(b.ini) + "–" + agHora(b.fim) +
+                            (quinz ? " · " + agCadenciaTexto(b.h.a_cada_semanas) : "") +
+                            (L.conflito ? " · batendo com outro horário" : "") +
+                            (b.vermelho ? " · depois do vencimento (" + dBR(b.it.vence) + ")" : "")}>
+                          <b>{L.conflito && "⚠ "}{b.tipo === "montagem" && "🛠 "}{b.nome}</b>
+                          <span>{agHora(b.ini)}–{agHora(b.fim)}
+                            {quinz && <i className="ag-tag">{agCadenciaTexto(b.h.a_cada_semanas)}</i>}
+                            {b.inativo && <i className="ag-tag">inativo</i>}</span>
+                        </div>
+                      );
+                    })}
+                    {alvo && !alvo.enc && alvo.dia === dia && arr && (
+                      <div className="ag-b fantasma" style={{ top: (alvo.ini - faixa[0]) * AG_PX,
+                        height: cfg.duracao_montagem * AG_PX - 2, left: "2px", width: "calc(100% - 4px)" }}>
+                        <b>{arr.nome}</b><span>{agHora(alvo.ini)}–{agHora(alvo.ini + cfg.duracao_montagem)}</span>
+                      </div>
+                    )}
+                    {semanaAtual && data === hoje && agoraMin >= faixa[0] && agoraMin <= faixa[1] && (
+                      <div className="ag-agora" style={{ top: (agoraMin - faixa[0]) * AG_PX }} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          {carr && <div className="ag-carr">carregando…</div>}
+        </>
+      )}
+
+      {pop && (
+        <AgPop pos={pop} onFechar={() => setPop(null)}>
+          <AgMenuMontagem m={pop.m} segunda={segunda} faixa={faixa} cfg={cfg} pode={podeMontar}
+            blocosDoDia={blocos.filter(b => b.dia === pop.m.dia)}
+            onEncaixar={encaixar} onDesencaixar={desencaixar} onAbrirTreino={abrirTreino} />
+        </AgPop>
+      )}
+
+      {edit && (
+        <DrawerHorario ed={edit} horarios={horarios} alunos={alunos} alunoPor={alunoPor} cfg={cfg}
+          onFechar={() => setEdit(null)}
+          onSalvo={() => { setEdit(null); carregar(); }} />
+      )}
+    </div>
+  );
+}
+
+/* menu da montagem: encaixar num horário livre, trocar de dia, voltar */
+function AgMenuMontagem({ m, segunda, faixa, cfg, pode, blocosDoDia, onEncaixar, onDesencaixar, onAbrirTreino }) {
+  const [dia, setDia] = useState(m.dia);
+  const livres = agHorariosLivres(dia === m.dia ? blocosDoDia : [], cfg.duracao_montagem, faixa, m.key);
+  const posicionada = m.ini != null;
+  return (
+    <div>
+      <div className="ag-pop-t">🛠 {m.nome}</div>
+      <div className="ag-pop-s">
+        Montagem · treino novo começa {dBR(m.it.semana).slice(0, 5)} · vence {dBR(m.it.vence).slice(0, 5)}
+        {m.vermelho && <b className="ag-verm-txt"> · depois do vencimento</b>}
+        {posicionada && <><br />Encaixada {TC_DIA[m.dia]} {agHora(m.ini)}–{agHora(m.fim)}</>}
+      </div>
+      {!pode ? (
+        <div className="ag-pop-s">Rode o <code>agenda.sql</code> para encaixar montagens.</div>
+      ) : (
+        <>
+          <div className="ed-lab">Dia</div>
+          <div className="chips">
+            {[1, 2, 3, 4, 5, 6, 7].map(dd => (
+              <button key={dd} type="button" className={"chip mini" + (dd === dia ? " on" : "")}
+                onClick={() => setDia(dd)}>{TC_DIA[dd]}</button>
+            ))}
+          </div>
+          <div className="ed-lab">{dia === m.dia ? "Horários livres" : "Horário"}
+            <i>{dia === m.dia ? agHorasTexto(cfg.duracao_montagem) + " sem bater em aula" : "confira na grade depois"}</i></div>
+          <div className="chips ag-livres">
+            {(dia === m.dia ? livres : agHorariosLivres([], cfg.duracao_montagem, faixa)).slice(0, 12).map(t => (
+              <button key={t} type="button" className="chip mini" onClick={() => onEncaixar(m, dia, t)}>{agHora(t)}</button>
+            ))}
+            {dia === m.dia && livres.length === 0 && <span className="ed-cnt">nenhum horário livre nesse dia</span>}
+          </div>
+          {(posicionada || dia !== m.dia) && (
+            <button className="fn-link" onClick={() => onDesencaixar(m, dia)}>
+              {posicionada ? "voltar para \"a encaixar\"" : "mudar para " + TC_DIA[dia] + " sem horário"}
+              {posicionada && dia !== m.dia ? " de " + TC_DIA[dia] : ""}</button>
+          )}
+        </>
+      )}
+      {m.aluno_id && <button className="fn-link" onClick={() => onAbrirTreino(m)}>abrir treinos do aluno</button>}
+    </div>
+  );
+}
+
+/* ---------- Grade fixa: todas as regras, por aluno ---------- */
+function AgListaGrade({ horarios, alunoPor, hoje, carr, onAbrir }) {
+  const [verFim, setVerFim] = useState(false);
+  const [busca, setBusca] = useState("");
+  const ativas = h => !h.fim || h.fim >= hoje;
+  const encerradas = horarios.filter(h => !ativas(h)).length;
+  const lista = horarios.filter(h => verFim || ativas(h));
+  const grupos = new Map();
+  for (const h of lista) {
+    const a = alunoPor.get(h.aluno_id);
+    const nome = a ? a.nome : "(aluno sem ficha)";
+    if (busca && !normAcc(nome).includes(normAcc(busca))) continue;
+    if (!grupos.has(h.aluno_id)) grupos.set(h.aluno_id, { nome, a, hs: [] });
+    grupos.get(h.aluno_id).hs.push(h);
+  }
+  const ord = [...grupos.values()].sort((x, y) => x.nome.localeCompare(y.nome, "pt-BR"));
+  const nAulas = lista.filter(ativas).reduce((s, h) => s + 1 / (Number(h.a_cada_semanas) || 1), 0);
+  return (
+    <div className="ag-lista">
+      <div className="ag-lista-top">
+        <div className="busca-alunos">
+          <input placeholder="Buscar aluno..." value={busca} onChange={e => setBusca(e.target.value)} />
+        </div>
+        <span className="ed-cnt">{ord.length} {ord.length === 1 ? "aluno" : "alunos"} · ~{String(Math.round(nAulas * 10) / 10).replace(".", ",")} aulas por semana</span>
+        {encerradas > 0 && (
+          <button className="fbtn" onClick={() => setVerFim(v => !v)}>
+            {verFim ? "esconder" : "ver"} encerrados ({encerradas})</button>
+        )}
+      </div>
+      {ord.length === 0 && <div className="ag-vz">{carr ? "carregando…" : "Nenhum horário fixo ainda. Use \"+ Horário fixo\"."}</div>}
+      {ord.map(g => (
+        <div key={g.nome + g.hs[0].id} className="ag-al">
+          <div className="ag-al-n">{g.nome}{g.a && g.a.status !== "ativo" && <i className="ag-tag">inativo</i>}</div>
+          <div className="ag-al-hs">
+            {g.hs.sort((x, y) => x.dia_semana - y.dia_semana || String(x.hora).localeCompare(String(y.hora))).map(h => {
+              const ini = agMin(h.hora), prox = agProximaAula(h, hoje);
+              return (
+                <button key={h.id} type="button" className={"ag-al-h" + (ativas(h) ? "" : " fim")}
+                  onClick={() => onAbrir(h, prox || h.inicio)}>
+                  <b>{TC_DIA[h.dia_semana]} {agHora(ini)}–{agHora(ini + Number(h.duracao_min))}</b>
+                  <span>{h.duracao_min} min · {agCadenciaTexto(h.a_cada_semanas)}
+                    {h.inicio > hoje ? " · começa " + dBR(h.inicio).slice(0, 5) : ""}
+                    {h.fim ? " · até " + dBR(h.fim) : ""}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- gaveta: novo horário fixo / editar ---------- */
+function DrawerHorario({ ed, horarios, alunos, alunoPor, cfg, onFechar, onSalvo }) {
+  const { toast, confirmar } = usarUI();
+  const h = ed.h || null;
+  const novo = !h;
+  const hoje = hojeFuso();
+  useEsc(true, onFechar);
+  const [acads, setAcads] = useState([]);
+  useEffect(() => {
+    sb.from("academias").select("id, nome").eq("ativa", true).order("nome")
+      .then(({ data }) => setAcads(data || []));
+  }, []);
+  const [r, setR] = useState(() => h ? {
+      aluno_id: h.aluno_id, dia_semana: Number(h.dia_semana), hora: agHora(agMin(h.hora)),
+      duracao_min: Number(h.duracao_min), a_cada_semanas: Number(h.a_cada_semanas) || 1,
+      academia_id: h.academia_id || "", obs: h.obs || "",
+      aPartir: ed.data && ed.data >= h.inicio ? ed.data : (agProximaAula(h, hoje) || h.inicio) }
+    : { aluno_id: "", dia_semana: ed.dia || 1, hora: ed.hora || "08:00",
+        duracao_min: cfg.duracao_padrao, a_cada_semanas: 1, academia_id: "", obs: "",
+        aPartir: ed.data && ed.data >= hoje ? ed.data : agProximaData(ed.dia || 1, hoje) });
+  const [outro, setOutro] = useState(() => !cfg.duracoes.includes(Number(r.duracao_min)));
+  const [parar, setParar] = useState(null);   /* data "a partir de" para encerrar */
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+  const set = o => { setErro(""); setR(x => ({ ...x, ...o })); };
+
+  /* local padrão do novo: a única academia ativa, se houver só uma */
+  useEffect(() => {
+    if (novo && !r.academia_id && acads.length === 1) set({ academia_id: acads[0].id });
+  }, [acads]);
+
+  const inicio = agProximaData(r.dia_semana, r.aPartir || hoje);
+  const prev = { id: h ? h.id : undefined, dia_semana: r.dia_semana, hora: r.hora,
+    duracao_min: Number(r.duracao_min), a_cada_semanas: r.a_cada_semanas, inicio, fim: h ? h.fim : null };
+  const conf = useMemo(() => agMin(r.hora) == null || !agDuracaoOk(r.duracao_min) ? []
+    : agConflitosRegra(prev, horarios, alunoPor, cfg.capacidade, h && h.id),
+    [r.dia_semana, r.hora, r.duracao_min, r.a_cada_semanas, inicio, horarios]);
+  const confResumo = [];
+  for (const c of conf) {
+    const x = confResumo.find(y => y.horario_id === c.horario_id);
+    if (x) x.n++; else confResumo.push({ ...c, n: 1 });
+  }
+  const opcoesAluno = (alunos || []).filter(a => a.status === "ativo" || a.id === r.aluno_id)
+    .sort((x, y) => String(x.nome).localeCompare(String(y.nome), "pt-BR"))
+    .map(a => ({ value: a.id, label: a.nome }));
+  const nomeAluno = h ? ((alunoPor.get(h.aluno_id) || {}).nome || "(aluno sem ficha)") : "";
+  const mudou = !h || r.dia_semana !== Number(h.dia_semana) || agMin(r.hora) !== agMin(h.hora) ||
+    Number(r.duracao_min) !== Number(h.duracao_min) || r.a_cada_semanas !== (Number(h.a_cada_semanas) || 1) ||
+    (r.academia_id || null) !== (h.academia_id || null) || (r.obs || "") !== (h.obs || "");
+
+  function campos() {
+    return { dia_semana: r.dia_semana, hora: r.hora, duracao_min: Number(r.duracao_min),
+             a_cada_semanas: r.a_cada_semanas, academia_id: r.academia_id || null,
+             obs: r.obs.trim() || null };
+  }
+  async function confirmarConflito() {
+    if (!confResumo.length) return true;
+    return await confirmar({ titulo: "Salvar mesmo batendo?",
+      texto: "Bate com " + confResumo.map(c => c.nome).join(", ") + ". A regra é 1 aluno por horário, " +
+        "mas dá para manter (fica com contorno vermelho na agenda).", ok: "Salvar mesmo assim" });
+  }
+
+  async function salvar() {
+    if (!mudou) { onFechar(); return; }
+    const c = campos();
+    const v = agValidarRegra({ ...c, aluno_id: novo ? r.aluno_id : h.aluno_id, inicio });
+    if (v) { setErro(v); return; }
+    if (!(await confirmarConflito())) return;
+    setBusy(true);
+    try {
+      if (novo) {
+        const q = await sb.from("agenda_horarios").insert({ ...c, aluno_id: r.aluno_id, inicio });
+        if (q.error) throw new Error(q.error.message);
+        toast("Horário criado: " + TC_DIA[c.dia_semana] + " " + c.hora + " · 1ª aula " + dBR(inicio).slice(0, 5));
+      } else {
+        const p = agPlanoEdicao(h, c, r.aPartir);
+        if (p.erro) throw new Error(p.erro);
+        if (p.tipo === "atualizar") {
+          const q = await sb.from("agenda_horarios").update(p.campos).eq("id", h.id);
+          if (q.error) throw new Error(q.error.message);
+        } else {
+          const a = await sb.from("agenda_horarios").update({ fim: p.fimAntiga }).eq("id", h.id);
+          if (a.error) throw new Error(a.error.message);
+          const b = await sb.from("agenda_horarios").insert(p.nova);
+          if (b.error) {
+            /* volta a regra antiga como estava: nada fica pela metade */
+            await sb.from("agenda_horarios").update({ fim: h.fim || null }).eq("id", h.id);
+            throw new Error(b.error.message);
+          }
+        }
+        toast("Horário atualizado a partir de " + dBR(inicio).slice(0, 5) + " ✓");
+      }
+      onSalvo();
+    } catch (e) { setErro(e.message); }
+    setBusy(false);
+  }
+
+  async function encerrar() {
+    const p = agPlanoEncerrar(h, parar);
+    if (p.erro) { setErro(p.erro); return; }
+    if (p.tipo === "apagar") { apagar(true); return; }
+    setBusy(true);
+    const q = await sb.from("agenda_horarios").update({ fim: p.fim }).eq("id", h.id);
+    setBusy(false);
+    if (q.error) { setErro(q.error.message); return; }
+    toast(nomeAluno + ": última aula até " + dBR(p.fim).slice(0, 5));
+    onSalvo();
+  }
+  async function apagar(porqueNaoComecou) {
+    const ok = await confirmar({ titulo: "Apagar este horário?",
+      texto: porqueNaoComecou ? "Ele ainda não teve nenhuma aula, então some de vez."
+        : "Some de vez, inclusive das semanas passadas. Para parar daqui pra frente, use \"Parar este horário\".",
+      ok: "Apagar", perigo: true });
+    if (!ok) return;
+    setBusy(true);
+    const q = await sb.from("agenda_horarios").delete().eq("id", h.id);
+    setBusy(false);
+    if (q.error) { setErro(q.error.message); return; }
+    toast("Horário apagado.");
+    onSalvo();
+  }
+
+  const fimAula = agMin(r.hora) != null ? agHora(agMin(r.hora) + Number(r.duracao_min || 0)) : "";
+  return (
+    <>
+      <div className="drawer-bg" onClick={busy ? undefined : onFechar} />
+      <div className="drawer" style={{ width: "min(560px,96vw)" }} role="dialog"
+        aria-label={novo ? "Novo horário fixo" : "Horário de " + nomeAluno}>
+        <div className="dr-top">
+          <button className="dr-x" onClick={onFechar} aria-label="Fechar">×</button>
+          <h2>{novo ? "Novo horário fixo" : nomeAluno}</h2>
+          <div className="meta">
+            {novo ? "Aula presencial que se repete. A agenda calcula as semanas sozinha."
+              : TC_DIA[h.dia_semana] + " " + agHora(agMin(h.hora)) + " · " + h.duracao_min + " min · " +
+                agCadenciaTexto(h.a_cada_semanas) + " · desde " + dBR(h.inicio) + (h.fim ? " · até " + dBR(h.fim) : "")}
+          </div>
+        </div>
+        <div className="dr-body">
+          {erro && <div className="err">{erro}</div>}
+
+          {novo && (
+            <>
+              <div className="ed-lab">Aluno *</div>
+              <Combobox opcoes={opcoesAluno} value={r.aluno_id} onChange={v => set({ aluno_id: v || "" })}
+                placeholder="Buscar pelo nome..." />
+            </>
+          )}
+
+          <div className="ed-lab">Dia</div>
+          <div className="chips">
+            {[1, 2, 3, 4, 5, 6, 7].map(dd => (
+              <button key={dd} type="button" className={"chip mini" + (r.dia_semana === dd ? " on" : "")}
+                onClick={() => set({ dia_semana: dd })}>{TC_DIA[dd]}</button>
+            ))}
+          </div>
+
+          <div className="ag-ed-linha">
+            <div>
+              <div className="ed-lab">Hora</div>
+              <input type="time" step="300" value={r.hora} onChange={e => set({ hora: e.target.value })}
+                style={{ marginBottom: 0 }} />
+            </div>
+            <div className="ag-ed-fim">{fimAula && "até " + fimAula}</div>
+          </div>
+
+          <div className="ed-lab">Duração</div>
+          <div className="chips">
+            {cfg.duracoes.map(n => (
+              <button key={n} type="button" className={"chip mini" + (!outro && Number(r.duracao_min) === n ? " on" : "")}
+                onClick={() => { setOutro(false); set({ duracao_min: n }); }}>{n} min</button>
+            ))}
+            <button type="button" className={"chip mini" + (outro ? " on" : "")}
+              onClick={() => setOutro(true)}>outro</button>
+            {outro && (
+              <input type="number" min="10" max="240" step="5" value={r.duracao_min} className="ag-ed-min"
+                onChange={e => set({ duracao_min: e.target.value === "" ? "" : Number(e.target.value) })} />
+            )}
+          </div>
+
+          <div className="ed-lab">Repete</div>
+          <div className="chips">
+            {[[1, "Toda semana"], [2, "Quinzenal"]].map(([n, rot]) => (
+              <button key={n} type="button" className={"chip mini" + (r.a_cada_semanas === n ? " on" : "")}
+                onClick={() => set({ a_cada_semanas: n })}>{rot}</button>
+            ))}
+          </div>
+
+          <div className="ed-lab">{novo ? "Primeira aula" : "Vale a partir de"}
+            <i>{novo ? "a quinzenal conta a partir dela" : "as aulas antes disso continuam como estavam"}</i></div>
+          <div className="ag-ed-linha">
+            <SeletorData value={r.aPartir || ""} onChange={v => set({ aPartir: v })} />
+            <div className="ag-ed-fim">
+              1ª aula {novo ? "" : "nova "}: <b>{TC_DIA[r.dia_semana]} {dBR(inicio).slice(0, 5)}</b>
+              {!novo && mudou && r.aPartir > h.inicio && <> · a atual vai até {dBR(dISO(addDias(parseISO(r.aPartir), -1))).slice(0, 5)}</>}
+            </div>
+          </div>
+
+          {acads.length > 0 && (
+            <>
+              <div className="ed-lab">Local</div>
+              <div className="chips">
+                {acads.map(a => (
+                  <button key={a.id} type="button" className={"chip mini" + (r.academia_id === a.id ? " on" : "")}
+                    onClick={() => set({ academia_id: r.academia_id === a.id ? "" : a.id })}>{a.nome}</button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div className="ed-lab">Observação</div>
+          <input value={r.obs} maxLength={300} onChange={e => set({ obs: e.target.value })}
+            placeholder="ex.: chega 10 min antes, prefere a sala de cima..." />
+
+          {confResumo.length > 0 && (
+            <div className="ag-aviso">⚠ Bate com {confResumo.map(c =>
+              c.nome + " (" + agHora(c.ini) + "–" + agHora(c.fim) + (c.n > 1 ? ", " + c.n + "×" : " em " + dBR(c.data).slice(0, 5)) + ")"
+            ).join(", ")} nas próximas semanas.</div>
+          )}
+
+          <div className="conf-bt" style={{ marginTop: 16 }}>
+            <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+            <button onClick={salvar} disabled={busy || (novo && !r.aluno_id)}>
+              {busy ? "Salvando..." : novo ? "Criar horário" : mudou ? "Salvar" : "Fechar"}</button>
+          </div>
+
+          {!novo && (
+            <div className="ag-ed-fim-bloco">
+              <div className="ed-lab">Parar este horário <i>aluno saiu ou mudou de vez</i></div>
+              <div className="ag-ed-linha">
+                <SeletorData value={parar || ""} onChange={setParar} placeholder="a partir de..." />
+                <button className="btn-sec" disabled={busy || !parar} onClick={encerrar}>Parar</button>
+              </div>
+              {parar && <div className="ed-cnt">Última aula antes de {dBR(parar)}; as passadas continuam na agenda.</div>}
+              <button className="fn-link" onClick={() => apagar(false)} disabled={busy}>apagar (cadastro errado)</button>
+              <div className="ed-cnt ag-fase2">Desmarcar só uma aula (com reposição) chega na próxima fase.</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -24061,7 +25243,7 @@ function App() {
             : aba === "volume" ? <PainelVolume />
             : aba === "montagem" ? <PainelMontagem />
             : aba === "planejamento" ? <PainelPlanejamento />
-            : aba === "trocas" ? <PainelTrocas />
+            : aba === "trocas" ? <PainelAgenda />
             : aba === "aparelhos" ? <PainelAparelhos />
             : aba === "acessos" ? <PainelAcessos />
             : aba === "admin" ? <PainelAdmin />
