@@ -1402,16 +1402,23 @@
   .tc-leg > i{width:10px;height:10px;border-radius:50%;display:inline-block}
   .tc-leg > span{margin-right:8px}
   .tc-mes{margin-bottom:26px}
-  .tc-mes h2{text-align:center;font-size:20px;font-weight:700;color:var(--accent);
+  .tc-mes h2{text-align:center;font-size:22px;font-weight:600;color:var(--accent);
     background:#0e1416;border:1px solid var(--line);border-bottom:none;
-    border-radius:12px 12px 0 0;padding:10px 12px;letter-spacing:.2px}
+    border-radius:12px 12px 0 0;padding:11px 12px 10px;letter-spacing:-.2px;line-height:1.15}
+  .tc-mes h2 small{display:block;font-family:var(--ui);font-size:10.5px;font-weight:600;
+    letter-spacing:1.6px;text-transform:uppercase;color:var(--mut);margin-bottom:3px}
   .tc-mes h2 span{color:var(--txt);font-weight:600}
   .tc-grade{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
     border:1px solid var(--line);border-radius:0 0 12px 12px;background:var(--card)}
   .tc-col{border-left:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
   .tc-col:first-child{border-left:none}
   .tc-col.vazia{background:repeating-linear-gradient(135deg,transparent 0 10px,#0f1517 10px 11px)}
-  .tc-col.agora{box-shadow:inset 0 0 0 2px var(--accent);border-radius:2px}
+  /* semana vigente = cartão que "sobe" da grade (19/11/2026) */
+  .tc-col.agora{position:relative;z-index:2;margin:-6px 2px;background:#152124;border-radius:12px;
+    border:1px solid rgba(0,218,239,.45);
+    box-shadow:0 0 0 4px rgba(0,218,239,.07),0 12px 30px rgba(0,0,0,.5)}
+  .tc-col.agora + .tc-col{border-left:none}
+  .tc-col.agora .tc-ft{border-radius:0 0 11px 11px}
   .tc-col.passada .tc-lista,.tc-col.passada .tc-hd{opacity:.55}
   .tc-busca{position:relative;padding:8px 8px 6px;border-bottom:1px solid var(--line)}
   .tc-busca input{margin:0;padding:7px 10px;font-size:12px;border-radius:7px}
@@ -1427,8 +1434,11 @@
     border-bottom:1px solid var(--line)}
   .tc-hd b{display:block;font-size:13px;font-weight:700;letter-spacing:.3px}
   .tc-hd span{font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
-  .tc-col.agora .tc-hd{background:#0c2a2e}
-  .tc-col.agora .tc-hd span{color:var(--accent)}
+  .tc-col.agora .tc-hd{background:rgba(0,218,239,.12)}
+  .tc-col.agora .tc-hd b{color:var(--accent);font-size:14px}
+  .tc-col.agora .tc-hd span{color:var(--accent);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .tc-col.agora .tc-hd span::before{content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(0,218,239,.25)}
   .tc-lista{flex:1;min-height:120px}
   .tc-vz{padding:18px 8px;text-align:center;font-size:11px;color:#4a5a5d}
   .tc-lin{border-bottom:1px solid #182224}
@@ -3265,6 +3275,11 @@
   .ag-mover-acoes button{width:auto;padding:8px 16px;font-size:13px}
   .ag-b.fantasma.mover{border-color:var(--accent);border-left-color:var(--accent);
     background:color-mix(in srgb,var(--accent) 8%,transparent)}
+  .ag-lancar-bt{display:inline;margin-left:10px;font-size:11.5px;text-transform:none;letter-spacing:0}
+  .ag-lancar{border:1px solid var(--line2);border-radius:10px;padding:10px 12px 12px;margin:4px 0 10px;background:var(--bg)}
+  .ag-lancar .ed-lab:first-child{margin-top:0}
+  .ag-lancar-fixa{margin-top:10px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--accent) 7%,transparent)}
+  .ag-lancar-topo{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
   @media (max-width: 760px){
     .ag-rep-resumo b{font-size:20px}
   }
@@ -24053,7 +24068,7 @@ function PainelTrocas() {
 
       {meses.map(mes => (
         <div className="tc-mes" key={mes.a + "-" + mes.m}>
-          <h2>Calendário Troca de Treino <span>· {TC_MESES[mes.m]} {mes.a}</span></h2>
+          <h2><small>Calendário troca de treino</small>{TC_MESES[mes.m]} <span>{mes.a}</span></h2>
           <div className="tc-grade"
             ref={mes.semanas.includes(emMontagem) ? gradeRef : undefined}>
             {mes.semanas.map(s => {
@@ -26016,6 +26031,10 @@ function AgMenuDia({ data, bloqueio, feriado, aulas, motivos, onMudou }) {
 /* ---------- lista "A repor" (todos os alunos) ---------- */
 function DrawerARepor({ pendentes, alunoPor, hoje, onFechar, onAbrir }) {
   useEsc(true, onFechar);
+  const { alunos } = usarAluno();
+  const [lancarPara, setLancarPara] = useState("");
+  const opcoes = (alunos || []).filter(a => a.status === "ativo")
+    .sort((x, y) => String(x.nome).localeCompare(String(y.nome), "pt-BR")).map(a => ({ value: a.id, label: a.nome }));
   const grupos = new Map();
   for (const f of pendentes) {
     if (!grupos.has(f.aluno_id)) grupos.set(f.aluno_id, []);
@@ -26037,6 +26056,11 @@ function DrawerARepor({ pendentes, alunoPor, hoje, onFechar, onAbrir }) {
             {lista.length === 1 ? "aluno" : "alunos"} · sem prazo · mais antigas primeiro</div>
         </div>
         <div className="dr-body">
+          <div className="ag-lancar-topo">
+            <div className="ed-lab">Lançar aula perdida à mão <i>retroativa ou fora da grade</i></div>
+            <Combobox opcoes={opcoes} value={lancarPara} placeholder="Escolha o aluno..."
+              onChange={v => { if (!v) return; const a = alunoPor.get(v); onAbrir({ id: v, nome: a ? a.nome : "", lancar: true }); }} />
+          </div>
           {lista.length === 0 && <div className="ag-vz">Ninguém com aula para repor. 🎉</div>}
           {lista.map(x => (
             <button key={x.id} type="button" className="ag-rep-lin" onClick={() => onAbrir({ id: x.id, nome: x.nome })}>
@@ -26062,7 +26086,7 @@ function DrawerRepAluno({ aluno, onFechar, onIrPara }) {
           <h2>{aluno.nome}</h2>
           <div className="meta">Presencial · reposições</div>
         </div>
-        <div className="dr-body"><PainelReposicoesAluno aluno={aluno} onIrPara={onIrPara} /></div>
+        <div className="dr-body"><PainelReposicoesAluno aluno={aluno} onIrPara={onIrPara} abrirLancar={!!aluno.lancar} /></div>
       </div>
     </>
   );
@@ -26100,7 +26124,7 @@ function CardReposicoes({ resumo, onAbrir }) {
 }
 
 /* ---------- painel de reposições do aluno (ficha + gaveta da Agenda) ---------- */
-function PainelReposicoesAluno({ aluno, onIrPara, onMudou }) {
+function PainelReposicoesAluno({ aluno, onIrPara, onMudou, abrirLancar }) {
   const { toast, confirmar } = usarUI();
   const { alunos } = usarAluno();
   const hoje = hojeFuso();
@@ -26115,6 +26139,7 @@ function PainelReposicoesAluno({ aluno, onIrPara, onMudou }) {
   const [feitos, setFeitos] = useState(null);       /* ids gravados pela simulação (desfazer) */
   const [novaPref, setNovaPref] = useState({ dia: 4, hora: "18:00" });
   const [verHist, setVerHist] = useState(false);
+  const [lancar, setLancar] = useState(!!abrirLancar);
 
   const carregar = useCallback(async () => {
     const desde = agAmanha(hoje);
@@ -26263,13 +26288,20 @@ function PainelReposicoesAluno({ aluno, onIrPara, onMudou }) {
       </div>
 
       <div className="ag-rep-sec">
-        <h4>Aulas a repor {pend.length > 0 && <i>mais antiga primeiro · sem prazo</i>}</h4>
+        <h4>Aulas a repor {pend.length > 0 && <i>mais antiga primeiro · sem prazo</i>}
+          {!lancar && <button type="button" className="fn-link ag-lancar-bt" onClick={() => setLancar(true)}>+ lançar aula perdida</button>}</h4>
+        {lancar && (
+          <AgLancarFalta aluno={aluno} horarios={meus} motivos={d.motivos.filter(m => m.ativo !== false)}
+            cfg={d.fut.cfg} hoje={hoje} faltas={d.faltas}
+            onFechar={() => setLancar(false)}
+            onLancado={async msg => { toast(msg); setLancar(false); setSimu(null); await carregar(); }} />
+        )}
         {pend.length === 0 && <div className="ed-cnt">Nada para repor. 🎉</div>}
         {pend.map(f => (
           <div key={f.id} className="ag-rep-f">
             <div className="ag-rep-f-l">
               <b>{agDataCurta(f.data)} {agHora(agMin(f.hora))}</b>
-              <span>{f.duracao_min} min{f.origem === "extra" ? " · era aula extra" : ""}
+              <span>{f.duracao_min} min{f.origem === "extra" ? " · era aula extra" : f.origem === "manual" ? " · lançada à mão" : ""}
                 {f.motivo_id && nomeMotivo(f.motivo_id) ? " · " + nomeMotivo(f.motivo_id) : ""}
                 {" · "}<em className={agDiasDesde(f.data, hoje) > 30 ? "velha" : ""}>{agHaDias(f.data, hoje)}</em></span>
             </div>
@@ -26634,6 +26666,125 @@ function AgEditorMover({ av, pos, alunoPor, hoje, onPrevia, onSalvar, onFechar }
       <div className="ag-mover-acoes">
         <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
         <button onClick={salvar} disabled={busy}>{busy ? "Salvando…" : "Salvar"}</button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- lançar aula perdida à mão (retroativa ou fora da grade) ----------
+   Se a data bate com um horário fixo do aluno, liga a falta a ele (origem
+   "fixa": a aula sai da agenda, como num desmarcar normal). Senão grava
+   como "manual" (reposicoes_manual.sql). */
+function AgLancarFalta({ aluno, horarios, motivos, cfg, hoje, faltas, onFechar, onLancado }) {
+  const [data, setData] = useState(hoje);
+  const [hora, setHora] = useState("");
+  const [dur, setDur] = useState(cfg.duracao_padrao);
+  const [outro, setOutro] = useState(false);
+  const [motivo, setMotivo] = useState(null);
+  const [situacao, setSituacao] = useState("pendente");
+  const [ligar, setLigar] = useState(true);
+  const [obs, setObs] = useState("");
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  /* aulas fixas do aluno nessa data (pode ter mais de uma) */
+  const fixas = data ? horarios.filter(h => agVale(h, data)) : [];
+  const [fixaId, setFixaId] = useState(null);
+  const fixa = fixas.find(h => h.id === fixaId) || fixas[0] || null;
+  const jaDesmarcada = fixa && faltas.some(f => f.horario_id === fixa.id && f.data === data && (f.origem || "fixa") === "fixa");
+  const usaFixa = !!fixa && ligar && !jaDesmarcada;
+  /* ao trocar de data, puxa hora e duração da aula fixa do dia */
+  useEffect(() => {
+    if (fixas[0]) { setHora(agHora(agMin(fixas[0].hora))); setDur(Number(fixas[0].duracao_min)); setFixaId(fixas[0].id);
+      setOutro(!cfg.duracoes.includes(Number(fixas[0].duracao_min))); }
+  }, [data]);
+
+  async function salvar() {
+    setErro("");
+    if (!data) { setErro("Escolha a data da aula perdida."); return; }
+    const h = usaFixa ? agHora(agMin(fixa.hora)) : hora;
+    const du = usaFixa ? Number(fixa.duracao_min) : Number(dur);
+    if (agMin(h) == null) { setErro("Informe a hora da aula."); return; }
+    if (!agDuracaoOk(du)) { setErro("Duração: múltiplo de 5 entre 10 e 240 minutos."); return; }
+    setBusy(true);
+    const q = await sb.from("agenda_faltas").insert({
+      aluno_id: aluno.id, horario_id: usaFixa ? fixa.id : null, origem: usaFixa ? "fixa" : "manual",
+      data, hora: h, duracao_min: du, motivo_id: motivo ? motivo.id : null, situacao, obs: obs.trim() || null });
+    setBusy(false);
+    if (q.error) {
+      const m = q.error.message || "";
+      setErro(/agenda_faltas_origem_ok/.test(m) ? "Rode o reposicoes_manual.sql no Supabase para lançar aula fora da grade."
+        : /ocorrencia_uq|duplicate/.test(m) ? "Essa aula fixa já está desmarcada." : m);
+      return;
+    }
+    onLancado(situacao === "pendente" ? "Aula de " + agDataCurta(data) + " foi para o saldo."
+      : "Aula de " + agDataCurta(data) + " registrada como descartada.");
+  }
+
+  return (
+    <div className="ag-lancar">
+      {erro && <div className="err">{erro}</div>}
+      <div className="ag-ed-linha">
+        <div>
+          <div className="ed-lab">Data da aula perdida</div>
+          <SeletorData value={data} onChange={v => setData(v || "")} />
+        </div>
+        <div className="ag-ed-fim">{data && agDataCurta(data)}{data > hoje ? " · data futura" : ""}</div>
+      </div>
+
+      {fixa && !jaDesmarcada && (
+        <div className="ag-lancar-fixa">
+          <label className="ag-check" style={{ marginTop: 0 }}>
+            <input type="checkbox" checked={ligar} onChange={e => setLigar(e.target.checked)} />
+            É a aula fixa de {TC_DIA[fixa.dia_semana]} {agHora(agMin(fixa.hora))} ({fixa.duracao_min} min)
+          </label>
+          {fixas.length > 1 && ligar && (
+            <div className="chips">{fixas.map(x => (
+              <button key={x.id} type="button" className={"chip mini" + (x.id === fixa.id ? " on" : "")}
+                onClick={() => setFixaId(x.id)}>{agHora(agMin(x.hora))}</button>))}</div>
+          )}
+          <div className="ed-cnt">{ligar ? "A aula sai da agenda nesse dia, como num desmarcar normal." : "Fica como aula avulsa perdida; a aula fixa continua na agenda."}</div>
+        </div>
+      )}
+      {jaDesmarcada && <div className="ed-cnt">A aula fixa desse dia já está desmarcada; esta entra como aula avulsa perdida.</div>}
+
+      {!usaFixa && (
+        <>
+          <div className="ag-ed-linha">
+            <div>
+              <div className="ed-lab">Hora</div>
+              <input type="time" step="300" value={hora} onChange={e => setHora(e.target.value)} style={{ width: 130, margin: 0 }} />
+            </div>
+          </div>
+          <div className="ed-lab">Duração</div>
+          <div className="chips">
+            {cfg.duracoes.map(n => (
+              <button key={n} type="button" className={"chip mini" + (!outro && Number(dur) === n ? " on" : "")}
+                onClick={() => { setOutro(false); setDur(n); }}>{n} min</button>
+            ))}
+            <button type="button" className={"chip mini" + (outro ? " on" : "")} onClick={() => setOutro(true)}>outro</button>
+            {outro && <input type="number" min="10" max="240" step="5" className="ag-ed-min" value={dur}
+              onChange={e => setDur(e.target.value === "" ? "" : Number(e.target.value))} />}
+          </div>
+        </>
+      )}
+
+      <div className="ed-lab">Motivo</div>
+      <div className="chips">
+        {motivos.map(m => (
+          <button key={m.id} type="button" className={"chip mini" + (motivo && motivo.id === m.id ? " on" : "")}
+            onClick={() => { setMotivo(motivo && motivo.id === m.id ? null : m); setSituacao(m.sugestao === "descartar" ? "descartada" : "pendente"); }}>{m.nome}</button>
+        ))}
+      </div>
+      <div className="ed-lab">Situação</div>
+      <div className="chips">
+        <button type="button" className={"chip mini" + (situacao === "pendente" ? " on" : "")} onClick={() => setSituacao("pendente")}>a repor (vai para o saldo)</button>
+        <button type="button" className={"chip mini" + (situacao === "descartada" ? " on" : "")} onClick={() => setSituacao("descartada")}>descartada (só histórico)</button>
+      </div>
+      <input className="ag-obs" value={obs} maxLength={300} onChange={e => setObs(e.target.value)} placeholder="observação (opcional)" />
+      <div className="conf-bt" style={{ marginTop: 12 }}>
+        <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
+        <button onClick={salvar} disabled={busy}>{busy ? "Lançando…" : "Lançar aula perdida"}</button>
       </div>
     </div>
   );
