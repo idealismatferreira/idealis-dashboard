@@ -3283,6 +3283,15 @@
   @media (max-width: 760px){
     .ag-rep-resumo b{font-size:20px}
   }
+  /* link do aluno (19/11) */
+  .ag-link-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:6px}
+  .ag-link-url{font-family:ui-monospace,monospace;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ag-link-url em{font-style:normal;color:var(--accent)}
+  .ag-link-bt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:9px}
+  .ag-link-bt .btn-sec{width:auto;padding:7px 12px;font-size:12.5px;text-decoration:none;display:inline-flex;align-items:center}
+  .ag-link-bt .fn-link{font-size:12px;margin:0;width:auto}
+  .ag-link-bt .ag-link-sep{margin-left:auto}
+  .ag-link-uso{margin-top:8px}
 </style>
 </head>
 <body>
@@ -26255,6 +26264,8 @@ function PainelReposicoesAluno({ aluno, onIrPara, onMudou, abrirLancar }) {
           {freq.descartadas === 1 ? "descartada" : "descartadas"}, {freq.pendentes} a repor)</div>
       )}
 
+      <AgLinkAluno aluno={aluno} />
+
       <div className="ag-rep-sec">
         <h4>Horários fixos</h4>
         {ativos.length === 0 && <div className="ed-cnt">Nenhum horário fixo. Crie pela Agenda do Personal.</div>}
@@ -26786,6 +26797,120 @@ function AgLancarFalta({ aluno, horarios, motivos, cfg, hoje, faltas, onFechar, 
         <button className="btn-sec" onClick={onFechar} disabled={busy}>Cancelar</button>
         <button onClick={salvar} disabled={busy}>{busy ? "Lançando…" : "Lançar aula perdida"}</button>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Link do aluno (página pública das reposições, 19/11) ---------- */
+function agPrimeiroNome(n) { return String(n || "").trim().split(/\s+/)[0] || "o aluno"; }
+function agLinkUrl(codigo) {
+  try { return new URL("reposicoes.html#c=" + codigo, location.href).href; }
+  catch (e) { return "reposicoes.html#c=" + codigo; }
+}
+function agTelWhats(tel) {
+  const n = String(tel || "").replace(/\D/g, "");
+  if (n.length === 10 || n.length === 11) return "55" + n;
+  if ((n.length === 12 || n.length === 13) && n.startsWith("55")) return n;
+  return "";
+}
+function agHaQuanto(ts) {
+  if (!ts) return "";
+  const min = Math.max(0, Math.round((Date.now() - new Date(ts).getTime()) / 60000));
+  if (min < 2) return "agora há pouco";
+  if (min < 60) return "há " + min + " min";
+  const h = Math.round(min / 60);
+  if (h < 24) return "há " + h + " h";
+  const d = Math.round(h / 24);
+  return d === 1 ? "ontem" : "há " + d + " dias";
+}
+function AgLinkAluno({ aluno }) {
+  const { toast, confirmar } = usarUI();
+  const [link, setLink] = useState(undefined);      /* undefined = carregando · null = sem link */
+  const [tel, setTel] = useState("");
+  const [falta, setFalta] = useState(false);         /* agenda_link.sql não rodou */
+  const [busy, setBusy] = useState(false);
+  const [erro, setErro] = useState("");
+
+  const carregar = useCallback(async () => {
+    const r = await sb.from("agenda_links").select("*").eq("aluno_id", aluno.id).is("revogado_em", null).maybeSingle();
+    if (r.error) {
+      if (/agenda_links/.test(r.error.message || "") && /(does not exist|not find|schema cache|42P01|PGRST205)/i.test(r.error.message || "")) {
+        setFalta(true); setLink(null); return;
+      }
+      setErro(r.error.message); setLink(null); return;
+    }
+    setFalta(false); setLink(r.data || null);
+  }, [aluno.id]);
+  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => {
+    let vivo = true;
+    sb.from("alunos").select("telefone").eq("id", aluno.id).maybeSingle()
+      .then(r => { if (vivo && r && !r.error && r.data) setTel(r.data.telefone || ""); }, () => {});
+    return () => { vivo = false; };
+  }, [aluno.id]);
+
+  async function gerar(trocar) {
+    if (trocar) {
+      const ok = await confirmar({ titulo: "Gerar um link novo?", ok: "Gerar novo",
+        texto: "O link atual para de funcionar na hora. Você vai precisar mandar o novo para " + agPrimeiroNome(aluno.nome) + "." });
+      if (!ok) return;
+    }
+    setBusy(true); setErro("");
+    const r = await sb.rpc("agenda_link_gerar", { p_aluno: aluno.id });
+    if (r.error) setErro(r.error.message);
+    else { toast(trocar ? "Link novo gerado. O antigo parou de funcionar." : "Link criado."); await carregar(); }
+    setBusy(false);
+  }
+  async function desativar() {
+    const ok = await confirmar({ titulo: "Desativar o link?", ok: "Desativar",
+      texto: "Quem abrir o link vai ver \"link desativado\". Dá para criar outro depois." });
+    if (!ok) return;
+    setBusy(true); setErro("");
+    const r = await sb.from("agenda_links").update({ revogado_em: new Date().toISOString() }).eq("id", link.id);
+    if (r.error) setErro(r.error.message); else { toast("Link desativado."); await carregar(); }
+    setBusy(false);
+  }
+  async function copiar() {
+    const url = agLinkUrl(link.codigo);
+    try { await navigator.clipboard.writeText(url); toast("Link copiado."); }
+    catch (e) { window.prompt("Copie o link:", url); }
+  }
+  function whats() {
+    const url = agLinkUrl(link.codigo);
+    const msg = "Oi, " + agPrimeiroNome(aluno.nome) + "! Por aqui você acompanha suas aulas a repor e as reposições marcadas, sempre atualizado: " + url;
+    const n = agTelWhats(tel);
+    window.open("https://wa.me/" + n + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+  }
+
+  if (link === undefined) return null;
+  return (
+    <div className="ag-rep-sec ag-link">
+      <h4>Link do aluno <i>{agPrimeiroNome(aluno.nome)} acompanha o saldo e a projeção de reposição, sem login</i></h4>
+      {erro && <div className="err">{erro}</div>}
+      {falta ? (
+        <div className="ed-cnt">Rode o agenda_link.sql no Supabase para criar links.</div>
+      ) : !link ? (
+        <button className="btn-sec" disabled={busy} onClick={() => gerar(false)}>🔗 Criar link</button>
+      ) : (
+        <div className="ag-link-box">
+          <div className="ag-link-url" title={agLinkUrl(link.codigo)}>
+            <span>{agLinkUrl(link.codigo).replace(/^https?:\/\//, "").replace(/#c=.*/, "")}</span><em>#c=…{link.codigo.slice(-6)}</em>
+          </div>
+          <div className="ag-link-bt">
+            <button className="btn-sec" disabled={busy} onClick={copiar}>Copiar</button>
+            <button className="btn-sec" disabled={busy} onClick={whats}>WhatsApp</button>
+            <a className="btn-sec" href={agLinkUrl(link.codigo)} target="_blank" rel="noopener">Abrir</a>
+            <button type="button" className="fn-link ag-link-sep" disabled={busy} onClick={() => gerar(true)}>gerar novo</button>
+            <button type="button" className="fn-link" disabled={busy} onClick={desativar}>desativar</button>
+          </div>
+          <div className="ed-cnt ag-link-uso">
+            {link.ultimo_acesso
+              ? "Aberto " + agHaQuanto(link.ultimo_acesso) + " · " + link.aberturas + (link.aberturas === 1 ? " vez" : " vezes")
+              : "Ainda não foi aberto"}
+            {!agTelWhats(tel) && " · sem telefone no cadastro: o WhatsApp abre para você escolher o contato."}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

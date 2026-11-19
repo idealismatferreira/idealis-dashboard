@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0b0f10">
+<title>Minhas aulas a repor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b0f10;--card:#131a1c;--card2:#0f1517;--line:#1f2b2d;--txt:#e6edf3;--mut:#89a0a3;
+    --accent:#00daef;--marca:#ddff00;--warn:#f0a35e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg)}
+  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,sans-serif;
+    font-size:15px;line-height:1.45;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .pg{max-width:520px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom))}
+  .topo{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+  .topo .marca{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;letter-spacing:-.2px}
+  .topo .ini{width:30px;height:30px;border-radius:50%;background:var(--marca);color:#0b0f10;display:grid;place-items:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px}
+  .vivo{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
+  .vivo i{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(0,218,239,.5);animation:pulsa 2.4s infinite}
+  .vivo.off i{background:var(--warn);animation:none}
+  @keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(0,218,239,.5)}70%{box-shadow:0 0 0 7px rgba(0,218,239,0)}100%{box-shadow:0 0 0 0 rgba(0,218,239,0)}}
+  @media (prefers-reduced-motion:reduce){.vivo i{animation:none}}
+
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;letter-spacing:-.3px;margin-bottom:14px}
+  .hero{background:linear-gradient(160deg,#142124 0%,var(--card) 60%);border:1px solid rgba(0,218,239,.28);
+    border-radius:16px;padding:20px 20px 18px;margin-bottom:28px}
+  .hero .n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:56px;line-height:1;color:var(--accent);letter-spacing:-1.5px}
+  .hero .n.zero{color:var(--marca)}
+  .hero .rot{font-size:15px;font-weight:600;margin-top:6px}
+  .hero .sub{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:5px 10px;border-radius:999px;
+    background:var(--card2);border:1px solid var(--line);color:var(--mut)}
+  .pill b{color:var(--txt);font-weight:600}
+  .pill.ok{border-color:rgba(0,218,239,.35)} .pill.ok b{color:var(--accent)}
+
+  h2{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;
+    color:var(--mut);margin:0 0 10px 2px}
+  .sec{margin-bottom:26px}
+  .lista{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .item{display:flex;align-items:center;gap:12px;padding:13px 14px;border-top:1px solid var(--line)}
+  .item:first-child{border-top:none}
+  .item .q{flex:1;min-width:0}
+  .item .q b{display:block;font-weight:600;font-size:15px}
+  .item .q span{font-size:12.5px;color:var(--mut)}
+  .tag{flex-shrink:0;font-size:12px;font-weight:600;padding:5px 9px;border-radius:8px;text-align:right;line-height:1.25}
+  .tag.esp{color:var(--mut);background:var(--card2);border:1px dashed #2c3b3e}
+  .tag.rep{color:var(--accent);background:rgba(0,218,239,.08);border:1px solid rgba(0,218,239,.3)}
+  .tag small{display:block;font-weight:500;font-size:10.5px;opacity:.8;letter-spacing:.3px}
+
+  .proj{position:relative;padding-left:18px}
+  .proj::before{content:"";position:absolute;left:5px;top:10px;bottom:10px;width:2px;background:linear-gradient(var(--accent),rgba(0,218,239,.08));border-radius:2px}
+  .pc{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;display:flex;gap:14px;align-items:center}
+  .pc::before{content:"";position:absolute;left:-17px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--bg);border:2px solid var(--accent)}
+  .pc.prox{border-color:rgba(0,218,239,.45);background:#142124}
+  .pc.prox::before{background:var(--accent)}
+  .pc .dt{flex-shrink:0;width:54px;text-align:center;border-right:1px solid var(--line);padding-right:12px}
+  .pc .dt small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);font-weight:600}
+  .pc .dt b{display:block;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;line-height:1.1}
+  .pc .dt i{display:block;font-style:normal;font-size:11px;color:var(--mut)}
+  .pc .inf b{display:block;font-weight:600}
+  .pc .inf span{font-size:12.5px;color:var(--mut)}
+  .pc .quando{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--accent);flex-shrink:0}
+
+  .vazio{background:var(--card);border:1px dashed #2c3b3e;border-radius:14px;padding:16px;color:var(--mut);font-size:13.5px}
+  .tudo{text-align:center;padding:26px 18px}
+  .tudo .e{font-size:34px;margin-bottom:6px}
+  .tudo b{display:block;font-family:'Space Grotesk',sans-serif;font-size:18px;margin-bottom:4px;color:var(--txt)}
+  .rodape{text-align:center;font-size:12px;color:var(--mut);margin-top:30px;line-height:1.6}
+  .erro{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 22px;text-align:center;margin-top:12vh}
+  .erro b{display:block;font-family:'Space Grotesk',sans-serif;font-size:19px;margin-bottom:6px}
+  .erro p{color:var(--mut);font-size:14px}
+  .esq{background:var(--card);border-radius:14px;height:120px;margin-bottom:16px;opacity:.6;animation:esq 1.2s ease-in-out infinite alternate}
+  @keyframes esq{to{opacity:.3}}
+</style>
+</head>
+<body>
+<div class="pg" id="app">
+  <div class="esq" style="height:30px;width:40%"></div>
+  <div class="esq"></div>
+  <div class="esq" style="height:180px"></div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var URL_API = "https://lbnemzhwibcarhkaifoy.supabase.co";
+  var CHAVE   = "sb_publishable_AH0V90ZsYBYpm8M_H0zQPg_zg9po7uo";
+  var LOGO_T  = "translate(0.000000,512.000000) scale(0.100000,-0.100000)";
+  var LOGO_D  = "M2275 5059 c-2091 -256 -2975 -2790 -1490 -4274 1489 -1489 4049 -587 4275 1507 171 1591 -1207 2960 -2785 2767z m525 -264 c1560 -184 2461 -1815 1780 -3220 -439 -905 -1452 -1415 -2435 -1226 -1460 281 -2253 1860 -1605 3196 411 848 1336 1359 2260 1250z M2960 4367 c-41 -56 -139 -190 -219 -297 -223 -300 -430 -584 -427 -587 1 -2 38 9 82 23 43 14 160 51 259 83 99 32 240 78 313 101 98 32 132 47 132 59 0 9 -5 68 -10 131 -6 63 -19 220 -29 348 -10 128 -21 235 -23 237 -2 3 -37 -41 -78 -98z M2850 3467 c-19 -6 -195 -64 -390 -128 l-355 -117 -140 -190 c-77 -104 -209 -284 -293 -398 -84 -115 -169 -230 -188 -256 -36 -48 -36 -48 505 -48 l541 0 -167 -227 c-92 -126 -257 -352 -368 -503 -111 -151 -254 -347 -319 -435 l-118 -160 673 -3 c672 -2 672 -2 768 52 53 29 123 68 156 86 162 88 283 155 310 171 29 18 16 19 -518 19 l-548 0 40 56 c133 185 780 1053 879 1179 l71 90 -544 3 c-300 1 -545 5 -545 8 0 5 37 57 165 229 45 61 161 217 258 348 97 130 173 237 169 236 -4 -1 -23 -6 -42 -12z";
+  var A_CADA  = 30000;   /* busca de novo a cada 30 s com a página aberta */
+
+  var DIAS  = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  var app   = document.getElementById("app");
+  var dados = null, falhou = false, timer = null;
+
+  function lerCodigo() {
+    var h = (location.hash || "").replace(/^#/, "");
+    var q = new URLSearchParams(h.indexOf("=") >= 0 ? h : location.search);
+    var c = (q.get("c") || (h.indexOf("=") < 0 ? h : "") || "").trim().toLowerCase();
+    return /^[0-9a-f]{64}$/.test(c) ? c : null;
+  }
+  var codigo = lerCodigo();
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function dt(iso) { var p = iso.split("-"); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); }
+  function dm(iso) { var p = iso.split("-"); return p[2] + "/" + p[1]; }
+  function dia(iso) { return DIAS[dt(iso).getUTCDay()]; }
+  function difDias(a, b) { return Math.round((dt(b) - dt(a)) / 864e5); }
+  function fim(hora, dur) { var p = hora.split(":"), m = (+p[0]) * 60 + (+p[1]) + (+dur);
+    return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
+  function haQuanto(iso, hoje) {
+    var d = difDias(iso, hoje);
+    if (d === 0) return "hoje";
+    if (d === 1) return "ontem";
+    if (d > 1) return "há " + d + " dias";
+    if (d === -1) return "amanhã";
+    return "em " + (-d) + " dias";
+  }
+  function quando(iso, hoje) {
+    var d = difDias(hoje, iso);
+    if (d === 0) return "hoje";
+    if (d === 1) return "amanhã";
+    return d < 7 ? "em " + d + " dias" : "";
+  }
+  function plural(n, um, varios) { return n + " " + (n === 1 ? um : varios); }
+
+  function cabecalho(marca, ok) {
+    var m = marca || "";
+    var logo = (!m || m === "Idealis")
+      ? '<svg viewBox="0 0 512 512" width="30" height="30" fill="#ddff00" aria-hidden="true"><g transform="' + LOGO_T + '"><path d="' + LOGO_D + '"/></g></svg>'
+      : '<span class="ini">' + esc(m.charAt(0).toUpperCase()) + "</span>";
+    var hora = dados ? dados.agora.slice(11, 16) : "";
+    return '<div class="topo">' + logo + '<span class="marca">' + esc(m || "Idealis") + "</span>" +
+      '<span class="vivo' + (ok ? "" : " off") + '"><i></i>' +
+      (ok ? "ao vivo · " + hora : "sem conexão · tentando de novo") + "</span></div>";
+  }
+
+  function desenhar() {
+    if (!dados) return;
+    var d = dados, hoje = d.hoje;
+    var perd = d.perdidas || [], proj = d.projecao || [];
+    var total = perd.length, comData = proj.length, semData = total - comData;
+    var h = cabecalho(d.marca, !falhou);
+    h += "<h1>Oi" + (d.nome ? ", " + esc(d.nome) : "") + " 👋</h1>";
+
+    h += '<div class="hero"><div class="n' + (total ? "" : " zero") + '">' + total + "</div>" +
+         '<div class="rot">' + (total === 1 ? "aula a repor" : "aulas a repor") + "</div>";
+    if (total) {
+      h += '<div class="sub">' +
+        (comData ? '<span class="pill ok"><b>' + comData + "</b> com reposição marcada</span>" : "") +
+        (semData ? '<span class="pill"><b>' + semData + "</b> " + (semData === 1 ? "aguardando data" : "aguardando data") + "</span>" : "") +
+        "</div>";
+    }
+    h += "</div>";
+
+    if (!total) {
+      h += '<div class="vazio tudo"><div class="e">✅</div><b>Tudo em dia!</b>Você não tem aulas para repor.</div>';
+    } else {
+      h += '<div class="sec"><h2>Aulas perdidas</h2><div class="lista">';
+      perd.forEach(function (p) {
+        var r = p.reposicao;
+        h += '<div class="item"><div class="q"><b>' + dia(p.data) + " " + dm(p.data) + " · " + esc(p.hora) + "</b>" +
+             "<span>" + esc(p.duracao_min) + " min · " + haQuanto(p.data, hoje) + "</span></div>" +
+             (r ? '<div class="tag rep"><small>REPOSIÇÃO</small>' + dia(r.data) + " " + dm(r.data) + " · " + esc(r.hora) + "</div>"
+                : '<div class="tag esp">aguardando<br>data</div>') + "</div>";
+      });
+      h += "</div></div>";
+
+      h += '<div class="sec"><h2>Projeção de reposição</h2>';
+      if (!proj.length) {
+        h += '<div class="vazio">Nenhuma reposição marcada ainda. Assim que uma data for combinada, ela aparece aqui.</div>';
+      } else {
+        h += '<div class="proj">';
+        proj.forEach(function (r, i) {
+          var q = quando(r.data, hoje);
+          h += '<div class="pc' + (i === 0 ? " prox" : "") + '"><div class="dt"><small>' + dia(r.data) + "</small><b>" +
+               dm(r.data).slice(0, 2) + "</b><i>" + dm(r.data) + "</i></div>" +
+               '<div class="inf"><b>' + esc(r.hora) + "–" + fim(r.hora, r.duracao_min) + "</b>" +
+               "<span>repõe a aula de " + dia(r.perdida) + " " + dm(r.perdida) + "</span></div>" +
+               (q ? '<span class="quando">' + q + "</span>" : "") + "</div>";
+        });
+        h += "</div>";
+      }
+      h += "</div>";
+    }
+
+    h += '<div class="rodape">Esta página se atualiza sozinha.<br>Alguma dúvida? Fala comigo pelo WhatsApp.</div>';
+    app.innerHTML = h;
+    document.title = total ? plural(total, "aula a repor", "aulas a repor") : "Aulas em dia";
+  }
+
+  function telaErro(titulo, texto) {
+    app.innerHTML = cabecalho("", true).replace(/<span class="vivo[\s\S]*<\/span><\/div>$/, "</div>") +
+      '<div class="erro"><b>' + esc(titulo) + "</b><p>" + esc(texto) + "</p></div>";
+  }
+
+  function buscar() {
+    if (!codigo) { telaErro("Link incompleto", "Abra o link inteiro que você recebeu ou peça um novo para seu treinador."); return; }
+    fetch(URL_API + "/rest/v1/rpc/agenda_resumo_publico", {
+      method: "POST",
+      headers: { "apikey": CHAVE, "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ p_codigo: codigo }),
+      cache: "no-store"
+    }).then(function (r) {
+      if (!r.ok) throw new Error("http " + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (!j) {
+        dados = null; parar();
+        telaErro("Link desativado", "Este link não vale mais. Peça o link novo para seu treinador.");
+        return;
+      }
+      dados = j; falhou = false; desenhar();
+    }).catch(function () {
+      falhou = true;
+      if (dados) desenhar();
+      else telaErro("Sem conexão", "Não consegui carregar agora. Vou tentar de novo sozinho.");
+    });
+  }
+  function parar() { if (timer) { clearInterval(timer); timer = null; } }
+  function iniciar() { parar(); buscar(); timer = setInterval(function () { if (!document.hidden) buscar(); }, A_CADA); }
+
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && codigo) buscar(); });
+  window.addEventListener("online", function () { if (codigo) buscar(); });
+  window.addEventListener("hashchange", function () { codigo = lerCodigo(); iniciar(); });
+  window.__repor = { buscar: buscar };
+  iniciar();
+})();
+</script>
+</body>
+</html>
