@@ -68,6 +68,13 @@
   .pc .inf span{font-size:12.5px;color:var(--mut)}
   .pc .quando{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--accent);flex-shrink:0}
 
+  .mais{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px 14px;border:none;
+    border-top:1px solid var(--line);background:var(--card2);color:var(--accent);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+  .mais:hover{background:#121b1d}
+  .mais.solto{border:1px solid var(--line);border-radius:12px;margin-left:18px;width:calc(100% - 18px)}
+  .mais:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .mais svg{transition:transform .2s}
+  .mais[aria-expanded="true"] svg{transform:rotate(180deg)}
   .vazio{background:var(--card);border:1px dashed #2c3b3e;border-radius:14px;padding:16px;color:var(--mut);font-size:13.5px}
   .tudo{text-align:center;padding:26px 18px}
   .tudo .e{font-size:34px;margin-bottom:6px}
@@ -98,6 +105,12 @@
   var DIAS  = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
   var app   = document.getElementById("app");
   var dados = null, falhou = false, timer = null;
+  var LIMITE = 3, LIMITE_PROJ = 4, verTodas = false, verTodasProj = false, anoAtual = "";
+  function botaoMais(alvo, aberto, resto, extra) {
+    return '<button type="button" class="mais' + (extra || "") + '" data-acao="' + alvo + '" aria-expanded="' + aberto + '">' +
+      (aberto ? "Ver menos" : "Ver mais " + resto) +
+      '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+  }
 
   function lerCodigo() {
     var h = (location.hash || "").replace(/^#/, "");
@@ -110,7 +123,8 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function dt(iso) { var p = iso.split("-"); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); }
-  function dm(iso) { var p = iso.split("-"); return p[2] + "/" + p[1]; }
+  /* dia/mês; mostra o ano (2 dígitos) só quando não é o ano corrente */
+  function dm(iso) { var p = iso.split("-"); return p[2] + "/" + p[1] + (anoAtual && p[0] !== anoAtual ? "/" + p[0].slice(2) : ""); }
   function dia(iso) { return DIAS[dt(iso).getUTCDay()]; }
   function difDias(a, b) { return Math.round((dt(b) - dt(a)) / 864e5); }
   function fim(hora, dur) { var p = hora.split(":"), m = (+p[0]) * 60 + (+p[1]) + (+dur);
@@ -145,6 +159,7 @@
   function desenhar() {
     if (!dados) return;
     var d = dados, hoje = d.hoje;
+    anoAtual = String(hoje).slice(0, 4);
     var perd = d.perdidas || [], proj = d.projecao || [];
     var total = perd.length, comData = proj.length, semData = total - comData;
     var h = cabecalho(d.marca, !falhou);
@@ -163,14 +178,20 @@
     if (!total) {
       h += '<div class="vazio tudo"><div class="e">✅</div><b>Tudo em dia!</b>Você não tem aulas para repor.</div>';
     } else {
+      /* primeiro as que ainda aguardam data (não aparecem na projeção), depois as já marcadas; cada grupo da mais antiga */
+      var ordem = perd.filter(function (p) { return !p.reposicao; }).concat(perd.filter(function (p) { return p.reposicao; }));
+      var mostrar = verTodas ? ordem : ordem.slice(0, LIMITE);
       h += '<div class="sec"><h2>Aulas perdidas</h2><div class="lista">';
-      perd.forEach(function (p) {
+      mostrar.forEach(function (p) {
         var r = p.reposicao;
         h += '<div class="item"><div class="q"><b>' + dia(p.data) + " " + dm(p.data) + " · " + esc(p.hora) + "</b>" +
              "<span>" + esc(p.duracao_min) + " min · " + haQuanto(p.data, hoje) + "</span></div>" +
              (r ? '<div class="tag rep"><small>REPOSIÇÃO</small>' + dia(r.data) + " " + dm(r.data) + " · " + esc(r.hora) + "</div>"
                 : '<div class="tag esp">aguardando<br>data</div>') + "</div>";
       });
+      if (ordem.length > LIMITE) {
+        h += botaoMais("ver-mais", verTodas, ordem.length - LIMITE);
+      }
       h += "</div></div>";
 
       h += '<div class="sec"><h2>Projeção de reposição</h2>';
@@ -178,7 +199,7 @@
         h += '<div class="vazio">Nenhuma reposição marcada ainda. Assim que uma data for combinada, ela aparece aqui.</div>';
       } else {
         h += '<div class="proj">';
-        proj.forEach(function (r, i) {
+        (verTodasProj ? proj : proj.slice(0, LIMITE_PROJ)).forEach(function (r, i) {
           var q = quando(r.data, hoje);
           h += '<div class="pc' + (i === 0 ? " prox" : "") + '"><div class="dt"><small>' + dia(r.data) + "</small><b>" +
                dm(r.data).slice(0, 2) + "</b><i>" + dm(r.data) + "</i></div>" +
@@ -187,6 +208,7 @@
                (q ? '<span class="quando">' + q + "</span>" : "") + "</div>";
         });
         h += "</div>";
+        if (proj.length > LIMITE_PROJ) h += botaoMais("ver-mais-proj", verTodasProj, proj.length - LIMITE_PROJ, " solto");
       }
       h += "</div>";
     }
@@ -230,6 +252,15 @@
   document.addEventListener("visibilitychange", function () { if (!document.hidden && codigo) buscar(); });
   window.addEventListener("online", function () { if (codigo) buscar(); });
   window.addEventListener("hashchange", function () { codigo = lerCodigo(); iniciar(); });
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-acao]");
+    if (!b) return;
+    var proj = b.getAttribute("data-acao") === "ver-mais-proj";
+    if (proj) verTodasProj = !verTodasProj; else verTodas = !verTodas;
+    desenhar();
+    var fechou = proj ? !verTodasProj : !verTodas;
+    if (fechou) { var l = app.querySelector(proj ? ".proj" : ".lista"); if (l) l.scrollIntoView({ block: "nearest" }); }
+  });
   window.__repor = { buscar: buscar };
   iniciar();
 })();
